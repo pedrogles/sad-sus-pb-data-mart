@@ -72,15 +72,56 @@ Essa entrega cobre:
 
 Implementação no QlikView e dashboards não devem antecipar nem distorcer decisões de modelagem ainda não validadas.
 
+## Modelagem dimensional — orientação do material
+
+O material da disciplina diferencia:
+
+- **Star Schema**: dimensões desnormalizadas;
+- **Snowflake Schema**: dimensões normalizadas.
+
+Snowflake não deve ser escolhido apenas por normalização. O material destaca trade-offs de espaço, atualização, quantidade de joins, entendimento pelo usuário e manutenção.
+
+A decisão final Star vs. Snowflake continua **PENDENTE** até a validação do modelo e das dimensões reais.
+
+A Aula 7 utiliza Star Schema em um exercício específico. Isso não substitui o requisito geral do projeto, que permite justificar Star ou Snowflake.
+
 ## QlikView
 
 Ferramenta obrigatória do projeto:
 
 **QlikView 12**
 
-Quando a implementação começar, privilegiar lógica versionável em arquivos de texto sempre que tecnicamente possível.
+O fluxo ensinado pelo professor deve ser a referência inicial de implementação:
 
-O arquivo `.qvw` não deve ser tratado como única fonte de verdade da lógica do projeto.
+```text
+BASE
+  ↓
+EXTRACAO
+  ├── EXT.qvw
+  └── QVD
+  ↓
+TRANSFORMACAO
+  ├── QVW de transformação
+  └── QVD
+  ↓
+PAINEL
+  └── QVW de apresentação/análise
+```
+
+Conceitos explicitamente presentes no material:
+
+- processamento in-memory;
+- AQL / linguagem associativa;
+- QVW;
+- QVD;
+- consolidação de múltiplas fontes;
+- análise associativa.
+
+Não substituir silenciosamente esse fluxo por outra arquitetura de QlikView.
+
+Scripts externos ou outros mecanismos versionáveis podem ser avaliados posteriormente como complemento, mas somente se forem compatíveis com o processo ensinado e trouxerem benefício real.
+
+O arquivo `.qvw` não deve ser a única fonte persistente de decisões de modelagem ou regras de negócio; essas decisões permanecem documentadas no repositório.
 
 ## Dados
 
