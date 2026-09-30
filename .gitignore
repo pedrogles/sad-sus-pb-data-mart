@@ -1,0 +1,30 @@
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Editors / IDEs
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.log
+
+# Local environment
+.env
+.env.*
+
+# Data — raw and derived
+data/raw/*
+data/staging/*
+data/qvd/*
+
+# Preserve documentation placeholders if created later
+!data/raw/.gitkeep
+!data/staging/.gitkeep
+!data/qvd/.gitkeep
+
+# QlikView derived / backup artifacts
+*.qvd
+*.qvw~
+*.qvw.bak
