@@ -72,6 +72,42 @@ Status:
 
 **HIPÓTESE DE MODELAGEM**
 
+## Orientações acadêmicas verificadas
+
+### Star x Snowflake
+
+Aula 6 confirma:
+
+- Star: dimensões desnormalizadas;
+- Snowflake: dimensões normalizadas;
+- Snowflake reduz redundância/volume em determinadas estruturas, mas aumenta joins e complexidade de entendimento/manutenção.
+
+**DECISÃO PENDENTE:** Star Schema ou Snowflake Schema para o Data Mart final.
+
+Aula 7 usa Star Schema em um exercício específico, sem eliminar a exigência geral de justificar a escolha do projeto.
+
+### Fluxo QlikView ensinado
+
+Aula 7 apresenta o fluxo didático:
+
+```text
+BASE
+  ↓
+EXTRACAO / EXT.qvw
+  ↓
+QVD
+  ↓
+TRANSFORMACAO
+  ↓
+QVD
+  ↓
+PAINEL / QVW
+```
+
+Esse fluxo passa a ser a referência inicial para a futura implementação no QlikView 12.
+
+A arquitetura concreta ainda não será criada antes da validação dos datasets.
+
 ## Decisões confirmadas
 
 - O projeto será desenvolvido para a disciplina SAD 2026.2.
@@ -79,6 +115,7 @@ Status:
 - A primeira entrega é impressa e vai até o Capítulo 2.
 - O repositório é a fonte persistente de contexto técnico e decisões do projeto.
 - Material do professor e documentação oficial das fontes possuem autoridade superior a hipóteses de chats.
+- O fluxo QlikView ensinado pelo professor (Base → Extração/QVD → Transformação/QVD → Painel) será a referência inicial de implementação.
 
 ## Decisões pendentes
 
@@ -90,7 +127,8 @@ Status:
 - medidas definitivas;
 - dimensões definitivas;
 - Star Schema ou Snowflake Schema;
-- forma final de integração entre internações, leitos e população.
+- forma final de integração entre internações, leitos e população;
+- estrutura concreta de pastas/arquivos QlikView após validação dos datasets.
 
 ## Próximo passo
 
