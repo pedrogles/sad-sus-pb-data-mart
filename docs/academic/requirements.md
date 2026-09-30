@@ -72,6 +72,52 @@ Deve incluir:
 - justificativa da escolha;
 - modelo dimensional.
 
+## Orientação complementar — Star x Snowflake
+
+A Aula 6 estabelece:
+
+- Star Schema com dimensões desnormalizadas;
+- Snowflake Schema com dimensões normalizadas.
+
+Para Snowflake, o material destaca como vantagens potenciais:
+
+- menor espaço ocupado;
+- menor tempo de atualização por tabela.
+
+E como desvantagens:
+
+- mais joins;
+- maior dificuldade de entendimento pelo usuário;
+- manutenção mais complexa.
+
+O material orienta avaliar:
+
+- exigências da ferramenta OLAP;
+- características do SGBD;
+- características das dimensões.
+
+Portanto, a escolha do projeto deve ser justificada pela estrutura real do Data Mart e não pela preferência genérica por um modelo.
+
+## Orientação complementar — QlikView
+
+A Aula 7 apresenta como referência didática de organização:
+
+- `BASE`;
+- `EXTRACAO`, com QVW de extração e QVD;
+- `TRANSFORMACAO`, com QVD;
+- `PAINEL`, com QVW de apresentação.
+
+O material também apresenta os conceitos:
+
+- análise in-memory;
+- AQL / linguagem associativa;
+- QVW;
+- QVD;
+- consolidação de múltiplas fontes;
+- análise associativa.
+
+Há um exercício específico da Aula 7 que solicita Star Schema. Isso deve ser tratado como requisito desse exercício, não como substituição automática do requisito geral do projeto de escolher e justificar Star ou Snowflake.
+
 ## Prioridade atual do projeto
 
 Até a primeira entrega, decisões de aquisição, modelagem e documentação devem priorizar a capacidade de produzir de forma defensável:
