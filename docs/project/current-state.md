@@ -7,73 +7,84 @@
 Disciplina: Sistemas de Apoio à Decisão — 2026.2  
 Ferramenta obrigatória: QlikView 12
 
-## Etapa atual
+---
 
-**Dataset Validation / Modeling Discovery concluída.**
+## Estado atual
+
+### Primeira entrega acadêmica
+
+**FECHADA — PRONTA PARA IMPRESSÃO/ENTREGA**
+
+Data de fechamento documental:
+
+**02/10/2026**
+
+Escopo:
+
+- Capítulo 1 — Regras de Negócio;
+- DER / modelo conceitual;
+- cardinalidades mínima e máxima;
+- modelo lógico relacional normalizado;
+- Capítulo 2 — Modelagem Dimensional;
+- escolha e justificativa Star x Snowflake;
+- modelo dimensional.
+
+Revisão final:
+
+`docs/academic/first-delivery-review.md`
 
 Veredito:
 
-**APROVADO PARA MODELAGEM ACADÊMICA, COM RESSALVAS DOCUMENTADAS**
+**NENHUM ITEM OBRIGATÓRIO FALTANTE IDENTIFICADO PARA O ESCOPO DA PRIMEIRA ENTREGA.**
 
-Documento canônico da etapa:
+O relatório final utiliza:
+
+**Pedro Gabriel Lima e Silva**
+
+como integrante e **João Pessoa - PB** como local.
+
+---
+
+## Etapas concluídas
+
+### Feasibility Discovery
+
+**CONCLUÍDA**
+
+Veredito histórico:
+
+**APROVADO COM AJUSTES**
+
+Documento:
+
+`docs/discovery/feasibility.md`
+
+### Dataset Validation / Modeling Discovery
+
+**CONCLUÍDA**
+
+Documento:
 
 `docs/discovery/dataset-validation.md`
 
-Próxima etapa:
+### Academic Modeling / Chapters 1–2
 
-**SAD — SUS PB — ACADEMIC MODELING / CHAPTERS 1–2**
+**CONCLUÍDA**
 
-A implementação definitiva no QlikView ainda não deve começar.
+Documento canônico:
+
+`docs/academic/chapter-1-2-modeling.md`
+
+Redação utilizada na primeira entrega:
+
+- `docs/academic/chapter-1-draft.md`;
+- `docs/academic/chapter-2-draft.md`.
 
 ---
 
 ## Tema confirmado
 
-Data Mart para análise descritiva e comparativa da demanda hospitalar, capacidade hospitalar e população do SUS na Paraíba.
-
----
-
-## Fontes confirmadas
-
-### SIH/SUS
-
-Fonte de demanda hospitalar:
-
-- arquivos RD / AIH Reduzida.
-
-Checkpoints validados:
-
-- `RDPB1701.dbc`;
-- `RDPB1801.dbc`;
-- `RDPB1901.dbc`.
-
-### CNES
-
-Fontes de capacidade e estabelecimento:
-
-- LT / Leitos;
-- ST / Estabelecimentos.
-
-Checkpoints validados:
-
-- `LTPB1701.dbc`;
-- `LTPB1801.dbc`;
-- `LTPB1901.dbc`;
-- `STPB1701.dbc`;
-- `STPB1801.dbc`;
-- `STPB1901.dbc`.
-
-### IBGE
-
-Fonte populacional:
-
-- estimativas populacionais municipais anuais.
-
-Arquivos validados:
-
-- 2017;
-- 2018;
-- 2019.
+Data Mart para análise descritiva e comparativa da demanda hospitalar processada pelo SUS, capacidade de leitos cadastrada e população municipal na Paraíba.
 
 ---
 
@@ -81,20 +92,35 @@ Arquivos validados:
 
 **2017–2019**
 
-### Justificativa
+Justificativa:
 
-- três anos completos e consecutivos, suficientes para comparação temporal;
+- três anos completos e consecutivos;
 - compatibilidade estrutural validada entre SIH/SUS, CNES e IBGE;
 - volume compatível com o escopo acadêmico;
-- janela anterior à pandemia de COVID-19, evitando que a excepcionalidade iniciada em 2020 domine a primeira modelagem.
+- recorte anterior à pandemia de COVID-19.
 
-Os checkpoints de janeiro de 2017, 2018 e 2019 foram utilizados para validar estrutura, granularidade, chaves e integração, e não para produzir resultados estatísticos dos anos completos. A carga dos 36 meses será revalidada na implementação.
+Os checkpoints de janeiro de 2017, 2018 e 2019 validaram estrutura, granularidade, chaves e integração.
 
-### RESSALVA
+Eles não substituem a carga dos 36 meses completos, que será validada na implementação.
 
-A série populacional possui mudança metodológica/projecional entre as publicações de 2017 e 2018.
+Ressalva:
 
-Isso não impede o uso das estimativas anuais como denominadores dos indicadores de cada ano, mas a variação 2017→2018 não deve ser interpretada automaticamente como variação demográfica observada.
+a série populacional possui mudança metodológica/projecional entre as publicações de 2017 e 2018; a diferença entre esses anos não deve ser interpretada automaticamente como variação demográfica observada.
+
+---
+
+## Fontes confirmadas
+
+- SIH/SUS — RD / AIH Reduzida;
+- CNES — LT / Leitos;
+- CNES — ST / Estabelecimentos;
+- IBGE — estimativas populacionais municipais.
+
+### Dependência acadêmica
+
+Como a origem é composta por arquivos públicos e não por um banco relacional de origem, aplica-se a regra do roteiro do professor de **avaliação caso a caso** para fontes baseadas em arquivos.
+
+Não há ação técnica capaz de substituir essa avaliação acadêmica.
 
 ---
 
@@ -106,31 +132,7 @@ Isso não impede o uso das estimativas anuais como denominadores dos indicadores
 - `FATO_CAPACIDADE_LEITO`;
 - `FATO_POPULACAO`.
 
-### Granularidades
-
-#### FATO_INTERNACAO
-
-**1 linha = 1 registro administrativo RD / AIH processada.**
-
-Uma linha não equivale automaticamente a paciente ou episódio clínico único.
-
-`IDENT=5` representa continuidade e não deve ser contado como nova internação.
-
-#### FATO_CAPACIDADE_LEITO
-
-**1 linha = estabelecimento × competência mensal × código/detalhamento de leito.**
-
-Medidas de capacidade são semi-aditivas no tempo.
-
-#### FATO_POPULACAO
-
-**1 linha = município × ano.**
-
-População é semi-aditiva no tempo.
-
----
-
-## Dimensões aprovadas para o desenho acadêmico
+### Dimensões
 
 - `DIM_TEMPO`;
 - `DIM_MUNICIPIO`;
@@ -141,7 +143,33 @@ População é semi-aditiva no tempo.
 - `DIM_MOTIVO_SAIDA_PERMANENCIA`;
 - `DIM_TIPO_LEITO`.
 
-As oito dimensões possuem justificativa analítica e evidência nas fontes inspecionadas.
+### Estrutura
+
+**Star Schema em cada processo factual, com dimensões conformadas compartilhadas.**
+
+O conjunto completo é uma **constelação de esquemas estrela**.
+
+---
+
+## Granularidades aprovadas
+
+### FATO_INTERNACAO
+
+**1 linha = 1 registro administrativo RD / AIH processada.**
+
+`IDENT=5` representa continuidade e não conta como nova internação.
+
+### FATO_CAPACIDADE_LEITO
+
+**1 linha = estabelecimento × competência mensal × código/detalhamento de leito.**
+
+Capacidade é semi-aditiva no tempo.
+
+### FATO_POPULACAO
+
+**1 linha = município × ano.**
+
+População é semi-aditiva no tempo.
 
 ---
 
@@ -151,9 +179,9 @@ As oito dimensões possuem justificativa analítica e evidência nas fontes insp
 
 `SIH.CNES ↔ CNES/ST.CNES ↔ CNES/LT.CNES`
 
-Cobertura observada nos checkpoints de janeiro de 2017, 2018 e 2019:
+Cobertura observada nos checkpoints:
 
-**100% dos CNES do SIH encontrados no LT e 100% dos CNES do LT encontrados no ST.**
+**100%**
 
 ### Município de atendimento/localização
 
@@ -163,156 +191,74 @@ compatível nos checkpoints analisados.
 
 ### Município de residência
 
-`SIH.MUNIC_RES` pode apontar para município fora da Paraíba.
-
-A dimensão Município deve suportar esses municípios no papel de residência.
+`SIH.MUNIC_RES` pode apontar para municípios fora da Paraíba.
 
 ### DATASUS ↔ IBGE
 
-A integração municipal utilizará correspondência validada entre código DATASUS e código IBGE.
+A integração municipal utilizará correspondência validada.
 
-Não calcular artificialmente o sétimo dígito do código IBGE.
-
----
-
-## Decisão Star x Snowflake
-
-### DECISÃO CONFIRMADA
-
-**Star Schema em cada processo factual, com dimensões conformadas compartilhadas.**
-
-O conjunto completo possui múltiplas fatos e pode ser descrito como uma **constelação de esquemas estrela**, sem normalização Snowflake das dimensões.
-
-Justificativa resumida:
-
-- dimensões relativamente pequenas;
-- melhor simplicidade analítica;
-- menor número de joins;
-- hierarquias podem ser desnormalizadas nas dimensões;
-- adequado ao uso no QlikView;
-- o modelo lógico normalizado do Capítulo 1 permanece separado do modelo dimensional do Capítulo 2.
+Não fabricar o sétimo dígito do código IBGE.
 
 ---
 
-## Capacidade hospitalar
+## Regras analíticas preservadas
 
-### DECISÃO CONFIRMADA
-
-Preservar todos os registros LT válidos na `FATO_CAPACIDADE_LEITO`.
-
-O recorte estritamente hospitalar deverá ser representado por classificação do estabelecimento, em vez de descartar antecipadamente registros válidos como Hospital/Dia ou outros tipos presentes no LT.
-
-Para indicadores anuais de capacidade, utilizar regra compatível com snapshots mensais, preferencialmente a média dos 12 meses, e nunca a soma das capacidades mensais.
-
----
-
-## Regras analíticas confirmadas
-
-- `N_AIH` não será usado isoladamente como PK da fato de internação;
-- criar chave técnica para o registro RD preservando rastreabilidade;
-- município de residência e município de atendimento são papéis distintos;
+- `N_AIH` não é PK da fato;
+- chave técnica deve preservar rastreabilidade;
+- residência e atendimento são papéis municipais distintos;
 - `PROC_REA` é o procedimento principal da primeira versão;
-- `DIAG_PRINC` é o diagnóstico utilizado na primeira versão;
+- `DIAG_PRINC` é o diagnóstico da primeira versão;
 - diagnósticos secundários ficam fora do escopo inicial;
-- competência, data de internação e data de saída são papéis temporais distintos;
-- leitos existentes e leitos SUS são medidas diferentes;
-- internações/leito é relação descritiva de demanda/capacidade e não taxa de ocupação;
-- internações por 1.000 habitantes devem usar internações de residentes e população do mesmo município/ano;
-- leitos SUS por 1.000 habitantes devem usar capacidade no município de localização e população compatível.
+- competência, internação e saída são papéis temporais distintos;
+- leitos e população são semi-aditivos no tempo;
+- indicadores anuais de capacidade utilizam média dos snapshots mensais;
+- internações/leito é relação descritiva, não taxa de ocupação;
+- todos os registros LT válidos são preservados e o recorte hospitalar é analítico.
 
 ---
 
-## Modelo conceitual/lógico consolidado para revisão
+## Pendências de implementação
 
-Entidades atualmente sustentadas:
+Estas pendências **não reabrem a primeira entrega**:
 
-- UF;
-- MUNICIPIO;
-- ESTABELECIMENTO;
-- ESTABELECIMENTO_COMPETENCIA;
-- REGISTRO_AIH;
-- PROCEDIMENTO;
-- DIAGNOSTICO;
-- CARATER_ATENDIMENTO;
-- MOTIVO_SAIDA_PERMANENCIA;
-- TIPO_LEITO;
-- LEITO;
-- CAPACIDADE_LEITO;
-- POPULACAO_MUNICIPAL.
-
-A tabela/entidade `ESTABELECIMENTO_COMPETENCIA` é necessária para representar atributos históricos do estabelecimento observados no ST.
-
-Especificação acadêmica canônica atual:
-
-`docs/academic/chapter-1-2-modeling.md`
+- adquirir os 36 meses completos;
+- validar schemas, granularidades, unicidade, nulos e integridade na carga integral;
+- materializar referências SIGTAP/CID/CNES por competência;
+- definir fonte histórica definitiva de nome fantasia/razão social;
+- definir técnica física de historização de `DIM_ESTABELECIMENTO`;
+- definir a representação física das dimensões role-playing no QlikView;
+- definir scripts/QVD/QVW;
+- implementar as dimensões;
+- implementar as fatos;
+- construir e validar no mínimo 3 painéis;
+- preparar Capítulos 3–5 e anexos para a entrega final.
 
 ---
 
-## Fechamento semântico
+## Próxima fase
 
-### FATO VERIFICADO
+**SAD — SUS PB — DATA ACQUISITION / QLIKVIEW IMPLEMENTATION DISCOVERY**
 
-Os domínios necessários ao desenho acadêmico foram validados em documentação oficial:
+Objetivos iniciais:
 
-- procedimento: SIGTAP;
-- diagnóstico principal: CID-10;
-- caráter de atendimento: domínio oficial SIH/SIA;
-- motivo de saída/permanência: Tabela Auxiliar de Encerramento;
-- tipo/detalhamento de leito: CNES.
+1. inventariar os 36 meses necessários;
+2. definir aquisição e armazenamento local;
+3. validar a carga integral;
+4. fechar fontes auxiliares por competência;
+5. fechar historização de estabelecimento;
+6. desenhar a arquitetura física QlikView;
+7. definir controles de qualidade e reconciliação;
+8. somente depois iniciar implementação definitiva.
 
-A cardinalidade entre `REGISTRO_AIH` e `MOTIVO_SAIDA_PERMANENCIA` foi fechada como obrigatória `(1,1)` no lado do registro, sustentada pelo layout oficial do SISAIH01 e pelo preenchimento integral nos checkpoints analisados.
+### Boundary de conversa
 
-Status:
+A primeira entrega está documentalmente encerrada.
 
-- DER conceitual: **DIAGRAMADO E REVISADO**;
-- modelo lógico normalizado: **DIAGRAMADO E REVISADO**, com PK/FK e cardinalidades mínima/máxima explícitas;
-- modelo dimensional: **DIAGRAMADO E REVISADO** em visão de constelação e estrelas separadas para Internação, Capacidade e População.
-
-Os artefatos gráficos derivados permanecem fora do Git por enquanto; a fonte canônica da modelagem continua em `docs/academic/chapter-1-2-modeling.md`.
-
----
-
-## Pendências que não bloqueiam a primeira entrega
-
-- adquirir e validar os 36 meses completos durante a implementação;
-- materializar as tabelas oficiais de referência por competência no ETL;
-- definir fonte histórica de nome fantasia/razão social do estabelecimento;
-- fechar a técnica concreta de historização de `DIM_ESTABELECIMENTO`;
-- validar na carga integral médias/razões afetadas por registros de continuidade;
-- definir estrutura concreta de scripts, QVDs e QVWs quando começar a implementação QlikView.
-
----
-
-## Orientações acadêmicas
-
-A primeira entrega continua com prazo em **13/10/2026**, formato impresso, até o Capítulo 2.
-
-### Capítulo 1
-
-Deve conter:
-
-- regras de negócio;
-- entidades;
-- relacionamentos;
-- cardinalidades mínima e máxima;
-- modelo conceitual / DER;
-- modelo lógico relacional normalizado.
-
-### Capítulo 2
-
-Deve conter:
-
-- descrição da estrutura dimensional;
-- escolha e justificativa Star x Snowflake;
-- modelo dimensional.
-
-A decisão atual é **Star Schema**.
+A próxima fase deve preferencialmente começar em **novo chat**, lendo este arquivo e as fontes canônicas antes de qualquer implementação.
 
 ---
 
 ## Fluxo QlikView preservado
-
-Quando a implementação começar, a referência didática continua:
 
 ```text
 BASE
@@ -328,33 +274,4 @@ QVD
 PAINEL / QVW
 ```
 
-Não substituir esse fluxo silenciosamente.
-
----
-
-## Redação acadêmica
-
-Rascunhos canônicos criados:
-
-- `docs/academic/chapter-1-draft.md` — Regras de Negócio, entidades, relacionamentos, cardinalidades, modelo conceitual e modelo lógico;
-- `docs/academic/chapter-2-draft.md` — escolha e justificativa do Star Schema, fatos, dimensões, granularidades, matriz fato × dimensão e indicadores.
-
-Status:
-
-**CAPÍTULOS 1 E 2 — REVISADOS E MONTADOS EM RELATÓRIO PARA IMPRESSÃO.**
-
-Revisão de aderência da primeira entrega:
-
-`docs/academic/first-delivery-review.md`
-
-Pendência editorial restante: preencher os nomes definitivos dos integrantes na capa e confirmar o local da apresentação antes da impressão.
-
----
-
-## Próximo passo
-
-1. preencher os integrantes definitivos na capa;
-2. confirmar o local de apresentação;
-3. realizar a conferência humana final do PDF;
-4. imprimir a primeira entrega;
-5. após a entrega/revisão acadêmica, iniciar a preparação da implementação no QlikView 12 sem antecipar alterações de modelagem não justificadas.
+Não substituir silenciosamente esse fluxo.
