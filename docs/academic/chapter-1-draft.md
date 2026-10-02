@@ -1,5 +1,11 @@
 # Capítulo 1 — Regras de Negócio
 
+## Status
+
+**CONTEÚDO FECHADO PARA A PRIMEIRA ENTREGA**
+
+O nome do arquivo é mantido por histórico; o conteúdo abaixo corresponde à versão utilizada na montagem do relatório.
+
 ## 1.1 Contextualização do problema
 
 Este projeto propõe a construção de um Data Mart para apoiar a análise descritiva e comparativa da demanda hospitalar, da capacidade hospitalar e da população relacionada ao Sistema Único de Saúde (SUS) na Paraíba.
@@ -272,7 +278,7 @@ O município de atendimento de um registro de AIH é obtido a partir do estabele
 
 O modelo conceitual representa as entidades do domínio e os relacionamentos necessários para integrar demanda, capacidade e população.
 
-**[Inserir Figura 1 — Modelo Conceitual (DER), com cardinalidades mínima e máxima.]**
+**Figura 1 — Modelo Conceitual (DER), com cardinalidades mínima e máxima — inserida no relatório final de impressão.**
 
 O `REGISTRO_AIH` ocupa o papel central no processo de demanda hospitalar. Ele se relaciona obrigatoriamente com o estabelecimento correspondente à competência, com o município de residência, com o procedimento realizado, com o diagnóstico principal, com o caráter do atendimento e com o motivo de saída ou permanência.
 
@@ -286,7 +292,7 @@ A população permanece em processo próprio por meio de `POPULACAO_MUNICIPAL`, 
 
 O modelo lógico traduz as entidades conceituais para relações com chaves primárias e estrangeiras, preservando a normalização exigida para este capítulo.
 
-**[Inserir Figura 2 — Modelo Lógico Relacional Normalizado, com PKs, FKs e cardinalidades mínima e máxima.]**
+**Figura 2 — Modelo Lógico Relacional Normalizado, com PKs, FKs e cardinalidades mínima e máxima — inserida no relatório final de impressão.**
 
 ### 1.7.1 Relações principais
 
