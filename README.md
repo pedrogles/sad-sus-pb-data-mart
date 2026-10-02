@@ -6,36 +6,52 @@ Projeto acadêmico da disciplina **Sistemas de Apoio à Decisão (SAD)** — cur
 
 Construir um Data Mart para análise descritiva e comparativa da relação entre:
 
-- demanda hospitalar do SUS;
-- capacidade hospitalar;
-- população;
+- demanda hospitalar processada pelo SIH/SUS;
+- capacidade de leitos cadastrada no CNES;
+- população municipal estimada pelo IBGE;
 
-com foco no estado da Paraíba.
+com foco na Paraíba e período analítico de **2017–2019**.
 
 ## Ferramenta obrigatória
 
 A implementação acadêmica será realizada no **QlikView 12**.
 
-## Fontes candidatas
+## Fontes confirmadas
 
-- SIH/SUS — internações hospitalares;
-- CNES — hospitais e leitos;
-- IBGE/SIDRA — população e códigos municipais.
-
-As fontes permanecem candidatas até a inspeção concreta dos datasets.
+- SIH/SUS — arquivos RD / AIH Reduzida;
+- CNES — LT / Leitos;
+- CNES — ST / Estabelecimentos;
+- IBGE — estimativas populacionais municipais.
 
 ## Estado atual
 
-A Discovery de viabilidade foi concluída com veredito **APROVADO COM AJUSTES**.
+A Feasibility Discovery e a Dataset Validation / Modeling Discovery foram concluídas.
 
-Próxima etapa:
+A primeira entrega acadêmica, correspondente aos **Capítulos 1 e 2**, está:
 
-**SAD — SUS PB — DATASET VALIDATION / MODELING DISCOVERY**
+**FECHADA — PRONTA PARA IMPRESSÃO/ENTREGA**
 
-O objetivo será validar arquivos reais, granularidades, chaves, medidas, dimensões e regras de negócio antes de implementar o Data Mart.
+Modelagem aprovada:
 
-Consulte:
+- 3 tabelas fato;
+- 8 dimensões;
+- Star Schema por processo factual;
+- constelação de esquemas estrela com dimensões conformadas;
+- DER e modelo lógico relacional normalizado concluídos.
+
+## Próxima etapa
+
+**SAD — SUS PB — DATA ACQUISITION / QLIKVIEW IMPLEMENTATION DISCOVERY**
+
+A implementação deve começar pela aquisição e validação dos 36 meses completos e pelo fechamento da arquitetura física no QlikView 12, preservando o fluxo didático:
+
+`BASE → EXTRAÇÃO/QVD → TRANSFORMAÇÃO/QVD → PAINEL/QVW`.
+
+## Documentação principal
 
 - `AGENTS.md`
-- `docs/academic/requirements.md`
 - `docs/project/current-state.md`
+- `docs/academic/requirements.md`
+- `docs/discovery/dataset-validation.md`
+- `docs/academic/chapter-1-2-modeling.md`
+- `docs/academic/first-delivery-review.md`
