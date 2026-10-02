@@ -6,6 +6,10 @@ Este projeto propõe a construção de um Data Mart para apoiar a análise descr
 
 O escopo analítico considera o período de **2017 a 2019** e integra três conjuntos principais de informação:
 
+A janela de 2017 a 2019 foi escolhida por reunir **três anos completos e consecutivos**, suficientes para comparação temporal sem ampliar desnecessariamente o volume do projeto. A validação confirmou disponibilidade e compatibilidade estrutural entre SIH/SUS, CNES e IBGE nos três anos. Além disso, o recorte antecede a pandemia de COVID-19, evitando que a ruptura excepcional observada a partir de 2020 domine a primeira modelagem do Data Mart. A comparação populacional entre 2017 e 2018 continua sujeita à ressalva metodológica do IBGE descrita adiante.
+
+Os três conjuntos principais de informação são:
+
 - internações hospitalares processadas pelo SIH/SUS;
 - capacidade de leitos e características dos estabelecimentos cadastrados no CNES;
 - estimativas populacionais municipais publicadas pelo IBGE.
@@ -20,11 +24,17 @@ A proposta busca permitir análises como:
 - relação descritiva entre demanda hospitalar e capacidade cadastrada;
 - fluxos de residentes entre municípios de origem e atendimento.
 
+Neste projeto, o termo **demanda hospitalar** é utilizado em sentido operacional para representar o volume de internações registrado e processado no SIH/SUS. Ele não representa toda a necessidade de atenção hospitalar da população, procura potencial ou demanda reprimida.
+
+Da mesma forma, **capacidade hospitalar** corresponde à capacidade de leitos cadastrada no CNES para cada competência. Esses valores representam capacidade cadastral e não disponibilidade operacional instantânea de leitos em determinado dia.
+
 As relações observadas no Data Mart possuem caráter descritivo. O projeto não pretende estabelecer causalidade entre disponibilidade de leitos, população e volume de internações.
 
 ---
 
 ## 1.2 Fontes de dados
+
+**Estratégia de validação dos dados.** Para a etapa de modelagem foram utilizados checkpoints de janeiro de 2017, 2018 e 2019 nas fontes mensais do SIH e do CNES. Essa amostragem não foi utilizada para produzir resultados estatísticos dos anos completos. Seu objetivo foi verificar, em pontos distribuídos pela janela temporal, a estabilidade dos schemas, granularidades, chaves e possibilidades de integração. A carga e a validação dos 36 meses completos serão realizadas na etapa de implementação, repetindo os controles definidos nesta Discovery.
 
 ### 1.2.1 SIH/SUS
 
@@ -74,6 +84,8 @@ As regras abaixo foram definidas a partir do material da disciplina, da document
 ### RN01 — Período analítico
 
 O período analisado pelo Data Mart será de **2017 a 2019**.
+
+A escolha utiliza três anos completos e consecutivos, com compatibilidade estrutural validada entre as fontes, volume adequado ao escopo acadêmico e recorte anterior à pandemia de COVID-19.
 
 ### RN02 — Escopo geográfico da demanda
 
@@ -134,7 +146,7 @@ Os quantitativos de leitos representam snapshots mensais.
 
 A soma da capacidade de meses consecutivos não representa a capacidade física acumulada do período.
 
-Em análises anuais, deverá ser utilizada uma regra compatível com snapshots, como a média dos doze valores mensais.
+Para os indicadores anuais definidos neste projeto, será utilizada a **média dos doze snapshots mensais disponíveis do ano**, evitando a soma indevida de estoques mensais.
 
 ### RN12 — Granularidade da população
 
@@ -176,11 +188,15 @@ O procedimento principal da primeira versão do modelo será o procedimento real
 
 O procedimento solicitado será preservado na origem e poderá ser incorporado posteriormente caso exista necessidade analítica.
 
+A escolha de `PROC_REA` ocorre porque o objetivo da dimensão é caracterizar a produção efetivamente realizada. Os dados inspecionados também mostraram que procedimento solicitado e realizado nem sempre são iguais, razão pela qual os dois conceitos não devem ser tratados como equivalentes.
+
 ### RN18 — Diagnóstico
 
 A primeira versão utilizará o diagnóstico principal, representado pelo campo `DIAG_PRINC`.
 
 Diagnósticos secundários ficam fora do escopo inicial.
+
+Essa decisão reduz complexidade na primeira versão porque os diagnósticos secundários podem ocorrer de forma multivalorada para um mesmo registro, o que exigiria estrutura adicional de relacionamento, como uma tabela ponte, sem necessidade demonstrada para os objetivos atuais.
 
 ### RN19 — Papéis temporais
 
@@ -197,6 +213,8 @@ Esses registros não serão associados automaticamente à população municipal 
 Todos os registros válidos do CNES/LT serão preservados no processo de capacidade.
 
 O recorte de estabelecimentos estritamente hospitalares será representado por atributos de classificação, evitando a eliminação antecipada de outros estabelecimentos que possuam capacidade de leitos cadastrada.
+
+Essa abordagem preserva a informação original do CNES/LT e permite aplicar o recorte hospitalar de forma analítica, sem excluir antecipadamente registros válidos que podem ser necessários em comparações ou auditorias posteriores.
 
 ---
 
