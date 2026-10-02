@@ -81,6 +81,15 @@ Arquivos validados:
 
 **2017–2019**
 
+### Justificativa
+
+- três anos completos e consecutivos, suficientes para comparação temporal;
+- compatibilidade estrutural validada entre SIH/SUS, CNES e IBGE;
+- volume compatível com o escopo acadêmico;
+- janela anterior à pandemia de COVID-19, evitando que a excepcionalidade iniciada em 2020 domine a primeira modelagem.
+
+Os checkpoints de janeiro de 2017, 2018 e 2019 foram utilizados para validar estrutura, granularidade, chaves e integração, e não para produzir resultados estatísticos dos anos completos. A carga dos 36 meses será revalidada na implementação.
+
 ### RESSALVA
 
 A série populacional possui mudança metodológica/projecional entre as publicações de 2017 e 2018.
