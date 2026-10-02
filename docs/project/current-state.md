@@ -332,15 +332,20 @@ Rascunhos canônicos criados:
 
 Status:
 
-**CAPÍTULOS 1 E 2 — RASCUNHO COMPLETO PARA REVISÃO EDITORIAL E MONTAGEM DO RELATÓRIO.**
+**CAPÍTULOS 1 E 2 — REVISADOS E MONTADOS EM RELATÓRIO PARA IMPRESSÃO.**
+
+Revisão de aderência da primeira entrega:
+
+`docs/academic/first-delivery-review.md`
+
+Pendência editorial restante: preencher os nomes definitivos dos integrantes na capa e confirmar o local da apresentação antes da impressão.
 
 ---
 
 ## Próximo passo
 
-1. revisar editorialmente os Capítulos 1 e 2;
-2. inserir os diagramas revisados nas posições indicadas;
-3. montar o relatório impresso com capa e sumário conforme o roteiro do professor;
-4. conferir nomenclatura e numeração de figuras/tabelas;
-5. realizar uma revisão final de aderência ao roteiro acadêmico;
-6. somente depois iniciar a implementação no QlikView 12.
+1. preencher os integrantes definitivos na capa;
+2. confirmar o local de apresentação;
+3. realizar a conferência humana final do PDF;
+4. imprimir a primeira entrega;
+5. após a entrega/revisão acadêmica, iniciar a preparação da implementação no QlikView 12 sem antecipar alterações de modelagem não justificadas.
