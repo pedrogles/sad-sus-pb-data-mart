@@ -211,7 +211,7 @@ Para indicadores anuais de capacidade, utilizar regra compatível com snapshots 
 
 ---
 
-## Modelo conceitual/lógico em preparação
+## Modelo conceitual/lógico consolidado para revisão
 
 Entidades atualmente sustentadas:
 
@@ -230,6 +230,10 @@ Entidades atualmente sustentadas:
 - POPULACAO_MUNICIPAL.
 
 A tabela/entidade `ESTABELECIMENTO_COMPETENCIA` é necessária para representar atributos históricos do estabelecimento observados no ST.
+
+Especificação acadêmica canônica atual:
+
+`docs/academic/chapter-1-2-modeling.md`
 
 ---
 
@@ -301,11 +305,11 @@ Executar a etapa:
 
 Sequência:
 
-1. consolidar regras de negócio no formato do relatório;
-2. desenhar o modelo conceitual / DER;
-3. validar cardinalidades mínima e máxima;
-4. desenhar o modelo lógico relacional normalizado;
-5. desenhar o modelo dimensional Star Schema;
-6. revisar consistência entre os três modelos;
-7. redigir os Capítulos 1 e 2;
+1. revisar o DER conceitual consolidado;
+2. revisar as cardinalidades mínima e máxima;
+3. revisar o modelo lógico relacional normalizado;
+4. revisar o modelo dimensional Star Schema;
+5. garantir consistência entre regras e diagramas;
+6. exportar os diagramas em formato adequado à impressão;
+7. redigir e revisar os Capítulos 1 e 2;
 8. somente depois iniciar implementação no QlikView 12.
