@@ -482,6 +482,120 @@ Medida:
 
 - `populacao`.
 
+
+## 4.14 Fonte Mermaid para o modelo lógico relacional
+
+```mermaid
+erDiagram
+    UF {
+        string cod_uf PK
+        string sigla_uf
+        string nome_uf
+    }
+
+    MUNICIPIO {
+        string cod_ibge_7 PK
+        string cod_datasus_6 UK
+        string nome_municipio
+        string cod_uf FK
+    }
+
+    ESTABELECIMENTO {
+        string cnes PK
+    }
+
+    ESTABELECIMENTO_COMPETENCIA {
+        string cnes PK,FK
+        string competencia PK
+        string cod_ibge_7 FK
+        string tp_unid
+        string tp_gestao
+        string nat_jur
+        string vinc_sus
+        string cnpj_mantenedora
+        string cep
+    }
+
+    PROCEDIMENTO {
+        string cod_procedimento PK
+        string descricao
+    }
+
+    DIAGNOSTICO {
+        string cod_diagnostico PK
+        string descricao
+    }
+
+    CARATER_ATENDIMENTO {
+        string cod_carater PK
+        string descricao
+    }
+
+    MOTIVO_SAIDA_PERMANENCIA {
+        string cod_motivo PK
+        string descricao
+    }
+
+    TIPO_LEITO {
+        string cod_tipo_leito PK
+        string descricao
+    }
+
+    LEITO {
+        string cod_leito PK
+        string cod_tipo_leito FK
+        string descricao
+    }
+
+    REGISTRO_AIH {
+        string id_registro_aih PK
+        string cnes FK
+        string competencia FK
+        string cod_municipio_residencia FK
+        string cod_procedimento FK
+        string cod_diagnostico FK
+        string cod_carater FK
+        string cod_motivo FK
+        string n_aih
+        string ident
+        date dt_inter
+        date dt_saida
+        int dias_perm
+        decimal val_tot
+        int morte
+    }
+
+    CAPACIDADE_LEITO {
+        string cnes PK,FK
+        string competencia PK,FK
+        string cod_leito PK,FK
+        int qt_exist
+        int qt_sus
+    }
+
+    POPULACAO_MUNICIPAL {
+        string cod_ibge_7 PK,FK
+        int ano PK
+        int populacao
+    }
+
+    UF ||--|{ MUNICIPIO : possui
+    MUNICIPIO ||--o{ ESTABELECIMENTO_COMPETENCIA : localiza
+    ESTABELECIMENTO ||--|{ ESTABELECIMENTO_COMPETENCIA : versiona
+    ESTABELECIMENTO_COMPETENCIA ||--o{ REGISTRO_AIH : referencia
+    MUNICIPIO ||--o{ REGISTRO_AIH : residencia
+    PROCEDIMENTO ||--o{ REGISTRO_AIH : realizado
+    DIAGNOSTICO ||--o{ REGISTRO_AIH : principal
+    CARATER_ATENDIMENTO ||--o{ REGISTRO_AIH : caracteriza
+    MOTIVO_SAIDA_PERMANENCIA ||--o{ REGISTRO_AIH : encerra
+    TIPO_LEITO ||--|{ LEITO : classifica
+    LEITO ||--o{ CAPACIDADE_LEITO : detalha
+    ESTABELECIMENTO_COMPETENCIA ||--o{ CAPACIDADE_LEITO : possui
+    MUNICIPIO ||--o{ POPULACAO_MUNICIPAL : popula
+```
+
+O diagrama lógico explicita PKs e FKs e mantém as estruturas normalizadas que serão deliberadamente desnormalizadas nas dimensões do Capítulo 2.
+
 ---
 
 # 5. Modelo dimensional
