@@ -488,7 +488,9 @@ Medida:
 
 ## 5.1 Estrutura escolhida
 
-**Star Schema por processo, com dimensões conformadas.**
+**Star Schema em cada processo factual, com dimensões conformadas compartilhadas.**
+
+O conjunto completo possui múltiplas fatos e, portanto, pode ser descrito tecnicamente como uma **constelação de esquemas estrela (fact constellation/galaxy)**. Para a escolha exigida pela disciplina, a estrutura adotada continua sendo **Estrela**, pois as dimensões não são normalizadas em Snowflake.
 
 Existem três processos factuais com granularidades diferentes:
 
@@ -754,7 +756,7 @@ No desenho final, os papéis múltiplos de Tempo e Município deverão ser ident
 
 # 12. Justificativa Star Schema
 
-O Star Schema foi escolhido porque:
+O Star Schema foi escolhido para cada processo factual porque:
 
 - as dimensões são relativamente pequenas em relação às fatos;
 - reduz a quantidade de joins;
@@ -766,6 +768,8 @@ O Star Schema foi escolhido porque:
 O modelo lógico do Capítulo 1 permanece normalizado.
 
 A desnormalização ocorre deliberadamente apenas na camada dimensional do Capítulo 2.
+
+A presença de três tabelas fato compartilhando dimensões conformadas não caracteriza Snowflake; representa uma constelação de estrelas.
 
 ---
 
