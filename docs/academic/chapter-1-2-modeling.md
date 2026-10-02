@@ -2,7 +2,7 @@
 
 ## Status
 
-**Fechada para revisão gráfica e redação da primeira entrega**
+**FECHADA — utilizada na primeira entrega acadêmica**
 
 Base factual:
 
@@ -977,23 +977,28 @@ A revisão semântica confirmou:
 
 ## Status dos três modelos
 
-**DER conceitual: FECHADO PARA DIAGRAMAÇÃO.**
+**DER conceitual: DIAGRAMADO E REVISADO.**
 
-**Modelo lógico relacional normalizado: FECHADO PARA DIAGRAMAÇÃO.**
+**Modelo lógico relacional normalizado: DIAGRAMADO E REVISADO.**
 
-**Modelo dimensional: FECHADO PARA DIAGRAMAÇÃO.**
+**Modelo dimensional: DIAGRAMADO E REVISADO.**
 
 A carga integral dos 36 meses permanece como validação de implementação e poderá revelar exceções operacionais; qualquer exceção estrutural real deverá gerar revisão explícita do modelo, não alteração silenciosa.
 
 ---
 
-# 16. Gate para o relatório impresso
+# 16. Fechamento da primeira entrega
 
-Próximas ações:
+O gate da primeira entrega foi concluído.
 
-1. exportar o DER conceitual em formato legível para impressão;
-2. exportar o modelo lógico relacional normalizado;
-3. exportar a constelação dimensional com as três estrelas e dimensões conformadas;
-4. revisar visualmente cardinalidades, PKs e FKs;
-5. redigir os Capítulos 1 e 2 usando estes modelos como fonte canônica;
-6. revisar consistência entre texto, diagramas e regras de negócio.
+Foram realizados:
+
+1. diagramação do DER conceitual;
+2. diagramação do modelo lógico relacional normalizado;
+3. diagramação das três estrelas e da constelação dimensional;
+4. revisão visual de cardinalidades, PKs e FKs;
+5. redação dos Capítulos 1 e 2;
+6. revisão de consistência entre texto, diagramas e regras de negócio;
+7. montagem e preflight do relatório para impressão.
+
+As decisões listadas na seção 14 permanecem exclusivamente como pendências de implementação e não reabrem a modelagem acadêmica da primeira entrega.
