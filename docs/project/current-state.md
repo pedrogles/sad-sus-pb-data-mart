@@ -170,7 +170,9 @@ Não calcular artificialmente o sétimo dígito do código IBGE.
 
 ### DECISÃO CONFIRMADA
 
-**Star Schema por processo, com dimensões conformadas compartilhadas.**
+**Star Schema em cada processo factual, com dimensões conformadas compartilhadas.**
+
+O conjunto completo possui múltiplas fatos e pode ser descrito como uma **constelação de esquemas estrela**, sem normalização Snowflake das dimensões.
 
 Justificativa resumida:
 
