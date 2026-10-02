@@ -37,13 +37,13 @@ O Data Mart possui três processos factuais distintos.
 | `FATO_CAPACIDADE_LEITO` | estabelecimento × competência mensal × código de leito |
 | `FATO_POPULACAO` | município × ano |
 
-As três granularidades não são compatíveis com a criação de uma única tabela fato. Por isso, os processos permanecem separados e compartilham somente as dimensões que possuem significado comum.
+As três granularidades não são compatíveis com a criação de uma única tabela fato. Se população anual ou capacidade mensal fossem repetidas em cada registro de internação, medidas de estoque seriam duplicadas artificialmente e agregações simples poderiam produzir resultados incorretos. Por isso, internações, capacidade e população permanecem em fatos distintas e compartilham somente dimensões com significado comum.
 
 ---
 
 ## 2.4 Dimensões conformadas
 
-Foram definidas oito dimensões:
+Foram definidas oito dimensões, todas derivadas de necessidades analíticas identificadas nas fontes e nas regras de negócio. Elas não foram criadas apenas para atingir o mínimo acadêmico de seis dimensões:
 
 1. `DIM_TEMPO`;
 2. `DIM_MUNICIPIO`;
@@ -173,7 +173,7 @@ Medidas:
 - quantidade de leitos existentes;
 - quantidade de leitos SUS.
 
-Essas medidas são semi-aditivas no tempo. Para análises anuais, não será realizada a soma direta dos snapshots mensais.
+Essas medidas são semi-aditivas no tempo. Para os indicadores anuais deste projeto, será utilizada a **média dos doze snapshots mensais disponíveis do ano**, e não a soma direta das competências, porque cada mês representa um estoque de capacidade naquele momento.
 
 **[Inserir Figura 4 — Esquema Estrela do processo de Capacidade de Leitos.]**
 
@@ -195,6 +195,8 @@ Medida:
 - população estimada.
 
 A população também é semi-aditiva no tempo e será utilizada principalmente como denominador de indicadores municipais.
+
+Ela foi modelada como tabela fato, e não como simples atributo de `DIM_MUNICIPIO`, porque é uma **medida quantitativa que varia no tempo** e possui granularidade própria município × ano. Tratá-la como atributo fixo do município eliminaria essa variação temporal e dificultaria o relacionamento correto com os indicadores anuais.
 
 **[Inserir Figura 5 — Esquema Estrela do processo de População.]**
 
