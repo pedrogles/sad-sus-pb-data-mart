@@ -255,9 +255,11 @@ A cardinalidade entre `REGISTRO_AIH` e `MOTIVO_SAIDA_PERMANENCIA` foi fechada co
 
 Status:
 
-- DER conceitual: **FECHADO PARA DIAGRAMAÇÃO**;
-- modelo lógico normalizado: **FECHADO PARA DIAGRAMAÇÃO**;
-- modelo dimensional: **FECHADO PARA DIAGRAMAÇÃO**.
+- DER conceitual: **DIAGRAMADO E REVISADO**;
+- modelo lógico normalizado: **DIAGRAMADO E REVISADO**, com PK/FK e cardinalidades mínima/máxima explícitas;
+- modelo dimensional: **DIAGRAMADO E REVISADO** em visão de constelação e estrelas separadas para Internação, Capacidade e População.
+
+Os artefatos gráficos derivados permanecem fora do Git por enquanto; a fonte canônica da modelagem continua em `docs/academic/chapter-1-2-modeling.md`.
 
 ---
 
@@ -321,17 +323,24 @@ Não substituir esse fluxo silenciosamente.
 
 ---
 
+## Redação acadêmica
+
+Rascunhos canônicos criados:
+
+- `docs/academic/chapter-1-draft.md` — Regras de Negócio, entidades, relacionamentos, cardinalidades, modelo conceitual e modelo lógico;
+- `docs/academic/chapter-2-draft.md` — escolha e justificativa do Star Schema, fatos, dimensões, granularidades, matriz fato × dimensão e indicadores.
+
+Status:
+
+**CAPÍTULOS 1 E 2 — RASCUNHO COMPLETO PARA REVISÃO EDITORIAL E MONTAGEM DO RELATÓRIO.**
+
+---
+
 ## Próximo passo
 
-Executar a etapa:
-
-**SAD — SUS PB — ACADEMIC MODELING / CHAPTERS 1–2**
-
-Sequência:
-
-1. exportar o DER conceitual em formato adequado à impressão;
-2. exportar o modelo lógico relacional normalizado;
-3. exportar a constelação dimensional com as três estrelas;
-4. revisar visualmente cardinalidades, PKs e FKs;
-5. redigir e revisar os Capítulos 1 e 2;
-6. somente depois iniciar implementação no QlikView 12.
+1. revisar editorialmente os Capítulos 1 e 2;
+2. inserir os diagramas revisados nas posições indicadas;
+3. montar o relatório impresso com capa e sumário conforme o roteiro do professor;
+4. conferir nomenclatura e numeração de figuras/tabelas;
+5. realizar uma revisão final de aderência ao roteiro acadêmico;
+6. somente depois iniciar a implementação no QlikView 12.
