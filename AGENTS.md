@@ -58,40 +58,86 @@ Antes de propor mudança significativa:
 
 1. verificar `docs/project/current-state.md`;
 2. verificar se já existe decisão documentada;
-3. evitar regressões ou alterações silenciosas de arquitetura;
-4. registrar mudanças relevantes em documentação persistente.
+3. preservar as decisões aprovadas da primeira entrega;
+4. evitar regressões ou alterações silenciosas de arquitetura;
+5. registrar mudanças relevantes em documentação persistente.
 
-## Prioridade acadêmica atual
+## Primeira entrega acadêmica
 
-A prioridade do projeto é produzir uma modelagem defensável para a **primeira entrega impressa**.
+Status:
 
-Essa entrega cobre:
+**FECHADA — PRONTA PARA IMPRESSÃO/ENTREGA**
+
+Escopo concluído:
 
 - Capítulo 1 — Regras de Negócio;
-- Capítulo 2 — Modelagem Dimensional.
+- modelo conceitual / DER;
+- modelo lógico relacional normalizado;
+- cardinalidades mínima e máxima;
+- Capítulo 2 — Modelagem Dimensional;
+- escolha e justificativa Star x Snowflake;
+- modelo dimensional.
 
-Implementação no QlikView e dashboards não devem antecipar nem distorcer decisões de modelagem ainda não validadas.
+Revisão canônica:
 
-## Modelagem dimensional — orientação do material
+`docs/academic/first-delivery-review.md`
 
-O material da disciplina diferencia:
+A primeira entrega não deve ser reaberta ou remodelada silenciosamente durante a implementação. Qualquer descoberta estrutural posterior deve ser registrada como revisão explícita.
 
-- **Star Schema**: dimensões desnormalizadas;
-- **Snowflake Schema**: dimensões normalizadas.
+## Modelagem dimensional — decisão confirmada
 
-Snowflake não deve ser escolhido apenas por normalização. O material destaca trade-offs de espaço, atualização, quantidade de joins, entendimento pelo usuário e manutenção.
+A decisão acadêmica é:
 
-A decisão final Star vs. Snowflake continua **PENDENTE** até a validação do modelo e das dimensões reais.
+**Star Schema em cada processo factual, com dimensões conformadas compartilhadas.**
 
-A Aula 7 utiliza Star Schema em um exercício específico. Isso não substitui o requisito geral do projeto, que permite justificar Star ou Snowflake.
+O conjunto completo possui três fatos e pode ser descrito tecnicamente como uma **constelação de esquemas estrela**.
+
+Dimensões permanecem desnormalizadas na camada dimensional; não foi adotado Snowflake Schema.
+
+Fatos aprovadas:
+
+- `FATO_INTERNACAO`;
+- `FATO_CAPACIDADE_LEITO`;
+- `FATO_POPULACAO`.
+
+Dimensões aprovadas:
+
+- `DIM_TEMPO`;
+- `DIM_MUNICIPIO`;
+- `DIM_ESTABELECIMENTO`;
+- `DIM_PROCEDIMENTO`;
+- `DIM_DIAGNOSTICO`;
+- `DIM_CARATER_ATENDIMENTO`;
+- `DIM_MOTIVO_SAIDA_PERMANENCIA`;
+- `DIM_TIPO_LEITO`.
+
+## Próxima fase
+
+Próxima etapa planejada:
+
+**SAD — SUS PB — DATA ACQUISITION / QLIKVIEW IMPLEMENTATION DISCOVERY**
+
+A próxima fase deve começar por Discovery e validação, antes de implementar scripts definitivos.
+
+Prioridades:
+
+1. adquirir/organizar os 36 meses de 2017–2019;
+2. repetir controles de qualidade nos dados completos;
+3. fechar fontes auxiliares por competência (SIGTAP/CID/CNES);
+4. definir a historização física de `DIM_ESTABELECIMENTO`;
+5. definir a arquitetura física do QlikView 12;
+6. definir testes de reconciliação;
+7. somente então implementar dimensões, fatos e painéis.
+
+Não iniciar dashboards antes da validação da carga integral e das transformações.
 
 ## QlikView
 
-Ferramenta obrigatória do projeto:
+Ferramenta obrigatória:
 
 **QlikView 12**
 
-O fluxo ensinado pelo professor deve ser a referência inicial de implementação:
+O fluxo ensinado pelo professor permanece como referência inicial:
 
 ```text
 BASE
@@ -108,7 +154,7 @@ PAINEL
   └── QVW de apresentação/análise
 ```
 
-Conceitos explicitamente presentes no material:
+Conceitos presentes no material da disciplina:
 
 - processamento in-memory;
 - AQL / linguagem associativa;
@@ -117,11 +163,11 @@ Conceitos explicitamente presentes no material:
 - consolidação de múltiplas fontes;
 - análise associativa.
 
-Não substituir silenciosamente esse fluxo por outra arquitetura de QlikView.
+Não substituir silenciosamente esse fluxo por outra arquitetura.
 
-Scripts externos ou outros mecanismos versionáveis podem ser avaliados posteriormente como complemento, mas somente se forem compatíveis com o processo ensinado e trouxerem benefício real.
+Scripts externos ou outros mecanismos versionáveis podem ser avaliados como complemento quando tecnicamente úteis e compatíveis com o processo ensinado.
 
-O arquivo `.qvw` não deve ser a única fonte persistente de decisões de modelagem ou regras de negócio; essas decisões permanecem documentadas no repositório.
+O arquivo `.qvw` não deve ser a única fonte persistente de decisões de modelagem ou regras de negócio.
 
 ## Dados
 
@@ -136,17 +182,8 @@ Antes de adicionar datasets ao Git:
 
 ## Escopo atual
 
-Discovery de viabilidade concluída.
-
-Próxima etapa:
-
-**Dataset Validation / Modeling Discovery**
-
-Ainda não implementar:
-
-- banco;
-- ETL definitivo;
-- dashboards;
-- modelo dimensional definitivo;
-- SQL;
-- trabalho final.
+- Feasibility Discovery: concluída;
+- Dataset Validation / Modeling Discovery: concluída;
+- Modelagem acadêmica dos Capítulos 1 e 2: concluída;
+- Primeira entrega: fechada e pronta para impressão/entrega;
+- próxima fase: Data Acquisition / QlikView Implementation Discovery.
