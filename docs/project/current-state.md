@@ -239,10 +239,32 @@ Especificação acadêmica canônica atual:
 
 ---
 
+## Fechamento semântico
+
+### FATO VERIFICADO
+
+Os domínios necessários ao desenho acadêmico foram validados em documentação oficial:
+
+- procedimento: SIGTAP;
+- diagnóstico principal: CID-10;
+- caráter de atendimento: domínio oficial SIH/SIA;
+- motivo de saída/permanência: Tabela Auxiliar de Encerramento;
+- tipo/detalhamento de leito: CNES.
+
+A cardinalidade entre `REGISTRO_AIH` e `MOTIVO_SAIDA_PERMANENCIA` foi fechada como obrigatória `(1,1)` no lado do registro, sustentada pelo layout oficial do SISAIH01 e pelo preenchimento integral nos checkpoints analisados.
+
+Status:
+
+- DER conceitual: **FECHADO PARA DIAGRAMAÇÃO**;
+- modelo lógico normalizado: **FECHADO PARA DIAGRAMAÇÃO**;
+- modelo dimensional: **FECHADO PARA DIAGRAMAÇÃO**.
+
+---
+
 ## Pendências que não bloqueiam a primeira entrega
 
 - adquirir e validar os 36 meses completos durante a implementação;
-- obter descrições oficiais dos domínios de procedimento, diagnóstico, caráter, motivo de saída/permanência e leito;
+- materializar as tabelas oficiais de referência por competência no ETL;
 - definir fonte histórica de nome fantasia/razão social do estabelecimento;
 - fechar a técnica concreta de historização de `DIM_ESTABELECIMENTO`;
 - validar na carga integral médias/razões afetadas por registros de continuidade;
@@ -307,11 +329,9 @@ Executar a etapa:
 
 Sequência:
 
-1. revisar o DER conceitual consolidado;
-2. revisar as cardinalidades mínima e máxima;
-3. revisar o modelo lógico relacional normalizado;
-4. revisar o modelo dimensional Star Schema;
-5. garantir consistência entre regras e diagramas;
-6. exportar os diagramas em formato adequado à impressão;
-7. redigir e revisar os Capítulos 1 e 2;
-8. somente depois iniciar implementação no QlikView 12.
+1. exportar o DER conceitual em formato adequado à impressão;
+2. exportar o modelo lógico relacional normalizado;
+3. exportar a constelação dimensional com as três estrelas;
+4. revisar visualmente cardinalidades, PKs e FKs;
+5. redigir e revisar os Capítulos 1 e 2;
+6. somente depois iniciar implementação no QlikView 12.
