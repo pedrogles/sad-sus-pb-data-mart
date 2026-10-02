@@ -1,5 +1,11 @@
 # Capítulo 2 — Modelagem Dimensional
 
+## Status
+
+**CONTEÚDO FECHADO PARA A PRIMEIRA ENTREGA**
+
+O nome do arquivo é mantido por histórico; o conteúdo abaixo corresponde à versão utilizada na montagem do relatório.
+
 ## 2.1 Estrutura dimensional escolhida
 
 Para o Data Mart foi escolhida a estrutura **Star Schema (Modelo Estrela)** em cada processo factual.
@@ -151,7 +157,7 @@ Medidas e indicadores de linha:
 
 A medida `QTD_INTERNACAO` deverá assumir valor zero para registros de continuidade que não representem nova internação.
 
-**[Inserir Figura 3 — Esquema Estrela do processo de Internação.]**
+**Figura 3 — Esquema Estrela do processo de Internação — inserida no relatório final de impressão.**
 
 ---
 
@@ -175,7 +181,7 @@ Medidas:
 
 Essas medidas são semi-aditivas no tempo. Para os indicadores anuais deste projeto, será utilizada a **média dos doze snapshots mensais disponíveis do ano**, e não a soma direta das competências, porque cada mês representa um estoque de capacidade naquele momento.
 
-**[Inserir Figura 4 — Esquema Estrela do processo de Capacidade de Leitos.]**
+**Figura 4 — Esquema Estrela do processo de Capacidade de Leitos — inserida no relatório final de impressão.**
 
 ---
 
@@ -198,7 +204,7 @@ A população também é semi-aditiva no tempo e será utilizada principalmente 
 
 Ela foi modelada como tabela fato, e não como simples atributo de `DIM_MUNICIPIO`, porque é uma **medida quantitativa que varia no tempo** e possui granularidade própria município × ano. Tratá-la como atributo fixo do município eliminaria essa variação temporal e dificultaria o relacionamento correto com os indicadores anuais.
 
-**[Inserir Figura 5 — Esquema Estrela do processo de População.]**
+**Figura 5 — Esquema Estrela do processo de População — inserida no relatório final de impressão.**
 
 ---
 
@@ -217,7 +223,7 @@ As três estrelas compartilham dimensões conformadas.
 | `DIM_MOTIVO_SAIDA_PERMANENCIA` | ✓ | — | — |
 | `DIM_TIPO_LEITO` | — | ✓ | — |
 
-**[Inserir Figura 6 — Modelo Dimensional completo: constelação de esquemas estrela.]**
+**Figura 6 — Modelo Dimensional completo: constelação de esquemas estrela — inserida no relatório final de impressão.**
 
 ---
 
