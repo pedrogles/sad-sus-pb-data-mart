@@ -532,13 +532,13 @@ Entidades sustentadas:
 | Procedimento — Registro AIH | Procedimento (0,n) | AIH (1,1) |
 | Diagnóstico — Registro AIH | Diagnóstico (0,n) | AIH (1,1) |
 | Caráter — Registro AIH | Caráter (0,n) | AIH (1,1) |
-| Motivo saída/permanência — Registro AIH | Motivo (0,n) | AIH (0,1) |
+| Motivo saída/permanência — Registro AIH | Motivo (0,n) | AIH (1,1) |
 | Tipo Leito — Leito | Tipo (1,n) | Leito (1,1) |
 | Leito — Capacidade Leito | Leito (0,n) | Capacidade (1,1) |
 | Estabelecimento/Competência — Capacidade Leito | Estado (0,n) | Capacidade (1,1) |
 | Município — População Municipal | Município (0,n) | População (1,1) |
 
-A opcionalidade de motivo de saída/permanência permanece conservadora até a validação da carga integral dos 36 meses.
+Na etapa de fechamento semântico posterior à Discovery, a relação com motivo de saída/permanência foi confirmada como obrigatória no lado do registro `(1,1)`, com base no layout oficial e no preenchimento observado nos checkpoints. A carga integral dos 36 meses continuará revalidando essa regra como controle de implementação.
 
 ---
 
