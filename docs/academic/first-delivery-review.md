@@ -22,7 +22,7 @@ A modelagem e a redação foram consolidadas a partir de:
 |---|---|---|
 | Capa com título “Proposta de um Data Mart na área de ...” | OK | Relatório consolidado usa “Saúde Pública” |
 | Sumário | OK | Montado no relatório |
-| Cap. 1 — descrição detalhada das regras de negócio | OK | 21 regras consolidadas |
+| Cap. 1 — descrição detalhada das regras de negócio | OK | 21 regras consolidadas, com justificativas metodológicas para período, checkpoints, escopo semântico e escolhas de modelagem |
 | Entidades | OK | 13 entidades conceituais |
 | Relacionamentos | OK | Matriz de relacionamentos documentada |
 | Cardinalidades mínima e máxima | OK | `(0,n)`, `(1,n)`, `(1,1)` explicitadas |
@@ -60,6 +60,23 @@ A modelagem e a redação foram consolidadas a partir de:
 - sumário com paginação revisada.
 
 A disciplina não forneceu, nos materiais inspecionados, um template tipográfico específico além do roteiro estrutural. Por isso, a formatação acima é uma escolha editorial acadêmica e não deve ser tratada como exigência expressa do professor.
+
+---
+
+## Explicações metodológicas revisadas
+
+O relatório passou a explicitar:
+
+- por que o período 2017–2019 foi escolhido;
+- por que janeiro de cada ano foi usado como checkpoint de Discovery e não como amostra estatística anual;
+- o sentido operacional de “demanda hospitalar” no SIH;
+- o sentido cadastral de “capacidade hospitalar” no CNES;
+- por que são necessárias três tabelas fato;
+- por que população é modelada como fato e não como atributo fixo de Município;
+- por que os indicadores anuais de capacidade utilizam média dos snapshots mensais;
+- por que `PROC_REA` foi priorizado;
+- por que diagnósticos secundários ficaram fora do escopo inicial;
+- por que todos os registros válidos do LT são preservados.
 
 ---
 
