@@ -9,86 +9,271 @@ Ferramenta obrigatória: QlikView 12
 
 ## Etapa atual
 
-**Feasibility Discovery concluída.**
+**Dataset Validation / Modeling Discovery concluída.**
 
 Veredito:
 
-**APROVADO COM AJUSTES**
+**APROVADO PARA MODELAGEM ACADÊMICA, COM RESSALVAS DOCUMENTADAS**
 
-Próxima etapa planejada:
+Documento canônico da etapa:
 
-**SAD — SUS PB — DATASET VALIDATION / MODELING DISCOVERY**
+`docs/discovery/dataset-validation.md`
 
-## Tema
+Próxima etapa:
+
+**SAD — SUS PB — ACADEMIC MODELING / CHAPTERS 1–2**
+
+A implementação definitiva no QlikView ainda não deve começar.
+
+---
+
+## Tema confirmado
 
 Data Mart para análise descritiva e comparativa da demanda hospitalar, capacidade hospitalar e população do SUS na Paraíba.
 
-## Fontes candidatas
+---
 
-- SIH/SUS — demanda hospitalar;
-- CNES — hospitais e leitos;
-- IBGE/SIDRA — população e códigos municipais.
+## Fontes confirmadas
 
-Status:
+### SIH/SUS
 
-**CANDIDATAS — requerem inspeção concreta dos datasets.**
+Fonte de demanda hospitalar:
 
-## Período candidato
+- arquivos RD / AIH Reduzida.
+
+Checkpoints validados:
+
+- `RDPB1701.dbc`;
+- `RDPB1801.dbc`;
+- `RDPB1901.dbc`.
+
+### CNES
+
+Fontes de capacidade e estabelecimento:
+
+- LT / Leitos;
+- ST / Estabelecimentos.
+
+Checkpoints validados:
+
+- `LTPB1701.dbc`;
+- `LTPB1801.dbc`;
+- `LTPB1901.dbc`;
+- `STPB1701.dbc`;
+- `STPB1801.dbc`;
+- `STPB1901.dbc`.
+
+### IBGE
+
+Fonte populacional:
+
+- estimativas populacionais municipais anuais.
+
+Arquivos validados:
+
+- 2017;
+- 2018;
+- 2019.
+
+---
+
+## Período confirmado
 
 **2017–2019**
 
-Status:
+### RESSALVA
 
-**HIPÓTESE DE MODELAGEM**
+A série populacional possui mudança metodológica/projecional entre as publicações de 2017 e 2018.
 
-O intervalo ainda não é definitivo e depende da validação dos arquivos reais e da compatibilidade entre as fontes.
+Isso não impede o uso das estimativas anuais como denominadores dos indicadores de cada ano, mas a variação 2017→2018 não deve ser interpretada automaticamente como variação demográfica observada.
 
-## Arquitetura candidata
+---
 
-### Fatos candidatas
+## Arquitetura dimensional aprovada
 
-- `FATO_INTERNACAO`
-- `FATO_CAPACIDADE_LEITO`
-- `FATO_POPULACAO`
+### Fatos
 
-Status:
+- `FATO_INTERNACAO`;
+- `FATO_CAPACIDADE_LEITO`;
+- `FATO_POPULACAO`.
 
-**HIPÓTESE DE MODELAGEM**
+### Granularidades
 
-Nenhuma granularidade deve ser tratada como definitiva antes da próxima Discovery.
+#### FATO_INTERNACAO
 
-## Dimensões candidatas
+**1 linha = 1 registro administrativo RD / AIH processada.**
 
-- `DIM_TEMPO`
-- `DIM_MUNICIPIO`
-- `DIM_ESTABELECIMENTO`
-- `DIM_PROCEDIMENTO`
-- `DIM_DIAGNOSTICO`
-- `DIM_CARATER_ATENDIMENTO`
-- `DIM_MOTIVO_SAIDA`
-- `DIM_TIPO_LEITO`
+Uma linha não equivale automaticamente a paciente ou episódio clínico único.
 
-Status:
+`IDENT=5` representa continuidade e não deve ser contado como nova internação.
 
-**HIPÓTESE DE MODELAGEM**
+#### FATO_CAPACIDADE_LEITO
 
-## Orientações acadêmicas verificadas
+**1 linha = estabelecimento × competência mensal × código/detalhamento de leito.**
 
-### Star x Snowflake
+Medidas de capacidade são semi-aditivas no tempo.
 
-Aula 6 confirma:
+#### FATO_POPULACAO
 
-- Star: dimensões desnormalizadas;
-- Snowflake: dimensões normalizadas;
-- Snowflake reduz redundância/volume em determinadas estruturas, mas aumenta joins e complexidade de entendimento/manutenção.
+**1 linha = município × ano.**
 
-**DECISÃO PENDENTE:** Star Schema ou Snowflake Schema para o Data Mart final.
+População é semi-aditiva no tempo.
 
-Aula 7 usa Star Schema em um exercício específico, sem eliminar a exigência geral de justificar a escolha do projeto.
+---
 
-### Fluxo QlikView ensinado
+## Dimensões aprovadas para o desenho acadêmico
 
-Aula 7 apresenta o fluxo didático:
+- `DIM_TEMPO`;
+- `DIM_MUNICIPIO`;
+- `DIM_ESTABELECIMENTO`;
+- `DIM_PROCEDIMENTO`;
+- `DIM_DIAGNOSTICO`;
+- `DIM_CARATER_ATENDIMENTO`;
+- `DIM_MOTIVO_SAIDA_PERMANENCIA`;
+- `DIM_TIPO_LEITO`.
+
+As oito dimensões possuem justificativa analítica e evidência nas fontes inspecionadas.
+
+---
+
+## Chaves de integração validadas
+
+### Estabelecimento
+
+`SIH.CNES ↔ CNES/ST.CNES ↔ CNES/LT.CNES`
+
+Cobertura observada nos checkpoints de janeiro de 2017, 2018 e 2019:
+
+**100% dos CNES do SIH encontrados no LT e 100% dos CNES do LT encontrados no ST.**
+
+### Município de atendimento/localização
+
+`SIH.MUNIC_MOV ↔ CNES.CODUFMUN`
+
+compatível nos checkpoints analisados.
+
+### Município de residência
+
+`SIH.MUNIC_RES` pode apontar para município fora da Paraíba.
+
+A dimensão Município deve suportar esses municípios no papel de residência.
+
+### DATASUS ↔ IBGE
+
+A integração municipal utilizará correspondência validada entre código DATASUS e código IBGE.
+
+Não calcular artificialmente o sétimo dígito do código IBGE.
+
+---
+
+## Decisão Star x Snowflake
+
+### DECISÃO CONFIRMADA
+
+**Star Schema por processo, com dimensões conformadas compartilhadas.**
+
+Justificativa resumida:
+
+- dimensões relativamente pequenas;
+- melhor simplicidade analítica;
+- menor número de joins;
+- hierarquias podem ser desnormalizadas nas dimensões;
+- adequado ao uso no QlikView;
+- o modelo lógico normalizado do Capítulo 1 permanece separado do modelo dimensional do Capítulo 2.
+
+---
+
+## Capacidade hospitalar
+
+### DECISÃO CONFIRMADA
+
+Preservar todos os registros LT válidos na `FATO_CAPACIDADE_LEITO`.
+
+O recorte estritamente hospitalar deverá ser representado por classificação do estabelecimento, em vez de descartar antecipadamente registros válidos como Hospital/Dia ou outros tipos presentes no LT.
+
+Para indicadores anuais de capacidade, utilizar regra compatível com snapshots mensais, preferencialmente a média dos 12 meses, e nunca a soma das capacidades mensais.
+
+---
+
+## Regras analíticas confirmadas
+
+- `N_AIH` não será usado isoladamente como PK da fato de internação;
+- criar chave técnica para o registro RD preservando rastreabilidade;
+- município de residência e município de atendimento são papéis distintos;
+- `PROC_REA` é o procedimento principal da primeira versão;
+- `DIAG_PRINC` é o diagnóstico utilizado na primeira versão;
+- diagnósticos secundários ficam fora do escopo inicial;
+- competência, data de internação e data de saída são papéis temporais distintos;
+- leitos existentes e leitos SUS são medidas diferentes;
+- internações/leito é relação descritiva de demanda/capacidade e não taxa de ocupação;
+- internações por 1.000 habitantes devem usar internações de residentes e população do mesmo município/ano;
+- leitos SUS por 1.000 habitantes devem usar capacidade no município de localização e população compatível.
+
+---
+
+## Modelo conceitual/lógico em preparação
+
+Entidades atualmente sustentadas:
+
+- UF;
+- MUNICIPIO;
+- ESTABELECIMENTO;
+- ESTABELECIMENTO_COMPETENCIA;
+- REGISTRO_AIH;
+- PROCEDIMENTO;
+- DIAGNOSTICO;
+- CARATER_ATENDIMENTO;
+- MOTIVO_SAIDA_PERMANENCIA;
+- TIPO_LEITO;
+- LEITO;
+- CAPACIDADE_LEITO;
+- POPULACAO_MUNICIPAL.
+
+A tabela/entidade `ESTABELECIMENTO_COMPETENCIA` é necessária para representar atributos históricos do estabelecimento observados no ST.
+
+---
+
+## Pendências que não bloqueiam a primeira entrega
+
+- adquirir e validar os 36 meses completos durante a implementação;
+- obter descrições oficiais dos domínios de procedimento, diagnóstico, caráter, motivo de saída/permanência e leito;
+- definir fonte histórica de nome fantasia/razão social do estabelecimento;
+- fechar a técnica concreta de historização de `DIM_ESTABELECIMENTO`;
+- validar na carga integral médias/razões afetadas por registros de continuidade;
+- definir estrutura concreta de scripts, QVDs e QVWs quando começar a implementação QlikView.
+
+---
+
+## Orientações acadêmicas
+
+A primeira entrega continua com prazo em **13/10/2026**, formato impresso, até o Capítulo 2.
+
+### Capítulo 1
+
+Deve conter:
+
+- regras de negócio;
+- entidades;
+- relacionamentos;
+- cardinalidades mínima e máxima;
+- modelo conceitual / DER;
+- modelo lógico relacional normalizado.
+
+### Capítulo 2
+
+Deve conter:
+
+- descrição da estrutura dimensional;
+- escolha e justificativa Star x Snowflake;
+- modelo dimensional.
+
+A decisão atual é **Star Schema**.
+
+---
+
+## Fluxo QlikView preservado
+
+Quando a implementação começar, a referência didática continua:
 
 ```text
 BASE
@@ -104,43 +289,23 @@ QVD
 PAINEL / QVW
 ```
 
-Esse fluxo passa a ser a referência inicial para a futura implementação no QlikView 12.
+Não substituir esse fluxo silenciosamente.
 
-A arquitetura concreta ainda não será criada antes da validação dos datasets.
-
-## Decisões confirmadas
-
-- O projeto será desenvolvido para a disciplina SAD 2026.2.
-- A ferramenta obrigatória de implementação será QlikView 12.
-- A primeira entrega é impressa e vai até o Capítulo 2.
-- O repositório é a fonte persistente de contexto técnico e decisões do projeto.
-- Material do professor e documentação oficial das fontes possuem autoridade superior a hipóteses de chats.
-- O fluxo QlikView ensinado pelo professor (Base → Extração/QVD → Transformação/QVD → Painel) será a referência inicial de implementação.
-
-## Decisões pendentes
-
-- período definitivo;
-- datasets exatos;
-- granularidade definitiva das fatos;
-- chaves de integração;
-- cardinalidades;
-- medidas definitivas;
-- dimensões definitivas;
-- Star Schema ou Snowflake Schema;
-- forma final de integração entre internações, leitos e população;
-- estrutura concreta de pastas/arquivos QlikView após validação dos datasets.
+---
 
 ## Próximo passo
 
-Executar a **Dataset Validation / Modeling Discovery**:
+Executar a etapa:
 
-1. inspecionar amostra real do SIH/RD da Paraíba;
-2. inspecionar histórico de leitos do CNES;
-3. inspecionar população municipal do IBGE;
-4. validar códigos municipais;
-5. confirmar granularidades;
-6. confirmar medidas e dimensões;
-7. iniciar regras de negócio;
-8. preparar base factual para Capítulo 1 e Capítulo 2.
+**SAD — SUS PB — ACADEMIC MODELING / CHAPTERS 1–2**
 
-Não implementar o Data Mart antes dessa validação.
+Sequência:
+
+1. consolidar regras de negócio no formato do relatório;
+2. desenhar o modelo conceitual / DER;
+3. validar cardinalidades mínima e máxima;
+4. desenhar o modelo lógico relacional normalizado;
+5. desenhar o modelo dimensional Star Schema;
+6. revisar consistência entre os três modelos;
+7. redigir os Capítulos 1 e 2;
+8. somente depois iniciar implementação no QlikView 12.
