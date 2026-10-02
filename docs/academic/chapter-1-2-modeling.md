@@ -2,7 +2,7 @@
 
 ## Status
 
-**Em consolidação para a primeira entrega**
+**Fechada para revisão gráfica e redação da primeira entrega**
 
 Base factual:
 
@@ -232,15 +232,15 @@ Representa a estimativa populacional de um município em um ano.
 | PROCEDIMENTO — REGISTRO_AIH | PROCEDIMENTO (0,n) ↔ REGISTRO_AIH (1,1) |
 | DIAGNOSTICO — REGISTRO_AIH | DIAGNOSTICO (0,n) ↔ REGISTRO_AIH (1,1) |
 | CARATER_ATENDIMENTO — REGISTRO_AIH | CARATER_ATENDIMENTO (0,n) ↔ REGISTRO_AIH (1,1) |
-| MOTIVO_SAIDA_PERMANENCIA — REGISTRO_AIH | MOTIVO (0,n) ↔ REGISTRO_AIH (0,1) |
+| MOTIVO_SAIDA_PERMANENCIA — REGISTRO_AIH | MOTIVO (0,n) ↔ REGISTRO_AIH (1,1) |
 | TIPO_LEITO — LEITO | TIPO_LEITO (1,n) ↔ LEITO (1,1) |
 | LEITO — CAPACIDADE_LEITO | LEITO (0,n) ↔ CAPACIDADE_LEITO (1,1) |
 | ESTABELECIMENTO_COMPETENCIA — CAPACIDADE_LEITO | ESTABELECIMENTO_COMPETENCIA (0,n) ↔ CAPACIDADE_LEITO (1,1) |
 | MUNICIPIO — POPULACAO_MUNICIPAL | MUNICIPIO (0,n) ↔ POPULACAO_MUNICIPAL (1,1) |
 
-### Ressalva
+### Fechamento da cardinalidade de encerramento
 
-A associação de motivo de saída/permanência permanece opcional no modelo acadêmico até a carga integral confirmar ausência de exceções em todos os 36 meses.
+A relação com `MOTIVO_SAIDA_PERMANENCIA` é tratada como obrigatória no modelo acadêmico: cada `REGISTRO_AIH` possui exatamente um motivo de saída/permanência. O layout oficial do SISAIH01 contém o campo `MOT_SAÍDA` para AIH principal/continuação/longa permanência, e os checkpoints reais inspecionados apresentaram preenchimento integral. A carga dos 36 meses deverá revalidar essa regra como controle de implementação, sem bloquear o modelo acadêmico.
 
 ---
 
@@ -256,7 +256,7 @@ erDiagram
     PROCEDIMENTO ||--o{ REGISTRO_AIH : procedimento_realizado
     DIAGNOSTICO ||--o{ REGISTRO_AIH : diagnostico_principal
     CARATER_ATENDIMENTO ||--o{ REGISTRO_AIH : caracteriza
-    MOTIVO_SAIDA_PERMANENCIA o|--o{ REGISTRO_AIH : encerra
+    MOTIVO_SAIDA_PERMANENCIA ||--o{ REGISTRO_AIH : encerra
     TIPO_LEITO ||--|{ LEITO : classifica
     LEITO ||--o{ CAPACIDADE_LEITO : quantifica
     ESTABELECIMENTO_COMPETENCIA ||--o{ CAPACIDADE_LEITO : possui
@@ -430,7 +430,7 @@ Demais chaves estrangeiras:
 - `cod_procedimento` → PROCEDIMENTO;
 - `cod_diagnostico` → DIAGNOSTICO;
 - `cod_carater` → CARATER_ATENDIMENTO;
-- `cod_motivo` → MOTIVO_SAIDA_PERMANENCIA, opcional.
+- `cod_motivo` → MOTIVO_SAIDA_PERMANENCIA.
 
 Atributos operacionais candidatos:
 
@@ -649,47 +649,73 @@ A técnica concreta de SCD será definida na implementação, mas o modelo não 
 
 ## DIM_PROCEDIMENTO
 
-Atributos mínimos:
+Atributos aprovados:
 
 - `SK_PROCEDIMENTO`;
 - código do procedimento;
-- descrição oficial.
+- nome do procedimento;
+- descrição oficial;
+- grupo;
+- subgrupo;
+- forma de organização.
+
+O SIGTAP organiza a Tabela de Procedimentos em Grupo → Subgrupo → Forma de Organização → Procedimento. O código possui 10 dígitos e o procedimento é o menor nível de agregação. A vigência/competência da referência utilizada deverá ser preservada durante o ETL, pois o SIGTAP mantém validade e alterações por competência.
 
 ---
 
 ## DIM_DIAGNOSTICO
 
-Atributos mínimos:
+Atributos aprovados:
 
 - `SK_DIAGNOSTICO`;
-- código do diagnóstico;
-- descrição oficial.
+- código CID-10;
+- descrição oficial do diagnóstico.
+
+O diagnóstico principal do SIH será interpretado segundo a CID-10. O escopo inicial permanece restrito ao diagnóstico principal; diagnósticos secundários não compõem a primeira versão do modelo.
 
 ---
 
 ## DIM_CARATER_ATENDIMENTO
 
-Atributos mínimos:
+Atributos:
 
 - `SK_CARATER_ATENDIMENTO`;
 - código;
 - descrição oficial.
 
+Domínio oficial aplicável ao SIH/SIA:
+
+| Código | Descrição |
+|---|---|
+| 01 | Eletivo |
+| 02 | Urgência |
+| 03 | Acidente no local de trabalho ou a serviço da empresa |
+| 04 | Acidente no trajeto para o trabalho |
+| 05 | Outros tipos de acidente de trânsito |
+| 06 | Outros tipos de lesões e envenenamentos por agentes químicos ou físicos |
+
+Os checkpoints analisados apresentaram apenas parte desse domínio (`01`, `02`, `05` e `06`), mas a dimensão deve representar o domínio oficial e não apenas os valores observados na amostra.
+
 ---
 
 ## DIM_MOTIVO_SAIDA_PERMANENCIA
 
-Atributos mínimos:
+Atributos:
 
 - `SK_MOTIVO_SAIDA_PERMANENCIA`;
 - código;
-- descrição oficial.
+- descrição oficial;
+- categoria de encerramento.
+
+A Portaria SAS/MS nº 719/2007 definiu a Tabela Auxiliar de Motivo de Saída/Permanência, posteriormente denominada Tabela Auxiliar de Encerramento. As categorias incluem alta, permanência, transferência, óbito e outros motivos. Atualizações posteriores introduziram/alteraram códigos usados no período, incluindo motivos obstétricos e transferência para internação domiciliar.
+
+No arquivo RD os códigos aparecem sem o ponto da apresentação normativa, por exemplo `11` para `1.1`, `41` para `4.1` e `61` para `6.1`.
 
 ---
 
 ## DIM_TIPO_LEITO
 
-Atributos mínimos:
+Atributos aprovados:
 
 - `SK_TIPO_LEITO`;
 - código do tipo de leito;
@@ -807,21 +833,53 @@ Estas pendências não impedem o desenho acadêmico atual:
 
 1. fonte histórica definitiva para nome fantasia/razão social do estabelecimento;
 2. técnica concreta de historização de `DIM_ESTABELECIMENTO` na implementação;
-3. descrições oficiais completas dos domínios;
+3. materializar no ETL as tabelas oficiais de referência por competência para SIGTAP/CID/CNES;
 4. comportamento de indicadores de valor/permanência quando os 36 meses forem carregados;
 5. representação física das dimensões role-playing no QlikView;
 6. scripts de extração, transformação, QVD e painel.
 
 ---
 
-# 15. Gate antes da redação final
+# 15. Fechamento semântico dos modelos
 
-Antes de transformar este documento no texto final do relatório impresso:
+A revisão semântica confirmou:
 
-1. revisar o DER conceitual;
-2. revisar o diagrama lógico relacional;
-3. revisar o modelo dimensional;
-4. garantir que cada regra de negócio esteja refletida nos diagramas;
-5. garantir que nenhuma cardinalidade dependa de hipótese não documentada;
-6. exportar os diagramas em formato legível para impressão;
-7. então redigir os Capítulos 1 e 2 em linguagem acadêmica.
+- procedimento: SIGTAP como fonte oficial, com código de 10 dígitos, nome, descrição, hierarquia Grupo/Subgrupo/Forma de Organização e vigência por competência;
+- diagnóstico: CID-10 como terminologia do diagnóstico principal;
+- caráter de atendimento: domínio oficial de seis códigos definido para SIH/SIA;
+- motivo de saída/permanência: domínio oficial de encerramento com categorias de alta, permanência, transferência, óbito e outros motivos, incluindo atualizações históricas vigentes antes do período do projeto;
+- leitos: CNES distingue Tipo de Leito, detalhamento/especialidade, Leitos Existentes e Leitos SUS;
+- estabelecimento: CNES confirma CNES, tipo, razão social e nome fantasia como atributos cadastrais; a fonte histórica completa do nome por competência permanece como enriquecimento de implementação.
+
+## Fontes oficiais de referência
+
+- SIGTAP — Procedimento: https://wiki.saude.gov.br/sigtap/index.php/Procedimento
+- SIGTAP — estrutura e atributos gerais: https://wiki.saude.gov.br/sigtap/index.php/P%C3%A1gina_principal
+- Portaria SAS/MS nº 719/2007 — Caráter e Motivo de Saída/Permanência: https://bvsms.saude.gov.br/bvs/saudelegis/sas/2007/prt0719_28_12_2007.html
+- Portaria SAS/MS nº 384/2010 — atualizações da Tabela de Encerramento: https://bvsms.saude.gov.br/bvs/saudelegis/sas/2010/prt0384_12_08_2010_comp.html
+- Layout SISAIH01: https://bvsms.saude.gov.br/bvs/saudelegis/sas/2012/anexo/anexo_prt0133_23_02_2012.pdf
+- CNES — Principais Conceitos: https://wiki.saude.gov.br/cnes/index.php/Principais_Conceitos
+- CNES — Cadastros de Estabelecimentos: https://wiki.saude.gov.br/cnes/index.php/Categoria%3ACadastros_Estabelecimentos
+
+## Status dos três modelos
+
+**DER conceitual: FECHADO PARA DIAGRAMAÇÃO.**
+
+**Modelo lógico relacional normalizado: FECHADO PARA DIAGRAMAÇÃO.**
+
+**Modelo dimensional: FECHADO PARA DIAGRAMAÇÃO.**
+
+A carga integral dos 36 meses permanece como validação de implementação e poderá revelar exceções operacionais; qualquer exceção estrutural real deverá gerar revisão explícita do modelo, não alteração silenciosa.
+
+---
+
+# 16. Gate para o relatório impresso
+
+Próximas ações:
+
+1. exportar o DER conceitual em formato legível para impressão;
+2. exportar o modelo lógico relacional normalizado;
+3. exportar a constelação dimensional com as três estrelas e dimensões conformadas;
+4. revisar visualmente cardinalidades, PKs e FKs;
+5. redigir os Capítulos 1 e 2 usando estes modelos como fonte canônica;
+6. revisar consistência entre texto, diagramas e regras de negócio.
