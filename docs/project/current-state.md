@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1–C2.6 PASS; C2.7 MATERIALIZAÇÃO CID-10 PENDENTE DE EXECUÇÃO LOCAL**
+**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1–C2.6 PASS; C2.7 CORRIGIDO E PENDENTE DE NOVA EXECUÇÃO LOCAL**
 
 Documento operacional:
 
@@ -665,9 +665,9 @@ O C2.6 executou **PASS**. A referência 201901 possui 12.450 chaves; 201912 poss
 
 Foi confirmada a decisão de usar **201912 como referência CID-10 descritiva estática/superset** no Data Mart inicial. Essa decisão fornece código/descrição e não afirma vigência mensal. A normalização aprovada remove somente espaço ASCII `U+0020` à direita.
 
-O C2.7 foi implementado em `tools/materialize_cid10_reference.py` para produzir `cid10_referencia.csv` e manifesto, com gates baseados nas evidências C2.4/C2.6 e 14.230 códigos únicos.
+O C2.7 foi implementado em `tools/materialize_cid10_reference.py`. A primeira execução chegou ao gate de distribuição e revelou 2.042 códigos de comprimento 3 e 12.188 de comprimento 4. O gate inicial estava incorreto porque confundia as 1.780 **novas** categorias de 3 caracteres adicionadas em 201912 com o total de categorias de 3 caracteres da referência completa; as 12.450 chaves anteriores já contêm 262 categorias de 3 caracteres. O materializador e a documentação foram corrigidos para a distribuição completa 2.042/12.188.
 
-Próximo gate: executar C2.7 localmente. Após PASS, integrar a referência ao `EXT.qvw` como `REF_CID10.qvd` e exigir cobertura de 100% das 566.672 linhas RD. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+Próximo gate: repetir C2.7 localmente. Após PASS, integrar a referência ao `EXT.qvw` como `REF_CID10.qvd` e exigir cobertura de 100% das 566.672 linhas RD. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
