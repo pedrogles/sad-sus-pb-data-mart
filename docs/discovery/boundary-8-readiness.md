@@ -376,7 +376,7 @@ A classificação não reduz nenhum critério; apenas define em qual gate ele é
 | pacotes instalados localmente | **PASS** |
 | imports Python | **PASS — IMPORT_OK** |
 | 108 DBCs no workspace local | **PASS — 36 RD + 36 LT + 36 ST** |
-| hashes reconciliados | UNVERIFIED |
+| hashes reconciliados | **PASS — 108/108 SHA-256 e tamanhos iguais ao manifesto** |
 | DBC smoke conversion | **PASS** |
 | CSV legível pelo QlikView | **PASS — 13.912 linhas** |
 | `Must_Include` local | **PASS** |
@@ -384,7 +384,7 @@ A classificação não reduz nenhum critério; apenas define em qual gate ele é
 | `Qv.exe /r` local | **PASS** |
 | QVD STORE | **PASS** |
 | ErrorMode batch — caminho de sucesso | **PASS** |
-| ErrorMode batch — caminho de falha | UNVERIFIED |
+| ErrorMode batch — caminho de falha | **PASS — erro proposital detectado, ScriptErrorCount 0→1** |
 | IBGE 2017–2019 local | **PASS — 1 arquivo/ano** |
 | referências auxiliares materializadas | PARTIAL |
 | política de nome histórico | PASS |
@@ -570,14 +570,49 @@ Foi adicionado:
 
 para comparar os 108 itens do manifesto com a BASE local.
 
-Pendências antes do GO:
+## Evidência de reconciliação integral dos DBCs
 
-- executar a reconciliação 108/108 de SHA-256 e tamanho;
-- testar o caminho de falha do tratamento de erro em batch, se mantido como gate obrigatório;
-- materializar ou tratar explicitamente as referências auxiliares necessárias.
+### FATO VERIFICADO
+
+A execução local de `tools/readiness_reconcile_hashes.py` retornou:
+
+- Manifest items: **108**;
+- Local DBCs: **108**;
+- Matched: **108**;
+- Missing: **0**;
+- Duplicates: **0**;
+- Hash mismatch: **0**;
+- Size mismatch: **0**;
+- Extras: **0**;
+- Manifest issues: **0**;
+- `VERDICT=PASS`.
+
+A reconciliação 108/108 deixa de ser blocker.
+
+## Evidência de caminho de falha do batch
+
+Documento:
+
+`docs/discovery/boundary-8-batch-failure-smoke-2026-10-07.md`
+
+### FATO VERIFICADO
+
+O smoke de falha controlada retornou:
+
+- `errors_before=0`;
+- `errors_after=1`;
+- `PASS_EXPECTED_ERROR_CAUGHT`;
+- marcador inesperado: ausente;
+- execução via `Qv.exe /r` sem interação.
+
+O caminho de falha de batch deixa de ser blocker.
+
+Pendência antes do GO:
+
+- materializar ou tratar explicitamente as referências auxiliares necessárias para a primeira implementação.
 
 O Boundary 8 permanece **IN PROGRESS**.
 
 Próxima ação:
 
-executar `tools/readiness_reconcile_hashes.py` contra o ZIP de aquisição e a BASE local usando a `.venv` já validada.
+fechar o tratamento das referências auxiliares necessárias conforme Boundary 4 e o critério 7 de GO.
