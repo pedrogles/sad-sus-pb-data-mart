@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — CHECKPOINTS III-A, III-B E III-C1 PASS; REFERÊNCIAS AUXILIARES RESTANTES PENDENTES**
+**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 CID-10 ABERTO EM PERFIL DE ENTRADA**
 
 Documento operacional:
 
@@ -651,7 +651,9 @@ A rematerialização corrigida retornou `CARATER_ROWS=6`, `MOTIVO_ROWS=28`, `VER
 
 **CHECKPOINT III-C1: PASS.**
 
-Próximo gate: materializar e reconciliar a referência CID-10 oficial contra `DIAG_PRINC`, sem inventar normalização de chave antes do teste empírico. SIGTAP, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+O Checkpoint III-C2 — CID-10 foi aberto com `tools/profile_cid10_diag_princ.py`. A primeira etapa é deliberadamente read-only sobre os 36 CSVs RD: preservar `DIAG_PRINC` bruto, medir códigos distintos/comprimentos/formas e exigir 36 arquivos, 566.672 linhas e 0 vazios antes de inspecionar/materializar a referência oficial.
+
+Próximo gate: executar localmente o perfil de `DIAG_PRINC`. Depois, inspecionar o pacote oficial CID-10 e comparar inicialmente por código bruto; qualquer normalização só poderá ser aprovada mediante diferença de cobertura mensurada. SIGTAP, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
