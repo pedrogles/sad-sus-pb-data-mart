@@ -266,7 +266,7 @@ Antes de adicionar datasets ao Git:
 - C2.7 corrigido e reexecutado: **PASS**, 14.230 códigos únicos, distribuição 2.042/12.188, decisão `STATIC_DESCRIPTIVE_SUPERSET`, hash do CSV reconciliado com `MATCH=True`;
 - C2.8 primeiro reload: referência CID passou os gates estruturais, mas 9.093/566.672 linhas RD ficaram unmatched no QVD; reload interrompido controladamente;
 - C2.8a diagnóstico executado: 9.093 ocorrências / 128 valores distintos, todos `R...`; pares distintos no CSV aparecem com representação colapsada no QVD (`R042→R42`, `R72␠→R072`);
-- cultura local `pt-BR` usa símbolo `R# AGENTS.md
+- cultura local `pt-BR` usa símbolo monetário `R# AGENTS.md
 
 ## Objetivo
 
