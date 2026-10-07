@@ -241,5 +241,7 @@ Antes de adicionar datasets ao Git:
 - Fase III — Checkpoint III-B: `SRC_IBGE_POPULACAO.qvd` implementado com gates de 669 linhas, 223 municípios por ano e totais anuais validados;
 - primeiro reload III-B: falhou controladamente em `Table Not Found`; o log mostrou `MunicÃ­pios$` no lugar da planilha real `Municípios`;
 - correção: nome de planilha e cabeçalhos acentuados usados pelo BIFF/schema são construídos em runtime com `Chr(...)`, evitando dependência da codificação do include `.qvs`;
+- segundo reload III-B: BIFF abriu e 223 PB foram carregados; total 2017 divergente por notas numéricas em `7386(4)` e `15276(5)`;
+- correção: população é normalizada somente a partir do trecho anterior ao primeiro parêntese; diagnóstico local reconciliou 2017 em 4.025.558;
 - próxima ação: repetir o reload local de `EXT.qvw` para validar III-B; depois materializar/reconciliar as referências auxiliares;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.

@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — CHECKPOINT III-A PASS; III-B COM CORREÇÃO DE ENCODING BIFF PENDENTE DE RELOAD LOCAL**
+**IN PROGRESS — CHECKPOINT III-A PASS; III-B COM CORREÇÃO DE NORMALIZAÇÃO POPULACIONAL PENDENTE DE RELOAD LOCAL**
 
 Documento operacional:
 
@@ -636,6 +636,8 @@ Segunda execução local: **PASS**. Foram gerados `SRC_SIH_RD.qvd`, `SRC_CNES_LT
 A inspeção física dos arquivos IBGE 2017–2019 foi concluída. Os três arquivos usam a planilha `Municípios`, título na linha 1, cabeçalho na linha 2 e as cinco primeiras colunas úteis `UF`, `COD. UF`, `COD. MUNIC`, `NOME DO MUNICÍPIO` e `POPULAÇÃO ESTIMADA`. O Checkpoint III-B foi implementado em `EXTRACAO/ext_main.qvs` para gerar `SRC_IBGE_POPULACAO.qvd` e `_CHECKPOINT_EXTRACAO_IBGE.csv`.
 
 Primeiro reload local do III-B: o Checkpoint III-A permaneceu PASS, mas o carregamento IBGE 2017 falhou em `Table Not Found`. O log registrou a tabela como `MunicÃ­pios$`, embora a inspeção física tenha confirmado `Municípios`. A falha foi isolada na interpretação de literal UTF-8 acentuado do include `.qvs` pelo QlikView 12. O script foi corrigido para construir em runtime, com `Chr(...)`, o nome da planilha e os cabeçalhos acentuados usados na validação.
+
+Segundo reload local do III-B: o BIFF passou a abrir corretamente, 223 registros PB foram carregados, mas o total 2017 ficou em 4.229.525. Inspeção do XLS encontrou `Livramento=7386(4)` e `Taperoá=15276(5)`; a normalização anterior incorporava os dígitos das notas. Considerando somente o valor anterior ao primeiro parêntese, o total reconciliou exatamente em 4.025.558. O script foi corrigido para remover a anotação parentética antes da conversão numérica.
 
 Próximo gate: novo reload local do `EXT.qvw` e reconciliação IBGE 669 linhas / 223 municípios por ano / totais 4.025.558, 3.996.496 e 4.018.127. A Fase III ainda exige referências auxiliares antes do marcador final de extração.
 

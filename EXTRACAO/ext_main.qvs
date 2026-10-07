@@ -404,6 +404,10 @@ LET vIBGESheet = 'Munic' & Chr(237) & 'pios$';
 LET vIBGEExpectedFieldNome = 'NOME DO MUNIC' & Chr(205) & 'PIO';
 LET vIBGEExpectedFieldPop = 'POPULA' & Chr(199) & Chr(195) & 'O ESTIMADA';
 
+// Notas numéricas anexadas à população (ex.: 7386(4), 15276(5))
+// devem ser removidas antes da normalização numérica. O valor populacional é
+// somente o trecho anterior ao primeiro parêntese.
+//
 // A inspeção física confirmou:
 // - planilha: Municípios
 // - linha 1: título
@@ -483,7 +487,10 @@ FOR EACH vIBGEYear IN '2017', '2018', '2019'
                 & Right('00000' & KeepChar(Text([$(vIBGEFieldCodMun)]), '0123456789'), 5) AS COD_IBGE_7,
             Trim([$(vIBGEFieldNome)]) AS NOME_MUNICIPIO,
             Num#(
-                KeepChar(Text([$(vIBGEFieldPop)]), '0123456789'),
+                KeepChar(
+                    SubField(Text([$(vIBGEFieldPop)]), '(', 1),
+                    '0123456789'
+                ),
                 '###############'
             ) AS POPULACAO_ESTIMADA,
             _META_SOURCE_FILE_RAW AS _META_SOURCE_FILE,
@@ -505,7 +512,10 @@ FOR EACH vIBGEYear IN '2017', '2018', '2019'
                 & Right('00000' & KeepChar(Text([$(vIBGEFieldCodMun)]), '0123456789'), 5) AS COD_IBGE_7,
             Trim([$(vIBGEFieldNome)]) AS NOME_MUNICIPIO,
             Num#(
-                KeepChar(Text([$(vIBGEFieldPop)]), '0123456789'),
+                KeepChar(
+                    SubField(Text([$(vIBGEFieldPop)]), '(', 1),
+                    '0123456789'
+                ),
                 '###############'
             ) AS POPULACAO_ESTIMADA,
             _META_SOURCE_FILE_RAW AS _META_SOURCE_FILE,

@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-B — IBGE População 2017–2019  
-**Status:** CORREÇÃO DE ENCODING BIFF IMPLEMENTADA; NOVO RELOAD LOCAL PENDENTE
+**Status:** CORREÇÃO DE NORMALIZAÇÃO POPULACIONAL IMPLEMENTADA; NOVO RELOAD LOCAL PENDENTE
 
 ## FATO VERIFICADO — inspeção física dos arquivos
 
@@ -132,6 +132,40 @@ Os identificadores acentuados usados pelo carregamento BIFF e pela validação d
 - `POPULAÇÃO ESTIMADA` → `Chr(199)` e `Chr(195)`.
 
 A correção não altera arquivos fonte, campos de staging, totais esperados, granularidade ou modelagem.
+
+## Evidência de segunda execução local
+
+A correção de encoding BIFF funcionou: o QlikView localizou `Municípios$`, reconheceu os cinco campos esperados e carregou **223 registros PB** para 2017.
+
+O gate populacional, porém, produziu **4.229.525**, acima do valor validado **4.025.558**.
+
+Uma inspeção direta do XLS identificou duas células PB com notas numéricas anexadas ao valor populacional:
+
+- Livramento: `7386(4)`;
+- Taperoá: `15276(5)`.
+
+O diagnóstico que considerou somente o número anterior ao primeiro parêntese reconciliou exatamente:
+
+`TOTAL_REGEX=4025558`
+
+### Causa identificada
+
+A expressão anterior:
+
+`KeepChar(Text([POPULAÇÃO ESTIMADA]), '0123456789')`
+
+mantinha também os dígitos das notas parentéticas, transformando, por exemplo:
+
+- `7386(4)` em `73864`;
+- `15276(5)` em `152765`.
+
+### Correção
+
+A normalização passa a considerar somente o trecho anterior ao primeiro `(` antes de remover caracteres não numéricos:
+
+`KeepChar(SubField(Text([POPULAÇÃO ESTIMADA]), '(', 1), '0123456789')`
+
+A regra é aplicada uniformemente aos três anos e preserva o número principal da publicação, descartando apenas a anotação parentética.
 
 ## Próximo gate
 
