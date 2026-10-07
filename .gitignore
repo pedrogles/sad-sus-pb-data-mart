@@ -28,3 +28,13 @@ data/qvd/*
 *.qvd
 *.qvw~
 *.qvw.bak
+
+# SAD — QlikView implementation data and derived artifacts
+BASE/DBC/
+BASE/IBGE/
+BASE/REFERENCIAS/
+BASE/CONVERTIDA/
+EXTRACAO/QVD/
+TRANSFORMACAO/QVD/
+tools/readiness_smoke.qvd
+tools/readiness_smoke_success.csv
