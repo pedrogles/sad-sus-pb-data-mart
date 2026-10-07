@@ -200,6 +200,35 @@ Decisões confirmadas:
 - CNES/ST será extraído por nomes explícitos de campos, sem depender da posição ordinal;
 - o modelo final terá como critério 0 circular references e 0 synthetic keys não justificadas.
 
+### BOUNDARY 7 — Plano de implementação
+
+**CONCLUÍDO**
+
+Documento canônico:
+
+`docs/discovery/boundary-7-implementation-plan.md`
+
+Veredito:
+
+**APROVADO PARA READINESS**
+
+Decisões confirmadas:
+
+- a implementação seguirá BASE → EXTRAÇÃO → TRANSFORMAÇÃO → PAINEL;
+- DBC será pré-processado por Python para CSV UTF-8 antes da extração QlikView;
+- baseline de ferramentas para readiness: `dbc-to-dbf==1.0.1` + `dbfread==2.0.7`;
+- o conversor deverá gerar manifesto com hashes, contagens e assinatura de schema;
+- os 108 DBCs deverão reconciliar com os resultados do Boundary 3 antes de qualquer carga QlikView;
+- a V1 será full rebuild, sem incremental;
+- `EXT.qvw` gerará QVDs de staging;
+- `TRANSF.qvw` gerará 3 fatos, 8 dimensões e `LINK_ANALISE`;
+- `PAINEL.qvw` carregará apenas QVDs transformados e aliases role-playing;
+- chaves persistidas usarão representação determinística;
+- `ErrorMode=2` será o padrão fail-fast;
+- a execução local poderá ser orquestrada por `run_pipeline.cmd`;
+- o modelo terá marcadores de sucesso e reconciliação entre estágios;
+- nenhum dashboard será iniciado antes do GO do Boundary 8.
+
 ---
 
 ## Tema confirmado
@@ -352,15 +381,17 @@ O Boundary 3 não refez byte a byte essa validação porque os três arquivos an
 
 Estas pendências **não reabrem a primeira entrega**:
 
+- executar Boundary 8 — Readiness;
+- validar a toolchain Python de conversão DBC em smoke test;
+- validar leitura do CSV pelo QlikView e caminhos de `Must_Include`;
+- validar execução `Qv.exe /r` e o mecanismo de sucesso/falha;
+- reconciliar novamente os 108 DBCs antes do GO;
 - medir cobertura real `PROC_REA × SIGTAP`;
 - medir cobertura real `DIAG_PRINC × CID-10`;
 - materializar/comparar a referência histórica de `TP_LEITO/CODLEITO`;
 - resolver ou manter explicitamente sem preenchimento a lacuna de nome fantasia/razão social para 2017-01 a 2017-05;
-- fechar no Boundary 7 a forma concreta de conversão DBC → formato legível pelo QlikView;
-- transformar a arquitetura física aprovada em scripts, ordem de execução, contratos de entrada/saída e política de erro/reexecução;
-- formalizar a matriz executável de reconciliação;
-- executar Boundary 8 — Readiness;
-- somente depois implementar dimensões, fatos, Link Table e painéis;
+- alinhar o `.gitignore` à estrutura BASE/EXTRACAO/TRANSFORMACAO quando os diretórios forem materializados;
+- somente após GO implementar conversor, scripts, QVDs, fatos, dimensões e Link Table;
 - construir e validar no mínimo 3 painéis;
 - preparar Capítulos 3–5 e anexos para a entrega final.
 
@@ -372,31 +403,33 @@ Estas pendências **não reabrem a primeira entrega**:
 
 ### Próximo boundary
 
-**BOUNDARY 7 — Plano de implementação**
+**BOUNDARY 8 — Readiness**
 
 Objetivos imediatos:
 
-1. transformar a arquitetura aprovada em sequência executável de implementação;
-2. definir arquivos `.qvs`, QVW e QVD a criar;
-3. fechar a conversão DBC → formato legível pelo QlikView;
-4. definir contratos de schema e validações fail-fast;
-5. definir geração determinística de chaves e construção da `LINK_ANALISE`;
-6. definir ordem de execução EXTRAÇÃO → TRANSFORMAÇÃO → PAINEL;
-7. definir logging, erro, reexecução e reconciliação;
-8. produzir checklist objetivo para o Boundary 8 — Readiness.
+1. validar ambiente QlikView/Python;
+2. executar smoke test da conversão DBC em área temporária;
+3. confirmar que a conversão preserva contagem/schema dos arquivos de referência;
+4. validar CSV → QlikView;
+5. validar `Must_Include` e caminhos relativos;
+6. validar reload via `Qv.exe /r`;
+7. validar o comportamento fail-fast de `ErrorMode=2`;
+8. confirmar disponibilidade dos 108 DBCs, IBGE e referências auxiliares;
+9. validar protótipo mínimo da Link Table sem synthetic keys/circular references;
+10. classificar todos os critérios de readiness e emitir **GO** ou **NO-GO**.
 
-Depois do Boundary 7:
+Após GO:
 
-1. BOUNDARY 8 — Readiness;
-2. somente então iniciar implementação definitiva.
+1. iniciar implementação definitiva seguindo `docs/discovery/boundary-7-implementation-plan.md`;
+2. não alterar silenciosamente a arquitetura aprovada.
 
 ### Boundary de conversa
 
 A primeira entrega está documentalmente encerrada.
 
-Os Boundaries 3, 4, 5 e 6 estão concluídos e persistidos.
+Os Boundaries 3, 4, 5, 6 e 7 estão concluídos e persistidos.
 
-O Boundary 7 deve começar lendo:
+O Boundary 8 deve começar lendo:
 
 - `AGENTS.md`;
 - este arquivo;
@@ -404,6 +437,7 @@ O Boundary 7 deve começar lendo:
 - `docs/discovery/boundary-4-auxiliary-references.md`;
 - `docs/discovery/boundary-5-historization-role-playing.md`;
 - `docs/discovery/boundary-6-qlikview-physical-architecture.md`;
+- `docs/discovery/boundary-7-implementation-plan.md`;
 - documentação acadêmica aplicável.
 
 ---
