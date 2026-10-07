@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 CID-10 ABERTO EM PERFIL DE ENTRADA**
+**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1 PASS E C2.2 PADDING DIAGNOSTIC PENDENTE DE EXECUÇÃO LOCAL**
 
 Documento operacional:
 
@@ -651,9 +651,11 @@ A rematerialização corrigida retornou `CARATER_ROWS=6`, `MOTIVO_ROWS=28`, `VER
 
 **CHECKPOINT III-C1: PASS.**
 
-O Checkpoint III-C2 — CID-10 foi aberto com `tools/profile_cid10_diag_princ.py`. A primeira etapa é deliberadamente read-only sobre os 36 CSVs RD: preservar `DIAG_PRINC` bruto, medir códigos distintos/comprimentos/formas e exigir 36 arquivos, 566.672 linhas e 0 vazios antes de inspecionar/materializar a referência oficial.
+O Checkpoint III-C2 — CID-10 foi aberto com `tools/profile_cid10_diag_princ.py`. O C2.1 executou **PASS** sobre os 36 CSVs RD / 566.672 linhas: 5.480 códigos brutos distintos, 0 vazios e largura física 4 em todas as linhas. Foram observadas 506.249 linhas alfanuméricas uppercase e 60.423 linhas com whitespace, correspondendo a 4.954 e 526 códigos distintos, respectivamente. O perfil foi persistido localmente com SHA-256 `1d185cd4780d4c688a8ceeaf8b14cdaa359f040a1590b710a8d9daeaf4870dbc`.
 
-Próximo gate: executar localmente o perfil de `DIAG_PRINC`. Depois, inspecionar o pacote oficial CID-10 e comparar inicialmente por código bruto; qualquer normalização só poderá ser aprovada mediante diferença de cobertura mensurada. SIGTAP, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+A documentação oficial CMD/DATASUS também define o código de diagnóstico CID-10 como alfanumérico de tamanho 4, mas isso não resolve sozinho o significado do whitespace observado. O C2.2 foi implementado em `tools/inspect_cid10_diag_princ_padding.py` para medir posição/caractere do whitespace e colisões após `strip()`, sem alterar a fonte.
+
+Próximo gate: executar o C2.2 localmente. Depois, inspecionar/materializar `tb_cid.txt` e seu layout a partir de pacote oficial SIGTAP e medir a cobertura antes de aprovar qualquer normalização de chave. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
