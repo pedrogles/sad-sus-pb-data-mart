@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — CHECKPOINT III-A PASS; IBGE PENDENTE DE INSPEÇÃO FÍSICA**
+**IN PROGRESS — CHECKPOINT III-A PASS; CHECKPOINT III-B IBGE IMPLEMENTADO E PENDENTE DE RELOAD LOCAL**
 
 Documento operacional:
 
@@ -633,7 +633,9 @@ Primeira execução local do III-A: RD carregou 36/36 arquivos e 566.672 registr
 
 Segunda execução local: **PASS**. Foram gerados `SRC_SIH_RD.qvd`, `SRC_CNES_LT.qvd`, `SRC_CNES_ST.qvd` e `_CHECKPOINT_EXTRACAO_SAUDE.csv`, com `PASS_PARTIAL`, RD=566.672, LT=35.518 e ST=220.390.
 
-A Fase III ainda exige IBGE e referências auxiliares antes do marcador final de extração. Próximo gate: inspeção física dos arquivos IBGE 2017–2019 para fechar nomes de planilha, linha de cabeçalho e colunas reais sem inventar estrutura.
+A inspeção física dos arquivos IBGE 2017–2019 foi concluída. Os três arquivos usam a planilha `Municípios`, título na linha 1, cabeçalho na linha 2 e as cinco primeiras colunas úteis `UF`, `COD. UF`, `COD. MUNIC`, `NOME DO MUNICÍPIO` e `POPULAÇÃO ESTIMADA`. O Checkpoint III-B foi implementado em `EXTRACAO/ext_main.qvs` para gerar `SRC_IBGE_POPULACAO.qvd` e `_CHECKPOINT_EXTRACAO_IBGE.csv`.
+
+Próximo gate: reload local do `EXT.qvw` e reconciliação IBGE 669 linhas / 223 municípios por ano / totais 4.025.558, 3.996.496 e 4.018.127. A Fase III ainda exige referências auxiliares antes do marcador final de extração.
 
 Fora de escopo nesta fase:
 
