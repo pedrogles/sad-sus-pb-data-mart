@@ -566,7 +566,7 @@ Cada item inspecionado contém `size_bytes` e `sha256`, além de fonte, competê
 
 Foi adicionado:
 
-`tools/readiness_reconcile_hashes.ps1`
+`tools/readiness_reconcile_hashes.py`
 
 para comparar os 108 itens do manifesto com a BASE local.
 
@@ -580,4 +580,4 @@ O Boundary 8 permanece **IN PROGRESS**.
 
 Próxima ação:
 
-executar `tools/readiness_reconcile_hashes.ps1` contra o ZIP de aquisição e a BASE local.
+executar `tools/readiness_reconcile_hashes.py` contra o ZIP de aquisição e a BASE local usando a `.venv` já validada.
