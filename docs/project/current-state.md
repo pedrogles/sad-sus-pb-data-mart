@@ -530,15 +530,42 @@ Nenhuma conversão integral, dimensão, fato, Link Table definitiva, indicador o
 
 Status:
 
-**READY — AGUARDANDO SMOKE CONTROLADO**
+**IN PROGRESS — SMOKE CONTROLADO PASS; CONVERSÃO 108/108 AUTORIZADA**
 
-Sequência obrigatória conforme Boundary 7:
+### Evidência local do smoke — 07/10/2026
 
-1. validar primeiro 1 RD;
-2. validar primeiro 1 LT;
-3. validar `STPB1912.dbc`;
-4. reconciliar registros/schema e manifesto;
-5. somente com os três PASS, executar 108/108.
+Arquivos localizados de forma única sob `BASE`:
+
+- `RDPB1702.dbc`;
+- `LTPB1712.dbc`;
+- `STPB1912.dbc`.
+
+Resultados do conversor definitivo:
+
+- `RDPB1702.dbc`: **PASS — 13.912 registros / 113 campos**;
+- `LTPB1712.dbc`: **PASS — 1.033 registros / 28 campos**;
+- `STPB1912.dbc`: **PASS — 6.438 registros / 208 campos**.
+
+Manifesto do smoke:
+
+- 3 linhas;
+- 3/3 com `status=PASS`;
+- 3/3 hashes SHA-256 de entrada válidos;
+- 3/3 hashes SHA-256 de saída válidos;
+- 3/3 assinaturas de schema SHA-256 válidas;
+- hashes de entrada recalculados: **3/3 MATCH**;
+- hashes de saída recalculados: **3/3 MATCH**.
+
+O layout local real mantém os DBCs em uma raiz compartilhada `BASE/DBC`. O conversor foi ajustado para selecionar recursivamente apenas a família indicada por `--source-family`, permitindo executar RD, LT e ST diretamente dessa raiz sem duplicar os 108 arquivos. Para a carga integral será usado `--expected-files 36` como proteção contra lote incompleto.
+
+### Próximo gate
+
+Executar:
+
+1. 36 RD;
+2. 36 LT;
+3. 36 ST;
+4. reconciliar T01–T06 antes de iniciar a Fase III — Extração.
 
 A Fase II não autoriza ainda implementar `EXT.qvw` como extração definitiva, dimensões, fatos, `LINK_ANALISE`, indicadores ou dashboards.
 
@@ -552,9 +579,9 @@ Status:
 
 Próxima ação autorizada:
 
-1. iniciar a Fase II com smoke controlado de 1 RD + 1 LT + `STPB1912.dbc`;
-2. validar contagem de registros, quantidade de campos, hashes e manifesto de conversão;
-3. somente após PASS dos três arquivos, executar a conversão integral 108/108;
+1. executar a conversão integral 36 RD + 36 LT + 36 ST usando `tools/dbc_to_csv.py`;
+2. usar `--expected-files 36` em cada família;
+3. reconciliar 108/108, totais de registros T03–T05 e schema T06;
 4. não iniciar ainda Extração definitiva, Transformação, Link Table, indicadores ou dashboards;
 5. preservar o fluxo acadêmico `BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
 
