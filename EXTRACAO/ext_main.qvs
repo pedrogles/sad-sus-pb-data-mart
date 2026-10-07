@@ -398,6 +398,12 @@ TRACE [EXTRACAO] PHASE_III_A_HEALTH_STAGING_PASS RD=$(vRDRows) LT=$(vLTRows) ST=
 
 TRACE [EXTRACAO] Phase III-B IBGE staging start;
 
+// Evita dependência da codificação do include .qvs para identificadores
+// acentuados exigidos pelo BIFF e pela validação de schema.
+LET vIBGESheet = 'Munic' & Chr(237) & 'pios$';
+LET vIBGEExpectedFieldNome = 'NOME DO MUNIC' & Chr(205) & 'PIO';
+LET vIBGEExpectedFieldPop = 'POPULA' & Chr(199) & Chr(195) & 'O ESTIMADA';
+
 // A inspeção física confirmou:
 // - planilha: Municípios
 // - linha 1: título
@@ -427,7 +433,7 @@ FOR EACH vIBGEYear IN '2017', '2018', '2019'
         FileName() AS _META_SOURCE_FILE_RAW,
         FilePath() AS _META_SOURCE_PATH_RAW
     FROM [$(vIBGEFile)]
-    (biff, embedded labels, table is [Municípios$], header is 1 lines);
+    (biff, embedded labels, table is [$(vIBGESheet)], header is 1 lines);
 
     IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
         TRACE [EXTRACAO][IBGE][$(vIBGEYear)] XLS LOAD failed. Errors=$(ScriptErrorList);
@@ -455,12 +461,12 @@ FOR EACH vIBGEYear IN '2017', '2018', '2019'
         EXIT SCRIPT;
     ENDIF
 
-    IF Trim('$(vIBGEFieldNome)') <> 'NOME DO MUNICÍPIO' THEN
+    IF Trim('$(vIBGEFieldNome)') <> '$(vIBGEExpectedFieldNome)' THEN
         TRACE [EXTRACAO][IBGE][$(vIBGEYear)] unexpected field 4. Actual=$(vIBGEFieldNome);
         EXIT SCRIPT;
     ENDIF
 
-    IF Trim('$(vIBGEFieldPop)') <> 'POPULAÇÃO ESTIMADA' THEN
+    IF Trim('$(vIBGEFieldPop)') <> '$(vIBGEExpectedFieldPop)' THEN
         TRACE [EXTRACAO][IBGE][$(vIBGEYear)] unexpected field 5. Actual=$(vIBGEFieldPop);
         EXIT SCRIPT;
     ENDIF
