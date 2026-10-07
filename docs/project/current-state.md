@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — CHECKPOINT III-A DE STAGING DE SAÚDE IMPLEMENTADO; RELOAD LOCAL PENDENTE**
+**IN PROGRESS — CHECKPOINT III-A IMPLEMENTADO; CORREÇÃO DE COMPETÊNCIA PENDENTE DE RELOAD LOCAL**
 
 Documento operacional:
 
@@ -628,6 +628,8 @@ Critérios embutidos no script:
 - ST = 36 arquivos / 220.390 registros;
 - 36 competências distintas por família;
 - 0 divergências de competência.
+
+Primeira execução local do III-A: RD carregou 36/36 arquivos e 566.672 registros, mas a checagem técnica de competência marcou 566.672 divergências e interrompeu o script antes do primeiro QVD. O log demonstrou que a falha estava na comparação numérica aplicada a campos carregados com `Text(...)`, não nos dados nem nas contagens. A checagem foi corrigida para comparação textual normalizada; novo reload local é o próximo gate.
 
 A Fase III ainda exige IBGE e referências auxiliares antes do marcador final de extração. Os nomes físicos de planilha/cabeçalho dos arquivos IBGE ainda não estão persistidos com evidência suficiente e não serão inventados.
 
