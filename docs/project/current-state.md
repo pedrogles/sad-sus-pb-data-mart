@@ -117,6 +117,60 @@ Principais evidências:
 
 Nenhuma decisão estrutural aprovada para fatos, dimensões, granularidades ou Star Schema precisou ser alterada.
 
+### BOUNDARY 4 — Referências Auxiliares
+
+**CONCLUÍDO**
+
+Documento canônico:
+
+`docs/discovery/boundary-4-auxiliary-references.md`
+
+Veredito:
+
+**APROVADO PARA PROSSEGUIR COM AJUSTES**
+
+Principais resultados:
+
+- SIGTAP confirmado como referência oficial de `PROC_REA`, com tratamento por competência;
+- CID-10 confirmada como referência de `DIAG_PRINC`;
+- domínio oficial de `CAR_INT` fechado em `01`–`06`;
+- `COBRANCA=24` resolvido oficialmente como código normativo `2.4`, “Por Processo de doação de órgãos, tecidos e células — doador vivo”;
+- referências oficiais de `TP_LEITO` / `CODLEITO` localizadas e mantidas como competência-aware;
+- fonte histórica de estabelecimento localizada, com lacuna ainda não comprovada para nome fantasia / razão social em 2017-01 a 2017-05;
+- nenhuma decisão estrutural de fatos, dimensões, granularidades ou Star Schema foi alterada.
+
+Ajustes ainda pendentes de implementação:
+
+- medir cobertura real `PROC_REA × SIGTAP`;
+- medir cobertura real `DIAG_PRINC × CID-10`;
+- materializar/comparar a referência histórica de `TP_LEITO/CODLEITO`;
+- manter explícita a lacuna de nomes históricos de estabelecimento no início de 2017.
+
+### BOUNDARY 5 — Historização / Role-playing
+
+**CONCLUÍDO**
+
+Documento canônico:
+
+`docs/discovery/boundary-5-historization-role-playing.md`
+
+Veredito:
+
+**APROVADO PARA PROSSEGUIR**
+
+Decisões confirmadas:
+
+- `DIM_ESTABELECIMENTO` será versionada por snapshot mensal;
+- grão histórico: `CNES × competência`;
+- `SK_ESTABELECIMENTO` identifica a versão histórica; `CNES` permanece a identidade natural;
+- SCD Type 1 e Type 3 foram rejeitados;
+- SCD Type 2 comprimido por intervalos não será usado na V1;
+- nomes históricos sem fonte comprovada não serão preenchidos por forward fill, backfill ou uso retroativo do nome atual;
+- `DIM_TEMPO` permanece dimensão conformada única, com aliases físicos por papel no QlikView;
+- `DIM_MUNICIPIO` permanece dimensão conformada única, com aliases físicos por papel no QlikView;
+- a fonte física canônica de Tempo/Município não será duplicada por papel;
+- a estratégia física multi-fato será fechada no Boundary 6.
+
 ---
 
 ## Tema confirmado
@@ -269,13 +323,14 @@ O Boundary 3 não refez byte a byte essa validação porque os três arquivos an
 
 Estas pendências **não reabrem a primeira entrega**:
 
-- materializar referências oficiais SIGTAP/CID/CNES e domínios auxiliares por competência;
-- fechar a descrição oficial e o tratamento de `COBRANCA=24`;
-- definir fonte histórica definitiva de nome fantasia/razão social;
-- definir técnica física de historização de `DIM_ESTABELECIMENTO`;
-- definir a representação física das dimensões role-playing no QlikView;
+- medir cobertura real `PROC_REA × SIGTAP`;
+- medir cobertura real `DIAG_PRINC × CID-10`;
+- materializar/comparar a referência histórica de `TP_LEITO/CODLEITO`;
+- resolver ou manter explicitamente sem preenchimento a lacuna de nome fantasia/razão social para 2017-01 a 2017-05;
+- definir a arquitetura física multi-fato no QlikView;
 - definir a estratégia física de tolerância a schema para CNES/ST;
-- definir scripts/QVD/QVW;
+- definir convenções de chaves, aliases role-playing, QVD e QVW;
+- definir testes de reconciliação e prevenção de synthetic keys/circular references;
 - implementar as dimensões;
 - implementar as fatos;
 - construir e validar no mínimo 3 painéis;
@@ -289,33 +344,38 @@ Estas pendências **não reabrem a primeira entrega**:
 
 ### Próximo boundary
 
-**BOUNDARY 4 — Referências auxiliares**
+**BOUNDARY 6 — Arquitetura física QlikView**
 
 Objetivos imediatos:
 
-1. fechar fontes oficiais e vigência temporal das referências usadas nas dimensões;
-2. materializar o mapeamento de `PROC_REA` para SIGTAP;
-3. materializar o mapeamento de `DIAG_PRINC` para CID-10;
-4. fechar domínios oficiais de `CAR_INT` e `COBRANCA`, incluindo o código `24`;
-5. fechar referências CNES necessárias para `DIM_TIPO_LEITO` e atributos cadastrais de estabelecimento;
-6. investigar a fonte histórica oficial para nome fantasia/razão social por competência;
-7. registrar lacunas que devam seguir para o Boundary 5 sem antecipar decisões de historização física.
+1. comparar formalmente fato concatenada vs Link Table;
+2. definir chaves associativas e convenções de nomes;
+3. prevenir synthetic keys e circular references;
+4. definir a organização física de QVD/QVW preservando o fluxo BASE → EXTRAÇÃO → TRANSFORMAÇÃO → PAINEL;
+5. fechar a estratégia física para o drift de schema CNES/ST em 2019-12;
+6. definir testes de reconciliação;
+7. manter os três fatos e as oito dimensões acadêmicas sem alteração silenciosa.
 
-Depois do Boundary 4:
+Depois do Boundary 6:
 
-1. BOUNDARY 5 — Historização / role-playing;
-2. BOUNDARY 6 — Arquitetura física QlikView;
-3. BOUNDARY 7 — Plano de implementação;
-4. BOUNDARY 8 — Readiness;
-5. somente então iniciar implementação definitiva.
+1. BOUNDARY 7 — Plano de implementação;
+2. BOUNDARY 8 — Readiness;
+3. somente então iniciar implementação definitiva.
 
 ### Boundary de conversa
 
 A primeira entrega está documentalmente encerrada.
 
-O Boundary 3 está concluído e persistido.
+Os Boundaries 3, 4 e 5 estão concluídos e persistidos.
 
-O Boundary 4 deve preferencialmente começar em **novo chat**, lendo este arquivo e as fontes canônicas antes da investigação.
+O Boundary 6 deve começar lendo:
+
+- `AGENTS.md`;
+- este arquivo;
+- `docs/discovery/boundary-3-full-dataset-validation.md`;
+- `docs/discovery/boundary-4-auxiliary-references.md`;
+- `docs/discovery/boundary-5-historization-role-playing.md`;
+- documentação acadêmica aplicável.
 
 ---
 
