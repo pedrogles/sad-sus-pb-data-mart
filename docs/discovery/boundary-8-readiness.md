@@ -205,9 +205,11 @@ Status:
 
 ---
 
-# 8. Readiness do ambiente local
+# 8. Readiness do ambiente local — estado inicial
 
-Não existe evidência persistida suficiente para afirmar que o ambiente Windows de execução já possui:
+> Estado registrado na abertura do boundary. Foi posteriormente superado pelas evidências das Seções 18 e 19.
+
+Na abertura, ainda não existia evidência persistida suficiente para afirmar que o ambiente Windows de execução já possuía:
 
 - QlikView 12 executável;
 - caminho de `Qv.exe`;
@@ -220,9 +222,9 @@ Não existe evidência persistida suficiente para afirmar que o ambiente Windows
 
 Esses itens não podem ser inferidos a partir da existência dos arquivos no Project/Library.
 
-Status:
+Status histórico:
 
-**BLOCKED — LOCAL EXECUTION REQUIRED.**
+**RESOLVIDO — a execução local foi concluída e persistida nas evidências posteriores.**
 
 ---
 
@@ -270,9 +272,9 @@ A validação acadêmica/dataset já utilizou as estimativas anuais 2017–2019.
 
 Para readiness de implementação, os três arquivos devem estar fisicamente disponíveis na BASE local.
 
-Status atual do ambiente local:
+Status final do ambiente local:
 
-**UNVERIFIED.**
+**PASS — IBGE 2017–2019 confirmado no preflight local.**
 
 ---
 
@@ -333,9 +335,9 @@ O protótipo deverá comprovar:
 - 0 circular references;
 - nenhum campo descritivo compartilhado acidentalmente.
 
-Status:
+Status final:
 
-**UNVERIFIED — QLIKVIEW LOCAL REQUIRED.**
+**PASS — protótipo mínimo validado no QlikView local, sem synthetic key ou circular reference visível.**
 
 ---
 
