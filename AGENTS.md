@@ -115,9 +115,9 @@ Dimensões aprovadas:
 
 Próxima etapa planejada:
 
-**SAD — SUS PB — DATA ACQUISITION / QLIKVIEW IMPLEMENTATION DISCOVERY**
+**FASE I — INFRAESTRUTURA MÍNIMA**
 
-A próxima fase deve começar por Discovery e validação, antes de implementar scripts definitivos.
+A Discovery de implementação e o Boundary 8 foram concluídos com GO. A Fase I deve começar de forma controlada conforme o Boundary 7, sem antecipar transformação, indicadores ou dashboards.
 
 Estado atual da Discovery de implementação:
 
@@ -225,4 +225,4 @@ Antes de adicionar datasets ao Git:
 - Boundary 8 — Readiness: **CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**;
 - discovery de implementação: **CONCLUÍDA COM GO**;
 - próxima ação: iniciar **FASE I — INFRAESTRUTURA MÍNIMA** conforme `docs/discovery/boundary-7-implementation-plan.md`;
-- implementação definitiva: **BLOQUEADA ATÉ GO**.
+- implementação: **LIBERADA SOMENTE PARA A FASE I — INFRAESTRUTURA MÍNIMA**, conforme o plano aprovado.
