@@ -1000,7 +1000,68 @@ IF $(vCID10RDRows) <> 566672 THEN
 ENDIF
 
 IF $(vCID10UnmatchedRows) <> 0 THEN
-    TRACE [EXTRACAO][REF_CID10] unmatched RD rows=$(vCID10UnmatchedRows);
+
+    TRACE [EXTRACAO][REF_CID10] unmatched RD rows=$(vCID10UnmatchedRows). Generating diagnostic before controlled exit;
+
+    CID10_QVD_UNMATCHED_DIAGNOSTIC:
+    LOAD
+        Text(DIAG_PRINC) AS diag_princ_qvd,
+        RTrim(Text(DIAG_PRINC)) AS diag_princ_rtrim,
+        Upper(RTrim(Text(DIAG_PRINC))) AS diag_princ_upper_rtrim,
+        Len(Text(DIAG_PRINC)) AS qvd_length,
+        Len(RTrim(Text(DIAG_PRINC))) AS rtrim_length,
+        Ord(Mid(Text(DIAG_PRINC), 1, 1)) AS char_1_ord,
+        Ord(Mid(Text(DIAG_PRINC), 2, 1)) AS char_2_ord,
+        Ord(Mid(Text(DIAG_PRINC), 3, 1)) AS char_3_ord,
+        Ord(Mid(Text(DIAG_PRINC), 4, 1)) AS char_4_ord,
+        Count(*) AS occurrences,
+        ApplyMap(
+            'MAP_CID10',
+            Upper(RTrim(Text(DIAG_PRINC))),
+            0
+        ) AS upper_rtrim_match
+    FROM [QVD\SRC_SIH_RD.qvd] (qvd)
+    WHERE ApplyMap(
+        'MAP_CID10',
+        RTrim(Text(DIAG_PRINC)),
+        0
+    ) = 0
+    GROUP BY
+        Text(DIAG_PRINC),
+        RTrim(Text(DIAG_PRINC)),
+        Upper(RTrim(Text(DIAG_PRINC))),
+        Len(Text(DIAG_PRINC)),
+        Len(RTrim(Text(DIAG_PRINC))),
+        Ord(Mid(Text(DIAG_PRINC), 1, 1)),
+        Ord(Mid(Text(DIAG_PRINC), 2, 1)),
+        Ord(Mid(Text(DIAG_PRINC), 3, 1)),
+        Ord(Mid(Text(DIAG_PRINC), 4, 1)),
+        ApplyMap(
+            'MAP_CID10',
+            Upper(RTrim(Text(DIAG_PRINC))),
+            0
+        );
+
+    IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+        TRACE [EXTRACAO][REF_CID10] unmatched diagnostic LOAD failed. Errors=$(ScriptErrorList);
+        EXIT SCRIPT;
+    ENDIF
+
+    LET vCID10UnmatchedDistinct = NoOfRows('CID10_QVD_UNMATCHED_DIAGNOSTIC');
+
+    STORE CID10_QVD_UNMATCHED_DIAGNOSTIC
+    INTO [QVD\_DIAGNOSTIC_CID10_QVD_UNMATCHED.csv]
+    (txt, utf8, delimiter is ';', embedded labels);
+
+    IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+        TRACE [EXTRACAO][REF_CID10] unmatched diagnostic STORE failed. Errors=$(ScriptErrorList);
+        EXIT SCRIPT;
+    ENDIF
+
+    TRACE [EXTRACAO][REF_CID10] unmatched diagnostic written. Distinct=$(vCID10UnmatchedDistinct) File=QVD\_DIAGNOSTIC_CID10_QVD_UNMATCHED.csv;
+
+    DROP TABLE CID10_QVD_UNMATCHED_DIAGNOSTIC;
+
     EXIT SCRIPT;
 ENDIF
 
