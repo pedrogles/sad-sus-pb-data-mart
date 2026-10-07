@@ -478,7 +478,7 @@ O Boundary 3 não refez byte a byte essa validação porque os três arquivos an
 
 ## Pendências de implementação
 
-Estas pendências **não reabrem a primeira entrega** e não bloqueiam o início da Fase I:
+Estas pendências **não reabrem a primeira entrega** e devem ser tratadas nas fases correspondentes do Boundary 7:
 
 - materializar as referências auxiliares no estágio correspondente da implementação;
 - medir cobertura real `PROC_REA × SIGTAP` em T27;
