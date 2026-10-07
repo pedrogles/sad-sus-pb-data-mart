@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C1 — Caráter de Atendimento + Motivo de Saída/Permanência  
-**Status:** MATERIALIZAÇÃO LOCAL PASS; INTEGRAÇÃO QLIK IMPLEMENTADA; RELOAD LOCAL PENDENTE
+**Status:** CARÁTER PASS; DOMÍNIO DE MOTIVO CORRIGIDO; REMATERIALIZAÇÃO E NOVO RELOAD PENDENTES
 
 ## Estado de entrada
 
@@ -62,8 +62,8 @@ Campos:
 - `codigo_normativo`;
 - `descricao`;
 - `grupo`;
-- `fonte_oficial_719`;
-- `fonte_oficial_384`.
+- `fonte_oficial_base`;
+- `fonte_oficial_atualizacao`.
 
 O `codigo_fonte` preserva a forma usada no SIH/RD sem ponto, por exemplo `24`.  
 O `codigo_normativo` preserva a forma normativa, por exemplo `2.4`.
@@ -94,7 +94,7 @@ Hashes do manifesto reconciliados localmente:
   `887e2faee8bd820dc5c4e82c81560ecba04b939c32b848baa77be3020d0a1761`  
   `MATCH=True`.
 
-**FATO VERIFICADO:** a materialização local do III-C1 está PASS.
+**FATO VERIFICADO:** a primeira materialização local passou nos controles de integridade e hash, mas o reload Qlik posterior provou que o domínio de Motivo de Saída/Permanência estava semanticamente incompleto. A materialização corrigida de 28 códigos ainda precisa ser executada e reconciliada.
 
 ## Evidência de primeiro reload Qlik do III-C1
 
@@ -159,7 +159,9 @@ O checkpoint continua `PASS_PARTIAL`, pois outras referências auxiliares ainda 
 
 ## Próximo gate
 
-Executar novo reload local de `EXTRACAO/EXT.qvw` e exigir:
+1. rematerializar os CSVs normativos com o materializador corrigido;
+2. confirmar `MOTIVO_ROWS=28` e reconciliar os novos hashes;
+3. executar novo reload local de `EXTRACAO/EXT.qvw` e exigir:
 
 - os dois QVDs normativos gerados;
 - checkpoint normativo gerado;
