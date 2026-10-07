@@ -490,10 +490,26 @@ Motivo atual:
 
 **o preflight do ambiente passou, mas faltam os smoke tests funcionais e reconciliações finais do readiness.**
 
+## Evidência de DBC smoke
+
+Documento:
+
+`docs/discovery/boundary-8-dbc-smoke-2026-10-07.md`
+
+Resultado:
+
+- `RDPB1702.dbc`: PASS — 13.912 registros / 113 campos;
+- `LTPB1712.dbc`: PASS — 1.033 registros / 28 campos;
+- `STPB1701.dbc`: PASS — 5.692 registros / 201 campos;
+- `STPB1912.dbc`: PASS — 6.438 registros / 208 campos;
+- veredito do utilitário: **PASS**.
+
+A toolchain DBC → DBF → CSV UTF-8 está comprovada no ambiente local.
+
 Pendências antes do GO:
 
-- smoke DBC → DBF/CSV;
-- reconciliação de contagem/schema/hashes;
+- reconciliar hashes locais com o manifesto de aquisição;
+- validar a versão principal do QlikView como 12;
 - leitura do CSV pelo QlikView;
 - `Must_Include`;
 - `Qv.exe /r`;
@@ -505,4 +521,4 @@ O Boundary 8 permanece **IN PROGRESS**.
 
 Próxima ação:
 
-executar `tools/readiness_dbc_smoke.py` e incorporar o relatório ao readiness.
+executar o smoke QlikView e inspecionar o Table Viewer.
