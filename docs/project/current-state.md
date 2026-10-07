@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — CHECKPOINT III-A PASS; III-B COM CORREÇÃO DE NORMALIZAÇÃO POPULACIONAL PENDENTE DE RELOAD LOCAL**
+**IN PROGRESS — CHECKPOINT III-A PASS; CHECKPOINT III-B PASS; REFERÊNCIAS AUXILIARES PENDENTES**
 
 Documento operacional:
 
@@ -639,7 +639,9 @@ Primeiro reload local do III-B: o Checkpoint III-A permaneceu PASS, mas o carreg
 
 Segundo reload local do III-B: o BIFF passou a abrir corretamente, 223 registros PB foram carregados, mas o total 2017 ficou em 4.229.525. Inspeção do XLS encontrou `Livramento=7386(4)` e `Taperoá=15276(5)`; a normalização anterior incorporava os dígitos das notas. Considerando somente o valor anterior ao primeiro parêntese, o total reconciliou exatamente em 4.025.558. O script foi corrigido para remover a anotação parentética antes da conversão numérica.
 
-Próximo gate: novo reload local do `EXT.qvw` e reconciliação IBGE 669 linhas / 223 municípios por ano / totais 4.025.558, 3.996.496 e 4.018.127. A Fase III ainda exige referências auxiliares antes do marcador final de extração.
+Terceiro reload local do III-B: **PASS**. Foram gerados `SRC_IBGE_POPULACAO.qvd` e `_CHECKPOINT_EXTRACAO_IBGE.csv`, com `PASS_PARTIAL`, 669 linhas, 223 municípios em 2017/2018/2019 e totais 4.025.558 / 3.996.496 / 4.018.127.
+
+Próximo gate: materializar e reconciliar as referências auxiliares previstas na Fase III. A fase permanece aberta até a conclusão desses gates e da reconciliação final de extração.
 
 Fora de escopo nesta fase:
 
