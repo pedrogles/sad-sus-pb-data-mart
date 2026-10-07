@@ -40,3 +40,7 @@ tools/readiness_smoke.qvd
 tools/readiness_smoke_success.csv
 readiness-report.json
 tools/READINESS.qvw
+
+tools/READINESS_FAILURE.qvw
+tools/readiness_failure_handled.csv
+tools/readiness_failure_unexpected.csv

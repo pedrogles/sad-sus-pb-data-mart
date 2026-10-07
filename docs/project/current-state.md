@@ -300,10 +300,18 @@ Evidência adicional:
 - `manifesto-execucao.json` confirmado como fonte dos `size_bytes` e `sha256` por DBC;
 - `tools/readiness_reconcile_hashes.py` adicionado para comparação 108/108.
 
-Bloqueios restantes para GO:
+Evidência adicional:
 
-- executar a reconciliação de hashes/tamanhos 108/108;
-- validar o caminho de falha do tratamento de erro em batch, se mantido como gate;
+- reconciliação de hashes/tamanhos: **PASS — 108/108**;
+- 0 ausentes, 0 duplicados, 0 divergentes, 0 extras;
+- smoke de falha de batch: **PASS**;
+- `ScriptErrorCount`: 0 → 1 na falha proposital;
+- marcador `PASS_EXPECTED_ERROR_CAUGHT` gerado;
+- marcador inesperado não gerado;
+- `docs/discovery/boundary-8-batch-failure-smoke-2026-10-07.md`.
+
+Bloqueio restante para GO:
+
 - materializar/tratar explicitamente as referências auxiliares necessárias.
 
 A implementação definitiva permanece bloqueada até o readiness emitir **GO**.
@@ -464,8 +472,8 @@ Estas pendências **não reabrem a primeira entrega**:
 - executar `tools/readiness_check.ps1` no ambiente Windows real;
 - validar a toolchain Python de conversão DBC em smoke test;
 - validar leitura do CSV pelo QlikView e caminhos de `Must_Include`;
-- validar execução `Qv.exe /r` e o mecanismo de sucesso/falha sem interação;
-- reconciliar novamente os 108 DBCs antes do GO;
+- execução `Qv.exe /r` e mecanismo de sucesso/falha sem interação: **PASS**;
+- reconciliação dos 108 DBCs antes do GO: **PASS — 108/108 hashes e tamanhos coincidentes**;
 - validar protótipo mínimo da Link Table sem synthetic keys/circular references;
 - medir cobertura real `PROC_REA × SIGTAP`;
 - medir cobertura real `DIAG_PRINC × CID-10`;
