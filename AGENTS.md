@@ -119,17 +119,21 @@ Próxima etapa planejada:
 
 A próxima fase deve começar por Discovery e validação, antes de implementar scripts definitivos.
 
-Prioridades:
+Estado atual da Discovery de implementação:
 
-1. adquirir/organizar os 36 meses de 2017–2019;
-2. repetir controles de qualidade nos dados completos;
-3. fechar fontes auxiliares por competência (SIGTAP/CID/CNES);
-4. definir a historização física de `DIM_ESTABELECIMENTO`;
-5. definir a arquitetura física do QlikView 12;
-6. definir testes de reconciliação;
-7. somente então implementar dimensões, fatos e painéis.
+1. aquisição/organização dos 36 meses de 2017–2019: concluída;
+2. validação integral dos dados: concluída no Boundary 3;
+3. referências auxiliares: concluídas no Boundary 4, com ajustes de materialização ainda pendentes;
+4. historização física de `DIM_ESTABELECIMENTO` e role-playing: concluídos no Boundary 5;
+5. próximo passo: definir a arquitetura física do QlikView 12 no Boundary 6;
+6. depois: plano de implementação, readiness e somente então implementação definitiva.
 
-Não iniciar dashboards antes da validação da carga integral e das transformações.
+Documentos canônicos adicionais:
+
+- `docs/discovery/boundary-4-auxiliary-references.md`;
+- `docs/discovery/boundary-5-historization-role-playing.md`.
+
+Não iniciar dashboards antes da arquitetura física, dos testes de reconciliação e do readiness gate.
 
 ## QlikView
 
@@ -186,4 +190,8 @@ Antes de adicionar datasets ao Git:
 - Dataset Validation / Modeling Discovery: concluída;
 - Modelagem acadêmica dos Capítulos 1 e 2: concluída;
 - Primeira entrega: fechada e pronta para impressão/entrega;
-- próxima fase: Data Acquisition / QlikView Implementation Discovery.
+- Boundary 3 — Full Dataset Validation: concluído;
+- Boundary 4 — Referências Auxiliares: concluído com ajustes;
+- Boundary 5 — Historização / Role-playing: concluído;
+- fase atual: Data Acquisition / QlikView Implementation Discovery;
+- próximo boundary: **BOUNDARY 6 — Arquitetura física QlikView**.
