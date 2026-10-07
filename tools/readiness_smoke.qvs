@@ -65,3 +65,7 @@ TRACE [READINESS] PASS CSV_ROWS=$(vReadinessCsvRows);
 DROP TABLE READINESS_SUCCESS;
 DROP TABLE READINESS_SMOKE;
 DROP TABLE READINESS_CSV;
+
+// 4) Load the minimal Link Table model.
+// This also validates a nested Must_Include path from the temporary READINESS.qvw.
+$(Must_Include=readiness_link_table_smoke.qvs);
