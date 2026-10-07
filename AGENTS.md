@@ -127,8 +127,8 @@ Estado atual da Discovery de implementação:
 4. historização física de `DIM_ESTABELECIMENTO` e role-playing: concluídos no Boundary 5;
 5. arquitetura física do QlikView 12: concluída no Boundary 6;
 6. plano de implementação: concluído no Boundary 7;
-7. Boundary 8 — Readiness: **IN PROGRESS / CONTROLLED NO-GO**;
-8. implementação definitiva permanece bloqueada até GO explícito.
+7. Boundary 8 — Readiness: **CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**;
+8. próxima etapa autorizada: **FASE I — INFRAESTRUTURA MÍNIMA**.
 
 Documentos canônicos adicionais:
 
@@ -156,9 +156,11 @@ Estado do readiness:
 - `tools/readiness_reconcile_hashes.py` foi adicionado para o gate 108/108;
 - reconciliação integral de hashes/tamanhos: **PASS — 108/108**;
 - caminho de falha do batch com `ErrorMode=0` + `ScriptErrorCount`: **PASS**;
-- resta antes do GO: fechar a disponibilidade ou o tratamento explícito das referências auxiliares necessárias.
+- referências auxiliares: tratamento explícito aprovado para o GO; materialização/cobertura permanecem na implementação;
+- T27–T29 permanecem gates de implementação para SIGTAP, CID-10 e CNES leitos;
+- Boundary 8: **CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**.
 
-Não iniciar implementação definitiva ou dashboards enquanto o Boundary 8 estiver NO-GO.
+A implementação está liberada para iniciar controladamente a **FASE I — INFRAESTRUTURA MÍNIMA**. Dashboards continuam fora de escopo até as fases posteriores previstas no Boundary 7.
 
 ## QlikView
 
@@ -220,7 +222,7 @@ Antes de adicionar datasets ao Git:
 - Boundary 5 — Historização / Role-playing: concluído;
 - Boundary 6 — Arquitetura física QlikView: concluído;
 - Boundary 7 — Plano de implementação: concluído;
-- Boundary 8 — Readiness: **IN PROGRESS / CONTROLLED NO-GO**;
-- fase atual: Data Acquisition / QlikView Implementation Discovery;
-- próxima ação: executar `tools/readiness_check.ps1` e os smoke tests locais;
+- Boundary 8 — Readiness: **CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**;
+- discovery de implementação: **CONCLUÍDA COM GO**;
+- próxima ação: iniciar **FASE I — INFRAESTRUTURA MÍNIMA** conforme `docs/discovery/boundary-7-implementation-plan.md`;
 - implementação definitiva: **BLOQUEADA ATÉ GO**.
