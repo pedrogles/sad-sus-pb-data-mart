@@ -249,5 +249,7 @@ Antes de adicionar datasets ao Git:
 - Caráter de Atendimento: **PASS**, 6 códigos, 566.672/566.672 RD cobertos e `REF_CARATER_ATENDIMENTO.qvd` gerado;
 - Motivo de Saída/Permanência: primeira referência 21 linhas deixou 124.233 RD unmatched; inspeção real encontrou 26 códigos observados;
 - correção normativa: Portaria SAS/MS nº 384/2010 exclui 13/17, confirma 19, altera internação domiciliar para 32 e inclui 61–67; domínio oficial materializado passa a 28 códigos, incluindo 32/67 não observados;
-- próxima ação: rematerializar referências, validar novos hashes e repetir o reload local de `EXT.qvw`;
+- rematerialização corrigida: **PASS**, Caráter=6, Motivo=28, hashes 2/2 `MATCH=True`;
+- segundo reload III-C1: **CHECKPOINT III-C1 PASS**; `REF_CARATER_ATENDIMENTO.qvd`, `REF_MOTIVO_SAIDA.qvd` e `_CHECKPOINT_EXTRACAO_REFERENCIAS_NORMATIVAS.csv` gerados com 0 unmatched em ambas as referências;
+- próxima ação: prosseguir para a próxima referência auxiliar da Fase III, começando por CID-10 e teste empírico de cobertura de `DIAG_PRINC`;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
