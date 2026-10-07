@@ -245,7 +245,9 @@ Antes de adicionar datasets ao Git:
 - correção: população é normalizada somente a partir do trecho anterior ao primeiro parêntese; diagnóstico local reconciliou 2017 em 4.025.558;
 - terceiro reload III-B: **CHECKPOINT III-B PASS**; `SRC_IBGE_POPULACAO.qvd` e `_CHECKPOINT_EXTRACAO_IBGE.csv` gerados com 669 linhas, 223 municípios por ano e totais 4.025.558 / 3.996.496 / 4.018.127;
 - inventário de `BASE/REFERENCIAS`: diretório inicialmente vazio;
-- Fase III — Checkpoint III-C1: materialização local de Caráter de Atendimento e Motivo de Saída/Permanência **PASS**; 6/21 linhas, UTF-8 correto e hashes 2/2 `MATCH=True`;
-- integração Qlik III-C1 implementada para `REF_CARATER_ATENDIMENTO.qvd`, `REF_MOTIVO_SAIDA.qvd` e checkpoint com cobertura RD obrigatoriamente 100%;
-- próxima ação: repetir o reload local de `EXT.qvw` e validar os dois QVDs/checkpoint normativos;
+- Fase III — Checkpoint III-C1: primeira materialização local 6/21 passou em integridade, mas o primeiro reload Qlik provou que a referência de Motivo estava semanticamente incompleta;
+- Caráter de Atendimento: **PASS**, 6 códigos, 566.672/566.672 RD cobertos e `REF_CARATER_ATENDIMENTO.qvd` gerado;
+- Motivo de Saída/Permanência: primeira referência 21 linhas deixou 124.233 RD unmatched; inspeção real encontrou 26 códigos observados;
+- correção normativa: Portaria SAS/MS nº 384/2010 exclui 13/17, confirma 19, altera internação domiciliar para 32 e inclui 61–67; domínio oficial materializado passa a 28 códigos, incluindo 32/67 não observados;
+- próxima ação: rematerializar referências, validar novos hashes e repetir o reload local de `EXT.qvw`;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.

@@ -746,8 +746,8 @@ LOAD
     Text(codigo_normativo) AS MOTIVO_CODIGO_NORMATIVO,
     Text(descricao) AS MOTIVO_DESCRICAO,
     Text(grupo) AS MOTIVO_GRUPO,
-    Text(fonte_oficial_719) AS MOTIVO_FONTE_OFICIAL_719,
-    Text(fonte_oficial_384) AS MOTIVO_FONTE_OFICIAL_384,
+    Text(fonte_oficial_base) AS MOTIVO_FONTE_OFICIAL_BASE,
+    Text(fonte_oficial_atualizacao) AS MOTIVO_FONTE_OFICIAL_ATUALIZACAO,
     FileName() AS _META_SOURCE_FILE,
     'REF_MOTIVO_SAIDA' AS _META_SOURCE_FAMILY,
     FilePath() AS _META_SOURCE_PATH
@@ -766,26 +766,52 @@ LOAD
     Count(DISTINCT COBRANCA) AS distinct_code_count,
     Sum(
         If(
+            Match(
+                COBRANCA,
+                '11', '12', '14', '15', '16', '18', '19',
+                '21', '22', '23', '24', '25', '26', '27', '28',
+                '31', '32', '41', '42', '43', '51',
+                '61', '62', '63', '64', '65', '66', '67'
+            ) = 0,
+            1,
+            0
+        )
+    ) AS invalid_code_count,
+    Sum(
+        If(
             COBRANCA = '24'
                 AND MOTIVO_CODIGO_NORMATIVO = '2.4',
             1,
             0
         )
-    ) AS code_24_mapping_count
+    ) AS code_24_mapping_count,
+    Sum(If(Match(COBRANCA, '13', '17') > 0, 1, 0)) AS deprecated_code_count
 RESIDENT REF_MOTIVO_SAIDA;
 
 LET vMotivoDistinctCodes = Peek('distinct_code_count', 0, 'TMP_MOTIVO_CHECK');
+LET vMotivoInvalidCodes = Peek('invalid_code_count', 0, 'TMP_MOTIVO_CHECK');
 LET vMotivoCode24Mapping = Peek('code_24_mapping_count', 0, 'TMP_MOTIVO_CHECK');
+LET vMotivoDeprecatedCodes = Peek('deprecated_code_count', 0, 'TMP_MOTIVO_CHECK');
 
 DROP TABLE TMP_MOTIVO_CHECK;
 
-IF $(vMotivoRows) <> 21 THEN
-    TRACE [EXTRACAO][REF_MOTIVO] row count mismatch. Expected=21 Actual=$(vMotivoRows);
+IF $(vMotivoRows) <> 28 THEN
+    TRACE [EXTRACAO][REF_MOTIVO] row count mismatch. Expected=28 Actual=$(vMotivoRows);
     EXIT SCRIPT;
 ENDIF
 
-IF $(vMotivoDistinctCodes) <> 21 THEN
-    TRACE [EXTRACAO][REF_MOTIVO] distinct code mismatch. Expected=21 Actual=$(vMotivoDistinctCodes);
+IF $(vMotivoDistinctCodes) <> 28 THEN
+    TRACE [EXTRACAO][REF_MOTIVO] distinct code mismatch. Expected=28 Actual=$(vMotivoDistinctCodes);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vMotivoInvalidCodes) <> 0 THEN
+    TRACE [EXTRACAO][REF_MOTIVO] invalid official code count=$(vMotivoInvalidCodes);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vMotivoDeprecatedCodes) <> 0 THEN
+    TRACE [EXTRACAO][REF_MOTIVO] deprecated codes 13/17 must not be materialized. Count=$(vMotivoDeprecatedCodes);
     EXIT SCRIPT;
 ENDIF
 
