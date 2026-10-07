@@ -3,7 +3,8 @@
 //
 // A Fase III implementa staging das fontes validadas e das referências
 // auxiliares efetivamente materializadas. Checkpoints já implementados:
-// saúde (RD/LT/ST), IBGE e referências normativas pequenas (III-C1).
+// saúde (RD/LT/ST), IBGE, referências normativas pequenas (III-C1) e
+// integração CID-10 descritiva (III-C2; reload local ainda valida o gate).
 // Referências auxiliares restantes continuam pendentes antes do fechamento.
 //
 // Não construir fatos, dimensões ou LINK_ANALISE neste script.
@@ -893,4 +894,150 @@ ENDIF
 DROP TABLE EXTRACAO_REFERENCIAS_NORMATIVAS_CHECKPOINT;
 
 TRACE [EXTRACAO] PHASE_III_C1_NORMATIVE_REFERENCES_PASS CARATER=$(vCaraterRows) MOTIVO=$(vMotivoRows);
-TRACE [EXTRACAO] PARTIAL ONLY — SIGTAP, CID-10, CNES tipo/leito, municipal reference and establishment history remain pending; no final extraction success marker emitted.
+
+// -----------------------------------------------------------------------------
+// CID-10 — referência descritiva estática/superset (competência 201912)
+// -----------------------------------------------------------------------------
+
+TRACE [EXTRACAO] Phase III-C2 CID-10 staging start;
+
+REF_CID10:
+LOAD
+    Text(codigo_cid10) AS CID10_CODIGO,
+    Text(descricao) AS CID10_DESCRICAO,
+    Text(competencia_referencia) AS CID10_COMPETENCIA_REFERENCIA,
+    Text(fonte_arquivo) AS CID10_FONTE_ARQUIVO,
+    FileName() AS _META_SOURCE_FILE,
+    'REF_CID10' AS _META_SOURCE_FAMILY,
+    FilePath() AS _META_SOURCE_PATH
+FROM [..\BASE\REFERENCIAS\cid10_referencia.csv]
+(txt, utf8, embedded labels, delimiter is ';', msq);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_CID10] CSV LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vCID10Rows = NoOfRows('REF_CID10');
+
+TMP_CID10_CHECK:
+LOAD
+    Count(DISTINCT CID10_CODIGO) AS distinct_code_count,
+    Sum(If(Len(CID10_CODIGO) = 3, 1, 0)) AS length_3_count,
+    Sum(If(Len(CID10_CODIGO) = 4, 1, 0)) AS length_4_count,
+    Sum(If(CID10_COMPETENCIA_REFERENCIA <> '201912', 1, 0)) AS invalid_competence_count,
+    Sum(If(Len(Trim(CID10_DESCRICAO)) = 0, 1, 0)) AS empty_description_count
+RESIDENT REF_CID10;
+
+LET vCID10DistinctCodes = Peek('distinct_code_count', 0, 'TMP_CID10_CHECK');
+LET vCID10Length3 = Peek('length_3_count', 0, 'TMP_CID10_CHECK');
+LET vCID10Length4 = Peek('length_4_count', 0, 'TMP_CID10_CHECK');
+LET vCID10InvalidCompetence = Peek('invalid_competence_count', 0, 'TMP_CID10_CHECK');
+LET vCID10EmptyDescriptions = Peek('empty_description_count', 0, 'TMP_CID10_CHECK');
+
+DROP TABLE TMP_CID10_CHECK;
+
+IF $(vCID10Rows) <> 14230 THEN
+    TRACE [EXTRACAO][REF_CID10] row count mismatch. Expected=14230 Actual=$(vCID10Rows);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vCID10DistinctCodes) <> 14230 THEN
+    TRACE [EXTRACAO][REF_CID10] distinct code mismatch. Expected=14230 Actual=$(vCID10DistinctCodes);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vCID10Length3) <> 2042 THEN
+    TRACE [EXTRACAO][REF_CID10] length-3 count mismatch. Expected=2042 Actual=$(vCID10Length3);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vCID10Length4) <> 12188 THEN
+    TRACE [EXTRACAO][REF_CID10] length-4 count mismatch. Expected=12188 Actual=$(vCID10Length4);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vCID10InvalidCompetence) <> 0 THEN
+    TRACE [EXTRACAO][REF_CID10] reference competence mismatch. Count=$(vCID10InvalidCompetence);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vCID10EmptyDescriptions) <> 0 THEN
+    TRACE [EXTRACAO][REF_CID10] empty description count=$(vCID10EmptyDescriptions);
+    EXIT SCRIPT;
+ENDIF
+
+MAP_CID10:
+MAPPING LOAD
+    CID10_CODIGO,
+    1
+RESIDENT REF_CID10;
+
+TMP_CID10_RD_COVERAGE:
+LOAD
+    Count(*) AS rd_rows,
+    Sum(
+        If(
+            ApplyMap(
+                'MAP_CID10',
+                RTrim(Text(DIAG_PRINC)),
+                0
+            ) = 0,
+            1,
+            0
+        )
+    ) AS unmatched_rows
+FROM [QVD\SRC_SIH_RD.qvd] (qvd);
+
+LET vCID10RDRows = Peek('rd_rows', 0, 'TMP_CID10_RD_COVERAGE');
+LET vCID10UnmatchedRows = Peek('unmatched_rows', 0, 'TMP_CID10_RD_COVERAGE');
+
+DROP TABLE TMP_CID10_RD_COVERAGE;
+
+IF $(vCID10RDRows) <> 566672 THEN
+    TRACE [EXTRACAO][REF_CID10] RD reconciliation mismatch. Expected=566672 Actual=$(vCID10RDRows);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vCID10UnmatchedRows) <> 0 THEN
+    TRACE [EXTRACAO][REF_CID10] unmatched RD rows=$(vCID10UnmatchedRows);
+    EXIT SCRIPT;
+ENDIF
+
+STORE REF_CID10 INTO [QVD\REF_CID10.qvd] (qvd);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_CID10] QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+TRACE [EXTRACAO][REF_CID10] PASS rows=$(vCID10Rows) unmatched_rd=$(vCID10UnmatchedRows);
+
+DROP TABLE REF_CID10;
+
+EXTRACAO_CID10_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'EXTRACAO_CID10' AS stage,
+    'PASS_PARTIAL' AS status,
+    $(vCID10Rows) AS cid10_rows,
+    $(vCID10DistinctCodes) AS cid10_distinct_codes,
+    $(vCID10Length3) AS cid10_length_3,
+    $(vCID10Length4) AS cid10_length_4,
+    $(vCID10RDRows) AS rd_rows,
+    $(vCID10UnmatchedRows) AS cid10_unmatched_rd_rows
+AUTOGENERATE 1;
+
+STORE EXTRACAO_CID10_CHECKPOINT
+INTO [QVD\_CHECKPOINT_EXTRACAO_CID10.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_CID10] checkpoint STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE EXTRACAO_CID10_CHECKPOINT;
+
+TRACE [EXTRACAO] PHASE_III_C2_CID10_STAGING_PASS ROWS=$(vCID10Rows) UNMATCHED_RD=$(vCID10UnmatchedRows);
+TRACE [EXTRACAO] PARTIAL ONLY — SIGTAP procedure, CNES tipo/leito, municipal reference and establishment history remain pending; no final extraction success marker emitted.
