@@ -1,0 +1,45 @@
+SET ErrorMode=0;
+
+LET vErrorsBefore = ScriptErrorCount;
+
+// Intentional failure: this file must remain absent.
+READINESS_EXPECTED_FAILURE:
+LOAD *
+FROM [..\BASE\CONVERTIDA\readiness-smoke\__EXPECTED_MISSING_FILE__.csv]
+(txt, utf8, embedded labels, delimiter is ';', msq);
+
+LET vErrorsAfter = ScriptErrorCount;
+
+IF $(vErrorsAfter) <= $(vErrorsBefore) THEN
+
+    READINESS_FAILURE_UNEXPECTED:
+    LOAD
+        Timestamp(Now(1)) AS generated_at,
+        'FAILURE_PATH' AS stage,
+        'FAIL_EXPECTED_ERROR_NOT_DETECTED' AS status
+    AUTOGENERATE 1;
+
+    STORE READINESS_FAILURE_UNEXPECTED
+    INTO [readiness_failure_unexpected.csv]
+    (txt, utf8, delimiter is ';', embedded labels);
+
+    EXIT SCRIPT;
+
+ENDIF
+
+READINESS_FAILURE_HANDLED:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'FAILURE_PATH' AS stage,
+    'PASS_EXPECTED_ERROR_CAUGHT' AS status,
+    $(vErrorsBefore) AS errors_before,
+    $(vErrorsAfter) AS errors_after
+AUTOGENERATE 1;
+
+STORE READINESS_FAILURE_HANDLED
+INTO [readiness_failure_handled.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+TRACE [READINESS] EXPECTED FAILURE CAUGHT. ErrorsBefore=$(vErrorsBefore) ErrorsAfter=$(vErrorsAfter);
+
+EXIT SCRIPT;
