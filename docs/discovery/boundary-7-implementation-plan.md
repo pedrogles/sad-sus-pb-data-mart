@@ -846,25 +846,37 @@ População anual não deve ser somada entre anos.
 
 # 25. Error handling QlikView
 
-### Decisão
+### Ajuste confirmado no Boundary 8
 
-Usar:
+Para execução automatizada com `Qv.exe /r`, a documentação oficial do QlikView recomenda `ErrorMode=0` para evitar diálogos de erro em batch.
 
-`SET ErrorMode=2;`
+Portanto, o baseline operacional passa a ser:
 
-como padrão operacional dos scripts, para falhar imediatamente sem prompt interativo.
+`SET ErrorMode=0;`
 
-`ErrorMode=0` só poderá ser utilizado temporariamente em checagens opcionais controladas, seguido de inspeção explícita de:
+com checagem explícita após operações críticas usando:
 
 - `ScriptError`;
 - `ScriptErrorCount`;
 - `ScriptErrorList`.
 
-Depois restaurar `ErrorMode=2`.
+Quando uma etapa crítica falhar, o script deve:
+
+1. emitir `TRACE` com o erro;
+2. não emitir o marcador de sucesso;
+3. interromper o fluxo por `EXIT SCRIPT` ou mecanismo equivalente validado;
+4. impedir o runner de avançar ao estágio seguinte.
+
+`ErrorMode=2` poderá ser usado em execução interativa/manual quando o objetivo for interromper imediatamente e exibir a mensagem de erro, mas não é o baseline de batch.
 
 ### Regra
 
-Não ignorar erro para “terminar a carga”.
+`ErrorMode=0` não significa ignorar erro operacionalmente. Toda falha crítica deve ser inspecionada explicitamente antes de continuar.
+
+Fonte oficial:
+
+- https://help.qlik.com/en-US/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Starting_QlikView.htm
+- https://help.qlik.com/en-US/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Scripting/ErrorVariables/ErrorMode.htm
 
 ---
 
@@ -1153,7 +1165,7 @@ Antes de iniciar a Fase I definitiva, o Boundary 8 deverá verificar:
 - [ ] leitura CSV pelo QlikView validada;
 - [ ] caminhos relativos / `Must_Include` validados;
 - [ ] `/r` validado em QVW mínimo;
-- [ ] `ErrorMode=2` validado;
+- [ ] `ErrorMode=0` + checagem explícita de `ScriptErrorCount` validado em batch;
 - [ ] arquivos BASE disponíveis localmente;
 - [ ] 108 DBCs reconciliados com o inventário;
 - [ ] arquivos IBGE presentes;

@@ -224,10 +224,42 @@ Decisões confirmadas:
 - `TRANSF.qvw` gerará 3 fatos, 8 dimensões e `LINK_ANALISE`;
 - `PAINEL.qvw` carregará apenas QVDs transformados e aliases role-playing;
 - chaves persistidas usarão representação determinística;
-- `ErrorMode=2` será o padrão fail-fast;
+- para batch, o baseline foi corrigido no Boundary 8 para `ErrorMode=0` + checagem explícita das variáveis de erro;
 - a execução local poderá ser orquestrada por `run_pipeline.cmd`;
 - o modelo terá marcadores de sucesso e reconciliação entre estágios;
 - nenhum dashboard será iniciado antes do GO do Boundary 8.
+
+### BOUNDARY 8 — Readiness
+
+**IN PROGRESS — CONTROLLED NO-GO**
+
+Documento canônico:
+
+`docs/discovery/boundary-8-readiness.md`
+
+Evidências já fechadas:
+
+- `dbc-to-dbf==1.0.1` disponível no PyPI e compatível com Python >= 3.7;
+- `dbfread==2.0.7` disponível no PyPI;
+- `Qv.exe /r` e `Must_Include` confirmados em documentação oficial;
+- política de erro de batch corrigida para evitar diálogos interativos;
+- `.gitignore` alinhado à estrutura BASE/EXTRACAO/TRANSFORMACAO;
+- `tools/readiness_check.ps1` adicionado;
+- `tools/readiness_smoke.qvs` adicionado.
+
+Bloqueios atuais para GO:
+
+- QlikView 12 local ainda não comprovado;
+- caminho de `Qv.exe` ainda não comprovado;
+- Python/`.venv` local ainda não comprovados;
+- pacotes Python ainda não comprovados no ambiente local;
+- 108 DBCs ainda não reconciliados no workspace local;
+- smoke DBC ainda não executado com a toolchain planejada;
+- CSV → QlikView / `Must_Include` / `Qv.exe /r` ainda não testados localmente;
+- protótipo mínimo da Link Table ainda não validado no Table Viewer;
+- referências auxiliares continuam parcialmente não materializadas.
+
+A implementação definitiva permanece bloqueada até o readiness emitir **GO**.
 
 ---
 
@@ -381,16 +413,17 @@ O Boundary 3 não refez byte a byte essa validação porque os três arquivos an
 
 Estas pendências **não reabrem a primeira entrega**:
 
-- executar Boundary 8 — Readiness;
+- concluir Boundary 8 — Readiness;
+- executar `tools/readiness_check.ps1` no ambiente Windows real;
 - validar a toolchain Python de conversão DBC em smoke test;
 - validar leitura do CSV pelo QlikView e caminhos de `Must_Include`;
-- validar execução `Qv.exe /r` e o mecanismo de sucesso/falha;
+- validar execução `Qv.exe /r` e o mecanismo de sucesso/falha sem interação;
 - reconciliar novamente os 108 DBCs antes do GO;
+- validar protótipo mínimo da Link Table sem synthetic keys/circular references;
 - medir cobertura real `PROC_REA × SIGTAP`;
 - medir cobertura real `DIAG_PRINC × CID-10`;
 - materializar/comparar a referência histórica de `TP_LEITO/CODLEITO`;
 - resolver ou manter explicitamente sem preenchimento a lacuna de nome fantasia/razão social para 2017-01 a 2017-05;
-- alinhar o `.gitignore` à estrutura BASE/EXTRACAO/TRANSFORMACAO quando os diretórios forem materializados;
 - somente após GO implementar conversor, scripts, QVDs, fatos, dimensões e Link Table;
 - construir e validar no mínimo 3 painéis;
 - preparar Capítulos 3–5 e anexos para a entrega final.
@@ -401,27 +434,25 @@ Estas pendências **não reabrem a primeira entrega**:
 
 **SAD — SUS PB — DATA ACQUISITION / QLIKVIEW IMPLEMENTATION DISCOVERY**
 
-### Próximo boundary
+### Boundary atual
 
 **BOUNDARY 8 — Readiness**
 
-Objetivos imediatos:
+Status:
 
-1. validar ambiente QlikView/Python;
-2. executar smoke test da conversão DBC em área temporária;
-3. confirmar que a conversão preserva contagem/schema dos arquivos de referência;
-4. validar CSV → QlikView;
-5. validar `Must_Include` e caminhos relativos;
-6. validar reload via `Qv.exe /r`;
-7. validar o comportamento fail-fast de `ErrorMode=2`;
-8. confirmar disponibilidade dos 108 DBCs, IBGE e referências auxiliares;
-9. validar protótipo mínimo da Link Table sem synthetic keys/circular references;
-10. classificar todos os critérios de readiness e emitir **GO** ou **NO-GO**.
+**IN PROGRESS — CONTROLLED NO-GO**
 
-Após GO:
+Próxima ação obrigatória:
 
-1. iniciar implementação definitiva seguindo `docs/discovery/boundary-7-implementation-plan.md`;
-2. não alterar silenciosamente a arquitetura aprovada.
+1. executar `tools/readiness_check.ps1` no ambiente Windows que executará o QlikView;
+2. corrigir os itens FAIL/BLOCKED retornados;
+3. executar o smoke test QlikView com `tools/readiness_smoke.qvs`;
+4. reconciliar os DBCs locais com o Boundary 3;
+5. validar o protótipo mínimo da Link Table;
+6. atualizar `docs/discovery/boundary-8-readiness.md`;
+7. emitir **GO** ou manter **NO-GO** com blockers explícitos.
+
+Nenhuma implementação definitiva deve começar antes do GO.
 
 ### Boundary de conversa
 
@@ -429,16 +460,9 @@ A primeira entrega está documentalmente encerrada.
 
 Os Boundaries 3, 4, 5, 6 e 7 estão concluídos e persistidos.
 
-O Boundary 8 deve começar lendo:
+O Boundary 8 está aberto e persistido em:
 
-- `AGENTS.md`;
-- este arquivo;
-- `docs/discovery/boundary-3-full-dataset-validation.md`;
-- `docs/discovery/boundary-4-auxiliary-references.md`;
-- `docs/discovery/boundary-5-historization-role-playing.md`;
-- `docs/discovery/boundary-6-qlikview-physical-architecture.md`;
-- `docs/discovery/boundary-7-implementation-plan.md`;
-- documentação acadêmica aplicável.
+`docs/discovery/boundary-8-readiness.md`
 
 ---
 

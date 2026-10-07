@@ -1,0 +1,45 @@
+// Boundary 8 — QlikView local smoke test
+// Create a temporary READINESS.qvw in this same directory and use only:
+// $(Must_Include=readiness_smoke.qvs);
+
+SET ErrorMode=0;
+
+LET vReadinessErrorsBefore = ScriptErrorCount;
+
+READINESS_SMOKE:
+LOAD * INLINE [
+ID, VALUE
+1, OK
+];
+
+IF ScriptErrorCount > $(vReadinessErrorsBefore) THEN
+    TRACE [READINESS] Inline LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+STORE READINESS_SMOKE INTO [readiness_smoke.qvd] (qvd);
+
+IF ScriptErrorCount > $(vReadinessErrorsBefore) THEN
+    TRACE [READINESS] QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+READINESS_SUCCESS:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'READINESS_SMOKE' AS stage,
+    'PASS' AS status
+AUTOGENERATE 1;
+
+STORE READINESS_SUCCESS INTO [readiness_smoke_success.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vReadinessErrorsBefore) THEN
+    TRACE [READINESS] Success marker failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+TRACE [READINESS] PASS;
+
+DROP TABLE READINESS_SUCCESS;
+DROP TABLE READINESS_SMOKE;
