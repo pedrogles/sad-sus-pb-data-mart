@@ -669,7 +669,7 @@ O C2.7 foi reexecutado com **PASS**: `REFERENCE_COMPETENCE=201912`, 14.230 linha
 
 O C2.8 foi implementado em `EXTRACAO/ext_main.qvs`: carga da referência final, validação estrutural, `RTrim(DIAG_PRINC)` como remoção do padding técnico aprovado, reconciliação contra 566.672 RD, geração de `REF_CID10.qvd` e checkpoint parcial.
 
-O primeiro reload C2.8 passou todos os gates estruturais da referência, mas encontrou 9.093 linhas RD sem match no QVD e interrompeu controladamente. Como o C2.6 sobre os CSVs convertidos havia obtido cobertura 100%, foi implementado um diagnóstico fail-closed que exporta os valores efetivos não cobertos de `SRC_SIH_RD.qvd`, com representação, comprimento, códigos ordinais e teste de `Upper(RTrim())`. Próximo gate: repetir o reload e inspecionar `_DIAGNOSTIC_CID10_QVD_UNMATCHED.csv` antes de alterar qualquer regra de normalização. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+O primeiro reload C2.8 passou todos os gates estruturais da referência, mas encontrou 9.093 linhas RD sem match no QVD e interrompeu controladamente. O diagnóstico mostrou 128 valores distintos, todos iniciados por `R`, e exemplos de colapso de representação como `R042→R42` e `R72␠→R072`. Os CSVs preservam esses pares como valores distintos. Isso é compatível com comportamento dual do Qlik, mas a causa numérica específica ainda precisa ser comprovada. O diagnóstico foi ampliado com `IsNum`, `IsText` e valor numérico interno. Próximo gate: repetir o reload e inspecionar essas colunas antes de corrigir o staging. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
