@@ -68,17 +68,19 @@ Campos:
 O `codigo_fonte` preserva a forma usada no SIH/RD sem ponto, por exemplo `24`.  
 O `codigo_normativo` preserva a forma normativa, por exemplo `2.4`.
 
-Gate:
+Gate revisado após evidência empírica:
 
-- 21 linhas;
-- 21 códigos fonte únicos.
+- 28 linhas;
+- 28 códigos fonte únicos;
+- códigos `13` e `17` não materializados, pois foram excluídos pela Portaria SAS/MS nº 384/2010;
+- códigos `19`, `32` e `61`–`67` incluídos conforme atualização normativa.
 
 ## Evidência de materialização local
 
 Execução local do materializador:
 
 - `CARATER_ROWS=6`;
-- `MOTIVO_ROWS=21`;
+- `MOTIVO_ROWS=21` na primeira materialização, antes da correção normativa;
 - `VERDICT=PASS`.
 
 A inspeção com leitura UTF-8 confirmou descrições e acentuação corretas.
@@ -93,6 +95,37 @@ Hashes do manifesto reconciliados localmente:
   `MATCH=True`.
 
 **FATO VERIFICADO:** a materialização local do III-C1 está PASS.
+
+## Evidência de primeiro reload Qlik do III-C1
+
+O primeiro reload da integração confirmou:
+
+- Caráter de Atendimento: **PASS**;
+- 6 códigos de caráter;
+- 566.672 linhas RD reconciliadas;
+- 0 linhas RD sem referência;
+- `REF_CARATER_ATENDIMENTO.qvd` gerado.
+
+Para Motivo de Saída/Permanência:
+
+- 21 linhas da referência foram carregadas;
+- `COBRANCA=24 → 2.4` passou;
+- 566.672 linhas RD foram reconciliadas;
+- **124.233 linhas RD ficaram sem referência**;
+- o script interrompeu controladamente antes de gerar `REF_MOTIVO_SAIDA.qvd`.
+
+A inspeção dos 566.672 registros RD encontrou 26 códigos distintos:
+
+`11,12,14,15,16,18,19,21,22,23,24,25,26,27,28,31,41,42,43,51,61,62,63,64,65,66`.
+
+A Portaria SAS/MS nº 384/2010 comprova que:
+
+- `1.3` e `1.7` foram excluídos;
+- `1.9` foi mantido/renomeado como Alta de Paciente Agudo em Psiquiatria;
+- transferência para internação domiciliar passou a `3.2`;
+- foram incluídos `6.1`–`6.7`.
+
+Portanto, a primeira referência de 21 linhas estava incompleta para 2017–2019. O domínio materializado passa a representar o conjunto oficial aplicável de **28 códigos**, incluindo `32` e `67` mesmo sem ocorrência nos dados atuais, preservando o princípio já aprovado de materializar o domínio oficial completo.
 
 ## Integração QlikView implementada
 
@@ -114,8 +147,10 @@ Gates embutidos:
 
 ### Motivo de saída/permanência
 
-- 21 linhas;
-- 21 códigos distintos;
+- 28 linhas;
+- 28 códigos distintos;
+- somente o conjunto oficial aplicável após a Portaria SAS/MS nº 384/2010;
+- ausência de códigos revogados `13` e `17`;
 - `COBRANCA=24` mapeado exatamente uma vez para `2.4`;
 - reconciliação contra as 566.672 linhas do SIH/RD;
 - 0 linhas RD sem referência.
@@ -130,7 +165,7 @@ Executar novo reload local de `EXTRACAO/EXT.qvw` e exigir:
 - checkpoint normativo gerado;
 - `carater_rows=6`;
 - `carater_unmatched_rd_rows=0`;
-- `motivo_rows=21`;
+- `motivo_rows=28`;
 - `motivo_unmatched_rd_rows=0`.
 
 SIGTAP, CID-10, CNES tipo/leito, ponte DATASUS ↔ IBGE e estabelecimento histórico permanecem checkpoints posteriores da Fase III.
