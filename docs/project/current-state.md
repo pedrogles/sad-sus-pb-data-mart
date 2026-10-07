@@ -288,9 +288,14 @@ Evidência QlikView adicional:
 - circular references: **0 visíveis no protótipo**;
 - residência e serviço permanecem como papéis separados.
 
+Evidência adicional:
+
+- `docs/discovery/boundary-8-qlikview-version-2026-10-07.md`;
+- R15 — QlikView major version: **PASS**;
+- versão observada: **12.0.20000.0**.
+
 Bloqueios restantes para GO:
 
-- confirmar major version **12.x** do QlikView via R15;
 - reconciliar hashes locais com o manifesto de aquisição;
 - validar o caminho de falha do tratamento de erro em batch, se mantido como gate;
 - materializar/tratar explicitamente as referências auxiliares necessárias.
