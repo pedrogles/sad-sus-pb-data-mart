@@ -250,6 +250,15 @@ def parse_args() -> argparse.Namespace:
         help="Expected DBC family: RD, LT or ST.",
     )
     parser.add_argument(
+        "--expected-files",
+        type=int,
+        default=None,
+        help=(
+            "Optional exact number of DBC files expected for the selected family. "
+            "Use 36 for the full 2017-2019 batch."
+        ),
+    )
+    parser.add_argument(
         "--manifest-path",
         type=Path,
         default=None,
@@ -287,13 +296,28 @@ def main() -> int:
     dbc_files = sorted(
         [
             path
-            for path in input_dir.iterdir()
-            if path.is_file() and path.suffix.lower() == ".dbc"
+            for path in input_dir.rglob("*")
+            if (
+                path.is_file()
+                and path.suffix.lower() == ".dbc"
+                and path.name.upper().startswith(f"{source_family}PB")
+            )
         ],
-        key=lambda path: path.name.upper(),
+        key=lambda path: (path.name.upper(), str(path).upper()),
     )
     if not dbc_files:
-        print(f"ERROR: no DBC files found in {input_dir}", file=sys.stderr)
+        print(
+            f"ERROR: no {source_family} DBC files found in {input_dir}",
+            file=sys.stderr,
+        )
+        return 2
+
+    if args.expected_files is not None and len(dbc_files) != args.expected_files:
+        print(
+            f"ERROR: expected {args.expected_files} {source_family} DBC files, "
+            f"found {len(dbc_files)} in {input_dir}",
+            file=sys.stderr,
+        )
         return 2
 
     rows: list[dict[str, object]] = []
