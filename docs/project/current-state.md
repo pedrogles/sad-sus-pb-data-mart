@@ -169,7 +169,36 @@ Decisões confirmadas:
 - `DIM_TEMPO` permanece dimensão conformada única, com aliases físicos por papel no QlikView;
 - `DIM_MUNICIPIO` permanece dimensão conformada única, com aliases físicos por papel no QlikView;
 - a fonte física canônica de Tempo/Município não será duplicada por papel;
-- a estratégia física multi-fato será fechada no Boundary 6.
+- a estratégia física multi-fato foi encaminhada ao Boundary 6.
+
+### BOUNDARY 6 — Arquitetura física QlikView
+
+**CONCLUÍDO**
+
+Documento canônico:
+
+`docs/discovery/boundary-6-qlikview-physical-architecture.md`
+
+Veredito:
+
+**APROVADO PARA PLANO DE IMPLEMENTAÇÃO**
+
+Decisões confirmadas:
+
+- fato concatenada foi rejeitada como arquitetura física principal para preservar a separação acadêmica das três fatos;
+- `LINK_ANALISE` foi aprovada como ponte física do modelo associativo;
+- `LINK_ANALISE` não constitui nova fato ou dimensão de negócio;
+- município de residência será eixo compartilhado entre Internação e População;
+- município de serviço será eixo compartilhado entre Internação, Capacidade e População;
+- competência será eixo compartilhado entre Internação e Capacidade;
+- ano analítico será compartilhado pelas três fatos;
+- estabelecimento histórico será compartilhado entre Internação e Capacidade via Link Table;
+- chaves persistidas em QVD devem ser determinísticas, preferencialmente `Hash128`;
+- campos técnicos de associação utilizarão prefixo `%`;
+- scripts `.qvs` externos e versionáveis serão chamados pelos QVW com `Must_Include`;
+- staging será consolidado por família de fonte;
+- CNES/ST será extraído por nomes explícitos de campos, sem depender da posição ordinal;
+- o modelo final terá como critério 0 circular references e 0 synthetic keys não justificadas.
 
 ---
 
@@ -327,12 +356,11 @@ Estas pendências **não reabrem a primeira entrega**:
 - medir cobertura real `DIAG_PRINC × CID-10`;
 - materializar/comparar a referência histórica de `TP_LEITO/CODLEITO`;
 - resolver ou manter explicitamente sem preenchimento a lacuna de nome fantasia/razão social para 2017-01 a 2017-05;
-- definir a arquitetura física multi-fato no QlikView;
-- definir a estratégia física de tolerância a schema para CNES/ST;
-- definir convenções de chaves, aliases role-playing, QVD e QVW;
-- definir testes de reconciliação e prevenção de synthetic keys/circular references;
-- implementar as dimensões;
-- implementar as fatos;
+- fechar no Boundary 7 a forma concreta de conversão DBC → formato legível pelo QlikView;
+- transformar a arquitetura física aprovada em scripts, ordem de execução, contratos de entrada/saída e política de erro/reexecução;
+- formalizar a matriz executável de reconciliação;
+- executar Boundary 8 — Readiness;
+- somente depois implementar dimensões, fatos, Link Table e painéis;
 - construir e validar no mínimo 3 painéis;
 - preparar Capítulos 3–5 e anexos para a entrega final.
 
@@ -344,37 +372,38 @@ Estas pendências **não reabrem a primeira entrega**:
 
 ### Próximo boundary
 
-**BOUNDARY 6 — Arquitetura física QlikView**
+**BOUNDARY 7 — Plano de implementação**
 
 Objetivos imediatos:
 
-1. comparar formalmente fato concatenada vs Link Table;
-2. definir chaves associativas e convenções de nomes;
-3. prevenir synthetic keys e circular references;
-4. definir a organização física de QVD/QVW preservando o fluxo BASE → EXTRAÇÃO → TRANSFORMAÇÃO → PAINEL;
-5. fechar a estratégia física para o drift de schema CNES/ST em 2019-12;
-6. definir testes de reconciliação;
-7. manter os três fatos e as oito dimensões acadêmicas sem alteração silenciosa.
+1. transformar a arquitetura aprovada em sequência executável de implementação;
+2. definir arquivos `.qvs`, QVW e QVD a criar;
+3. fechar a conversão DBC → formato legível pelo QlikView;
+4. definir contratos de schema e validações fail-fast;
+5. definir geração determinística de chaves e construção da `LINK_ANALISE`;
+6. definir ordem de execução EXTRAÇÃO → TRANSFORMAÇÃO → PAINEL;
+7. definir logging, erro, reexecução e reconciliação;
+8. produzir checklist objetivo para o Boundary 8 — Readiness.
 
-Depois do Boundary 6:
+Depois do Boundary 7:
 
-1. BOUNDARY 7 — Plano de implementação;
-2. BOUNDARY 8 — Readiness;
-3. somente então iniciar implementação definitiva.
+1. BOUNDARY 8 — Readiness;
+2. somente então iniciar implementação definitiva.
 
 ### Boundary de conversa
 
 A primeira entrega está documentalmente encerrada.
 
-Os Boundaries 3, 4 e 5 estão concluídos e persistidos.
+Os Boundaries 3, 4, 5 e 6 estão concluídos e persistidos.
 
-O Boundary 6 deve começar lendo:
+O Boundary 7 deve começar lendo:
 
 - `AGENTS.md`;
 - este arquivo;
 - `docs/discovery/boundary-3-full-dataset-validation.md`;
 - `docs/discovery/boundary-4-auxiliary-references.md`;
 - `docs/discovery/boundary-5-historization-role-playing.md`;
+- `docs/discovery/boundary-6-qlikview-physical-architecture.md`;
 - documentação acadêmica aplicável.
 
 ---
