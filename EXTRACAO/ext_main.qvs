@@ -398,6 +398,232 @@ TRACE [EXTRACAO] PHASE_III_A_HEALTH_STAGING_PASS RD=$(vRDRows) LT=$(vLTRows) ST=
 
 TRACE [EXTRACAO] Phase III-B IBGE staging start;
 
+// QlikView 12 interpretou o literal UTF-8 "Municípios$" do include .qvs como
+// mojibake no primeiro reload local. Para evitar dependência da codificação do
+// arquivo de script, os caracteres acentuados usados por BIFF/schema são
+// construídos em runtime.
+LET vIBGESheet = 'Munic' & Chr(237) & 'pios
+// - planilha: Municípios
+// - linha 1: título
+// - linha 2: cabeçalho
+// - colunas úteis: UF, COD. UF, COD. MUNIC, NOME DO MUNICÍPIO, POPULAÇÃO ESTIMADA
+//
+// O header é lido dinamicamente por posição somente para descobrir os nomes
+// efetivos dos cinco primeiros campos. Em seguida, esses nomes são validados
+// antes da carga de staging.
+
+FOR EACH vIBGEYear IN '2017', '2018', '2019'
+
+    IF '$(vIBGEYear)' = '2017' THEN
+        LET vIBGEFile = '..\BASE\IBGE\estimativa_dou_2017.xls';
+        LET vIBGEExpectedPopulation = 4025558;
+    ELSEIF '$(vIBGEYear)' = '2018' THEN
+        LET vIBGEFile = '..\BASE\IBGE\estimativa_dou_2018_20181019.xls';
+        LET vIBGEExpectedPopulation = 3996496;
+    ELSE
+        LET vIBGEFile = '..\BASE\IBGE\estimativa_dou_2019.xls';
+        LET vIBGEExpectedPopulation = 4018127;
+    ENDIF
+
+    IBGE_RAW:
+    LOAD
+        *,
+        FileName() AS _META_SOURCE_FILE_RAW,
+        FilePath() AS _META_SOURCE_PATH_RAW
+    FROM [$(vIBGEFile)]
+    (biff, embedded labels, table is [$(vIBGESheet)], header is 1 lines);
+
+    IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+        TRACE [EXTRACAO][IBGE][$(vIBGEYear)] XLS LOAD failed. Errors=$(ScriptErrorList);
+        EXIT SCRIPT;
+    ENDIF
+
+    LET vIBGEFieldUF = FieldName(1, 'IBGE_RAW');
+    LET vIBGEFieldCodUF = FieldName(2, 'IBGE_RAW');
+    LET vIBGEFieldCodMun = FieldName(3, 'IBGE_RAW');
+    LET vIBGEFieldNome = FieldName(4, 'IBGE_RAW');
+    LET vIBGEFieldPop = FieldName(5, 'IBGE_RAW');
+
+    IF Trim('$(vIBGEFieldUF)') <> 'UF' THEN
+        TRACE [EXTRACAO][IBGE][$(vIBGEYear)] unexpected field 1. Actual=$(vIBGEFieldUF);
+        EXIT SCRIPT;
+    ENDIF
+
+    IF Trim('$(vIBGEFieldCodUF)') <> 'COD. UF' THEN
+        TRACE [EXTRACAO][IBGE][$(vIBGEYear)] unexpected field 2. Actual=$(vIBGEFieldCodUF);
+        EXIT SCRIPT;
+    ENDIF
+
+    IF Trim('$(vIBGEFieldCodMun)') <> 'COD. MUNIC' THEN
+        TRACE [EXTRACAO][IBGE][$(vIBGEYear)] unexpected field 3. Actual=$(vIBGEFieldCodMun);
+        EXIT SCRIPT;
+    ENDIF
+
+    IF Trim('$(vIBGEFieldNome)') <> '$(vIBGEExpectedFieldNome)' THEN
+        TRACE [EXTRACAO][IBGE][$(vIBGEYear)] unexpected field 4. Actual=$(vIBGEFieldNome);
+        EXIT SCRIPT;
+    ENDIF
+
+    IF Trim('$(vIBGEFieldPop)') <> '$(vIBGEExpectedFieldPop)' THEN
+        TRACE [EXTRACAO][IBGE][$(vIBGEYear)] unexpected field 5. Actual=$(vIBGEFieldPop);
+        EXIT SCRIPT;
+    ENDIF
+
+    IF '$(vIBGEYear)' = '2017' THEN
+
+        SRC_IBGE_POPULACAO:
+        LOAD
+            '$(vIBGEYear)' AS ANO_REFERENCIA,
+            Trim([$(vIBGEFieldUF)]) AS UF,
+            Right('00' & KeepChar(Text([$(vIBGEFieldCodUF)]), '0123456789'), 2) AS COD_UF_IBGE_2,
+            Right('00000' & KeepChar(Text([$(vIBGEFieldCodMun)]), '0123456789'), 5) AS COD_MUNIC_IBGE_5,
+            Right('00' & KeepChar(Text([$(vIBGEFieldCodUF)]), '0123456789'), 2)
+                & Right('00000' & KeepChar(Text([$(vIBGEFieldCodMun)]), '0123456789'), 5) AS COD_IBGE_7,
+            Trim([$(vIBGEFieldNome)]) AS NOME_MUNICIPIO,
+            Num#(
+                KeepChar(Text([$(vIBGEFieldPop)]), '0123456789'),
+                '###############'
+            ) AS POPULACAO_ESTIMADA,
+            _META_SOURCE_FILE_RAW AS _META_SOURCE_FILE,
+            'IBGE_POPULACAO' AS _META_SOURCE_FAMILY,
+            '$(vIBGEYear)' AS _META_SOURCE_YEAR,
+            _META_SOURCE_PATH_RAW AS _META_SOURCE_PATH
+        RESIDENT IBGE_RAW
+        WHERE Trim([$(vIBGEFieldUF)]) = 'PB';
+
+    ELSE
+
+        Concatenate (SRC_IBGE_POPULACAO)
+        LOAD
+            '$(vIBGEYear)' AS ANO_REFERENCIA,
+            Trim([$(vIBGEFieldUF)]) AS UF,
+            Right('00' & KeepChar(Text([$(vIBGEFieldCodUF)]), '0123456789'), 2) AS COD_UF_IBGE_2,
+            Right('00000' & KeepChar(Text([$(vIBGEFieldCodMun)]), '0123456789'), 5) AS COD_MUNIC_IBGE_5,
+            Right('00' & KeepChar(Text([$(vIBGEFieldCodUF)]), '0123456789'), 2)
+                & Right('00000' & KeepChar(Text([$(vIBGEFieldCodMun)]), '0123456789'), 5) AS COD_IBGE_7,
+            Trim([$(vIBGEFieldNome)]) AS NOME_MUNICIPIO,
+            Num#(
+                KeepChar(Text([$(vIBGEFieldPop)]), '0123456789'),
+                '###############'
+            ) AS POPULACAO_ESTIMADA,
+            _META_SOURCE_FILE_RAW AS _META_SOURCE_FILE,
+            'IBGE_POPULACAO' AS _META_SOURCE_FAMILY,
+            '$(vIBGEYear)' AS _META_SOURCE_YEAR,
+            _META_SOURCE_PATH_RAW AS _META_SOURCE_PATH
+        RESIDENT IBGE_RAW
+        WHERE Trim([$(vIBGEFieldUF)]) = 'PB';
+
+    ENDIF
+
+    DROP TABLE IBGE_RAW;
+
+    IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+        TRACE [EXTRACAO][IBGE][$(vIBGEYear)] staging LOAD failed. Errors=$(ScriptErrorList);
+        EXIT SCRIPT;
+    ENDIF
+
+    TMP_IBGE_YEAR_CHECK:
+    LOAD
+        Count(*) AS row_count,
+        Count(DISTINCT COD_IBGE_7) AS distinct_municipality_count,
+        Sum(POPULACAO_ESTIMADA) AS population_sum
+    RESIDENT SRC_IBGE_POPULACAO
+    WHERE ANO_REFERENCIA = '$(vIBGEYear)';
+
+    LET vIBGERowsYear = Peek('row_count', 0, 'TMP_IBGE_YEAR_CHECK');
+    LET vIBGEDistinctMunicipalitiesYear = Peek('distinct_municipality_count', 0, 'TMP_IBGE_YEAR_CHECK');
+    LET vIBGEPopulationYear = Peek('population_sum', 0, 'TMP_IBGE_YEAR_CHECK');
+
+    DROP TABLE TMP_IBGE_YEAR_CHECK;
+
+    IF $(vIBGERowsYear) <> 223 THEN
+        TRACE [EXTRACAO][IBGE][$(vIBGEYear)] row count mismatch. Expected=223 Actual=$(vIBGERowsYear);
+        EXIT SCRIPT;
+    ENDIF
+
+    IF $(vIBGEDistinctMunicipalitiesYear) <> 223 THEN
+        TRACE [EXTRACAO][IBGE][$(vIBGEYear)] municipality uniqueness mismatch. Expected=223 Actual=$(vIBGEDistinctMunicipalitiesYear);
+        EXIT SCRIPT;
+    ENDIF
+
+    IF $(vIBGEPopulationYear) <> $(vIBGEExpectedPopulation) THEN
+        TRACE [EXTRACAO][IBGE][$(vIBGEYear)] population total mismatch. Expected=$(vIBGEExpectedPopulation) Actual=$(vIBGEPopulationYear);
+        EXIT SCRIPT;
+    ENDIF
+
+    TRACE [EXTRACAO][IBGE][$(vIBGEYear)] PASS rows=$(vIBGERowsYear) population=$(vIBGEPopulationYear);
+
+NEXT vIBGEYear
+
+LET vIBGERows = NoOfRows('SRC_IBGE_POPULACAO');
+
+IF $(vIBGERows) <> 669 THEN
+    TRACE [EXTRACAO][IBGE] total row count mismatch. Expected=669 Actual=$(vIBGERows);
+    EXIT SCRIPT;
+ENDIF
+
+TMP_IBGE_FINAL_CHECK:
+LOAD
+    Count(DISTINCT COD_IBGE_7 & '|' & ANO_REFERENCIA) AS distinct_grain_count,
+    Count(DISTINCT ANO_REFERENCIA) AS distinct_year_count
+RESIDENT SRC_IBGE_POPULACAO;
+
+LET vIBGEDistinctGrain = Peek('distinct_grain_count', 0, 'TMP_IBGE_FINAL_CHECK');
+LET vIBGEDistinctYears = Peek('distinct_year_count', 0, 'TMP_IBGE_FINAL_CHECK');
+
+DROP TABLE TMP_IBGE_FINAL_CHECK;
+
+IF $(vIBGEDistinctGrain) <> 669 THEN
+    TRACE [EXTRACAO][IBGE] grain uniqueness mismatch. Expected=669 Actual=$(vIBGEDistinctGrain);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vIBGEDistinctYears) <> 3 THEN
+    TRACE [EXTRACAO][IBGE] year coverage mismatch. Expected=3 Actual=$(vIBGEDistinctYears);
+    EXIT SCRIPT;
+ENDIF
+
+STORE SRC_IBGE_POPULACAO INTO [QVD\SRC_IBGE_POPULACAO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][IBGE] QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+TRACE [EXTRACAO][IBGE] PASS rows=$(vIBGERows) years=$(vIBGEDistinctYears);
+
+DROP TABLE SRC_IBGE_POPULACAO;
+
+EXTRACAO_IBGE_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'EXTRACAO_IBGE' AS stage,
+    'PASS_PARTIAL' AS status,
+    $(vIBGERows) AS ibge_rows,
+    223 AS municipalities_2017,
+    4025558 AS population_2017,
+    223 AS municipalities_2018,
+    3996496 AS population_2018,
+    223 AS municipalities_2019,
+    4018127 AS population_2019
+AUTOGENERATE 1;
+
+STORE EXTRACAO_IBGE_CHECKPOINT INTO [QVD\_CHECKPOINT_EXTRACAO_IBGE.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][IBGE] checkpoint STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE EXTRACAO_IBGE_CHECKPOINT;
+
+TRACE [EXTRACAO] PHASE_III_B_IBGE_STAGING_PASS ROWS=$(vIBGERows);
+TRACE [EXTRACAO] PARTIAL ONLY — auxiliary references remain pending; no final extraction success marker emitted.
+;
+LET vIBGEExpectedFieldNome = 'NOME DO MUNIC' & Chr(205) & 'PIO';
+LET vIBGEExpectedFieldPop = 'POPULA' & Chr(199) & Chr(195) & 'O ESTIMADA';
+
 // A inspeção física confirmou:
 // - planilha: Municípios
 // - linha 1: título
