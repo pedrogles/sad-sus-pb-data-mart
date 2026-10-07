@@ -454,20 +454,55 @@ Emitir **GO** somente quando:
 
 ---
 
-# 18. Veredito atual
+# 18. Evidência local atualizada — 07/10/2026
+
+Documento de evidência:
+
+`docs/discovery/boundary-8-local-preflight-2026-10-07.md`
+
+O segundo preflight local retornou:
+
+- `LOCAL_PREFLIGHT_PASS`;
+- `blocking_count = 0`;
+- QlikView localizado em `C:\Program Files\QlikView\Qv.exe`;
+- Python 3.14.8;
+- `.venv` válido;
+- dependências DBC/DBF instaladas e importáveis;
+- 36 RD + 36 LT + 36 ST disponíveis;
+- IBGE 2017–2019 disponível;
+- `.gitignore` aprovado.
+
+O blocker R07 está resolvido.
+
+Foi adicionado:
+
+`tools/readiness_dbc_smoke.py`
+
+para testar DBC → DBF → CSV UTF-8 usando checkpoints já verificados no Boundary 3.
+
+---
+
+# 19. Veredito atual
 
 ## `NO-GO — CONTROLADO`
 
-Motivo:
+Motivo atual:
 
-**faltam evidências do ambiente local e smoke tests obrigatórios.**
+**o preflight do ambiente passou, mas faltam os smoke tests funcionais e reconciliações finais do readiness.**
 
-Não é falha da arquitetura ou dos datasets.
+Pendências antes do GO:
 
-É o comportamento correto do readiness gate: impedir que a implementação definitiva comece antes de comprovar que a toolchain local funciona.
+- smoke DBC → DBF/CSV;
+- reconciliação de contagem/schema/hashes;
+- leitura do CSV pelo QlikView;
+- `Must_Include`;
+- `Qv.exe /r`;
+- tratamento de erro em batch;
+- protótipo mínimo da Link Table;
+- referências auxiliares necessárias materializadas ou tratadas explicitamente.
 
 O Boundary 8 permanece **IN PROGRESS**.
 
 Próxima ação:
 
-executar `tools/readiness_check.ps1` no ambiente Windows que executará o QlikView e incorporar o relatório resultante nesta documentação.
+executar `tools/readiness_dbc_smoke.py` e incorporar o relatório ao readiness.
