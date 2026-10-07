@@ -74,7 +74,7 @@ A estrutura necessária para reconciliar os 108 arquivos está comprovada.
 
 Foi adicionado:
 
-`tools/readiness_reconcile_hashes.ps1`
+`tools/readiness_reconcile_hashes.py`
 
 O utilitário:
 
