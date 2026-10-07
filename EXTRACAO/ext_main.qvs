@@ -1,7 +1,390 @@
-// FASE I — Infraestrutura mínima
+// FASE III — Extração / staging
 // Script versionável carregado por EXTRACAO/EXT.qvw.
-// Regras de extração e geração dos QVDs de staging serão implementadas na Fase III.
+//
+// Este checkpoint implementa somente o staging das fontes de saúde já
+// completamente validadas: SIH/RD, CNES/LT e CNES/ST.
+// IBGE e referências auxiliares permanecem pendentes de inspeção/materialização
+// física antes do fechamento da Fase III.
+//
+// Não construir fatos, dimensões ou LINK_ANALISE neste script.
 
 SET ErrorMode=0;
 
-TRACE [EXTRACAO] Phase I infrastructure script loaded;
+LET vExtractionErrorsBefore = ScriptErrorCount;
+
+TRACE [EXTRACAO] Phase III-A health staging start;
+
+// -----------------------------------------------------------------------------
+// SIH/RD
+// -----------------------------------------------------------------------------
+
+LET vRDFiles = 0;
+
+FOR EACH vFile IN FileList('..\BASE\CONVERTIDA\RD\RDPB*.csv')
+
+    LET vRDFiles = $(vRDFiles) + 1;
+
+    IF $(vRDFiles) = 1 THEN
+
+        SRC_SIH_RD:
+        LOAD
+            Text(ANO_CMPT) AS ANO_CMPT,
+            Text(MES_CMPT) AS MES_CMPT,
+            Text(N_AIH) AS N_AIH,
+            Text(IDENT) AS IDENT,
+            Text(MUNIC_RES) AS MUNIC_RES,
+            Text(MUNIC_MOV) AS MUNIC_MOV,
+            Text(CNES) AS CNES,
+            Text(PROC_SOLIC) AS PROC_SOLIC,
+            Text(PROC_REA) AS PROC_REA,
+            Text(DIAG_PRINC) AS DIAG_PRINC,
+            Text(CAR_INT) AS CAR_INT,
+            Text(COBRANCA) AS COBRANCA,
+            Text(DT_INTER) AS DT_INTER,
+            Text(DT_SAIDA) AS DT_SAIDA,
+            DIAS_PERM,
+            VAL_TOT,
+            MORTE,
+            FileName() AS _META_SOURCE_FILE,
+            'RD' AS _META_SOURCE_FAMILY,
+            '20' & Mid(FileBaseName(), 5, 4) AS _META_SOURCE_COMPETENCE,
+            FilePath() AS _META_SOURCE_PATH
+        FROM [$(vFile)]
+        (txt, utf8, embedded labels, delimiter is ';', msq);
+
+    ELSE
+
+        Concatenate (SRC_SIH_RD)
+        LOAD
+            Text(ANO_CMPT) AS ANO_CMPT,
+            Text(MES_CMPT) AS MES_CMPT,
+            Text(N_AIH) AS N_AIH,
+            Text(IDENT) AS IDENT,
+            Text(MUNIC_RES) AS MUNIC_RES,
+            Text(MUNIC_MOV) AS MUNIC_MOV,
+            Text(CNES) AS CNES,
+            Text(PROC_SOLIC) AS PROC_SOLIC,
+            Text(PROC_REA) AS PROC_REA,
+            Text(DIAG_PRINC) AS DIAG_PRINC,
+            Text(CAR_INT) AS CAR_INT,
+            Text(COBRANCA) AS COBRANCA,
+            Text(DT_INTER) AS DT_INTER,
+            Text(DT_SAIDA) AS DT_SAIDA,
+            DIAS_PERM,
+            VAL_TOT,
+            MORTE,
+            FileName() AS _META_SOURCE_FILE,
+            'RD' AS _META_SOURCE_FAMILY,
+            '20' & Mid(FileBaseName(), 5, 4) AS _META_SOURCE_COMPETENCE,
+            FilePath() AS _META_SOURCE_PATH
+        FROM [$(vFile)]
+        (txt, utf8, embedded labels, delimiter is ';', msq);
+
+    ENDIF
+
+NEXT vFile
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][RD] LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vRDFiles) <> 36 THEN
+    TRACE [EXTRACAO][RD] file count mismatch. Expected=36 Actual=$(vRDFiles);
+    EXIT SCRIPT;
+ENDIF
+
+LET vRDRows = NoOfRows('SRC_SIH_RD');
+
+IF $(vRDRows) <> 566672 THEN
+    TRACE [EXTRACAO][RD] row count mismatch. Expected=566672 Actual=$(vRDRows);
+    EXIT SCRIPT;
+ENDIF
+
+TMP_RD_CHECK:
+LOAD
+    Count(DISTINCT _META_SOURCE_COMPETENCE) AS distinct_competence_count,
+    Sum(
+        If(
+            Num(ANO_CMPT) * 100 + Num(MES_CMPT) <> Num(_META_SOURCE_COMPETENCE),
+            1,
+            0
+        )
+    ) AS competence_mismatch
+RESIDENT SRC_SIH_RD;
+
+LET vRDDistinctCompetences = Peek('distinct_competence_count', 0, 'TMP_RD_CHECK');
+LET vRDCompetenceMismatch = Peek('competence_mismatch', 0, 'TMP_RD_CHECK');
+
+DROP TABLE TMP_RD_CHECK;
+
+IF $(vRDDistinctCompetences) <> 36 THEN
+    TRACE [EXTRACAO][RD] competence coverage mismatch. Expected=36 Actual=$(vRDDistinctCompetences);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vRDCompetenceMismatch) <> 0 THEN
+    TRACE [EXTRACAO][RD] source competence mismatch. Count=$(vRDCompetenceMismatch);
+    EXIT SCRIPT;
+ENDIF
+
+STORE SRC_SIH_RD INTO [QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][RD] QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+TRACE [EXTRACAO][RD] PASS files=$(vRDFiles) rows=$(vRDRows) competences=$(vRDDistinctCompetences);
+
+DROP TABLE SRC_SIH_RD;
+
+// -----------------------------------------------------------------------------
+// CNES/LT
+// -----------------------------------------------------------------------------
+
+LET vLTFiles = 0;
+
+FOR EACH vFile IN FileList('..\BASE\CONVERTIDA\LT\LTPB*.csv')
+
+    LET vLTFiles = $(vLTFiles) + 1;
+
+    IF $(vLTFiles) = 1 THEN
+
+        SRC_CNES_LT:
+        LOAD
+            Text(CNES) AS CNES,
+            Text(CODUFMUN) AS CODUFMUN,
+            Text(TP_LEITO) AS TP_LEITO,
+            Text(CODLEITO) AS CODLEITO,
+            QT_EXIST,
+            QT_SUS,
+            QT_NSUS,
+            Text(COMPETEN) AS COMPETEN,
+            FileName() AS _META_SOURCE_FILE,
+            'LT' AS _META_SOURCE_FAMILY,
+            '20' & Mid(FileBaseName(), 5, 4) AS _META_SOURCE_COMPETENCE,
+            FilePath() AS _META_SOURCE_PATH
+        FROM [$(vFile)]
+        (txt, utf8, embedded labels, delimiter is ';', msq);
+
+    ELSE
+
+        Concatenate (SRC_CNES_LT)
+        LOAD
+            Text(CNES) AS CNES,
+            Text(CODUFMUN) AS CODUFMUN,
+            Text(TP_LEITO) AS TP_LEITO,
+            Text(CODLEITO) AS CODLEITO,
+            QT_EXIST,
+            QT_SUS,
+            QT_NSUS,
+            Text(COMPETEN) AS COMPETEN,
+            FileName() AS _META_SOURCE_FILE,
+            'LT' AS _META_SOURCE_FAMILY,
+            '20' & Mid(FileBaseName(), 5, 4) AS _META_SOURCE_COMPETENCE,
+            FilePath() AS _META_SOURCE_PATH
+        FROM [$(vFile)]
+        (txt, utf8, embedded labels, delimiter is ';', msq);
+
+    ENDIF
+
+NEXT vFile
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][LT] LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vLTFiles) <> 36 THEN
+    TRACE [EXTRACAO][LT] file count mismatch. Expected=36 Actual=$(vLTFiles);
+    EXIT SCRIPT;
+ENDIF
+
+LET vLTRows = NoOfRows('SRC_CNES_LT');
+
+IF $(vLTRows) <> 35518 THEN
+    TRACE [EXTRACAO][LT] row count mismatch. Expected=35518 Actual=$(vLTRows);
+    EXIT SCRIPT;
+ENDIF
+
+TMP_LT_CHECK:
+LOAD
+    Count(DISTINCT _META_SOURCE_COMPETENCE) AS distinct_competence_count,
+    Sum(
+        If(
+            Num(COMPETEN) <> Num(_META_SOURCE_COMPETENCE),
+            1,
+            0
+        )
+    ) AS competence_mismatch
+RESIDENT SRC_CNES_LT;
+
+LET vLTDistinctCompetences = Peek('distinct_competence_count', 0, 'TMP_LT_CHECK');
+LET vLTCompetenceMismatch = Peek('competence_mismatch', 0, 'TMP_LT_CHECK');
+
+DROP TABLE TMP_LT_CHECK;
+
+IF $(vLTDistinctCompetences) <> 36 THEN
+    TRACE [EXTRACAO][LT] competence coverage mismatch. Expected=36 Actual=$(vLTDistinctCompetences);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vLTCompetenceMismatch) <> 0 THEN
+    TRACE [EXTRACAO][LT] source competence mismatch. Count=$(vLTCompetenceMismatch);
+    EXIT SCRIPT;
+ENDIF
+
+STORE SRC_CNES_LT INTO [QVD\SRC_CNES_LT.qvd] (qvd);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][LT] QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+TRACE [EXTRACAO][LT] PASS files=$(vLTFiles) rows=$(vLTRows) competences=$(vLTDistinctCompetences);
+
+DROP TABLE SRC_CNES_LT;
+
+// -----------------------------------------------------------------------------
+// CNES/ST
+// -----------------------------------------------------------------------------
+
+LET vSTFiles = 0;
+
+FOR EACH vFile IN FileList('..\BASE\CONVERTIDA\ST\STPB*.csv')
+
+    LET vSTFiles = $(vSTFiles) + 1;
+
+    IF $(vSTFiles) = 1 THEN
+
+        SRC_CNES_ST:
+        LOAD
+            Text(CNES) AS CNES,
+            Text(CODUFMUN) AS CODUFMUN,
+            Text(COD_CEP) AS COD_CEP,
+            Text(CNPJ_MAN) AS CNPJ_MAN,
+            Text(VINC_SUS) AS VINC_SUS,
+            Text(TPGESTAO) AS TPGESTAO,
+            Text(TP_UNID) AS TP_UNID,
+            Text(NATUREZA) AS NATUREZA,
+            Text(NAT_JUR) AS NAT_JUR,
+            Text(COMPETEN) AS COMPETEN,
+            FileName() AS _META_SOURCE_FILE,
+            'ST' AS _META_SOURCE_FAMILY,
+            '20' & Mid(FileBaseName(), 5, 4) AS _META_SOURCE_COMPETENCE,
+            FilePath() AS _META_SOURCE_PATH
+        FROM [$(vFile)]
+        (txt, utf8, embedded labels, delimiter is ';', msq);
+
+    ELSE
+
+        Concatenate (SRC_CNES_ST)
+        LOAD
+            Text(CNES) AS CNES,
+            Text(CODUFMUN) AS CODUFMUN,
+            Text(COD_CEP) AS COD_CEP,
+            Text(CNPJ_MAN) AS CNPJ_MAN,
+            Text(VINC_SUS) AS VINC_SUS,
+            Text(TPGESTAO) AS TPGESTAO,
+            Text(TP_UNID) AS TP_UNID,
+            Text(NATUREZA) AS NATUREZA,
+            Text(NAT_JUR) AS NAT_JUR,
+            Text(COMPETEN) AS COMPETEN,
+            FileName() AS _META_SOURCE_FILE,
+            'ST' AS _META_SOURCE_FAMILY,
+            '20' & Mid(FileBaseName(), 5, 4) AS _META_SOURCE_COMPETENCE,
+            FilePath() AS _META_SOURCE_PATH
+        FROM [$(vFile)]
+        (txt, utf8, embedded labels, delimiter is ';', msq);
+
+    ENDIF
+
+NEXT vFile
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][ST] LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vSTFiles) <> 36 THEN
+    TRACE [EXTRACAO][ST] file count mismatch. Expected=36 Actual=$(vSTFiles);
+    EXIT SCRIPT;
+ENDIF
+
+LET vSTRows = NoOfRows('SRC_CNES_ST');
+
+IF $(vSTRows) <> 220390 THEN
+    TRACE [EXTRACAO][ST] row count mismatch. Expected=220390 Actual=$(vSTRows);
+    EXIT SCRIPT;
+ENDIF
+
+TMP_ST_CHECK:
+LOAD
+    Count(DISTINCT _META_SOURCE_COMPETENCE) AS distinct_competence_count,
+    Sum(
+        If(
+            Num(COMPETEN) <> Num(_META_SOURCE_COMPETENCE),
+            1,
+            0
+        )
+    ) AS competence_mismatch
+RESIDENT SRC_CNES_ST;
+
+LET vSTDistinctCompetences = Peek('distinct_competence_count', 0, 'TMP_ST_CHECK');
+LET vSTCompetenceMismatch = Peek('competence_mismatch', 0, 'TMP_ST_CHECK');
+
+DROP TABLE TMP_ST_CHECK;
+
+IF $(vSTDistinctCompetences) <> 36 THEN
+    TRACE [EXTRACAO][ST] competence coverage mismatch. Expected=36 Actual=$(vSTDistinctCompetences);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vSTCompetenceMismatch) <> 0 THEN
+    TRACE [EXTRACAO][ST] source competence mismatch. Count=$(vSTCompetenceMismatch);
+    EXIT SCRIPT;
+ENDIF
+
+STORE SRC_CNES_ST INTO [QVD\SRC_CNES_ST.qvd] (qvd);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][ST] QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+TRACE [EXTRACAO][ST] PASS files=$(vSTFiles) rows=$(vSTRows) competences=$(vSTDistinctCompetences);
+
+DROP TABLE SRC_CNES_ST;
+
+// -----------------------------------------------------------------------------
+// Partial checkpoint only.
+// Full extraction success remains blocked until IBGE and auxiliary references
+// are implemented and reconciled.
+// -----------------------------------------------------------------------------
+
+EXTRACAO_SAUDE_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'EXTRACAO_SAUDE' AS stage,
+    'PASS_PARTIAL' AS status,
+    $(vRDFiles) AS rd_files,
+    $(vRDRows) AS rd_rows,
+    $(vLTFiles) AS lt_files,
+    $(vLTRows) AS lt_rows,
+    $(vSTFiles) AS st_files,
+    $(vSTRows) AS st_rows
+AUTOGENERATE 1;
+
+STORE EXTRACAO_SAUDE_CHECKPOINT INTO [QVD\_CHECKPOINT_EXTRACAO_SAUDE.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO] health checkpoint STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE EXTRACAO_SAUDE_CHECKPOINT;
+
+TRACE [EXTRACAO] PHASE_III_A_HEALTH_STAGING_PASS RD=$(vRDRows) LT=$(vLTRows) ST=$(vSTRows);
+TRACE [EXTRACAO] PARTIAL ONLY — IBGE and auxiliary references remain pending; no final extraction success marker emitted.
