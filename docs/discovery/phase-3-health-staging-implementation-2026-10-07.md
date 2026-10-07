@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-A — SIH/RD + CNES/LT + CNES/ST  
-**Status:** IMPLEMENTADO NO REPOSITÓRIO; VALIDAÇÃO LOCAL PENDENTE
+**Status:** CORREÇÃO DE VALIDAÇÃO IMPLEMENTADA; RELOAD LOCAL PENDENTE
 
 ## Base de evidência
 
@@ -93,6 +93,35 @@ O carregamento explícito por nome preserva a decisão de não depender da posi�
 Saída:
 
 `EXTRACAO/QVD/SRC_CNES_ST.qvd`
+
+
+## Evidência de primeira execução local
+
+A primeira execução integral do `EXT.qvw` carregou os 36 arquivos RD e atingiu exatamente **566.672 registros**, mas parou antes do primeiro `STORE`.
+
+O log mostrou:
+
+- `vRDFiles = 36`;
+- `vRDRows = 566672`;
+- `vRDDistinctCompetences = 36`;
+- `vRDCompetenceMismatch = 566672`;
+- interrupção em `EXIT SCRIPT` antes da geração de `SRC_SIH_RD.qvd`.
+
+### Causa identificada
+
+Os campos `ANO_CMPT`, `MES_CMPT` e `COMPETEN` são deliberadamente carregados com `Text(...)` para preservar o código fonte. A primeira versão da checagem tentou reconvertê-los com `Num(...)` para comparar a competência.
+
+No QlikView local, essa combinação não preservou a representação numérica necessária à checagem e todos os registros RD foram classificados como divergentes, apesar de a carga, a quantidade de arquivos e as competências distintas estarem corretas.
+
+### Correção
+
+A validação passou a comparar competências como texto normalizado:
+
+- RD: `Right('0000' & Trim(ANO_CMPT), 4) & Right('00' & Trim(MES_CMPT), 2)`;
+- LT/ST: `Right('000000' & Trim(COMPETEN), 6)`;
+- comparação direta com `_META_SOURCE_COMPETENCE`.
+
+A correção preserva os campos de código como texto e altera somente o controle técnico de reconciliação.
 
 ## Metadados de staging
 

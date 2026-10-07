@@ -234,5 +234,7 @@ Antes de adicionar datasets ao Git:
 - T01–T06: **PASS**, incluindo T02 com 108/108 hashes/tamanhos reconciliados, 0 ausentes, 0 duplicados, 0 divergências e 0 extras;
 - Fase II — Conversão: **CONCLUÍDA**;
 - Fase III — Checkpoint III-A: staging SIH/RD + CNES/LT + CNES/ST implementado em `EXTRACAO/ext_main.qvs`;
-- próxima ação: validar localmente `EXT.qvw` e os três QVDs de saúde; depois inspecionar a estrutura física dos arquivos IBGE e materializar as referências auxiliares;
+- primeira execução local: RD 36/36 e 566.672 registros carregados; falha técnica identificada na comparação de competência por `Num(...)` sobre campos preservados com `Text(...)`;
+- correção: competências comparadas como texto normalizado, sem alterar dados ou modelagem;
+- próxima ação: repetir o reload local de `EXT.qvw` e validar os três QVDs de saúde; depois inspecionar a estrutura física dos arquivos IBGE e materializar as referências auxiliares;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.

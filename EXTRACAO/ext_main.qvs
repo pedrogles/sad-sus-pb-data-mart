@@ -106,7 +106,9 @@ LOAD
     Count(DISTINCT _META_SOURCE_COMPETENCE) AS distinct_competence_count,
     Sum(
         If(
-            Num(ANO_CMPT) * 100 + Num(MES_CMPT) <> Num(_META_SOURCE_COMPETENCE),
+            Right('0000' & Trim(ANO_CMPT), 4)
+                & Right('00' & Trim(MES_CMPT), 2)
+                <> _META_SOURCE_COMPETENCE,
             1,
             0
         )
@@ -213,7 +215,8 @@ LOAD
     Count(DISTINCT _META_SOURCE_COMPETENCE) AS distinct_competence_count,
     Sum(
         If(
-            Num(COMPETEN) <> Num(_META_SOURCE_COMPETENCE),
+            Right('000000' & Trim(COMPETEN), 6)
+                <> _META_SOURCE_COMPETENCE,
             1,
             0
         )
@@ -324,7 +327,8 @@ LOAD
     Count(DISTINCT _META_SOURCE_COMPETENCE) AS distinct_competence_count,
     Sum(
         If(
-            Num(COMPETEN) <> Num(_META_SOURCE_COMPETENCE),
+            Right('000000' & Trim(COMPETEN), 6)
+                <> _META_SOURCE_COMPETENCE,
             1,
             0
         )
