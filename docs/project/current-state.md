@@ -491,9 +491,36 @@ Estas pendências **não reabrem a primeira entrega** e não bloqueiam o início
 
 ---
 
-## Próxima fase
+## Fase atual
 
 **FASE I — INFRAESTRUTURA MÍNIMA**
+
+Status:
+
+**IN PROGRESS — INFRAESTRUTURA VERSIONÁVEL MATERIALIZADA; QVWs LOCAIS PENDENTES**
+
+### Implementado no repositório
+
+- `tools/requirements-tools.txt` com `dbc-to-dbf==1.0.1` e `dbfread==2.0.7`;
+- `tools/dbc_to_csv.py` conforme o contrato DBC → DBF temporário → CSV UTF-8 e manifesto operacional;
+- `EXTRACAO/ext_main.qvs`;
+- `TRANSFORMACAO/transf_main.qvs`;
+- `PAINEL/painel_main.qvs`;
+- diretórios versionáveis `EXTRACAO/QVD` e `TRANSFORMACAO/QVD` por `.gitkeep`;
+- `.gitignore` alinhado à estrutura BASE/EXTRACAO/TRANSFORMACAO, removendo o layout legado `data/raw|staging|qvd`;
+- QVWs binários locais protegidos contra versionamento acidental enquanto a política de versionamento dos binários permanecer pendente.
+
+### Pendente para concluir a Fase I
+
+No ambiente Windows/QlikView local, criar:
+
+- `EXTRACAO/EXT.qvw` com `$(Must_Include=ext_main.qvs);`;
+- `TRANSFORMACAO/TRANSF.qvw` com `$(Must_Include=transf_main.qvs);`;
+- `PAINEL/PAINEL.qvw` com `$(Must_Include=painel_main.qvs);`.
+
+Esses arquivos são binários proprietários do QlikView e não serão fabricados como arquivos texto. Após a criação local, executar reload mínimo para comprovar que os três includes carregam sem erro.
+
+Não executar ainda conversão 108/108, transformação dimensional, Link Table definitiva, indicadores ou dashboards.
 
 ### Boundary atual
 
