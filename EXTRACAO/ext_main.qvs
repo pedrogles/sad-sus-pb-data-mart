@@ -1010,6 +1010,13 @@ IF $(vCID10UnmatchedRows) <> 0 THEN
         Upper(RTrim(Text(DIAG_PRINC))) AS diag_princ_upper_rtrim,
         Len(Text(DIAG_PRINC)) AS qvd_length,
         Len(RTrim(Text(DIAG_PRINC))) AS rtrim_length,
+        IsNum(DIAG_PRINC) AS is_num,
+        IsText(DIAG_PRINC) AS is_text,
+        If(
+            IsNum(DIAG_PRINC),
+            Num(DIAG_PRINC, '0.###############', '.', ''),
+            ''
+        ) AS numeric_value,
         Ord(Mid(Text(DIAG_PRINC), 1, 1)) AS char_1_ord,
         Ord(Mid(Text(DIAG_PRINC), 2, 1)) AS char_2_ord,
         Ord(Mid(Text(DIAG_PRINC), 3, 1)) AS char_3_ord,
@@ -1032,6 +1039,13 @@ IF $(vCID10UnmatchedRows) <> 0 THEN
         Upper(RTrim(Text(DIAG_PRINC))),
         Len(Text(DIAG_PRINC)),
         Len(RTrim(Text(DIAG_PRINC))),
+        IsNum(DIAG_PRINC),
+        IsText(DIAG_PRINC),
+        If(
+            IsNum(DIAG_PRINC),
+            Num(DIAG_PRINC, '0.###############', '.', ''),
+            ''
+        ),
         Ord(Mid(Text(DIAG_PRINC), 1, 1)),
         Ord(Mid(Text(DIAG_PRINC), 2, 1)),
         Ord(Mid(Text(DIAG_PRINC), 3, 1)),
