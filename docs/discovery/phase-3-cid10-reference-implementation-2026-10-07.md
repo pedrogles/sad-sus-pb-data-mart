@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C2 — CID-10  
-**Status:** PERFIL DE ENTRADA IMPLEMENTADO; MATERIALIZAÇÃO OFICIAL PENDENTE
+**Status:** C2.1 PERFIL BRUTO PASS; C2.2 DIAGNÓSTICO DE PADDING IMPLEMENTADO
 
 ## Objetivo
 
@@ -44,26 +44,77 @@ Saídas:
 - `BASE/REFERENCIAS/cid10_diag_princ_profile.csv`;
 - `BASE/REFERENCIAS/cid10_diag_princ_summary.json`.
 
-## Gate C2.1
+## Evidência C2.1 — perfil bruto
 
-Execução local deve retornar:
+Execução local:
 
 - `RD_FILES=36`;
 - `RD_ROWS=566672`;
+- `DIAG_PRINC_DISTINCT_RAW=5480`;
 - `DIAG_PRINC_BLANK_ROWS=0`;
+- comprimento bruto: 566.672/566.672 linhas com 4 caracteres;
+- formato por linha:
+  - `UPPER_ALNUM=506249`;
+  - `HAS_WHITESPACE=60423`;
+- códigos distintos:
+  - 4.954 `UPPER_ALNUM`;
+  - 526 `HAS_WHITESPACE`;
+- SHA-256 do perfil:
+  `1d185cd4780d4c688a8ceeaf8b14cdaa359f040a1590b710a8d9daeaf4870dbc`;
 - `VERDICT=PASS`.
 
-As distribuições de comprimento e formato serão usadas para decidir como comparar os códigos com a referência oficial.
+**FATO VERIFICADO:** o C2.1 está PASS. Todos os valores físicos de `DIAG_PRINC` têm largura 4, mas 60.423 linhas — distribuídas em 526 códigos distintos — contêm whitespace.
+
+## Evidência oficial complementar
+
+A documentação oficial do CMD/DATASUS descreve o campo `CO_DIAGNOSTICO` da terminologia CID-10 como alfanumérico de tamanho 4 e validado no SIGTAP/RTS.
+
+Fonte:
+
+- https://wiki.saude.gov.br/cmd/index.php/ETL_e_suas_regras
+
+Essa evidência é compatível com a largura física observada, mas ainda não prova se os 526 códigos com whitespace usam exclusivamente padding à direita nem se remover esse padding é uma normalização sem colisão.
+
+## Etapa C2.2 — diagnóstico de whitespace/padding
+
+Foi adicionado:
+
+`tools/inspect_cid10_diag_princ_padding.py`
+
+O script mede, sem alterar a fonte:
+
+- posição do whitespace: início, meio ou fim;
+- caractere de whitespace observado;
+- comprimento após `strip()`;
+- quantidade de códigos distintos após `strip()`;
+- colisões em que dois valores brutos diferentes passariam a representar a mesma chave;
+- arquivo de detalhe com representação visível do espaço.
+
+Saídas locais:
+
+- `BASE/REFERENCIAS/cid10_diag_princ_padding.csv`;
+- `BASE/REFERENCIAS/cid10_diag_princ_padding_summary.json`.
+
+## Gate C2.2
+
+A execução local deve preservar:
+
+- `RD_FILES=36`;
+- `RD_ROWS=566672`;
+- `WHITESPACE_ROWS=60423`;
+- `WHITESPACE_DISTINCT_CODES=526`;
+- `VERDICT=PASS`.
+
+Os resultados de posição e colisão decidirão se `Trim()` pode ser tratado apenas como remoção de padding técnico ou se a chave precisa de outra regra.
 
 ## Próximas etapas
 
-Após o PASS do perfil:
+Após o C2.2:
 
-1. inspecionar/materializar o pacote oficial CID-10;
-2. identificar fisicamente arquivo, encoding e layout;
-3. comparar primeiro por código bruto;
-4. somente se houver divergência, testar normalizações candidatas e medir o efeito;
-5. aprovar a regra de chave apenas com evidência;
-6. gerar `REF_CID10.qvd` e checkpoint parcial no `EXT.qvw`.
+1. inspecionar/materializar um pacote oficial SIGTAP que contenha `tb_cid.txt` e seu layout;
+2. identificar fisicamente encoding, largura e chave da referência;
+3. comparar a referência contra `DIAG_PRINC` bruto e contra candidatos de normalização sustentados pelo C2.2;
+4. aprovar a regra que maximize cobertura sem colisão ou fabricação de código;
+5. somente então gerar `REF_CID10.qvd` e checkpoint parcial no `EXT.qvw`.
 
 Não iniciar fatos, dimensões, Link Table ou indicadores neste checkpoint.

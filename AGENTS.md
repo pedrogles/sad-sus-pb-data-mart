@@ -251,6 +251,8 @@ Antes de adicionar datasets ao Git:
 - correção normativa: Portaria SAS/MS nº 384/2010 exclui 13/17, confirma 19, altera internação domiciliar para 32 e inclui 61–67; domínio oficial materializado passa a 28 códigos, incluindo 32/67 não observados;
 - rematerialização corrigida: **PASS**, Caráter=6, Motivo=28, hashes 2/2 `MATCH=True`;
 - segundo reload III-C1: **CHECKPOINT III-C1 PASS**; `REF_CARATER_ATENDIMENTO.qvd`, `REF_MOTIVO_SAIDA.qvd` e `_CHECKPOINT_EXTRACAO_REFERENCIAS_NORMATIVAS.csv` gerados com 0 unmatched em ambas as referências;
-- Fase III — Checkpoint III-C2 CID-10 aberto; `tools/profile_cid10_diag_princ.py` implementado para perfilar `DIAG_PRINC` bruto em 36 RD / 566.672 linhas sem normalização;
-- próxima ação: executar o perfil local de `DIAG_PRINC`, validar 0 vazios e inspecionar formato real antes da materialização/lookup CID-10;
+- Fase III — Checkpoint III-C2 CID-10: C2.1 **PASS** em 36 RD / 566.672 linhas; 5.480 códigos brutos distintos, 0 vazios e comprimento 4 em 100% das linhas;
+- formato observado: 506.249 linhas / 4.954 códigos distintos `UPPER_ALNUM`; 60.423 linhas / 526 códigos distintos com whitespace;
+- C2.2 implementado em `tools/inspect_cid10_diag_princ_padding.py` para caracterizar posição/tipo do whitespace e colisões de `strip()`;
+- próxima ação: executar C2.2 localmente antes de definir qualquer normalização ou lookup CID-10;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
