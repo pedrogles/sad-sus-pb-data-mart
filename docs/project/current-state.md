@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — CHECKPOINTS III-A/III-B PASS; III-C1 REFERÊNCIAS NORMATIVAS IMPLEMENTADO E PENDENTE DE EXECUÇÃO LOCAL**
+**IN PROGRESS — III-A/III-B PASS; III-C1 MATERIALIZAÇÃO PASS E INTEGRAÇÃO QLIK PENDENTE DE RELOAD LOCAL**
 
 Documento operacional:
 
@@ -641,9 +641,11 @@ Segundo reload local do III-B: o BIFF passou a abrir corretamente, 223 registros
 
 Terceiro reload local do III-B: **PASS**. Foram gerados `SRC_IBGE_POPULACAO.qvd` e `_CHECKPOINT_EXTRACAO_IBGE.csv`, com `PASS_PARTIAL`, 669 linhas, 223 municípios em 2017/2018/2019 e totais 4.025.558 / 3.996.496 / 4.018.127.
 
-O inventário local de `BASE/REFERENCIAS` confirmou diretório existente e sem arquivos. Foi implementado o Checkpoint III-C1 com `tools/materialize_normative_references.py`, responsável por materializar de forma reproduzível os domínios normativos já fechados de Caráter de Atendimento e Motivo de Saída/Permanência, sem download externo.
+O inventário local de `BASE/REFERENCIAS` confirmou diretório existente e sem arquivos. O Checkpoint III-C1 materializou de forma reproduzível os domínios normativos de Caráter de Atendimento e Motivo de Saída/Permanência. A execução local retornou 6 e 21 linhas, respectivamente, `VERDICT=PASS`, leitura UTF-8 correta e os dois hashes SHA-256 reconciliados com `MATCH=True`.
 
-Próximo gate: executar localmente o materializador e validar os dois CSVs + manifesto; somente depois integrar `REF_CARATER_ATENDIMENTO.qvd` e `REF_MOTIVO_SAIDA.qvd` ao `EXT.qvw`. SIGTAP, CID-10, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+A integração Qlik do III-C1 foi implementada em `EXTRACAO/ext_main.qvs` para gerar `REF_CARATER_ATENDIMENTO.qvd`, `REF_MOTIVO_SAIDA.qvd` e checkpoint parcial. O script também mede cobertura contra as 566.672 linhas RD e exige 0 códigos sem referência.
+
+Próximo gate: novo reload local do `EXT.qvw` para validar os dois QVDs normativos e o checkpoint. SIGTAP, CID-10, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
