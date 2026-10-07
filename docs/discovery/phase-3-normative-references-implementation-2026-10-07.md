@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C1 — Caráter de Atendimento + Motivo de Saída/Permanência  
-**Status:** IMPLEMENTADO NO REPOSITÓRIO; MATERIALIZAÇÃO LOCAL PENDENTE
+**Status:** MATERIALIZAÇÃO LOCAL PASS; INTEGRAÇÃO QLIK IMPLEMENTADA; RELOAD LOCAL PENDENTE
 
 ## Estado de entrada
 
@@ -73,18 +73,64 @@ Gate:
 - 21 linhas;
 - 21 códigos fonte únicos.
 
-## Próximo gate
+## Evidência de materialização local
 
-Executar localmente o materializador e inspecionar:
+Execução local do materializador:
 
-- contagens;
-- conteúdo dos dois CSVs;
-- manifesto;
-- hashes.
+- `CARATER_ROWS=6`;
+- `MOTIVO_ROWS=21`;
+- `VERDICT=PASS`.
 
-Somente após PASS local o `EXT.qvw` deverá ser ampliado para gerar:
+A inspeção com leitura UTF-8 confirmou descrições e acentuação corretas.
+
+Hashes do manifesto reconciliados localmente:
+
+- `carater_atendimento.csv`  
+  `3e40a9b2a4d0e1e65df8a9000f55af6fd24880468c12faaa24384f4722330ea8`  
+  `MATCH=True`;
+- `motivo_saida_permanencia.csv`  
+  `887e2faee8bd820dc5c4e82c81560ecba04b939c32b848baa77be3020d0a1761`  
+  `MATCH=True`.
+
+**FATO VERIFICADO:** a materialização local do III-C1 está PASS.
+
+## Integração QlikView implementada
+
+O `EXTRACAO/ext_main.qvs` foi ampliado para gerar:
 
 - `REF_CARATER_ATENDIMENTO.qvd`;
-- `REF_MOTIVO_SAIDA.qvd`.
+- `REF_MOTIVO_SAIDA.qvd`;
+- `_CHECKPOINT_EXTRACAO_REFERENCIAS_NORMATIVAS.csv`.
+
+Gates embutidos:
+
+### Caráter de atendimento
+
+- 6 linhas;
+- 6 códigos distintos;
+- somente `01`–`06`;
+- reconciliação contra as 566.672 linhas do SIH/RD;
+- 0 linhas RD sem referência.
+
+### Motivo de saída/permanência
+
+- 21 linhas;
+- 21 códigos distintos;
+- `COBRANCA=24` mapeado exatamente uma vez para `2.4`;
+- reconciliação contra as 566.672 linhas do SIH/RD;
+- 0 linhas RD sem referência.
+
+O checkpoint continua `PASS_PARTIAL`, pois outras referências auxiliares ainda permanecem pendentes.
+
+## Próximo gate
+
+Executar novo reload local de `EXTRACAO/EXT.qvw` e exigir:
+
+- os dois QVDs normativos gerados;
+- checkpoint normativo gerado;
+- `carater_rows=6`;
+- `carater_unmatched_rd_rows=0`;
+- `motivo_rows=21`;
+- `motivo_unmatched_rd_rows=0`.
 
 SIGTAP, CID-10, CNES tipo/leito, ponte DATASUS ↔ IBGE e estabelecimento histórico permanecem checkpoints posteriores da Fase III.
