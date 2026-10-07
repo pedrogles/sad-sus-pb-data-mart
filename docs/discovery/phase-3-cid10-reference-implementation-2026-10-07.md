@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C2 — CID-10  
-**Status:** C2.1–C2.6 PASS; C2.7 MATERIALIZAÇÃO FINAL IMPLEMENTADA E PENDENTE DE EXECUÇÃO LOCAL
+**Status:** C2.1–C2.6 PASS; C2.7 PRIMEIRA EXECUÇÃO BLOQUEADA POR GATE DE CONTAGEM E CORREÇÃO IMPLEMENTADA
 
 ## Objetivo
 
@@ -352,9 +352,9 @@ O script:
 - materializa 14.230 códigos únicos;
 - normaliza `CO_CID` apenas com remoção de espaço ASCII à direita;
 - materializa `NO_CID` como descrição;
-- exige distribuição:
-  - 1.780 códigos de comprimento 3;
-  - 12.450 códigos de comprimento 4;
+- exige distribuição empiricamente confirmada da referência 201912:
+  - 2.042 códigos de comprimento 3;
+  - 12.188 códigos de comprimento 4;
 - gera CSV UTF-8 e manifesto com SHA-256.
 
 Saídas locais:
@@ -362,14 +362,36 @@ Saídas locais:
 - `BASE/REFERENCIAS/cid10_referencia.csv`;
 - `BASE/REFERENCIAS/cid10_referencia_manifest.json`.
 
-## Gate C2.7
+## Evidência da primeira execução C2.7
+
+A primeira execução chegou até o gate final de distribuição e foi interrompida com:
+
+`{"3": 2042, "4": 12188}`
+
+Isso prova que:
+
+- as 14.230 linhas foram lidas;
+- a normalização produziu somente códigos de tamanho 3 ou 4;
+- o gate anterior estava incorreto.
+
+O erro foi conceitual: o C2.6 havia demonstrado que **as 1.780 chaves adicionadas em 201912** têm comprimento 3 após remoção do padding, mas isso não significa que somente essas 1.780 chaves tenham comprimento 3 na referência completa. O conjunto anterior de 12.450 chaves já contém 262 categorias de 3 caracteres.
+
+Assim, a distribuição completa de 201912 é:
+
+- 2.042 códigos de comprimento 3;
+- 12.188 códigos de comprimento 4;
+- total 14.230.
+
+**FATO VERIFICADO:** o bloqueio foi um gate incorreto no materializador, não uma inconsistência da fonte CID-10.
+
+## Gate C2.7 corrigido
 
 Esperado:
 
 - `REFERENCE_COMPETENCE=201912`;
 - `CID_ROWS=14230`;
 - `CID_DISTINCT_CODES=14230`;
-- `CID_CODE_LENGTH_COUNTS={"3": 1780, "4": 12450}`;
+- `CID_CODE_LENGTH_COUNTS={"3": 2042, "4": 12188}`;
 - `RD_COVERAGE_EVIDENCE_ROWS=566672`;
 - `SHARED_CHANGED_DESCRIPTION=0`;
 - `SHARED_CHANGED_PAYLOAD=0`;
