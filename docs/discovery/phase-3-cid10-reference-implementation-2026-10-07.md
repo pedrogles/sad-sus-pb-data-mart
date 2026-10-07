@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C2 — CID-10  
-**Status:** C2.1–C2.5 PASS; C2.6 ANÁLISE DE COBERTURA IMPLEMENTADA
+**Status:** C2.1–C2.6 PASS; C2.7 MATERIALIZAÇÃO FINAL IMPLEMENTADA E PENDENTE DE EXECUÇÃO LOCAL
 
 ## Objetivo
 
@@ -300,34 +300,82 @@ Saídas locais:
 - `BASE/REFERENCIAS/cid10_coverage_analysis.json`;
 - `BASE/REFERENCIAS/cid10_coverage_unmatched.csv`.
 
-## Gate C2.6
+## Evidência C2.6 — cobertura empírica
 
-A execução deve preservar:
+Execução local:
 
+- `REF_201901_ROWS=12450`;
+- `REF_201912_ROWS=14230`;
+- `REF_ADDED_RAW_KEYS=1780`;
+- `REF_REMOVED_RAW_KEYS=0`;
+- `REF_SHARED_CHANGED_DESCRIPTION=0`;
+- `REF_SHARED_CHANGED_PAYLOAD=0`;
+- todas as 1.780 chaves adicionadas normalizam para comprimento 3;
 - `RD_ROWS=566672`;
-- parsing sem duplicidade de `CO_CID`;
-- 0 colisões após remoção exclusiva do padding à direita;
+- contra 201901:
+  - 564.771 linhas cobertas;
+  - 1.901 linhas não cobertas;
+  - 349 códigos normalizados distintos não cobertos;
+  - os 349 têm comprimento 3;
+- contra 201912:
+  - 566.672/566.672 linhas cobertas;
+  - 0 linhas não cobertas;
+- `UNMATCHED_NORM_ALL_PRESENT_201912=True`;
+- a divergência de cobertura ocorre somente em 2019, começando em 201904;
 - `VERDICT=PASS`.
 
-Os números decisivos serão:
+**FATO VERIFICADO:** a referência 201912 é um superset descritivo da referência 201901 para o escopo observado. Ela preserva sem alteração as 12.450 chaves anteriores e acrescenta 1.780 categorias de 3 caracteres; todos os 349 códigos de `DIAG_PRINC` que não existiam em 201901 estão presentes em 201912.
 
-- `REF_ADDED_RAW_KEYS`;
-- `REF_REMOVED_RAW_KEYS`;
-- `REF_SHARED_CHANGED_DESCRIPTION`;
-- `RD_RAW_201901_UNMATCHED`;
-- `RD_RAW_201912_UNMATCHED`;
-- `RD_NORM_201901_UNMATCHED`;
-- `RD_NORM_201912_UNMATCHED`;
-- `UNMATCHED_NORM_ALL_PRESENT_201912`.
+**DECISÃO CONFIRMADA DE IMPLEMENTAÇÃO:** para o Data Mart inicial 2017–2019, usar a competência 201912 como **referência CID-10 descritiva estática/superset** para código e descrição de `DIAG_PRINC`.
 
-## Próximas etapas
+Limite da decisão:
 
-Após C2.6:
+- a referência serve para lookup descritivo;
+- não afirma que cada um dos 14.230 códigos esteve vigente em todas as competências de 2017–2019;
+- não deve ser usada para inferir início/fim de vigência;
+- se o projeto passar a analisar validade histórica do CID por competência, a decisão deve ser reaberta;
+- a normalização aprovada da chave é somente remoção de espaço ASCII `U+0020` à direita do código fixo de 4 posições.
 
-1. decidir, com base na cobertura real, se 201912 pode servir como referência descritiva superset para `DIAG_PRINC` de todo o período;
-2. se houver qualquer código não coberto ou descrição compartilhada alterada, localizar temporalmente a mudança de 2019 antes de fechar a referência;
-3. se a cobertura for total e as entradas compartilhadas forem invariantes, documentar a decisão de referência CID estática/superset;
-4. materializar a referência final;
-5. gerar `REF_CID10.qvd` e checkpoint parcial no `EXT.qvw`.
+## Etapa C2.7 — materialização final da referência CID-10
+
+Foi adicionado:
+
+`tools/materialize_cid10_reference.py`
+
+O script:
+
+- exige as evidências C2.4 e C2.6 previamente materializadas;
+- bloqueia execução se 201912 deixar de cobrir as 566.672 linhas RD;
+- bloqueia execução se houver remoção de chave ou alteração de descrição/payload compartilhado;
+- valida os hashes locais de `tb_cid.txt` e `tb_cid_layout.txt` contra o manifesto C2.4;
+- interpreta o layout oficial;
+- materializa 14.230 códigos únicos;
+- normaliza `CO_CID` apenas com remoção de espaço ASCII à direita;
+- materializa `NO_CID` como descrição;
+- exige distribuição:
+  - 1.780 códigos de comprimento 3;
+  - 12.450 códigos de comprimento 4;
+- gera CSV UTF-8 e manifesto com SHA-256.
+
+Saídas locais:
+
+- `BASE/REFERENCIAS/cid10_referencia.csv`;
+- `BASE/REFERENCIAS/cid10_referencia_manifest.json`.
+
+## Gate C2.7
+
+Esperado:
+
+- `REFERENCE_COMPETENCE=201912`;
+- `CID_ROWS=14230`;
+- `CID_DISTINCT_CODES=14230`;
+- `CID_CODE_LENGTH_COUNTS={"3": 1780, "4": 12450}`;
+- `RD_COVERAGE_EVIDENCE_ROWS=566672`;
+- `SHARED_CHANGED_DESCRIPTION=0`;
+- `SHARED_CHANGED_PAYLOAD=0`;
+- `DECISION=STATIC_DESCRIPTIVE_SUPERSET`;
+- `VERDICT=PASS`.
+
+Após PASS local, o próximo passo será integrar `cid10_referencia.csv` ao `EXT.qvw`, gerar `REF_CID10.qvd` e exigir cobertura RD de 100%.
 
 Não iniciar fatos, dimensões, Link Table ou indicadores neste checkpoint.

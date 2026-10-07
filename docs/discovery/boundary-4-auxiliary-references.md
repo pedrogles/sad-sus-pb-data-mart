@@ -83,11 +83,25 @@ A estrutura acadêmica permanece:
 
 Diagnósticos secundários continuam fora do escopo inicial.
 
-### DECISÃO PENDENTE DE IMPLEMENTAÇÃO
+### DECISÃO CONFIRMADA DE IMPLEMENTAÇÃO — 07/10/2026
 
-Não foi demonstrada necessidade de criar uma cópia mensal da referência CID-10 para cada competência de 2017–2019.
+A validação física e empírica da Fase III demonstrou:
 
-Antes do ETL definitivo, uma referência oficial deve ser materializada e comparada código a código com os valores reais de `DIAG_PRINC`.
+- 566.672 registros RD analisados;
+- 5.480 códigos `DIAG_PRINC` distintos;
+- 60.423 linhas com espaço ASCII à direita, sem colisões após remoção do padding;
+- `tb_cid.txt` 201901 com 12.450 códigos;
+- `tb_cid.txt` 201912 com 14.230 códigos;
+- 201912 acrescenta 1.780 chaves e remove 0;
+- 0 alterações de descrição/payload nas 12.450 chaves compartilhadas;
+- 201912 cobre 566.672/566.672 registros RD;
+- os 349 códigos normalizados não cobertos por 201901 estão todos presentes em 201912.
+
+Para o Data Mart inicial, `DIM_DIAGNOSTICO` usará a referência oficial SIGTAP/CID-10 da competência **201912 como dicionário descritivo estático/superset**.
+
+A normalização de chave aprovada é somente remover o padding ASCII `U+0020` à direita de `CO_CID`/`DIAG_PRINC`.
+
+Essa decisão não representa vigência histórica mensal. Se a análise futura exigir validade do CID por competência, a modelagem deverá ser reavaliada.
 
 ### Fonte oficial relacionada
 

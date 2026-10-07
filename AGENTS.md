@@ -259,6 +259,8 @@ Antes de adicionar datasets ao Git:
 - C2.4 **PASS**: layout idêntico nas quatro competências; `tb_cid.txt` 201701/201801/201901 idêntico (12.450 linhas) e 201912 divergente (14.230 linhas), comprovando mudança de conteúdo dentro de 2019;
 - C2.5 **PASS**: `tb_cid.txt` em cp1252, 111 bytes/linha; `CO_CID` posições 1–4 e `NO_CID` 5–104; 201901→201912 adiciona 1.780 linhas e remove 0;
 - as adições observadas incluem categorias CID de 3 caracteres com espaço ASCII de padding na quarta posição, alinhadas ao padrão já observado em `DIAG_PRINC`;
-- C2.6 implementado em `tools/analyze_cid10_reference_coverage.py` para medir cobertura real de 201901 versus 201912, bruto versus remoção exclusiva do padding à direita;
-- próxima ação: executar C2.6 antes de decidir referência CID estática/superset ou sensível à competência;
+- C2.6 **PASS**: 201912 adiciona 1.780 chaves, remove 0, altera 0 descrições/payload compartilhados e cobre 566.672/566.672 RD; 201901 deixa 1.901 linhas / 349 códigos de 3 caracteres sem cobertura, todos presentes em 201912;
+- decisão CID-10 confirmada para o Data Mart inicial: usar 201912 como referência descritiva estática/superset; não interpretar como vigência mensal; normalização = remover somente espaço ASCII à direita;
+- C2.7 implementado em `tools/materialize_cid10_reference.py` para materializar 14.230 códigos em CSV UTF-8 com manifesto/hashes;
+- próxima ação: executar C2.7 localmente; somente após PASS integrar `REF_CID10.qvd` ao `EXT.qvw`;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
