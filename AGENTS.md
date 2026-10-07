@@ -253,6 +253,8 @@ Antes de adicionar datasets ao Git:
 - segundo reload III-C1: **CHECKPOINT III-C1 PASS**; `REF_CARATER_ATENDIMENTO.qvd`, `REF_MOTIVO_SAIDA.qvd` e `_CHECKPOINT_EXTRACAO_REFERENCIAS_NORMATIVAS.csv` gerados com 0 unmatched em ambas as referências;
 - Fase III — Checkpoint III-C2 CID-10: C2.1 **PASS** em 36 RD / 566.672 linhas; 5.480 códigos brutos distintos, 0 vazios e comprimento 4 em 100% das linhas;
 - formato observado: 506.249 linhas / 4.954 códigos distintos `UPPER_ALNUM`; 60.423 linhas / 526 códigos distintos com whitespace;
-- C2.2 implementado em `tools/inspect_cid10_diag_princ_padding.py` para caracterizar posição/tipo do whitespace e colisões de `strip()`;
-- próxima ação: executar C2.2 localmente antes de definir qualquer normalização ou lookup CID-10;
+- C2.2 **PASS**: 60.423 linhas / 526 códigos com whitespace usam somente espaço ASCII à direita; `strip()` preserva 5.480 códigos distintos e gera 0 colisões;
+- `Trim(DIAG_PRINC)` é candidato fortemente sustentado para remover padding técnico, mas decisão final depende do lookup oficial;
+- C2.3 implementado em `tools/enumerate_sigtap_packages.py` para enumerar pacotes SIGTAP 2017–2019 no FTP oficial sem download;
+- próxima ação: executar C2.3 e validar cobertura das 36 competências antes de materializar `tb_cid.txt`;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
