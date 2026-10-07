@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1/C2.2/C2.3 PASS; C2.4 AMOSTRA CID-10 PENDENTE DE EXECUÇÃO LOCAL**
+**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1–C2.4 PASS; C2.5 DIFF ESTRUTURAL PENDENTE DE EXECUÇÃO LOCAL**
 
 Documento operacional:
 
@@ -657,9 +657,11 @@ A documentação oficial CMD/DATASUS também define o código de diagnóstico CI
 
 O C2.3 executou **PASS**: foram encontrados 36 pacotes `TabelaUnificada_*.zip`, um para cada competência entre 2017-01 e 2019-12, sem lacunas nem versões duplicadas.
 
-A documentação oficial do CMD registra CID-10 versão 2008, enquanto a validação operacional considera competência. Para evitar baixar 36 pacotes sem necessidade, o C2.4 foi implementado em `tools/materialize_cid10_sigtap_sample.py`: baixa somente 201701, 201801, 201901 e 201912, extrai apenas `tb_cid.txt` e `tb_cid_layout.txt`, calcula hashes e descarta os ZIPs temporários.
+A documentação oficial do CMD registra CID-10 versão 2008, enquanto a validação operacional considera competência. O C2.4 executou **PASS** com materialização de 201701, 201801, 201901 e 201912. O `tb_cid_layout.txt` permaneceu idêntico nas quatro competências. Já `tb_cid.txt` apresentou dois hashes: 201701/201801/201901 idênticos com 12.450 linhas, enquanto 201912 possui 14.230 linhas e hash distinto. Logo, conteúdo CID mudou dentro de 2019 e não é seguro assumir uma referência física única para todo o período.
 
-Próximo gate: executar C2.4 e comparar hashes/layouts nos quatro checkpoints. Se idênticos, avançar ao teste de cobertura; se divergirem, ampliar a materialização antes de decidir referência única. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+O C2.5 foi implementado em `tools/inspect_cid10_sigtap_sample.py` para inspecionar encoding, comprimentos, conteúdo real das 7 linhas de layout e diff linha a linha entre 201901 e 201912, ainda sem interpretar a chave.
+
+Próximo gate: executar C2.5. A partir do layout real e do diff, decidir como localizar a mudança temporal e só então implementar o parser/lookup CID-10. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 

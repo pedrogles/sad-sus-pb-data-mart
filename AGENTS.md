@@ -256,6 +256,7 @@ Antes de adicionar datasets ao Git:
 - C2.2 **PASS**: 60.423 linhas / 526 códigos com whitespace usam somente espaço ASCII à direita; `strip()` preserva 5.480 códigos distintos e gera 0 colisões;
 - `Trim(DIAG_PRINC)` é candidato fortemente sustentado para remover padding técnico, mas decisão final depende do lookup oficial;
 - C2.3 **PASS**: 36/36 pacotes oficiais SIGTAP encontrados para 2017-01–2019-12, sem lacunas e sem múltiplas versões por competência;
-- C2.4 implementado em `tools/materialize_cid10_sigtap_sample.py`: materialização controlada de 201701/201801/201901/201912, extraindo somente `tb_cid.txt` e `tb_cid_layout.txt` e descartando ZIPs temporários;
-- próxima ação: executar C2.4 e comparar hashes físicos antes do teste de cobertura CID-10;
+- C2.4 **PASS**: layout idêntico nas quatro competências; `tb_cid.txt` 201701/201801/201901 idêntico (12.450 linhas) e 201912 divergente (14.230 linhas), comprovando mudança de conteúdo dentro de 2019;
+- C2.5 implementado em `tools/inspect_cid10_sigtap_sample.py` para revelar encoding, layout real e diff 201901→201912 sem parsing antecipado;
+- próxima ação: executar C2.5; não decidir referência única nem normalização final antes dessa inspeção;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
