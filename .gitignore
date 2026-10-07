@@ -14,33 +14,33 @@ Thumbs.db
 .env
 .env.*
 
-# Data — raw and derived
-data/raw/*
-data/staging/*
-data/qvd/*
+# SAD — local source data and derived artifacts
+BASE/DBC/**
+BASE/IBGE/**
+BASE/REFERENCIAS/**
+BASE/CONVERTIDA/**
 
-# Preserve documentation placeholders if created later
-!data/raw/.gitkeep
-!data/staging/.gitkeep
-!data/qvd/.gitkeep
-
-# QlikView derived / backup artifacts
+# QlikView derived data
 *.qvd
+EXTRACAO/QVD/**
+TRANSFORMACAO/QVD/**
+!EXTRACAO/QVD/.gitkeep
+!TRANSFORMACAO/QVD/.gitkeep
+
+# QlikView documents are local binaries until the repository policy is decided
+EXTRACAO/EXT.qvw
+TRANSFORMACAO/TRANSF.qvw
+PAINEL/PAINEL.qvw
+
+# QlikView backup artifacts
 *.qvw~
 *.qvw.bak
 
-# SAD — QlikView implementation data and derived artifacts
-BASE/DBC/
-BASE/IBGE/
-BASE/REFERENCIAS/
-BASE/CONVERTIDA/
-EXTRACAO/QVD/
-TRANSFORMACAO/QVD/
+# Boundary 8 local smoke artifacts
 tools/readiness_smoke.qvd
 tools/readiness_smoke_success.csv
 readiness-report.json
 tools/READINESS.qvw
-
 tools/READINESS_FAILURE.qvw
 tools/readiness_failure_handled.csv
 tools/readiness_failure_unexpected.csv
