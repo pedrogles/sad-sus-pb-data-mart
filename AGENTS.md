@@ -237,5 +237,7 @@ Antes de adicionar datasets ao Git:
 - primeira execução local: RD 36/36 e 566.672 registros carregados; falha técnica identificada na comparação de competência por `Num(...)` sobre campos preservados com `Text(...)`;
 - correção: competências comparadas como texto normalizado, sem alterar dados ou modelagem;
 - segunda execução local: **CHECKPOINT III-A PASS**; três QVDs de saúde gerados e checkpoint `PASS_PARTIAL` com RD=566.672, LT=35.518 e ST=220.390;
-- próxima ação: inspecionar fisicamente os arquivos IBGE 2017–2019 e só então implementar `SRC_IBGE_POPULACAO.qvd`; depois materializar as referências auxiliares;
+- inspeção física IBGE: concluída para 2017–2019; planilha `Municípios`, título na linha 1 e cabeçalho na linha 2 confirmados;
+- Fase III — Checkpoint III-B: `SRC_IBGE_POPULACAO.qvd` implementado com gates de 669 linhas, 223 municípios por ano e totais anuais validados;
+- próxima ação: repetir o reload local de `EXT.qvw` para validar III-B; depois materializar/reconciliar as referências auxiliares;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
