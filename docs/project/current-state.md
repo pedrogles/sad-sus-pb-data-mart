@@ -237,27 +237,45 @@ Documento canônico:
 
 `docs/discovery/boundary-8-readiness.md`
 
-Evidências já fechadas:
+Evidência local adicional:
 
-- `dbc-to-dbf==1.0.1` disponível no PyPI e compatível com Python >= 3.7;
-- `dbfread==2.0.7` disponível no PyPI;
-- `Qv.exe /r` e `Must_Include` confirmados em documentação oficial;
-- política de erro de batch corrigida para evitar diálogos interativos;
-- `.gitignore` alinhado à estrutura BASE/EXTRACAO/TRANSFORMACAO;
-- `tools/readiness_check.ps1` adicionado;
-- `tools/readiness_smoke.qvs` adicionado.
+`docs/discovery/boundary-8-local-preflight-2026-10-07.md`
 
-Bloqueios atuais para GO:
+Preflight local executado em 07/10/2026:
 
-- QlikView 12 local ainda não comprovado;
-- caminho de `Qv.exe` ainda não comprovado;
-- Python/`.venv` local ainda não comprovados;
-- pacotes Python ainda não comprovados no ambiente local;
-- 108 DBCs ainda não reconciliados no workspace local;
-- smoke DBC ainda não executado com a toolchain planejada;
-- CSV → QlikView / `Must_Include` / `Qv.exe /r` ainda não testados localmente;
-- protótipo mínimo da Link Table ainda não validado no Table Viewer;
-- referências auxiliares continuam parcialmente não materializadas.
+- veredito: **LOCAL_PREFLIGHT_PASS**;
+- blockers automáticos: **0**;
+- Windows: PASS;
+- Python: **3.14.8**;
+- `.venv`: PASS;
+- `dbc-to-dbf==1.0.1`: PASS;
+- `dbfread==2.0.7`: PASS;
+- imports Python: PASS;
+- QlikView localizado em `C:\Program Files\QlikView\Qv.exe`;
+- BASE: PASS;
+- RD: **36/36**;
+- LT: **36/36**;
+- ST: **36/36**;
+- IBGE: **1 arquivo para 2017, 2018 e 2019**;
+- `.gitignore`: PASS;
+- espaço livre observado: **74,07 GB**.
+
+Ferramentas de readiness:
+
+- `tools/readiness_check.ps1`;
+- `tools/readiness_dbc_smoke.py`;
+- `tools/readiness_smoke.qvs`.
+
+Bloqueios restantes para GO:
+
+- executar smoke DBC → DBF/CSV com reconciliação de checkpoints;
+- reconciliar hashes/contagens/schema necessários;
+- validar CSV → QlikView;
+- validar `Must_Include`;
+- validar `Qv.exe /r` sem interação;
+- validar tratamento de erro em batch;
+- validar protótipo mínimo da Link Table no Table Viewer;
+- materializar/tratar explicitamente as referências auxiliares necessárias.
 
 A implementação definitiva permanece bloqueada até o readiness emitir **GO**.
 
