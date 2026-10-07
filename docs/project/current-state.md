@@ -491,13 +491,11 @@ Estas pendências **não reabrem a primeira entrega** e não bloqueiam o início
 
 ---
 
-## Fase atual
-
-**FASE I — INFRAESTRUTURA MÍNIMA**
+## Fase I — Infraestrutura mínima
 
 Status:
 
-**IN PROGRESS — INFRAESTRUTURA VERSIONÁVEL MATERIALIZADA; QVWs LOCAIS PENDENTES**
+**CONCLUÍDA**
 
 ### Implementado no repositório
 
@@ -507,20 +505,42 @@ Status:
 - `TRANSFORMACAO/transf_main.qvs`;
 - `PAINEL/painel_main.qvs`;
 - diretórios versionáveis `EXTRACAO/QVD` e `TRANSFORMACAO/QVD` por `.gitkeep`;
-- `.gitignore` alinhado à estrutura BASE/EXTRACAO/TRANSFORMACAO, removendo o layout legado `data/raw|staging|qvd`;
+- `.gitignore` alinhado à estrutura BASE/EXTRACAO/TRANSFORMACAO;
 - QVWs binários locais protegidos contra versionamento acidental enquanto a política de versionamento dos binários permanecer pendente.
 
-### Pendente para concluir a Fase I
+### Evidência local de fechamento — 07/10/2026
 
-No ambiente Windows/QlikView local, criar:
+No ambiente Windows/QlikView 12 foram criados:
 
 - `EXTRACAO/EXT.qvw` com `$(Must_Include=ext_main.qvs);`;
 - `TRANSFORMACAO/TRANSF.qvw` com `$(Must_Include=transf_main.qvs);`;
 - `PAINEL/PAINEL.qvw` com `$(Must_Include=painel_main.qvs);`.
 
-Esses arquivos são binários proprietários do QlikView e não serão fabricados como arquivos texto. Após a criação local, executar reload mínimo para comprovar que os três includes carregam sem erro.
+Os três documentos foram recarregados localmente após sincronização da `main` e os três reloads foram confirmados como **PASS**, sem erro de `Must_Include`.
 
-Não executar ainda conversão 108/108, transformação dimensional, Link Table definitiva, indicadores ou dashboards.
+O marcador local `tools/readiness_link_table_success.csv` foi identificado como artefato derivado do Boundary 8 e passou a ser explicitamente ignorado pelo Git.
+
+Nenhuma conversão integral, dimensão, fato, Link Table definitiva, indicador ou dashboard foi iniciada durante a Fase I.
+
+---
+
+## Fase atual
+
+**FASE II — CONVERSÃO**
+
+Status:
+
+**READY — AGUARDANDO SMOKE CONTROLADO**
+
+Sequência obrigatória conforme Boundary 7:
+
+1. validar primeiro 1 RD;
+2. validar primeiro 1 LT;
+3. validar `STPB1912.dbc`;
+4. reconciliar registros/schema e manifesto;
+5. somente com os três PASS, executar 108/108.
+
+A Fase II não autoriza ainda implementar `EXT.qvw` como extração definitiva, dimensões, fatos, `LINK_ANALISE`, indicadores ou dashboards.
 
 ### Boundary atual
 
@@ -532,10 +552,10 @@ Status:
 
 Próxima ação autorizada:
 
-1. iniciar uma nova execução dedicada à Fase I;
-2. materializar somente a infraestrutura prevista no Boundary 7;
-3. criar diretórios, `.gitignore` alinhado, `requirements-tools.txt`, `dbc_to_csv.py`, QVWs vazios e scripts `.qvs` principais;
-4. não iniciar dashboards, fatos/dimensões definitivos ou downloads em massa de referências nesta fase;
+1. iniciar a Fase II com smoke controlado de 1 RD + 1 LT + `STPB1912.dbc`;
+2. validar contagem de registros, quantidade de campos, hashes e manifesto de conversão;
+3. somente após PASS dos três arquivos, executar a conversão integral 108/108;
+4. não iniciar ainda Extração definitiva, Transformação, Link Table, indicadores ou dashboards;
 5. preservar o fluxo acadêmico `BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
 
 ### Boundary de conversa

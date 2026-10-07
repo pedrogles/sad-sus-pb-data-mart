@@ -115,9 +115,9 @@ Dimensões aprovadas:
 
 Próxima etapa planejada:
 
-**FASE I — INFRAESTRUTURA MÍNIMA**
+**FASE II — CONVERSÃO**
 
-A Discovery de implementação e o Boundary 8 foram concluídos com GO. A Fase I deve começar de forma controlada conforme o Boundary 7, sem antecipar transformação, indicadores ou dashboards.
+A Fase I — Infraestrutura mínima foi concluída. A Fase II deve seguir o Boundary 7: validar primeiro 1 RD, 1 LT e `STPB1912.dbc`; somente depois executar a conversão integral 108/108.
 
 Estado atual da Discovery de implementação:
 
@@ -160,7 +160,7 @@ Estado do readiness:
 - T27–T29 permanecem gates de implementação para SIGTAP, CID-10 e CNES leitos;
 - Boundary 8: **CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**.
 
-A **FASE I — INFRAESTRUTURA MÍNIMA** está em andamento. A infraestrutura versionável foi materializada no repositório; resta criar e validar localmente os três QVWs binários mínimos no QlikView 12. Dashboards continuam fora de escopo até as fases posteriores previstas no Boundary 7.
+A **FASE I — INFRAESTRUTURA MÍNIMA** está **CONCLUÍDA**. A infraestrutura versionável foi materializada no repositório e os três QVWs mínimos foram criados e recarregados com sucesso no QlikView 12 usando seus respectivos `Must_Include`. Dashboards continuam fora de escopo até as fases posteriores previstas no Boundary 7.
 
 ## QlikView
 
@@ -224,7 +224,8 @@ Antes de adicionar datasets ao Git:
 - Boundary 7 — Plano de implementação: concluído;
 - Boundary 8 — Readiness: **CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**;
 - discovery de implementação: **CONCLUÍDA COM GO**;
-- Fase I — Infraestrutura mínima: **IN PROGRESS**;
+- Fase I — Infraestrutura mínima: **CONCLUÍDA**;
 - infraestrutura versionável: scripts `.qvs`, conversor DBC, dependências e diretórios QVD materializados;
-- próxima ação: criar/validar localmente `EXT.qvw`, `TRANSF.qvw` e `PAINEL.qvw` com seus respectivos `Must_Include`;
-- implementação: **LIBERADA SOMENTE PARA A FASE I — INFRAESTRUTURA MÍNIMA**, conforme o plano aprovado.
+- QVWs mínimos locais: **PASS** para `EXT.qvw`, `TRANSF.qvw` e `PAINEL.qvw`;
+- próxima ação: iniciar **FASE II — CONVERSÃO** com 1 RD + 1 LT + `STPB1912.dbc`;
+- implementação: **LIBERADA PARA A FASE II — CONVERSÃO**, sem antecipar Extração/Transformação.
