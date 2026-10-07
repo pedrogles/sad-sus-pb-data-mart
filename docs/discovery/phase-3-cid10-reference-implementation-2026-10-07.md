@@ -481,3 +481,34 @@ Nenhuma regra de normalização nova foi aprovada.
 ## Próximo gate
 
 Executar novo reload do `EXT.qvw`, obter o CSV diagnóstico e inspecionar os unmatched reais antes de alterar a regra de chave.
+
+
+## Evidência complementar C2.8a — pares preservados no CSV e colapsados no QVD
+
+A inspeção local dos CSVs convertidos confirmou pares distintos:
+
+- `R042`: 14 ocorrências;
+- `R42␠`: 2 ocorrências;
+- `R072`: 12 ocorrências;
+- `R72␠`: 10 ocorrências.
+
+No diagnóstico do QVD, porém, apareceram inversões de representação como:
+
+- o grupo originado por `R042` exibido como `R42`;
+- o grupo originado por `R72␠` exibido como `R072`.
+
+Isso é compatível com a regra documentada do QlikView segundo a qual valores com representações textuais diferentes, mas mesma representação numérica válida, compartilham a primeira representação textual carregada.
+
+A cultura do Windows é `pt-BR`, com símbolo monetário `R$`. Isso não prova que o gatilho específico seja `MoneyFormat`; portanto, a hipótese de moeda não é considerada fechada.
+
+## Diagnóstico C2.8b — componente dual/numeric
+
+O diagnóstico Qlik foi ampliado para registrar também:
+
+- `IsNum(DIAG_PRINC)`;
+- `IsText(DIAG_PRINC)`;
+- valor numérico formatado quando `IsNum()` for verdadeiro.
+
+Objetivo: comprovar diretamente se os códigos `R...` no QVD possuem componente numérico e se pares como `R042`/`R42␠` compartilham o mesmo número interno.
+
+Nenhuma correção do staging foi aplicada ainda.
