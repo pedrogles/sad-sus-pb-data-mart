@@ -38,3 +38,5 @@ EXTRACAO/QVD/
 TRANSFORMACAO/QVD/
 tools/readiness_smoke.qvd
 tools/readiness_smoke_success.csv
+readiness-report.json
+tools/READINESS.qvw
