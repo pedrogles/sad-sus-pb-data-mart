@@ -244,5 +244,7 @@ Antes de adicionar datasets ao Git:
 - segundo reload III-B: BIFF abriu e 223 PB foram carregados; total 2017 divergente por notas numéricas em `7386(4)` e `15276(5)`;
 - correção: população é normalizada somente a partir do trecho anterior ao primeiro parêntese; diagnóstico local reconciliou 2017 em 4.025.558;
 - terceiro reload III-B: **CHECKPOINT III-B PASS**; `SRC_IBGE_POPULACAO.qvd` e `_CHECKPOINT_EXTRACAO_IBGE.csv` gerados com 669 linhas, 223 municípios por ano e totais 4.025.558 / 3.996.496 / 4.018.127;
-- próxima ação: materializar/reconciliar as referências auxiliares previstas na Fase III;
+- inventário de `BASE/REFERENCIAS`: diretório existe e está vazio;
+- Fase III — Checkpoint III-C1: materializador versionável dos domínios normativos de Caráter de Atendimento e Motivo de Saída/Permanência implementado; execução local pendente;
+- próxima ação: executar `tools/materialize_normative_references.py`, validar CSVs/manifesto e só então integrar os QVDs normativos ao `EXT.qvw`;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
