@@ -3,8 +3,8 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** DATA ACQUISITION / QLIKVIEW IMPLEMENTATION DISCOVERY  
 **Data de abertura:** 07/10/2026  
-**Status:** IN PROGRESS — CONTROLLED NO-GO  
-**Implementação definitiva:** BLOQUEADA
+**Status:** CONCLUÍDO — GO PARA IMPLEMENTAÇÃO  
+**Implementação definitiva:** LIBERADA PARA FASE I — INFRAESTRUTURA MÍNIMA
 
 ## 1. Objetivo
 
@@ -205,9 +205,11 @@ Status:
 
 ---
 
-# 8. Readiness do ambiente local
+# 8. Readiness do ambiente local — estado inicial
 
-Não existe evidência persistida suficiente para afirmar que o ambiente Windows de execução já possui:
+> Estado registrado na abertura do boundary. Foi posteriormente superado pelas evidências das Seções 18 e 19.
+
+Na abertura, ainda não existia evidência persistida suficiente para afirmar que o ambiente Windows de execução já possuía:
 
 - QlikView 12 executável;
 - caminho de `Qv.exe`;
@@ -220,9 +222,9 @@ Não existe evidência persistida suficiente para afirmar que o ambiente Windows
 
 Esses itens não podem ser inferidos a partir da existência dos arquivos no Project/Library.
 
-Status:
+Status histórico:
 
-**BLOCKED — LOCAL EXECUTION REQUIRED.**
+**RESOLVIDO — a execução local foi concluída e persistida nas evidências posteriores.**
 
 ---
 
@@ -270,9 +272,9 @@ A validação acadêmica/dataset já utilizou as estimativas anuais 2017–2019.
 
 Para readiness de implementação, os três arquivos devem estar fisicamente disponíveis na BASE local.
 
-Status atual do ambiente local:
+Status final do ambiente local:
 
-**UNVERIFIED.**
+**PASS — IBGE 2017–2019 confirmado no preflight local.**
 
 ---
 
@@ -288,11 +290,22 @@ O Boundary 4 fechou semanticamente as fontes, mas ainda existem materializaçõe
 
 Esses pontos não reabrem a modelagem.
 
-Entretanto, antes de uma implementação integral das dimensões correspondentes, as referências precisam estar materializadas ou as lacunas precisam ser explicitamente tratadas.
+O Boundary 4 definiu as fontes e deixou a materialização/cobertura empírica para a implementação. O Boundary 7 classificou T27–T29 como testes de implementação e já definiu a regra para referências não resolvidas. O critério 7 deste Boundary 8 admite **referências disponíveis ou tratamento explícito aprovado**.
+
+### DECISÃO CONFIRMADA — tratamento aprovado para o GO
+
+- **SIGTAP / `PROC_REA`:** materializar referência oficial por competência durante a implementação; relacionar `competência RD + PROC_REA` à referência da mesma competência; preservar o código factual quando não houver correspondência; não inventar descrição; medir cobertura real em T27.
+- **CID-10 / `DIAG_PRINC`:** materializar referência oficial; preservar o código factual; não inventar descrição para código não resolvido; medir cobertura real em T28; não criar historização mensal sem evidência de necessidade.
+- **CNES — `TP_LEITO` / `CODLEITO`:** materializar referência oficial por competência; preservar os códigos de origem; comparar alterações históricas entre 2017–2019; medir cobertura real em T29; preservar a desnormalização aprovada de `DIM_TIPO_LEITO`.
+- **Estabelecimento — nomes históricos:** para 2017-01 a 2017-05, não aplicar nome atual retroativamente e não fazer forward fill/backfill sem evidência; manter `NULL`/ausência explícita quando a fonte histórica não estiver comprovada.
+- **`CAR_INT` e `COBRANCA`:** preservar as decisões já fechadas no Boundary 4.
+- **Referência não resolvida:** não descartar a linha factual; preservar o código original; registrar exceção; não fabricar descrição; usar membro físico “Não resolvido” apenas se houver necessidade técnica comprovada no modelo associativo; caso contrário, manter nulo + relatório de exceção.
+
+A materialização física dessas referências não é pré-condição adicional para iniciar a **Fase I — Infraestrutura mínima**. Ela permanece obrigatória nas etapas de extração/transformação correspondentes, com T27–T29 como gates antes de considerar os indicadores/painéis prontos.
 
 Status:
 
-**PARTIAL — implementação integral ainda não pronta.**
+**PASS PARA READINESS — tratamento explícito aprovado; T27–T29 permanecem gates de implementação.**
 
 ---
 
@@ -322,9 +335,9 @@ O protótipo deverá comprovar:
 - 0 circular references;
 - nenhum campo descritivo compartilhado acidentalmente.
 
-Status:
+Status final:
 
-**UNVERIFIED — QLIKVIEW LOCAL REQUIRED.**
+**PASS — protótipo mínimo validado no QlikView local, sem synthetic key ou circular reference visível.**
 
 ---
 
@@ -386,7 +399,7 @@ A classificação não reduz nenhum critério; apenas define em qual gate ele é
 | ErrorMode batch — caminho de sucesso | **PASS** |
 | ErrorMode batch — caminho de falha | **PASS — erro proposital detectado, ScriptErrorCount 0→1** |
 | IBGE 2017–2019 local | **PASS — 1 arquivo/ano** |
-| referências auxiliares materializadas | PARTIAL |
+| referências auxiliares materializadas ou tratamento explícito aprovado | **PASS — tratamento aprovado; T27–T29 permanecem gates de implementação** |
 | política de nome histórico | PASS |
 | `.gitignore` seguro | PASS |
 | espaço em disco | **INFO — 74,07 GB livres no preflight** |
@@ -488,13 +501,11 @@ para testar DBC → DBF → CSV UTF-8 usando checkpoints já verificados no Boun
 
 ---
 
-# 19. Veredito atual
+# 19. Veredito final
 
-## `NO-GO — CONTROLADO`
+## `CONCLUÍDO — GO PARA IMPLEMENTAÇÃO`
 
-Motivo atual:
-
-**o preflight do ambiente passou, mas faltam os smoke tests funcionais e reconciliações finais do readiness.**
+Todos os gates de pré-implementação estão satisfeitos. Os smoke tests funcionais, a reconciliação 108/108, o caminho de falha do batch e o protótipo da Link Table foram validados. A última pendência — referências auxiliares — foi encerrada por tratamento explícito aprovado, sem exigir materialização em massa antes do GO.
 
 ## Evidência de DBC smoke
 
@@ -607,12 +618,28 @@ O smoke de falha controlada retornou:
 
 O caminho de falha de batch deixa de ser blocker.
 
-Pendência antes do GO:
+## Fechamento das referências auxiliares
 
-- materializar ou tratar explicitamente as referências auxiliares necessárias para a primeira implementação.
+### FATO VERIFICADO
 
-O Boundary 8 permanece **IN PROGRESS**.
+Os Boundaries 4 e 7 já permitem que as coberturas `PROC_REA × SIGTAP`, `DIAG_PRINC × CID-10` e `CODLEITO × referência oficial` sejam medidas durante a implementação, respectivamente em T27, T28 e T29. Nenhum desses testes foi classificado como gate obrigatório de pré-implementação.
 
-Próxima ação:
+### DECISÃO CONFIRMADA
 
-fechar o tratamento das referências auxiliares necessárias conforme Boundary 4 e o critério 7 de GO.
+O tratamento explícito definido na Seção 11 satisfaz o critério 7 de GO deste boundary. Não será realizado download em massa de referências apenas para encerrar o readiness.
+
+### Blockers remanescentes
+
+**Nenhum blocker de readiness ou acadêmico identificado.**
+
+### Próxima ação autorizada
+
+Iniciar, em nova execução controlada, a:
+
+**FASE I — INFRAESTRUTURA MÍNIMA**
+
+conforme o Boundary 7, preservando o fluxo:
+
+`BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
+
+Dashboards permanecem fora do escopo da Fase I.
