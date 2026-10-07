@@ -2,7 +2,7 @@
 
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** II — Conversão  
-**Status:** CONVERSÃO 108/108 PASS; T02 PENDENTE
+**Status:** CONCLUÍDA — T01–T06 PASS
 
 ## FATO VERIFICADO
 
@@ -24,23 +24,25 @@ Resultados:
 - T04 — registros LT = 35.518: **PASS**;
 - T05 — registros ST = 220.390: **PASS**;
 - T06 — schema ST 2019-12 = 208 campos: **PASS**;
-- T02 — hashes de entrada iguais ao inventário validado: **PENDENTE DE REEXECUÇÃO FINAL**.
+- T02 — hashes de entrada iguais ao inventário validado: **PASS**.
 
-## Próxima ação
+## Evidência final de T02
 
-Executar `tools/readiness_reconcile_hashes.py` contra o `resultado-aquisicao.zip` já validado no Boundary 8.
+`tools/readiness_reconcile_hashes.py` foi executado contra o `resultado-aquisicao.zip` validado no Boundary 8 e retornou:
 
-Critério de fechamento de T02:
+- itens no manifesto: **108**;
+- DBCs locais: **108**;
+- matches: **108**;
+- ausentes: **0**;
+- duplicados: **0**;
+- divergências de hash: **0**;
+- divergências de tamanho: **0**;
+- extras: **0**;
+- problemas no manifesto: **0**;
+- veredito: **PASS**.
 
-- 108 itens esperados;
-- 108 DBCs locais;
-- 108 matches;
-- 0 ausentes;
-- 0 duplicados;
-- 0 divergências de hash;
-- 0 divergências de tamanho;
-- 0 extras;
-- 0 problemas no manifesto;
-- `VERDICT=PASS`.
+## Veredito
 
-Somente após T02 PASS a Fase II poderá ser encerrada e a Fase III — Extração poderá ser liberada.
+**FASE II — CONVERSÃO CONCLUÍDA.**
+
+Os gates T01–T06 estão reconciliados. A próxima etapa autorizada é a **FASE III — EXTRAÇÃO**, conforme o Boundary 7. Nenhuma transformação dimensional, Link Table, indicador ou dashboard foi antecipado.
