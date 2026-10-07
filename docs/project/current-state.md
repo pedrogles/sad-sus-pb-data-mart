@@ -524,13 +524,11 @@ Nenhuma conversão integral, dimensão, fato, Link Table definitiva, indicador o
 
 ---
 
-## Fase atual
-
-**FASE II — CONVERSÃO**
+## Fase II — Conversão
 
 Status:
 
-**IN PROGRESS — CONVERSÃO 108/108 PASS; T02 PENDENTE**
+**CONCLUÍDA — T01–T06 PASS**
 
 ### Evidência local do smoke — 07/10/2026
 
@@ -581,27 +579,52 @@ Gates reconciliados:
 - T05: **PASS**;
 - T06: **PASS**.
 
-### Próximo gate
+### Fechamento de T02 — evidência local de 07/10/2026
 
-Permanece pendente somente T02 — hashes de entrada iguais ao inventário validado.
+A reconciliação final foi executada com `tools/readiness_reconcile_hashes.py` contra o manifesto de aquisição validado.
 
-A Fase II não autoriza ainda implementar `EXT.qvw` como extração definitiva, dimensões, fatos, `LINK_ANALISE`, indicadores ou dashboards.
+Resultado:
 
-### Boundary atual
+- itens no manifesto: **108**;
+- DBCs locais: **108**;
+- matched: **108**;
+- missing: **0**;
+- duplicates: **0**;
+- hash mismatch: **0**;
+- size mismatch: **0**;
+- extras: **0**;
+- manifest issues: **0**;
+- `VERDICT=PASS`.
 
-**BOUNDARY 8 — Readiness**
+Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
+
+---
+
+## Fase atual
+
+**FASE III — EXTRAÇÃO**
 
 Status:
 
-**CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**
+**READY — IMPLEMENTAÇÃO AUTORIZADA**
 
-Próxima ação autorizada:
+Escopo autorizado conforme Boundary 7:
 
-1. executar T02 com `tools/readiness_reconcile_hashes.py` contra o manifesto de aquisição validado;
-2. exigir `VERDICT=PASS`, 108 matches, 0 ausentes, 0 duplicados, 0 divergências de hash/tamanho e 0 extras;
-3. somente após T02 PASS, encerrar formalmente a Fase II e liberar a Fase III — Extração;
-4. não iniciar ainda Extração definitiva, Transformação, Link Table, indicadores ou dashboards;
-5. preservar o fluxo acadêmico `BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
+1. carregar os CSVs convertidos de RD, LT e ST;
+2. carregar os arquivos anuais do IBGE;
+3. materializar/carregar as referências auxiliares no estágio correspondente;
+4. aplicar somente normalizações de staging e metadados de origem;
+5. gerar os QVDs de staging e reconciliar a extração antes de iniciar qualquer transformação.
+
+Fora de escopo nesta fase:
+
+- dimensões;
+- fatos;
+- `LINK_ANALISE`;
+- indicadores;
+- dashboards.
+
+O fluxo acadêmico permanece `BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
 
 ### Boundary de conversa
 
