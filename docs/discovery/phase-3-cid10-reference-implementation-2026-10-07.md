@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C2 — CID-10  
-**Status:** C2.1/C2.2/C2.3/C2.4 PASS; C2.5 INSPEÇÃO E DIFF ESTRUTURAL IMPLEMENTADOS
+**Status:** C2.1–C2.5 PASS; C2.6 ANÁLISE DE COBERTURA IMPLEMENTADA
 
 ## Objetivo
 
@@ -248,27 +248,86 @@ Saída local:
 
 - `BASE/REFERENCIAS/cid10_sigtap_structure_diff.json`.
 
-## Gate C2.5
+## Evidência C2.5 — estrutura física e diff
 
-Executar localmente e inspecionar:
+Execução local confirmou:
 
-- encoding(s) decodificáveis de `tb_cid.txt`;
-- as 7 linhas reais de `tb_cid_layout.txt`;
-- comprimentos físicos das linhas;
-- quantas linhas foram adicionadas/removidas entre 201901 e 201912;
-- exemplos reais das diferenças.
+- `tb_cid.txt` usa `cp1252`/Latin-1 compatível; UTF-8 estrito não é válido;
+- todas as linhas físicas possuem 111 bytes;
+- o layout é estável e define:
+  - `CO_CID`: posições 1–4;
+  - `NO_CID`: posições 5–104;
+  - `TP_AGRAVO`: posição 105;
+  - `TP_SEXO`: posição 106;
+  - `TP_ESTADIO`: posição 107;
+  - `VL_CAMPOS_IRRADIADOS`: posições 108–111;
+- 201701→201801: 0 linhas adicionadas/removidas;
+- 201801→201901: 0 linhas adicionadas/removidas;
+- 201901→201912:
+  - 1.780 linhas adicionadas;
+  - 0 removidas;
+  - 1.780 adicionadas distintas;
+- exemplos das linhas adicionadas mostram códigos de 3 caracteres preenchidos com espaço na quarta posição, como `A00␠`, `A01␠`, `A02␠`, coexistindo com subcategorias de 4 caracteres como `A000`, `A001`.
 
-Somente após essa evidência será implementado o parser do layout e o próximo teste de cobertura.
+**FATO VERIFICADO:** 201912 é um superset físico de 201901 na amostra: nenhuma linha antiga foi removida e 1.780 linhas foram acrescentadas. A mudança observada introduz, entre outros registros, categorias CID de 3 caracteres preenchidas com espaço na chave fixa de 4 posições.
+
+Isso se conecta diretamente ao C2.2: os 60.423 registros RD com whitespace também possuem um espaço ASCII à direita e passam de 4 para 3 caracteres após remoção do padding.
+
+## Etapa C2.6 — cobertura empírica da chave CID
+
+Foi adicionado:
+
+`tools/analyze_cid10_reference_coverage.py`
+
+O script:
+
+- lê o layout real já comprovado;
+- interpreta `tb_cid.txt` em `cp1252`;
+- extrai `CO_CID` e `NO_CID` pelas posições oficiais do layout;
+- valida unicidade das chaves;
+- compara 201901 e 201912 por chave e payload;
+- mede se as 1.780 adições são exclusivamente chaves preenchidas/padrões de comprimento;
+- lê os 36 RD / 566.672 registros;
+- mede cobertura contra 201901 e 201912:
+  - por código bruto de 4 posições;
+  - por código com somente padding ASCII à direita removido via `rstrip(' ')`;
+- mede cobertura geral, por ano e por competência;
+- verifica colisões de normalização;
+- gera CSV dos códigos RD não cobertos por 201901 com indicação de presença/descrição em 201912.
+
+Saídas locais:
+
+- `BASE/REFERENCIAS/cid10_coverage_analysis.json`;
+- `BASE/REFERENCIAS/cid10_coverage_unmatched.csv`.
+
+## Gate C2.6
+
+A execução deve preservar:
+
+- `RD_ROWS=566672`;
+- parsing sem duplicidade de `CO_CID`;
+- 0 colisões após remoção exclusiva do padding à direita;
+- `VERDICT=PASS`.
+
+Os números decisivos serão:
+
+- `REF_ADDED_RAW_KEYS`;
+- `REF_REMOVED_RAW_KEYS`;
+- `REF_SHARED_CHANGED_DESCRIPTION`;
+- `RD_RAW_201901_UNMATCHED`;
+- `RD_RAW_201912_UNMATCHED`;
+- `RD_NORM_201901_UNMATCHED`;
+- `RD_NORM_201912_UNMATCHED`;
+- `UNMATCHED_NORM_ALL_PRESENT_201912`.
 
 ## Próximas etapas
 
-Após C2.5:
+Após C2.6:
 
-1. interpretar o layout físico comprovado;
-2. identificar a chave CID no arquivo sem inferência;
-3. localizar temporalmente a mudança de conteúdo dentro de 2019, se necessário;
-4. medir cobertura dos 5.480 códigos usando código bruto e `Trim(DIAG_PRINC)`;
-5. decidir a temporalidade correta da referência;
-6. somente então gerar `REF_CID10.qvd` e checkpoint parcial no `EXT.qvw`.
+1. decidir, com base na cobertura real, se 201912 pode servir como referência descritiva superset para `DIAG_PRINC` de todo o período;
+2. se houver qualquer código não coberto ou descrição compartilhada alterada, localizar temporalmente a mudança de 2019 antes de fechar a referência;
+3. se a cobertura for total e as entradas compartilhadas forem invariantes, documentar a decisão de referência CID estática/superset;
+4. materializar a referência final;
+5. gerar `REF_CID10.qvd` e checkpoint parcial no `EXT.qvw`.
 
 Não iniciar fatos, dimensões, Link Table ou indicadores neste checkpoint.

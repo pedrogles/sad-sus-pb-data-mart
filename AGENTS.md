@@ -257,6 +257,8 @@ Antes de adicionar datasets ao Git:
 - `Trim(DIAG_PRINC)` é candidato fortemente sustentado para remover padding técnico, mas decisão final depende do lookup oficial;
 - C2.3 **PASS**: 36/36 pacotes oficiais SIGTAP encontrados para 2017-01–2019-12, sem lacunas e sem múltiplas versões por competência;
 - C2.4 **PASS**: layout idêntico nas quatro competências; `tb_cid.txt` 201701/201801/201901 idêntico (12.450 linhas) e 201912 divergente (14.230 linhas), comprovando mudança de conteúdo dentro de 2019;
-- C2.5 implementado em `tools/inspect_cid10_sigtap_sample.py` para revelar encoding, layout real e diff 201901→201912 sem parsing antecipado;
-- próxima ação: executar C2.5; não decidir referência única nem normalização final antes dessa inspeção;
+- C2.5 **PASS**: `tb_cid.txt` em cp1252, 111 bytes/linha; `CO_CID` posições 1–4 e `NO_CID` 5–104; 201901→201912 adiciona 1.780 linhas e remove 0;
+- as adições observadas incluem categorias CID de 3 caracteres com espaço ASCII de padding na quarta posição, alinhadas ao padrão já observado em `DIAG_PRINC`;
+- C2.6 implementado em `tools/analyze_cid10_reference_coverage.py` para medir cobertura real de 201901 versus 201912, bruto versus remoção exclusiva do padding à direita;
+- próxima ação: executar C2.6 antes de decidir referência CID estática/superset ou sensível à competência;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.

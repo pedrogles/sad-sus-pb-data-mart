@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1–C2.4 PASS; C2.5 DIFF ESTRUTURAL PENDENTE DE EXECUÇÃO LOCAL**
+**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1–C2.5 PASS; C2.6 COBERTURA CID-10 PENDENTE DE EXECUÇÃO LOCAL**
 
 Documento operacional:
 
@@ -659,9 +659,11 @@ O C2.3 executou **PASS**: foram encontrados 36 pacotes `TabelaUnificada_*.zip`, 
 
 A documentação oficial do CMD registra CID-10 versão 2008, enquanto a validação operacional considera competência. O C2.4 executou **PASS** com materialização de 201701, 201801, 201901 e 201912. O `tb_cid_layout.txt` permaneceu idêntico nas quatro competências. Já `tb_cid.txt` apresentou dois hashes: 201701/201801/201901 idênticos com 12.450 linhas, enquanto 201912 possui 14.230 linhas e hash distinto. Logo, conteúdo CID mudou dentro de 2019 e não é seguro assumir uma referência física única para todo o período.
 
-O C2.5 foi implementado em `tools/inspect_cid10_sigtap_sample.py` para inspecionar encoding, comprimentos, conteúdo real das 7 linhas de layout e diff linha a linha entre 201901 e 201912, ainda sem interpretar a chave.
+O C2.5 executou **PASS**. O `tb_cid.txt` possui linhas fixas de 111 bytes, decodificáveis em `cp1252`; o layout estável define `CO_CID` nas posições 1–4 e `NO_CID` nas posições 5–104. Entre 201901 e 201912 foram adicionadas 1.780 linhas e removidas 0. Os exemplos adicionados incluem categorias CID de 3 caracteres com espaço ASCII de padding na quarta posição, como `A00 `, `A01 ` e `A02 `, coexistindo com subcategorias de 4 caracteres. Essa evidência conecta a expansão de 201912 aos 60.423 registros RD com padding já medidos no C2.2.
 
-Próximo gate: executar C2.5. A partir do layout real e do diff, decidir como localizar a mudança temporal e só então implementar o parser/lookup CID-10. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+O C2.6 foi implementado em `tools/analyze_cid10_reference_coverage.py` para interpretar o layout comprovado e medir, nos 566.672 registros RD, cobertura contra 201901 e 201912 por chave bruta e por remoção exclusiva do espaço à direita. Também compara descrições/payload das chaves compartilhadas e verifica se todos os códigos não cobertos por 201901 passam a existir em 201912.
+
+Próximo gate: executar C2.6. A decisão sobre referência CID estática/superset versus temporal será tomada apenas a partir dessa cobertura. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
