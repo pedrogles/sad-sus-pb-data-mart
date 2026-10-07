@@ -264,6 +264,7 @@ Antes de adicionar datasets ao Git:
 - C2.7 primeira execução: bloqueio controlado no gate de distribuição; resultado real 2.042 códigos de comprimento 3 + 12.188 de comprimento 4;
 - causa: o gate confundia as 1.780 novas categorias de 3 caracteres de 201912 com o total de categorias de 3 caracteres; as 12.450 chaves anteriores já possuem 262;
 - C2.7 corrigido e reexecutado: **PASS**, 14.230 códigos únicos, distribuição 2.042/12.188, decisão `STATIC_DESCRIPTIVE_SUPERSET`, hash do CSV reconciliado com `MATCH=True`;
-- C2.8 implementado no `EXTRACAO/ext_main.qvs` para gerar `REF_CID10.qvd` e checkpoint com cobertura RD obrigatoriamente 100%;
-- próxima ação: executar novo reload local de `EXT.qvw` e validar `REF_CID10.qvd` + checkpoint CID-10;
+- C2.8 primeiro reload: referência CID passou os gates estruturais, mas 9.093/566.672 linhas RD ficaram unmatched no QVD; reload interrompido controladamente;
+- C2.8a diagnóstico implementado no `EXTRACAO/ext_main.qvs` para exportar `_DIAGNOSTIC_CID10_QVD_UNMATCHED.csv` com valor efetivo, RTrim/Upper, comprimentos, ordinais e ocorrências;
+- próxima ação: repetir reload e inspecionar o diagnóstico; não ampliar normalização antes da evidência;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
