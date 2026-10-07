@@ -298,7 +298,7 @@ Evidência adicional:
 
 - `docs/discovery/boundary-8-acquisition-manifest-structure-2026-10-07.md`;
 - `manifesto-execucao.json` confirmado como fonte dos `size_bytes` e `sha256` por DBC;
-- `tools/readiness_reconcile_hashes.ps1` adicionado para comparação 108/108.
+- `tools/readiness_reconcile_hashes.py` adicionado para comparação 108/108.
 
 Bloqueios restantes para GO:
 

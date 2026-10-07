@@ -153,7 +153,7 @@ Estado do readiness:
 - protótipo mínimo da Link Table: **PASS**, sem `$Syn` ou circular reference visível no Table Viewer;
 - QlikView major version: **PASS — 12.0.20000.0**;
 - manifesto final de aquisição confirmado: `manifesto-execucao.json` possui `size_bytes` e `sha256` por DBC;
-- `tools/readiness_reconcile_hashes.ps1` foi adicionado para o gate 108/108;
+- `tools/readiness_reconcile_hashes.py` foi adicionado para o gate 108/108;
 - ainda faltam: executar a reconciliação de hashes/tamanhos, validar o caminho de falha de batch se mantido como gate e fechar referências auxiliares necessárias.
 
 Não iniciar implementação definitiva ou dashboards enquanto o Boundary 8 estiver NO-GO.
