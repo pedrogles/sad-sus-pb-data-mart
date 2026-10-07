@@ -236,5 +236,6 @@ Antes de adicionar datasets ao Git:
 - Fase III — Checkpoint III-A: staging SIH/RD + CNES/LT + CNES/ST implementado em `EXTRACAO/ext_main.qvs`;
 - primeira execução local: RD 36/36 e 566.672 registros carregados; falha técnica identificada na comparação de competência por `Num(...)` sobre campos preservados com `Text(...)`;
 - correção: competências comparadas como texto normalizado, sem alterar dados ou modelagem;
-- próxima ação: repetir o reload local de `EXT.qvw` e validar os três QVDs de saúde; depois inspecionar a estrutura física dos arquivos IBGE e materializar as referências auxiliares;
+- segunda execução local: **CHECKPOINT III-A PASS**; três QVDs de saúde gerados e checkpoint `PASS_PARTIAL` com RD=566.672, LT=35.518 e ST=220.390;
+- próxima ação: inspecionar fisicamente os arquivos IBGE 2017–2019 e só então implementar `SRC_IBGE_POPULACAO.qvd`; depois materializar as referências auxiliares;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.

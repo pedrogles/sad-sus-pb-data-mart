@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — CHECKPOINT III-A IMPLEMENTADO; CORREÇÃO DE COMPETÊNCIA PENDENTE DE RELOAD LOCAL**
+**IN PROGRESS — CHECKPOINT III-A PASS; IBGE PENDENTE DE INSPEÇÃO FÍSICA**
 
 Documento operacional:
 
@@ -629,9 +629,11 @@ Critérios embutidos no script:
 - 36 competências distintas por família;
 - 0 divergências de competência.
 
-Primeira execução local do III-A: RD carregou 36/36 arquivos e 566.672 registros, mas a checagem técnica de competência marcou 566.672 divergências e interrompeu o script antes do primeiro QVD. O log demonstrou que a falha estava na comparação numérica aplicada a campos carregados com `Text(...)`, não nos dados nem nas contagens. A checagem foi corrigida para comparação textual normalizada; novo reload local é o próximo gate.
+Primeira execução local do III-A: RD carregou 36/36 arquivos e 566.672 registros, mas a checagem técnica de competência marcou 566.672 divergências e interrompeu o script antes do primeiro QVD. O log demonstrou que a falha estava na comparação numérica aplicada a campos carregados com `Text(...)`, não nos dados nem nas contagens. A checagem foi corrigida para comparação textual normalizada.
 
-A Fase III ainda exige IBGE e referências auxiliares antes do marcador final de extração. Os nomes físicos de planilha/cabeçalho dos arquivos IBGE ainda não estão persistidos com evidência suficiente e não serão inventados.
+Segunda execução local: **PASS**. Foram gerados `SRC_SIH_RD.qvd`, `SRC_CNES_LT.qvd`, `SRC_CNES_ST.qvd` e `_CHECKPOINT_EXTRACAO_SAUDE.csv`, com `PASS_PARTIAL`, RD=566.672, LT=35.518 e ST=220.390.
+
+A Fase III ainda exige IBGE e referências auxiliares antes do marcador final de extração. Próximo gate: inspeção física dos arquivos IBGE 2017–2019 para fechar nomes de planilha, linha de cabeçalho e colunas reais sem inventar estrutura.
 
 Fora de escopo nesta fase:
 
