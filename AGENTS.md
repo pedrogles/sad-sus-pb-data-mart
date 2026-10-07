@@ -255,6 +255,7 @@ Antes de adicionar datasets ao Git:
 - formato observado: 506.249 linhas / 4.954 códigos distintos `UPPER_ALNUM`; 60.423 linhas / 526 códigos distintos com whitespace;
 - C2.2 **PASS**: 60.423 linhas / 526 códigos com whitespace usam somente espaço ASCII à direita; `strip()` preserva 5.480 códigos distintos e gera 0 colisões;
 - `Trim(DIAG_PRINC)` é candidato fortemente sustentado para remover padding técnico, mas decisão final depende do lookup oficial;
-- C2.3 implementado em `tools/enumerate_sigtap_packages.py` para enumerar pacotes SIGTAP 2017–2019 no FTP oficial sem download;
-- próxima ação: executar C2.3 e validar cobertura das 36 competências antes de materializar `tb_cid.txt`;
+- C2.3 **PASS**: 36/36 pacotes oficiais SIGTAP encontrados para 2017-01–2019-12, sem lacunas e sem múltiplas versões por competência;
+- C2.4 implementado em `tools/materialize_cid10_sigtap_sample.py`: materialização controlada de 201701/201801/201901/201912, extraindo somente `tb_cid.txt` e `tb_cid_layout.txt` e descartando ZIPs temporários;
+- próxima ação: executar C2.4 e comparar hashes físicos antes do teste de cobertura CID-10;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.

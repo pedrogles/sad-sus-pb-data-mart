@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C2 — CID-10  
-**Status:** C2.1 PASS; C2.2 PASS; C2.3 INVENTÁRIO OFICIAL SIGTAP IMPLEMENTADO
+**Status:** C2.1/C2.2/C2.3 PASS; C2.4 MATERIALIZAÇÃO CONTROLADA IMPLEMENTADA
 
 ## Objetivo
 
@@ -150,26 +150,89 @@ Saídas locais:
 - `BASE/REFERENCIAS/sigtap_package_inventory_2017_2019.csv`;
 - `BASE/REFERENCIAS/sigtap_package_inventory_2017_2019.json`.
 
-## Gate C2.3
+## Evidência C2.3 — inventário oficial SIGTAP
 
-Esperado:
+Execução local:
 
+- `MATCHED_FILES=36`;
 - `FOUND_COMPETENCES=36`;
 - `MISSING_COMPETENCES=NONE`;
-- `DUPLICATE_COMPETENCES=NONE` ou revisão explícita caso o FTP mantenha múltiplas versões;
-- `VERDICT=PASS` quando houver exatamente uma versão utilizável por competência.
+- `DUPLICATE_COMPETENCES=NONE`;
+- 2017-01 a 2019-12 cobertos sem lacunas;
+- `VERDICT=PASS`.
 
-Nenhum pacote é baixado nesta etapa.
+**FATO VERIFICADO:** existe exatamente um pacote oficial `TabelaUnificada_*.zip` para cada uma das 36 competências do período.
+
+## Evidência oficial complementar sobre temporalidade CID-10
+
+A documentação oficial do CMD informa que, para CID-10, a versão da terminologia aceita é a versão 2008. Ao mesmo tempo, o serviço de validação CID consulta o repositório SIGTAP considerando a competência.
+
+Isso sustenta uma estratégia em duas etapas:
+
+1. testar empiricamente se o arquivo físico `tb_cid.txt` permanece idêntico em pontos estratégicos de 2017–2019;
+2. se permanecer idêntico e a cobertura dos 5.480 códigos for total, evitar materialização mensal redundante; se houver divergência, ampliar a amostragem ou materializar por competência.
+
+## Etapa C2.4 — materialização controlada da amostra CID-10
+
+Foi adicionado:
+
+`tools/materialize_cid10_sigtap_sample.py`
+
+Seleção padrão:
+
+- `201701`;
+- `201801`;
+- `201901`;
+- `201912`.
+
+Racional:
+
+- primeira competência de cada ano;
+- última competência do período;
+- comparação entre anos e extremos temporais antes de baixar 36 ZIPs.
+
+O script:
+
+- consome o inventário C2.3;
+- baixa somente os quatro ZIPs selecionados do FTP oficial;
+- valida integridade ZIP;
+- procura fisicamente `tb_cid.txt` e `tb_cid_layout.txt`;
+- extrai somente esses dois arquivos;
+- descarta o ZIP temporário;
+- registra tamanho, contagem bruta de linhas e SHA-256;
+- compara hashes entre as quatro competências.
+
+Saídas locais:
+
+- `BASE/REFERENCIAS/SIGTAP/CID10/<competencia>/tb_cid.txt`;
+- `BASE/REFERENCIAS/SIGTAP/CID10/<competencia>/tb_cid_layout.txt`;
+- `BASE/REFERENCIAS/cid10_sigtap_sample_manifest.json`.
+
+## Gate C2.4
+
+A execução deve retornar:
+
+- `MATERIALIZED_COMPETENCES=4`;
+- `VERDICT=PASS`;
+- hashes e line counts para `tb_cid.txt` e `tb_cid_layout.txt`.
+
+Se:
+
+- `TB_CID_DISTINCT_HASHES=1`;
+- `TB_CID_LAYOUT_DISTINCT_HASHES=1`;
+
+a amostra fornece evidência empírica forte de estabilidade física no período e permite avançar diretamente ao teste de cobertura.
+
+Se houver mais de um hash, a estratégia deve ser ampliada antes de qualquer decisão sobre uma referência única.
 
 ## Próximas etapas
 
-Após o inventário:
+Após C2.4:
 
-1. selecionar estratégia mínima de materialização CID-10 com base no inventário oficial;
-2. baixar apenas os pacotes necessários para provar a estabilidade/cobertura da `tb_cid.txt`;
-3. inspecionar fisicamente `tb_cid.txt` e `tb_cid_layout.txt`;
-4. comparar a referência contra `DIAG_PRINC` bruto e contra `Trim(DIAG_PRINC)`;
-5. aprovar a regra somente pela cobertura observada e ausência de colisões;
-6. gerar `REF_CID10.qvd` e checkpoint parcial no `EXT.qvw`.
+1. inspecionar fisicamente encoding e layout do `tb_cid.txt`;
+2. interpretar a chave somente a partir do layout oficial;
+3. medir cobertura dos 5.480 códigos usando código bruto e `Trim(DIAG_PRINC)`;
+4. decidir referência única versus referência temporal conforme evidência;
+5. somente então gerar `REF_CID10.qvd` e checkpoint parcial no `EXT.qvw`.
 
 Não iniciar fatos, dimensões, Link Table ou indicadores neste checkpoint.

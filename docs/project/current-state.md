@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1/C2.2 PASS; C2.3 SIGTAP INVENTORY PENDENTE DE EXECUÇÃO LOCAL**
+**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1/C2.2/C2.3 PASS; C2.4 AMOSTRA CID-10 PENDENTE DE EXECUÇÃO LOCAL**
 
 Documento operacional:
 
@@ -655,9 +655,11 @@ O Checkpoint III-C2 — CID-10 foi aberto com `tools/profile_cid10_diag_princ.py
 
 A documentação oficial CMD/DATASUS também define o código de diagnóstico CID-10 como alfanumérico de tamanho 4. O C2.2 executou **PASS**: as 60.423 linhas com whitespace usam exclusivamente um espaço ASCII `U+0020` no final; não há whitespace inicial/interno; `strip()` mantém 5.480 códigos distintos e gera 0 colisões. Isso sustenta `Trim(DIAG_PRINC)` como candidato de remoção de padding técnico, mas a regra permanece pendente até o lookup oficial.
 
-O C2.3 foi implementado em `tools/enumerate_sigtap_packages.py` para enumerar, sem download, os pacotes `TabelaUnificada_*.zip` de 2017–2019 no FTP oficial DATASUS e verificar cobertura das 36 competências.
+O C2.3 executou **PASS**: foram encontrados 36 pacotes `TabelaUnificada_*.zip`, um para cada competência entre 2017-01 e 2019-12, sem lacunas nem versões duplicadas.
 
-Próximo gate: executar o inventário oficial. Em seguida, selecionar a menor materialização suficiente para inspecionar `tb_cid.txt`/`tb_cid_layout.txt` e medir cobertura de código bruto versus `Trim(DIAG_PRINC)`. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+A documentação oficial do CMD registra CID-10 versão 2008, enquanto a validação operacional considera competência. Para evitar baixar 36 pacotes sem necessidade, o C2.4 foi implementado em `tools/materialize_cid10_sigtap_sample.py`: baixa somente 201701, 201801, 201901 e 201912, extrai apenas `tb_cid.txt` e `tb_cid_layout.txt`, calcula hashes e descarta os ZIPs temporários.
+
+Próximo gate: executar C2.4 e comparar hashes/layouts nos quatro checkpoints. Se idênticos, avançar ao teste de cobertura; se divergirem, ampliar a materialização antes de decidir referência única. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
