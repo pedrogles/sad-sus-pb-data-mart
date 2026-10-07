@@ -126,24 +126,28 @@ Estado atual da Discovery de implementação:
 3. referências auxiliares: concluídas no Boundary 4, com ajustes de materialização ainda pendentes;
 4. historização física de `DIM_ESTABELECIMENTO` e role-playing: concluídos no Boundary 5;
 5. arquitetura física do QlikView 12: concluída no Boundary 6;
-6. próximo passo: BOUNDARY 7 — Plano de implementação;
-7. depois: BOUNDARY 8 — Readiness e somente então implementação definitiva.
+6. plano de implementação: concluído no Boundary 7;
+7. próximo passo: BOUNDARY 8 — Readiness;
+8. implementação definitiva somente após GO explícito do Boundary 8.
 
 Documentos canônicos adicionais:
 
 - `docs/discovery/boundary-4-auxiliary-references.md`;
 - `docs/discovery/boundary-5-historization-role-playing.md`;
-- `docs/discovery/boundary-6-qlikview-physical-architecture.md`.
+- `docs/discovery/boundary-6-qlikview-physical-architecture.md`;
+- `docs/discovery/boundary-7-implementation-plan.md`.
 
-Decisão física principal do Boundary 6:
+Decisões operacionais do Boundary 7:
 
-- manter as três fatos separadas;
-- usar `LINK_ANALISE` como ponte associativa;
-- preservar o fluxo BASE → EXTRAÇÃO → TRANSFORMAÇÃO → PAINEL;
-- usar scripts `.qvs` externos versionáveis chamados pelos QVW;
-- evitar synthetic keys e circular references por desenho.
+- pré-processar DBC em Python para CSV UTF-8 antes do LOAD do QlikView;
+- usar `dbc-to-dbf==1.0.1` e `dbfread==2.0.7` como baseline de readiness, ainda sujeitos ao smoke test;
+- executar a V1 como full rebuild, sem carga incremental;
+- usar `ErrorMode=2` como padrão fail-fast no Qlik;
+- preservar scripts `.qvs` versionáveis;
+- gerar chaves persistentes de forma determinística;
+- exigir reconciliação antes de avançar entre camadas.
 
-Não iniciar dashboards antes do plano de implementação, dos testes de reconciliação e do readiness gate.
+Não iniciar implementação definitiva ou dashboards antes do readiness gate.
 
 ## QlikView
 
@@ -204,5 +208,6 @@ Antes de adicionar datasets ao Git:
 - Boundary 4 — Referências Auxiliares: concluído com ajustes;
 - Boundary 5 — Historização / Role-playing: concluído;
 - Boundary 6 — Arquitetura física QlikView: concluído;
+- Boundary 7 — Plano de implementação: concluído;
 - fase atual: Data Acquisition / QlikView Implementation Discovery;
-- próximo boundary: **BOUNDARY 7 — Plano de implementação**.
+- próximo boundary: **BOUNDARY 8 — Readiness**.
