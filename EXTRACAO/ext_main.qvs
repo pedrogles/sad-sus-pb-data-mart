@@ -1,10 +1,10 @@
 // FASE III — Extração / staging
 // Script versionável carregado por EXTRACAO/EXT.qvw.
 //
-// Este checkpoint implementa somente o staging das fontes de saúde já
-// completamente validadas: SIH/RD, CNES/LT e CNES/ST.
-// IBGE e referências auxiliares permanecem pendentes de inspeção/materialização
-// física antes do fechamento da Fase III.
+// A Fase III implementa staging das fontes validadas e das referências
+// auxiliares efetivamente materializadas. Checkpoints já implementados:
+// saúde (RD/LT/ST), IBGE e referências normativas pequenas (III-C1).
+// Referências auxiliares restantes continuam pendentes antes do fechamento.
 //
 // Não construir fatos, dimensões ou LINK_ANALISE neste script.
 
@@ -631,4 +631,240 @@ ENDIF
 DROP TABLE EXTRACAO_IBGE_CHECKPOINT;
 
 TRACE [EXTRACAO] PHASE_III_B_IBGE_STAGING_PASS ROWS=$(vIBGERows);
-TRACE [EXTRACAO] PARTIAL ONLY — auxiliary references remain pending; no final extraction success marker emitted.
+
+// -----------------------------------------------------------------------------
+// Referências normativas pequenas — Caráter + Motivo de Saída/Permanência
+// -----------------------------------------------------------------------------
+
+TRACE [EXTRACAO] Phase III-C1 normative reference staging start;
+
+// Caráter de Atendimento -------------------------------------------------------
+
+REF_CARATER_ATENDIMENTO:
+LOAD
+    Right('00' & KeepChar(Text(codigo_fonte), '0123456789'), 2) AS CAR_INT,
+    Text(descricao) AS CARATER_DESCRICAO,
+    Text(fonte_oficial) AS CARATER_FONTE_OFICIAL,
+    FileName() AS _META_SOURCE_FILE,
+    'REF_CARATER_ATENDIMENTO' AS _META_SOURCE_FAMILY,
+    FilePath() AS _META_SOURCE_PATH
+FROM [..\BASE\REFERENCIAS\carater_atendimento.csv]
+(txt, utf8, embedded labels, delimiter is ';', msq);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_CARATER] CSV LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vCaraterRows = NoOfRows('REF_CARATER_ATENDIMENTO');
+
+TMP_CARATER_CHECK:
+LOAD
+    Count(DISTINCT CAR_INT) AS distinct_code_count,
+    Sum(
+        If(
+            Match(CAR_INT, '01', '02', '03', '04', '05', '06') = 0,
+            1,
+            0
+        )
+    ) AS invalid_code_count
+RESIDENT REF_CARATER_ATENDIMENTO;
+
+LET vCaraterDistinctCodes = Peek('distinct_code_count', 0, 'TMP_CARATER_CHECK');
+LET vCaraterInvalidCodes = Peek('invalid_code_count', 0, 'TMP_CARATER_CHECK');
+
+DROP TABLE TMP_CARATER_CHECK;
+
+IF $(vCaraterRows) <> 6 THEN
+    TRACE [EXTRACAO][REF_CARATER] row count mismatch. Expected=6 Actual=$(vCaraterRows);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vCaraterDistinctCodes) <> 6 THEN
+    TRACE [EXTRACAO][REF_CARATER] distinct code mismatch. Expected=6 Actual=$(vCaraterDistinctCodes);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vCaraterInvalidCodes) <> 0 THEN
+    TRACE [EXTRACAO][REF_CARATER] invalid official code count=$(vCaraterInvalidCodes);
+    EXIT SCRIPT;
+ENDIF
+
+MAP_CARATER_ATENDIMENTO:
+MAPPING LOAD
+    CAR_INT,
+    1
+RESIDENT REF_CARATER_ATENDIMENTO;
+
+TMP_CARATER_RD_COVERAGE:
+LOAD
+    Count(*) AS rd_rows,
+    Sum(
+        If(
+            ApplyMap(
+                'MAP_CARATER_ATENDIMENTO',
+                Right('00' & KeepChar(Text(CAR_INT), '0123456789'), 2),
+                0
+            ) = 0,
+            1,
+            0
+        )
+    ) AS unmatched_rows
+FROM [QVD\SRC_SIH_RD.qvd] (qvd);
+
+LET vCaraterRDRows = Peek('rd_rows', 0, 'TMP_CARATER_RD_COVERAGE');
+LET vCaraterUnmatchedRows = Peek('unmatched_rows', 0, 'TMP_CARATER_RD_COVERAGE');
+
+DROP TABLE TMP_CARATER_RD_COVERAGE;
+
+IF $(vCaraterRDRows) <> 566672 THEN
+    TRACE [EXTRACAO][REF_CARATER] RD reconciliation mismatch. Expected=566672 Actual=$(vCaraterRDRows);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vCaraterUnmatchedRows) <> 0 THEN
+    TRACE [EXTRACAO][REF_CARATER] unmatched RD rows=$(vCaraterUnmatchedRows);
+    EXIT SCRIPT;
+ENDIF
+
+STORE REF_CARATER_ATENDIMENTO INTO [QVD\REF_CARATER_ATENDIMENTO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_CARATER] QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+TRACE [EXTRACAO][REF_CARATER] PASS rows=$(vCaraterRows) unmatched_rd=$(vCaraterUnmatchedRows);
+
+DROP TABLE REF_CARATER_ATENDIMENTO;
+
+// Motivo de Saída/Permanência -------------------------------------------------
+
+REF_MOTIVO_SAIDA:
+LOAD
+    Right('00' & KeepChar(Text(codigo_fonte), '0123456789'), 2) AS COBRANCA,
+    Text(codigo_normativo) AS MOTIVO_CODIGO_NORMATIVO,
+    Text(descricao) AS MOTIVO_DESCRICAO,
+    Text(grupo) AS MOTIVO_GRUPO,
+    Text(fonte_oficial_719) AS MOTIVO_FONTE_OFICIAL_719,
+    Text(fonte_oficial_384) AS MOTIVO_FONTE_OFICIAL_384,
+    FileName() AS _META_SOURCE_FILE,
+    'REF_MOTIVO_SAIDA' AS _META_SOURCE_FAMILY,
+    FilePath() AS _META_SOURCE_PATH
+FROM [..\BASE\REFERENCIAS\motivo_saida_permanencia.csv]
+(txt, utf8, embedded labels, delimiter is ';', msq);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_MOTIVO] CSV LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vMotivoRows = NoOfRows('REF_MOTIVO_SAIDA');
+
+TMP_MOTIVO_CHECK:
+LOAD
+    Count(DISTINCT COBRANCA) AS distinct_code_count,
+    Sum(
+        If(
+            COBRANCA = '24'
+                AND MOTIVO_CODIGO_NORMATIVO = '2.4',
+            1,
+            0
+        )
+    ) AS code_24_mapping_count
+RESIDENT REF_MOTIVO_SAIDA;
+
+LET vMotivoDistinctCodes = Peek('distinct_code_count', 0, 'TMP_MOTIVO_CHECK');
+LET vMotivoCode24Mapping = Peek('code_24_mapping_count', 0, 'TMP_MOTIVO_CHECK');
+
+DROP TABLE TMP_MOTIVO_CHECK;
+
+IF $(vMotivoRows) <> 21 THEN
+    TRACE [EXTRACAO][REF_MOTIVO] row count mismatch. Expected=21 Actual=$(vMotivoRows);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vMotivoDistinctCodes) <> 21 THEN
+    TRACE [EXTRACAO][REF_MOTIVO] distinct code mismatch. Expected=21 Actual=$(vMotivoDistinctCodes);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vMotivoCode24Mapping) <> 1 THEN
+    TRACE [EXTRACAO][REF_MOTIVO] COBRANCA=24 mapping mismatch. Expected=1 Actual=$(vMotivoCode24Mapping);
+    EXIT SCRIPT;
+ENDIF
+
+MAP_MOTIVO_SAIDA:
+MAPPING LOAD
+    COBRANCA,
+    1
+RESIDENT REF_MOTIVO_SAIDA;
+
+TMP_MOTIVO_RD_COVERAGE:
+LOAD
+    Count(*) AS rd_rows,
+    Sum(
+        If(
+            ApplyMap(
+                'MAP_MOTIVO_SAIDA',
+                Right('00' & KeepChar(Text(COBRANCA), '0123456789'), 2),
+                0
+            ) = 0,
+            1,
+            0
+        )
+    ) AS unmatched_rows
+FROM [QVD\SRC_SIH_RD.qvd] (qvd);
+
+LET vMotivoRDRows = Peek('rd_rows', 0, 'TMP_MOTIVO_RD_COVERAGE');
+LET vMotivoUnmatchedRows = Peek('unmatched_rows', 0, 'TMP_MOTIVO_RD_COVERAGE');
+
+DROP TABLE TMP_MOTIVO_RD_COVERAGE;
+
+IF $(vMotivoRDRows) <> 566672 THEN
+    TRACE [EXTRACAO][REF_MOTIVO] RD reconciliation mismatch. Expected=566672 Actual=$(vMotivoRDRows);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vMotivoUnmatchedRows) <> 0 THEN
+    TRACE [EXTRACAO][REF_MOTIVO] unmatched RD rows=$(vMotivoUnmatchedRows);
+    EXIT SCRIPT;
+ENDIF
+
+STORE REF_MOTIVO_SAIDA INTO [QVD\REF_MOTIVO_SAIDA.qvd] (qvd);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_MOTIVO] QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+TRACE [EXTRACAO][REF_MOTIVO] PASS rows=$(vMotivoRows) unmatched_rd=$(vMotivoUnmatchedRows);
+
+DROP TABLE REF_MOTIVO_SAIDA;
+
+// Checkpoint parcial III-C1 ----------------------------------------------------
+
+EXTRACAO_REFERENCIAS_NORMATIVAS_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'EXTRACAO_REFERENCIAS_NORMATIVAS' AS stage,
+    'PASS_PARTIAL' AS status,
+    $(vCaraterRows) AS carater_rows,
+    $(vCaraterUnmatchedRows) AS carater_unmatched_rd_rows,
+    $(vMotivoRows) AS motivo_rows,
+    $(vMotivoUnmatchedRows) AS motivo_unmatched_rd_rows
+AUTOGENERATE 1;
+
+STORE EXTRACAO_REFERENCIAS_NORMATIVAS_CHECKPOINT
+INTO [QVD\_CHECKPOINT_EXTRACAO_REFERENCIAS_NORMATIVAS.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_NORMATIVAS] checkpoint STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE EXTRACAO_REFERENCIAS_NORMATIVAS_CHECKPOINT;
+
+TRACE [EXTRACAO] PHASE_III_C1_NORMATIVE_REFERENCES_PASS CARATER=$(vCaraterRows) MOTIVO=$(vMotivoRows);
+TRACE [EXTRACAO] PARTIAL ONLY — SIGTAP, CID-10, CNES tipo/leito, municipal reference and establishment history remain pending; no final extraction success marker emitted.
