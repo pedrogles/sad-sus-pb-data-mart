@@ -151,7 +151,8 @@ Estado do readiness:
 - política de batch: `ErrorMode=0` + checagem explícita de erros;
 - smoke QlikView: **PASS** para CSV → QlikView, `Must_Include`, include aninhado, QVD STORE e `Qv.exe /r`;
 - protótipo mínimo da Link Table: **PASS**, sem `$Syn` ou circular reference visível no Table Viewer;
-- ainda faltam: confirmar major version 12.x via R15, reconciliar hashes, validar o caminho de falha de batch se mantido como gate e fechar referências auxiliares necessárias.
+- QlikView major version: **PASS — 12.0.20000.0**;
+- ainda faltam: reconciliar hashes, validar o caminho de falha de batch se mantido como gate e fechar referências auxiliares necessárias.
 
 Não iniciar implementação definitiva ou dashboards enquanto o Boundary 8 estiver NO-GO.
 
