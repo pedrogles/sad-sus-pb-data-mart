@@ -159,6 +159,19 @@ No staging futuro devem ser preservados:
 - Portaria SAS nº 384/2010:
   https://bvsms.saude.gov.br/bvs/sas/Links%20finalizados%20SAS%202010/prt0384_12_08_2010.html
 
+### Adendo de implementação — 07/10/2026
+
+**FATO VERIFICADO:** o primeiro teste empírico de cobertura na Fase III mostrou que materializar somente os 21 códigos originalmente transcritos da Portaria 719/2007 era insuficiente: 124.233 das 566.672 linhas RD ficaram sem referência.
+
+Os dados reais de 2017–2019 possuem 26 códigos `COBRANCA` distintos. A leitura da Portaria SAS/MS nº 384/2010 confirmou que, para o período do projeto:
+
+- `1.3` e `1.7` foram excluídos;
+- `1.9` permanece com denominação atualizada;
+- internação domiciliar foi recodificada para `3.2`;
+- `6.1`–`6.7` foram incluídos.
+
+**DECISÃO CONFIRMADA:** a referência de implementação deve materializar o domínio oficial completo pós-2010 com 28 códigos, preservando também `3.2` e `6.7` mesmo sem ocorrência no conjunto atual. Não limitar a dimensão aos 26 códigos observados.
+
 ## 7. CNES — `TP_LEITO` e `CODLEITO`
 
 ### FATO VERIFICADO
