@@ -231,7 +231,7 @@ Decisões confirmadas:
 
 ### BOUNDARY 8 — Readiness
 
-**IN PROGRESS — CONTROLLED NO-GO**
+**CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**
 
 Documento canônico:
 
@@ -310,11 +310,23 @@ Evidência adicional:
 - marcador inesperado não gerado;
 - `docs/discovery/boundary-8-batch-failure-smoke-2026-10-07.md`.
 
-Bloqueio restante para GO:
+Decisão final sobre referências auxiliares:
 
-- materializar/tratar explicitamente as referências auxiliares necessárias.
+- SIGTAP / `PROC_REA`: materialização por competência durante a implementação; cobertura medida em T27;
+- CID-10 / `DIAG_PRINC`: referência oficial materializada durante a implementação; cobertura medida em T28; sem historização mensal sem evidência;
+- CNES `TP_LEITO` / `CODLEITO`: referência por competência; comparação histórica 2017–2019 e cobertura em T29;
+- nomes históricos de estabelecimento em 2017-01 a 2017-05: ausência explícita quando não comprovados, sem forward fill/backfill;
+- referências não resolvidas: preservar código factual, registrar exceção e não fabricar descrição.
 
-A implementação definitiva permanece bloqueada até o readiness emitir **GO**.
+Os testes T27–T29 permanecem gates de implementação e não bloqueiam o início da Fase I.
+
+Blockers remanescentes do Boundary 8:
+
+**NENHUM.**
+
+Próxima etapa autorizada:
+
+**FASE I — INFRAESTRUTURA MÍNIMA**.
 
 ---
 
