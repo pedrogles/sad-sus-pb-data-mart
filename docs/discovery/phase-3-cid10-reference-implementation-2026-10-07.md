@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C2 — CID-10  
-**Status:** C2.1/C2.2/C2.3 PASS; C2.4 MATERIALIZAÇÃO CONTROLADA IMPLEMENTADA
+**Status:** C2.1/C2.2/C2.3/C2.4 PASS; C2.5 INSPEÇÃO E DIFF ESTRUTURAL IMPLEMENTADOS
 
 ## Objetivo
 
@@ -208,31 +208,67 @@ Saídas locais:
 - `BASE/REFERENCIAS/SIGTAP/CID10/<competencia>/tb_cid_layout.txt`;
 - `BASE/REFERENCIAS/cid10_sigtap_sample_manifest.json`.
 
-## Gate C2.4
+## Evidência C2.4 — materialização controlada
 
-A execução deve retornar:
+Execução local:
 
 - `MATERIALIZED_COMPETENCES=4`;
-- `VERDICT=PASS`;
-- hashes e line counts para `tb_cid.txt` e `tb_cid_layout.txt`.
-
-Se:
-
-- `TB_CID_DISTINCT_HASHES=1`;
+- competências materializadas: `201701`, `201801`, `201901`, `201912`;
+- `tb_cid_layout.txt`: mesmo SHA-256 nas quatro competências, 7 linhas;
+- `tb_cid.txt`:
+  - 201701/201801/201901: SHA-256 `4a1e77eb817e0c45e08418d2212a73d1eed73dd12e705071cbc791b245363c41`, 12.450 linhas;
+  - 201912: SHA-256 `cee83290ee6c390038204ec6a0bfed7f8b92cbac5942a85a970d263edf0adfe8`, 14.230 linhas;
+- `TB_CID_DISTINCT_HASHES=2`;
+- `TB_CID_IDENTICAL_ACROSS_SAMPLE=False`;
 - `TB_CID_LAYOUT_DISTINCT_HASHES=1`;
+- `TB_CID_LAYOUT_IDENTICAL_ACROSS_SAMPLE=True`;
+- `VERDICT=PASS`.
 
-a amostra fornece evidência empírica forte de estabilidade física no período e permite avançar diretamente ao teste de cobertura.
+**FATO VERIFICADO:** a estrutura física do layout permaneceu estável na amostra, mas o conteúdo de `tb_cid.txt` mudou dentro de 2019. Portanto, a hipótese de uma referência física única para todo 2017–2019 não pode ser aprovada neste momento.
 
-Se houver mais de um hash, a estratégia deve ser ampliada antes de qualquer decisão sobre uma referência única.
+**DECISÃO PENDENTE:** localizar e caracterizar a mudança antes de decidir entre referência única por versão, referência sensível à competência ou outra estratégia suportada por evidência.
+
+## Etapa C2.5 — inspeção estrutural e diff
+
+Foi adicionado:
+
+`tools/inspect_cid10_sigtap_sample.py`
+
+O script é read-only e usa somente os quatro arquivos já materializados. Ele:
+
+- testa decodificação estrita em `utf-8`, `cp1252` e `latin-1`;
+- registra distribuição de comprimento físico das linhas;
+- expõe o conteúdo de `tb_cid_layout.txt` sem interpretar campos antecipadamente;
+- compara linha a linha `201701→201801`, `201801→201901` e `201901→201912`;
+- contabiliza linhas adicionadas/removidas;
+- mostra amostras escapadas das diferenças;
+- não aplica `Trim()`, parsing de chave ou qualquer transformação sem o layout real.
+
+Saída local:
+
+- `BASE/REFERENCIAS/cid10_sigtap_structure_diff.json`.
+
+## Gate C2.5
+
+Executar localmente e inspecionar:
+
+- encoding(s) decodificáveis de `tb_cid.txt`;
+- as 7 linhas reais de `tb_cid_layout.txt`;
+- comprimentos físicos das linhas;
+- quantas linhas foram adicionadas/removidas entre 201901 e 201912;
+- exemplos reais das diferenças.
+
+Somente após essa evidência será implementado o parser do layout e o próximo teste de cobertura.
 
 ## Próximas etapas
 
-Após C2.4:
+Após C2.5:
 
-1. inspecionar fisicamente encoding e layout do `tb_cid.txt`;
-2. interpretar a chave somente a partir do layout oficial;
-3. medir cobertura dos 5.480 códigos usando código bruto e `Trim(DIAG_PRINC)`;
-4. decidir referência única versus referência temporal conforme evidência;
-5. somente então gerar `REF_CID10.qvd` e checkpoint parcial no `EXT.qvw`.
+1. interpretar o layout físico comprovado;
+2. identificar a chave CID no arquivo sem inferência;
+3. localizar temporalmente a mudança de conteúdo dentro de 2019, se necessário;
+4. medir cobertura dos 5.480 códigos usando código bruto e `Trim(DIAG_PRINC)`;
+5. decidir a temporalidade correta da referência;
+6. somente então gerar `REF_CID10.qvd` e checkpoint parcial no `EXT.qvw`.
 
 Não iniciar fatos, dimensões, Link Table ou indicadores neste checkpoint.
