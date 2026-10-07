@@ -160,7 +160,7 @@ Estado do readiness:
 - T27–T29 permanecem gates de implementação para SIGTAP, CID-10 e CNES leitos;
 - Boundary 8: **CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**.
 
-A implementação está liberada para iniciar controladamente a **FASE I — INFRAESTRUTURA MÍNIMA**. Dashboards continuam fora de escopo até as fases posteriores previstas no Boundary 7.
+A **FASE I — INFRAESTRUTURA MÍNIMA** está em andamento. A infraestrutura versionável foi materializada no repositório; resta criar e validar localmente os três QVWs binários mínimos no QlikView 12. Dashboards continuam fora de escopo até as fases posteriores previstas no Boundary 7.
 
 ## QlikView
 
@@ -224,5 +224,7 @@ Antes de adicionar datasets ao Git:
 - Boundary 7 — Plano de implementação: concluído;
 - Boundary 8 — Readiness: **CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**;
 - discovery de implementação: **CONCLUÍDA COM GO**;
-- próxima ação: iniciar **FASE I — INFRAESTRUTURA MÍNIMA** conforme `docs/discovery/boundary-7-implementation-plan.md`;
+- Fase I — Infraestrutura mínima: **IN PROGRESS**;
+- infraestrutura versionável: scripts `.qvs`, conversor DBC, dependências e diretórios QVD materializados;
+- próxima ação: criar/validar localmente `EXT.qvw`, `TRANSF.qvw` e `PAINEL.qvw` com seus respectivos `Must_Include`;
 - implementação: **LIBERADA SOMENTE PARA A FASE I — INFRAESTRUTURA MÍNIMA**, conforme o plano aprovado.
