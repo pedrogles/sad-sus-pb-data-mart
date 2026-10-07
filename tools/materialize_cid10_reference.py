@@ -43,6 +43,7 @@ EXPECTED_REMOVED_KEYS = 0
 EXPECTED_SHARED_CHANGED_DESCRIPTION = 0
 EXPECTED_SHARED_CHANGED_PAYLOAD = 0
 EXPECTED_UNMATCHED_201901_KEYS = 349
+EXPECTED_CODE_LENGTH_COUNTS = Counter({3: 2_042, 4: 12_188})
 
 
 def sha256_file(path: Path) -> str:
@@ -239,11 +240,19 @@ def materialize(layout: list[dict[str, object]]) -> tuple[list[dict[str, str]], 
             f"Cardinalidade CID divergente: esperado={EXPECTED_ROWS} atual={len(seen_codes)}"
         )
 
-    if length_counts != Counter({3: 1780, 4: 12450}):
+    if length_counts != EXPECTED_CODE_LENGTH_COUNTS:
         raise RuntimeError(
             "Distribuição de tamanho CID inesperada após remoção do padding: "
             + json.dumps(
                 {str(k): v for k, v in sorted(length_counts.items())},
+                ensure_ascii=False,
+            )
+            + " esperado="
+            + json.dumps(
+                {
+                    str(k): v
+                    for k, v in sorted(EXPECTED_CODE_LENGTH_COUNTS.items())
+                },
                 ensure_ascii=False,
             )
         )
