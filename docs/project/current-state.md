@@ -275,15 +275,24 @@ Evidência adicional:
 - `STPB1701`: 5.692 registros / 201 campos;
 - `STPB1912`: 6.438 registros / 208 campos.
 
+Evidência QlikView adicional:
+
+- `docs/discovery/boundary-8-qlikview-smoke-2026-10-07.md`;
+- CSV → QlikView: **PASS** — 13.912 linhas;
+- `Must_Include`: **PASS**;
+- include aninhado: **PASS**;
+- QVD STORE: **PASS**;
+- `Qv.exe /r`: **PASS**;
+- Link Table smoke: **PASS**;
+- synthetic keys: **0 visíveis no protótipo**;
+- circular references: **0 visíveis no protótipo**;
+- residência e serviço permanecem como papéis separados.
+
 Bloqueios restantes para GO:
 
+- confirmar major version **12.x** do QlikView via R15;
 - reconciliar hashes locais com o manifesto de aquisição;
-- confirmar major version 12 do QlikView;
-- validar CSV → QlikView;
-- validar `Must_Include`;
-- validar `Qv.exe /r` sem interação;
-- validar tratamento de erro em batch;
-- validar protótipo mínimo da Link Table no Table Viewer;
+- validar o caminho de falha do tratamento de erro em batch, se mantido como gate;
 - materializar/tratar explicitamente as referências auxiliares necessárias.
 
 A implementação definitiva permanece bloqueada até o readiness emitir **GO**.
