@@ -367,7 +367,7 @@ A classificação não reduz nenhum critério; apenas define em qual gate ele é
 | Check | Status |
 |---|---|
 | QlikView executável | **PASS** |
-| QlikView major version 12.x | **UNVERIFIED — executar R15** |
+| QlikView major version 12.x | **PASS — 12.0.20000.0** |
 | caminho de `Qv.exe` | **PASS — C:\Program Files\QlikView\Qv.exe** |
 | Python 3 >= 3.7 | **PASS — 3.14.8** |
 | `.venv` | **PASS** |
@@ -535,9 +535,25 @@ Resultado observado:
 
 O protótipo mínimo da arquitetura associativa aprovada no Boundary 6 carregou no QlikView sem synthetic key ou circular reference visível.
 
+## Evidência de versão do QlikView
+
+Documento:
+
+`docs/discovery/boundary-8-qlikview-version-2026-10-07.md`
+
+Resultado:
+
+- `LOCAL_PREFLIGHT_PASS`;
+- `blocking_count = 0`;
+- R15 — QlikView major version: **PASS**;
+- versão observada: **12.0.20000.0**.
+
+### FATO VERIFICADO
+
+O ambiente local usa QlikView major version 12.
+
 Pendências antes do GO:
 
-- executar R15 e confirmar explicitamente QlikView **12.x**;
 - reconciliar hashes locais com o manifesto de aquisição;
 - testar o caminho de falha do tratamento de erro em batch, se mantido como gate obrigatório;
 - materializar ou tratar explicitamente as referências auxiliares necessárias.
@@ -546,4 +562,4 @@ O Boundary 8 permanece **IN PROGRESS**.
 
 Próxima ação:
 
-executar novamente `tools/readiness_check.ps1` para registrar R15 e avançar para a reconciliação de hashes.
+localizar e inspecionar a evidência final de aquisição que contém os hashes dos 108 DBCs, sem reconstruir esse manifesto por memória.
