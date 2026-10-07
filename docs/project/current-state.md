@@ -266,10 +266,19 @@ Ferramentas de readiness:
 - `tools/readiness_dbc_smoke.py`;
 - `tools/readiness_smoke.qvs`.
 
+Evidência adicional:
+
+- `docs/discovery/boundary-8-dbc-smoke-2026-10-07.md`;
+- DBC → DBF → CSV UTF-8: **PASS**;
+- `RDPB1702`: 13.912 registros / 113 campos;
+- `LTPB1712`: 1.033 registros / 28 campos;
+- `STPB1701`: 5.692 registros / 201 campos;
+- `STPB1912`: 6.438 registros / 208 campos.
+
 Bloqueios restantes para GO:
 
-- executar smoke DBC → DBF/CSV com reconciliação de checkpoints;
-- reconciliar hashes/contagens/schema necessários;
+- reconciliar hashes locais com o manifesto de aquisição;
+- confirmar major version 12 do QlikView;
 - validar CSV → QlikView;
 - validar `Must_Include`;
 - validar `Qv.exe /r` sem interação;

@@ -1,0 +1,85 @@
+// Boundary 8 — minimal Link Table smoke model.
+// Loaded from readiness_smoke.qvs after CSV/QVD smoke checks.
+
+// Shared dimensions
+DIM_TEMPO_ANO_SMOKE:
+LOAD * INLINE [
+%SK_TEMPO_ANO, Ano_Analitico
+Y2017, 2017
+];
+
+DIM_MUNICIPIO_RESIDENCIA_SMOKE:
+LOAD * INLINE [
+%SK_MUNICIPIO_RESIDENCIA, Residencia_Municipio
+M1, Municipio_A
+M2, Municipio_B
+];
+
+DIM_MUNICIPIO_SERVICO_SMOKE:
+LOAD * INLINE [
+%SK_MUNICIPIO_SERVICO, Servico_Municipio
+M1, Municipio_A
+M2, Municipio_B
+];
+
+DIM_ESTABELECIMENTO_SMOKE:
+LOAD * INLINE [
+%SK_ESTABELECIMENTO, Estabelecimento_CNES
+E1, CNES_TESTE_1
+];
+
+// Link Table — only intentional shared dimension keys live here.
+LINK_ANALISE_SMOKE:
+LOAD * INLINE [
+%LINK_KEY, %SK_TEMPO_ANO, %SK_MUNICIPIO_RESIDENCIA, %SK_MUNICIPIO_SERVICO, %SK_ESTABELECIMENTO
+LI1, Y2017, M1, M2, E1
+LC1, Y2017, , M2, E1
+LP1, Y2017, M1, M1,
+LP2, Y2017, M2, M2,
+];
+
+// Three fact tables share only %LINK_KEY with LINK_ANALISE_SMOKE.
+FATO_INTERNACAO_SMOKE:
+LOAD * INLINE [
+%LINK_KEY, INTERNACAO_ID, QTD_INTERNACAO
+LI1, I1, 1
+];
+
+FATO_CAPACIDADE_SMOKE:
+LOAD * INLINE [
+%LINK_KEY, CAPACIDADE_ID, QTD_LEITOS_SUS
+LC1, C1, 10
+];
+
+FATO_POPULACAO_SMOKE:
+LOAD * INLINE [
+%LINK_KEY, POPULACAO_ID, POPULACAO_ESTIMADA
+LP1, P1, 10000
+LP2, P2, 20000
+];
+
+LET vLinkErrors = ScriptErrorCount;
+
+IF $(vLinkErrors) > $(vReadinessErrorsBefore) THEN
+    TRACE [READINESS] Link Table smoke load failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+READINESS_LINK_SUCCESS:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'LINK_TABLE_SMOKE' AS stage,
+    'SCRIPT_PASS' AS status
+AUTOGENERATE 1;
+
+STORE READINESS_LINK_SUCCESS INTO [readiness_link_table_success.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vReadinessErrorsBefore) THEN
+    TRACE [READINESS] Link Table marker failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE READINESS_LINK_SUCCESS;
+
+TRACE [READINESS] LINK TABLE SCRIPT PASS. Manual Table Viewer inspection still required for $Syn/circular paths.

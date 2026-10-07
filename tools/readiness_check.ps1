@@ -115,8 +115,25 @@ $candidateQlik.Add("C:\Program Files (x86)\QlikView\Qv.exe")
 $qlikExe = $candidateQlik | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
 if ($qlikExe) {
     $checks.Add((New-Check "R07" "QlikView Qv.exe" "PASS" $qlikExe))
+
+    try {
+        $qvVersion = (Get-Item $qlikExe).VersionInfo.ProductVersion
+        if ([string]::IsNullOrWhiteSpace($qvVersion)) {
+            $qvVersion = (Get-Item $qlikExe).VersionInfo.FileVersion
+        }
+
+        $qvMajor12 = $false
+        if ($qvVersion -match "^(\d+)\.") {
+            $qvMajor12 = ([int]$Matches[1] -eq 12)
+        }
+
+        $checks.Add((New-Check "R15" "QlikView major version" ($(if ($qvMajor12) {"PASS"} else {"FAIL"})) "Version=$qvVersion"))
+    } catch {
+        $checks.Add((New-Check "R15" "QlikView major version" "FAIL" "Could not read Qv.exe version metadata."))
+    }
 } else {
     $checks.Add((New-Check "R07" "QlikView Qv.exe" "FAIL" "Set QLIKVIEW_EXE or install QlikView 12."))
+    $checks.Add((New-Check "R15" "QlikView major version" "BLOCKED" "Qv.exe not available."))
 }
 
 # R08 — Data root

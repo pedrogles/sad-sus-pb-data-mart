@@ -140,12 +140,16 @@ Documentos canônicos adicionais:
 
 Estado do readiness:
 
-- pacotes `dbc-to-dbf==1.0.1` e `dbfread==2.0.7` existem e são adequados como baseline de smoke test;
-- `tools/readiness_check.ps1` foi adicionado para validar o ambiente Windows local;
-- `tools/readiness_smoke.qvs` foi adicionado para validar `Must_Include`, reload e STORE;
-- o `.gitignore` foi alinhado à estrutura física planejada;
-- a política de erro em batch foi corrigida para `ErrorMode=0` + checagem explícita de erros, conforme documentação oficial do QlikView;
-- ainda faltam evidências do ambiente local: QlikView/Python/venv, 108 DBCs no workspace, smoke DBC, smoke QlikView e protótipo mínimo da Link Table.
+- preflight local: **PASS**, sem blockers automáticos;
+- Python 3.14.8, `.venv`, `dbc-to-dbf==1.0.1` e `dbfread==2.0.7`: comprovados;
+- QlikView localizado em `C:\Program Files\QlikView\Qv.exe`;
+- BASE local: 36 RD + 36 LT + 36 ST e IBGE 2017–2019 comprovados;
+- smoke DBC → DBF → CSV UTF-8: **PASS**;
+- checkpoints reproduzidos: RD 2017-02 = 13.912/113; LT 2017-12 = 1.033/28; ST 2017-01 = 5.692/201; ST 2019-12 = 6.438/208;
+- `tools/readiness_check.ps1`, `tools/readiness_dbc_smoke.py`, `tools/readiness_smoke.qvs` e `tools/readiness_link_table_smoke.qvs` compõem a suíte de readiness;
+- o `.gitignore` está alinhado à estrutura física planejada;
+- política de batch: `ErrorMode=0` + checagem explícita de erros;
+- ainda faltam: confirmar major version 12 do QlikView, reconciliar hashes, smoke CSV/QlikView/`Must_Include`/`Qv.exe /r`, validar Link Table no Table Viewer e fechar referências auxiliares necessárias.
 
 Não iniciar implementação definitiva ou dashboards enquanto o Boundary 8 estiver NO-GO.
 
