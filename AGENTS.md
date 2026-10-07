@@ -115,9 +115,9 @@ Dimensões aprovadas:
 
 Próxima etapa planejada:
 
-**FASE II — CONVERSÃO**
+**FASE III — EXTRAÇÃO**
 
-A Fase I — Infraestrutura mínima foi concluída. O smoke controlado da Fase II passou para 1 RD, 1 LT e `STPB1912.dbc`, incluindo contagens, schema, manifesto e hashes. A conversão integral 108/108 está autorizada como próxima ação da Fase II.
+As Fases I e II estão concluídas. A conversão integral reconciliou os 108 DBCs e T01–T06 estão PASS. A Fase III deve implementar somente a camada de extração/staging prevista no Boundary 7: RD, LT, ST, IBGE e referências auxiliares, com reconciliação obrigatória antes de qualquer transformação dimensional.
 
 Estado atual da Discovery de implementação:
 
@@ -128,7 +128,9 @@ Estado atual da Discovery de implementação:
 5. arquitetura física do QlikView 12: concluída no Boundary 6;
 6. plano de implementação: concluído no Boundary 7;
 7. Boundary 8 — Readiness: **CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**;
-8. Fase I — Infraestrutura mínima: **CONCLUÍDA**; próxima etapa autorizada: **FASE II — CONVERSÃO**.
+8. Fase I — Infraestrutura mínima: **CONCLUÍDA**;
+9. Fase II — Conversão: **CONCLUÍDA — T01–T06 PASS**;
+10. próxima etapa autorizada: **FASE III — EXTRAÇÃO**.
 
 Documentos canônicos adicionais:
 
@@ -228,6 +230,8 @@ Antes de adicionar datasets ao Git:
 - infraestrutura versionável: scripts `.qvs`, conversor DBC, dependências e diretórios QVD materializados;
 - QVWs mínimos locais: **PASS** para `EXT.qvw`, `TRANSF.qvw` e `PAINEL.qvw`;
 - Fase II — smoke controlado: **PASS** para `RDPB1702.dbc`, `LTPB1712.dbc` e `STPB1912.dbc`;
-- Fase II — conversão integral: **108/108 PASS**; T01/T03/T04/T05/T06 reconciliados;
-- próxima ação: executar a reconciliação final T02 contra o manifesto de aquisição validado;
-- implementação: **FASE II AINDA ABERTA ATÉ T02**, sem antecipar Extração/Transformação.
+- Fase II — conversão integral: **108/108 PASS**;
+- T01–T06: **PASS**, incluindo T02 com 108/108 hashes/tamanhos reconciliados, 0 ausentes, 0 duplicados, 0 divergências e 0 extras;
+- Fase II — Conversão: **CONCLUÍDA**;
+- próxima ação: iniciar **FASE III — EXTRAÇÃO** conforme Boundary 7;
+- implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**, sem antecipar Transformação, Link Table, indicadores ou dashboards.
