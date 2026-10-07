@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-A — SIH/RD + CNES/LT + CNES/ST  
-**Status:** CORREÇÃO DE VALIDAÇÃO IMPLEMENTADA; RELOAD LOCAL PENDENTE
+**Status:** CHECKPOINT III-A PASS
 
 ## Base de evidência
 
@@ -123,6 +123,24 @@ A validação passou a comparar competências como texto normalizado:
 
 A correção preserva os campos de código como texto e altera somente o controle técnico de reconciliação.
 
+## Evidência de segunda execução local
+
+Após a correção e novo reload de `EXTRACAO/EXT.qvw`, os artefatos foram gerados com sucesso:
+
+- `SRC_SIH_RD.qvd`;
+- `SRC_CNES_LT.qvd`;
+- `SRC_CNES_ST.qvd`;
+- `_CHECKPOINT_EXTRACAO_SAUDE.csv`.
+
+Checkpoint observado:
+
+- `status=PASS_PARTIAL`;
+- RD: **36 arquivos / 566.672 registros**;
+- LT: **36 arquivos / 35.518 registros**;
+- ST: **36 arquivos / 220.390 registros**.
+
+O resultado confirma o **PASS do Checkpoint III-A** para as três fontes de saúde. O status permanece parcial porque IBGE e referências auxiliares ainda não integram o staging final da Fase III.
+
 ## Metadados de staging
 
 Cada linha recebe:
@@ -182,14 +200,15 @@ Este checkpoint não implementa:
 
 ## Próximo gate
 
-Executar localmente `EXTRACAO/EXT.qvw` e exigir:
+O Checkpoint III-A está concluído. A próxima ação é inspecionar fisicamente os arquivos IBGE 2017–2019 para determinar, com evidência:
 
-- RD = 566.672;
-- LT = 35.518;
-- ST = 220.390;
-- 36 competências por família;
-- 0 divergências entre competência interna e nome do arquivo;
-- três QVDs gerados;
-- `_CHECKPOINT_EXTRACAO_SAUDE.csv` com `PASS_PARTIAL`.
+- caminhos e nomes reais dos arquivos;
+- extensão/formato;
+- nomes das planilhas;
+- linha de cabeçalho;
+- nomes efetivos das colunas usadas para UF, município e população;
+- tratamento necessário para linhas de notas/rodapés.
 
-Somente depois dessa validação o projeto deve avançar para a inspeção física do IBGE e das referências auxiliares.
+Depois disso, implementar `SRC_IBGE_POPULACAO.qvd` sem inventar nomes de planilha ou cabeçalho.
+
+As referências auxiliares permanecem como gates posteriores da própria Fase III.
