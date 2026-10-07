@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1–C2.5 PASS; C2.6 COBERTURA CID-10 PENDENTE DE EXECUÇÃO LOCAL**
+**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1–C2.6 PASS; C2.7 MATERIALIZAÇÃO CID-10 PENDENTE DE EXECUÇÃO LOCAL**
 
 Documento operacional:
 
@@ -661,9 +661,13 @@ A documentação oficial do CMD registra CID-10 versão 2008, enquanto a valida�
 
 O C2.5 executou **PASS**. O `tb_cid.txt` possui linhas fixas de 111 bytes, decodificáveis em `cp1252`; o layout estável define `CO_CID` nas posições 1–4 e `NO_CID` nas posições 5–104. Entre 201901 e 201912 foram adicionadas 1.780 linhas e removidas 0. Os exemplos adicionados incluem categorias CID de 3 caracteres com espaço ASCII de padding na quarta posição, como `A00 `, `A01 ` e `A02 `, coexistindo com subcategorias de 4 caracteres. Essa evidência conecta a expansão de 201912 aos 60.423 registros RD com padding já medidos no C2.2.
 
-O C2.6 foi implementado em `tools/analyze_cid10_reference_coverage.py` para interpretar o layout comprovado e medir, nos 566.672 registros RD, cobertura contra 201901 e 201912 por chave bruta e por remoção exclusiva do espaço à direita. Também compara descrições/payload das chaves compartilhadas e verifica se todos os códigos não cobertos por 201901 passam a existir em 201912.
+O C2.6 executou **PASS**. A referência 201901 possui 12.450 chaves; 201912 possui 14.230. Foram adicionadas 1.780 chaves, removidas 0 e não houve alteração de descrição ou payload nas 12.450 compartilhadas. 201901 deixa 1.901 linhas RD / 349 códigos normalizados sem cobertura; todos são códigos de 3 caracteres e todos existem em 201912. A referência 201912 cobre 566.672/566.672 registros RD, tanto na chave física quanto após remoção exclusiva do padding à direita.
 
-Próximo gate: executar C2.6. A decisão sobre referência CID estática/superset versus temporal será tomada apenas a partir dessa cobertura. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+Foi confirmada a decisão de usar **201912 como referência CID-10 descritiva estática/superset** no Data Mart inicial. Essa decisão fornece código/descrição e não afirma vigência mensal. A normalização aprovada remove somente espaço ASCII `U+0020` à direita.
+
+O C2.7 foi implementado em `tools/materialize_cid10_reference.py` para produzir `cid10_referencia.csv` e manifesto, com gates baseados nas evidências C2.4/C2.6 e 14.230 códigos únicos.
+
+Próximo gate: executar C2.7 localmente. Após PASS, integrar a referência ao `EXT.qvw` como `REF_CID10.qvd` e exigir cobertura de 100% das 566.672 linhas RD. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
