@@ -117,7 +117,7 @@ Próxima etapa planejada:
 
 **FASE II — CONVERSÃO**
 
-A Fase I — Infraestrutura mínima foi concluída. A Fase II deve seguir o Boundary 7: validar primeiro 1 RD, 1 LT e `STPB1912.dbc`; somente depois executar a conversão integral 108/108.
+A Fase I — Infraestrutura mínima foi concluída. O smoke controlado da Fase II passou para 1 RD, 1 LT e `STPB1912.dbc`, incluindo contagens, schema, manifesto e hashes. A conversão integral 108/108 está autorizada como próxima ação da Fase II.
 
 Estado atual da Discovery de implementação:
 
@@ -227,5 +227,6 @@ Antes de adicionar datasets ao Git:
 - Fase I — Infraestrutura mínima: **CONCLUÍDA**;
 - infraestrutura versionável: scripts `.qvs`, conversor DBC, dependências e diretórios QVD materializados;
 - QVWs mínimos locais: **PASS** para `EXT.qvw`, `TRANSF.qvw` e `PAINEL.qvw`;
-- próxima ação: iniciar **FASE II — CONVERSÃO** com 1 RD + 1 LT + `STPB1912.dbc`;
-- implementação: **LIBERADA PARA A FASE II — CONVERSÃO**, sem antecipar Extração/Transformação.
+- Fase II — smoke controlado: **PASS** para `RDPB1702.dbc`, `LTPB1712.dbc` e `STPB1912.dbc`;
+- próxima ação: executar a conversão integral **36 RD + 36 LT + 36 ST = 108 DBCs** e reconciliar T01–T06;
+- implementação: **LIBERADA PARA A CONVERSÃO INTEGRAL DA FASE II**, sem antecipar Extração/Transformação.
