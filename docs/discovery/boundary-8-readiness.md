@@ -552,9 +552,27 @@ Resultado:
 
 O ambiente local usa QlikView major version 12.
 
+## Evidência de estrutura do manifesto de aquisição
+
+Documento:
+
+`docs/discovery/boundary-8-acquisition-manifest-structure-2026-10-07.md`
+
+### FATO VERIFICADO
+
+O ZIP externo `resultado-aquisicao.zip` contém `manifesto-execucao.json`, cujo `items` é indexado pelo nome do DBC.
+
+Cada item inspecionado contém `size_bytes` e `sha256`, além de fonte, competência, URL, status e metadados de aquisição.
+
+Foi adicionado:
+
+`tools/readiness_reconcile_hashes.ps1`
+
+para comparar os 108 itens do manifesto com a BASE local.
+
 Pendências antes do GO:
 
-- reconciliar hashes locais com o manifesto de aquisição;
+- executar a reconciliação 108/108 de SHA-256 e tamanho;
 - testar o caminho de falha do tratamento de erro em batch, se mantido como gate obrigatório;
 - materializar ou tratar explicitamente as referências auxiliares necessárias.
 
@@ -562,4 +580,4 @@ O Boundary 8 permanece **IN PROGRESS**.
 
 Próxima ação:
 
-localizar e inspecionar a evidência final de aquisição que contém os hashes dos 108 DBCs, sem reconstruir esse manifesto por memória.
+executar `tools/readiness_reconcile_hashes.ps1` contra o ZIP de aquisição e a BASE local.
