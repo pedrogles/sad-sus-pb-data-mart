@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — III-A/III-B PASS; III-C1 CARÁTER PASS; MOTIVO CORRIGIDO APÓS FALHA DE COBERTURA E PENDENTE DE NOVA MATERIALIZAÇÃO/RELOAD**
+**IN PROGRESS — CHECKPOINTS III-A, III-B E III-C1 PASS; REFERÊNCIAS AUXILIARES RESTANTES PENDENTES**
 
 Documento operacional:
 
@@ -647,7 +647,11 @@ A integração Qlik do III-C1 foi implementada em `EXTRACAO/ext_main.qvs`. No pr
 
 A inspeção integral do RD encontrou 26 códigos `COBRANCA` distintos. A Portaria SAS/MS nº 384/2010 demonstra que a referência aplicável pós-2010 exclui `1.3` e `1.7`, mantém `1.9`, altera internação domiciliar para `3.2` e inclui `6.1`–`6.7`. O materializador e o Qlik foram corrigidos para o domínio oficial completo de 28 códigos; `32` e `67` permanecem na referência embora não tenham sido observados no período.
 
-Próximo gate: rematerializar os CSVs normativos, reconciliar os novos hashes e executar novo reload local do `EXT.qvw`. SIGTAP, CID-10, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+A rematerialização corrigida retornou `CARATER_ROWS=6`, `MOTIVO_ROWS=28`, `VERDICT=PASS` e hashes 2/2 `MATCH=True`. O reload subsequente do `EXT.qvw` gerou `REF_CARATER_ATENDIMENTO.qvd`, `REF_MOTIVO_SAIDA.qvd` e `_CHECKPOINT_EXTRACAO_REFERENCIAS_NORMATIVAS.csv`. O checkpoint registrou `PASS_PARTIAL`, Caráter=6 com 0 unmatched e Motivo=28 com 0 unmatched.
+
+**CHECKPOINT III-C1: PASS.**
+
+Próximo gate: materializar e reconciliar a referência CID-10 oficial contra `DIAG_PRINC`, sem inventar normalização de chave antes do teste empírico. SIGTAP, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
