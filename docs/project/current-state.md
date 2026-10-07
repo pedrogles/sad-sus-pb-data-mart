@@ -478,28 +478,22 @@ O Boundary 3 não refez byte a byte essa validação porque os três arquivos an
 
 ## Pendências de implementação
 
-Estas pendências **não reabrem a primeira entrega**:
+Estas pendências **não reabrem a primeira entrega** e não bloqueiam o início da Fase I:
 
-- concluir Boundary 8 — Readiness;
-- executar `tools/readiness_check.ps1` no ambiente Windows real;
-- validar a toolchain Python de conversão DBC em smoke test;
-- validar leitura do CSV pelo QlikView e caminhos de `Must_Include`;
-- execução `Qv.exe /r` e mecanismo de sucesso/falha sem interação: **PASS**;
-- reconciliação dos 108 DBCs antes do GO: **PASS — 108/108 hashes e tamanhos coincidentes**;
-- validar protótipo mínimo da Link Table sem synthetic keys/circular references;
-- medir cobertura real `PROC_REA × SIGTAP`;
-- medir cobertura real `DIAG_PRINC × CID-10`;
-- materializar/comparar a referência histórica de `TP_LEITO/CODLEITO`;
-- resolver ou manter explicitamente sem preenchimento a lacuna de nome fantasia/razão social para 2017-01 a 2017-05;
-- somente após GO implementar conversor, scripts, QVDs, fatos, dimensões e Link Table;
-- construir e validar no mínimo 3 painéis;
+- materializar as referências auxiliares no estágio correspondente da implementação;
+- medir cobertura real `PROC_REA × SIGTAP` em T27;
+- medir cobertura real `DIAG_PRINC × CID-10` em T28;
+- materializar/comparar a referência histórica de `TP_LEITO/CODLEITO` e medir cobertura em T29;
+- manter explícita, sem imputação, a lacuna de nome fantasia/razão social para 2017-01 a 2017-05 quando não houver fonte comprovada;
+- executar as fases de conversão, extração, transformação, Link Table, indicadores e painéis somente na ordem do Boundary 7;
+- construir e validar no mínimo 3 painéis na fase apropriada;
 - preparar Capítulos 3–5 e anexos para a entrega final.
 
 ---
 
 ## Próxima fase
 
-**SAD — SUS PB — DATA ACQUISITION / QLIKVIEW IMPLEMENTATION DISCOVERY**
+**FASE I — INFRAESTRUTURA MÍNIMA**
 
 ### Boundary atual
 
@@ -507,27 +501,23 @@ Estas pendências **não reabrem a primeira entrega**:
 
 Status:
 
-**IN PROGRESS — CONTROLLED NO-GO**
+**CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**
 
-Próxima ação obrigatória:
+Próxima ação autorizada:
 
-1. executar `tools/readiness_check.ps1` no ambiente Windows que executará o QlikView;
-2. corrigir os itens FAIL/BLOCKED retornados;
-3. executar o smoke test QlikView com `tools/readiness_smoke.qvs`;
-4. reconciliar os DBCs locais com o Boundary 3;
-5. validar o protótipo mínimo da Link Table;
-6. atualizar `docs/discovery/boundary-8-readiness.md`;
-7. emitir **GO** ou manter **NO-GO** com blockers explícitos.
-
-Nenhuma implementação definitiva deve começar antes do GO.
+1. iniciar uma nova execução dedicada à Fase I;
+2. materializar somente a infraestrutura prevista no Boundary 7;
+3. criar diretórios, `.gitignore` alinhado, `requirements-tools.txt`, `dbc_to_csv.py`, QVWs vazios e scripts `.qvs` principais;
+4. não iniciar dashboards, fatos/dimensões definitivos ou downloads em massa de referências nesta fase;
+5. preservar o fluxo acadêmico `BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
 
 ### Boundary de conversa
 
 A primeira entrega está documentalmente encerrada.
 
-Os Boundaries 3, 4, 5, 6 e 7 estão concluídos e persistidos.
+Os Boundaries 3, 4, 5, 6, 7 e 8 estão concluídos e persistidos.
 
-O Boundary 8 está aberto e persistido em:
+O fechamento do Boundary 8 está em:
 
 `docs/discovery/boundary-8-readiness.md`
 
