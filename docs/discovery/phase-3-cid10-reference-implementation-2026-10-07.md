@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C2 — CID-10  
-**Status:** C2.1–C2.7 PASS; C2.8 INTEGRAÇÃO QLIK IMPLEMENTADA E PENDENTE DE RELOAD LOCAL
+**Status:** C2.1–C2.7 PASS; C2.8 BLOQUEADO POR 9.093 UNMATCHED NO QVD; DIAGNÓSTICO QLIK IMPLEMENTADO
 
 ## Objetivo
 
@@ -436,3 +436,48 @@ Executar novo reload local de `EXTRACAO/EXT.qvw` e exigir:
 - `cid10_unmatched_rd_rows=0`.
 
 Não iniciar fatos, dimensões, Link Table ou indicadores neste checkpoint.
+
+
+## Evidência do primeiro reload C2.8
+
+O primeiro reload Qlik carregou corretamente a referência CID-10 e passou todos os gates estruturais:
+
+- 14.230 linhas;
+- 14.230 códigos distintos;
+- 2.042 códigos de comprimento 3;
+- 12.188 códigos de comprimento 4;
+- competência de referência 201912;
+- 0 descrições vazias.
+
+Na reconciliação contra `SRC_SIH_RD.qvd`, porém:
+
+- `rd_rows=566672`;
+- `cid10_unmatched_rd_rows=9093`.
+
+O reload foi interrompido controladamente antes de gerar `REF_CID10.qvd`.
+
+Esse resultado diverge da análise Python C2.6 sobre os CSVs convertidos, que obteve cobertura 100% contra 201912. Portanto, a hipótese atual é de diferença de representação entre o valor disponível no QVD e o valor bruto dos CSVs; a causa ainda não está confirmada.
+
+A documentação oficial do QlikView informa que, por padrão, espaços e tabs nas extremidades são removidos ao carregar valores para o banco associativo, salvo uso de `SET Verbatim=1`. Isso reforça a necessidade de observar os valores efetivamente presentes em `SRC_SIH_RD.qvd`, em vez de assumir equivalência byte a byte com os CSVs.
+
+## Diagnóstico C2.8a
+
+O `EXTRACAO/ext_main.qvs` foi ampliado de forma fail-closed. Quando houver unmatched CID-10, antes de `EXIT SCRIPT` ele passa a gerar:
+
+`QVD/_DIAGNOSTIC_CID10_QVD_UNMATCHED.csv`
+
+Para cada valor distinto não coberto, o diagnóstico registra:
+
+- valor lido do QVD;
+- resultado de `RTrim()`;
+- resultado de `Upper(RTrim())`;
+- comprimentos antes/depois;
+- códigos ordinais dos quatro caracteres;
+- número de ocorrências;
+- se `Upper(RTrim())` resolveria o match.
+
+Nenhuma regra de normalização nova foi aprovada.
+
+## Próximo gate
+
+Executar novo reload do `EXT.qvw`, obter o CSV diagnóstico e inspecionar os unmatched reais antes de alterar a regra de chave.
