@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — III-A/III-B PASS; III-C1 MATERIALIZAÇÃO PASS E INTEGRAÇÃO QLIK PENDENTE DE RELOAD LOCAL**
+**IN PROGRESS — III-A/III-B PASS; III-C1 CARÁTER PASS; MOTIVO CORRIGIDO APÓS FALHA DE COBERTURA E PENDENTE DE NOVA MATERIALIZAÇÃO/RELOAD**
 
 Documento operacional:
 
@@ -643,9 +643,11 @@ Terceiro reload local do III-B: **PASS**. Foram gerados `SRC_IBGE_POPULACAO.qvd`
 
 O inventário local de `BASE/REFERENCIAS` confirmou diretório existente e sem arquivos. O Checkpoint III-C1 materializou de forma reproduzível os domínios normativos de Caráter de Atendimento e Motivo de Saída/Permanência. A execução local retornou 6 e 21 linhas, respectivamente, `VERDICT=PASS`, leitura UTF-8 correta e os dois hashes SHA-256 reconciliados com `MATCH=True`.
 
-A integração Qlik do III-C1 foi implementada em `EXTRACAO/ext_main.qvs` para gerar `REF_CARATER_ATENDIMENTO.qvd`, `REF_MOTIVO_SAIDA.qvd` e checkpoint parcial. O script também mede cobertura contra as 566.672 linhas RD e exige 0 códigos sem referência.
+A integração Qlik do III-C1 foi implementada em `EXTRACAO/ext_main.qvs`. No primeiro reload, Caráter de Atendimento passou integralmente e gerou `REF_CARATER_ATENDIMENTO.qvd`, com cobertura 566.672/566.672 e 0 unmatched. Motivo de Saída/Permanência carregou a referência de 21 linhas, mas encontrou 124.233 linhas RD sem referência e interrompeu controladamente.
 
-Próximo gate: novo reload local do `EXT.qvw` para validar os dois QVDs normativos e o checkpoint. SIGTAP, CID-10, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+A inspeção integral do RD encontrou 26 códigos `COBRANCA` distintos. A Portaria SAS/MS nº 384/2010 demonstra que a referência aplicável pós-2010 exclui `1.3` e `1.7`, mantém `1.9`, altera internação domiciliar para `3.2` e inclui `6.1`–`6.7`. O materializador e o Qlik foram corrigidos para o domínio oficial completo de 28 códigos; `32` e `67` permanecem na referência embora não tenham sido observados no período.
+
+Próximo gate: rematerializar os CSVs normativos, reconciliar os novos hashes e executar novo reload local do `EXT.qvw`. SIGTAP, CID-10, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
