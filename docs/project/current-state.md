@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — CHECKPOINT III-A PASS; CHECKPOINT III-B PASS; REFERÊNCIAS AUXILIARES PENDENTES**
+**IN PROGRESS — CHECKPOINTS III-A/III-B PASS; III-C1 REFERÊNCIAS NORMATIVAS IMPLEMENTADO E PENDENTE DE EXECUÇÃO LOCAL**
 
 Documento operacional:
 
@@ -641,7 +641,9 @@ Segundo reload local do III-B: o BIFF passou a abrir corretamente, 223 registros
 
 Terceiro reload local do III-B: **PASS**. Foram gerados `SRC_IBGE_POPULACAO.qvd` e `_CHECKPOINT_EXTRACAO_IBGE.csv`, com `PASS_PARTIAL`, 669 linhas, 223 municípios em 2017/2018/2019 e totais 4.025.558 / 3.996.496 / 4.018.127.
 
-Próximo gate: materializar e reconciliar as referências auxiliares previstas na Fase III. A fase permanece aberta até a conclusão desses gates e da reconciliação final de extração.
+O inventário local de `BASE/REFERENCIAS` confirmou diretório existente e sem arquivos. Foi implementado o Checkpoint III-C1 com `tools/materialize_normative_references.py`, responsável por materializar de forma reproduzível os domínios normativos já fechados de Caráter de Atendimento e Motivo de Saída/Permanência, sem download externo.
+
+Próximo gate: executar localmente o materializador e validar os dois CSVs + manifesto; somente depois integrar `REF_CARATER_ATENDIMENTO.qvd` e `REF_MOTIVO_SAIDA.qvd` ao `EXT.qvw`. SIGTAP, CID-10, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
