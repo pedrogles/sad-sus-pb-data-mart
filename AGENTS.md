@@ -263,6 +263,7 @@ Antes de adicionar datasets ao Git:
 - decisão CID-10 confirmada para o Data Mart inicial: usar 201912 como referência descritiva estática/superset; não interpretar como vigência mensal; normalização = remover somente espaço ASCII à direita;
 - C2.7 primeira execução: bloqueio controlado no gate de distribuição; resultado real 2.042 códigos de comprimento 3 + 12.188 de comprimento 4;
 - causa: o gate confundia as 1.780 novas categorias de 3 caracteres de 201912 com o total de categorias de 3 caracteres; as 12.450 chaves anteriores já possuem 262;
-- C2.7 corrigido em `tools/materialize_cid10_reference.py` para exigir a distribuição completa 2.042/12.188;
-- próxima ação: repetir C2.7 localmente; somente após PASS integrar `REF_CID10.qvd` ao `EXT.qvw`;
+- C2.7 corrigido e reexecutado: **PASS**, 14.230 códigos únicos, distribuição 2.042/12.188, decisão `STATIC_DESCRIPTIVE_SUPERSET`, hash do CSV reconciliado com `MATCH=True`;
+- C2.8 implementado no `EXTRACAO/ext_main.qvs` para gerar `REF_CID10.qvd` e checkpoint com cobertura RD obrigatoriamente 100%;
+- próxima ação: executar novo reload local de `EXT.qvw` e validar `REF_CID10.qvd` + checkpoint CID-10;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.

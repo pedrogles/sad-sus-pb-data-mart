@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C2 — CID-10  
-**Status:** C2.1–C2.6 PASS; C2.7 PRIMEIRA EXECUÇÃO BLOQUEADA POR GATE DE CONTAGEM E CORREÇÃO IMPLEMENTADA
+**Status:** C2.1–C2.7 PASS; C2.8 INTEGRAÇÃO QLIK IMPLEMENTADA E PENDENTE DE RELOAD LOCAL
 
 ## Objetivo
 
@@ -384,9 +384,9 @@ Assim, a distribuição completa de 201912 é:
 
 **FATO VERIFICADO:** o bloqueio foi um gate incorreto no materializador, não uma inconsistência da fonte CID-10.
 
-## Gate C2.7 corrigido
+## Evidência C2.7 — materialização final
 
-Esperado:
+A reexecução local após a correção retornou:
 
 - `REFERENCE_COMPETENCE=201912`;
 - `CID_ROWS=14230`;
@@ -398,6 +398,41 @@ Esperado:
 - `DECISION=STATIC_DESCRIPTIVE_SUPERSET`;
 - `VERDICT=PASS`.
 
-Após PASS local, o próximo passo será integrar `cid10_referencia.csv` ao `EXT.qvw`, gerar `REF_CID10.qvd` e exigir cobertura RD de 100%.
+O CSV final foi gerado com SHA-256:
+
+`da541adc1efbdb4ac04c555cf1e008967fd053fb6368ff443fb10a476757025f`
+
+A reconciliação local do manifesto retornou:
+
+`cid10_referencia.csv => ROWS=14230 MATCH=True`
+
+**FATO VERIFICADO:** C2.7 está PASS.
+
+## Etapa C2.8 — integração QlikView
+
+O `EXTRACAO/ext_main.qvs` foi ampliado para:
+
+- carregar `BASE/REFERENCIAS/cid10_referencia.csv`;
+- gerar `REF_CID10.qvd`;
+- validar 14.230 linhas e 14.230 códigos distintos;
+- validar 2.042 códigos de comprimento 3 e 12.188 de comprimento 4;
+- exigir competência de referência `201912`;
+- exigir 0 descrições vazias;
+- mapear `DIAG_PRINC` usando `RTrim(Text(DIAG_PRINC))`, removendo somente o padding técnico à direita;
+- reconciliar as 566.672 linhas RD e exigir 0 unmatched;
+- gerar `_CHECKPOINT_EXTRACAO_CID10.csv` com status `PASS_PARTIAL`.
+
+## Gate C2.8
+
+Executar novo reload local de `EXTRACAO/EXT.qvw` e exigir:
+
+- `REF_CID10.qvd` gerado;
+- `_CHECKPOINT_EXTRACAO_CID10.csv` gerado;
+- `cid10_rows=14230`;
+- `cid10_distinct_codes=14230`;
+- `cid10_length_3=2042`;
+- `cid10_length_4=12188`;
+- `rd_rows=566672`;
+- `cid10_unmatched_rd_rows=0`.
 
 Não iniciar fatos, dimensões, Link Table ou indicadores neste checkpoint.
