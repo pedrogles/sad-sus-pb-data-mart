@@ -128,7 +128,7 @@ Estado atual da Discovery de implementação:
 5. arquitetura física do QlikView 12: concluída no Boundary 6;
 6. plano de implementação: concluído no Boundary 7;
 7. Boundary 8 — Readiness: **CONCLUÍDO — GO PARA IMPLEMENTAÇÃO**;
-8. próxima etapa autorizada: **FASE I — INFRAESTRUTURA MÍNIMA**.
+8. Fase I — Infraestrutura mínima: **CONCLUÍDA**; próxima etapa autorizada: **FASE II — CONVERSÃO**.
 
 Documentos canônicos adicionais:
 
