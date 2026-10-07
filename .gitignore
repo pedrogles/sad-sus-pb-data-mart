@@ -39,6 +39,7 @@ PAINEL/PAINEL.qvw
 # Boundary 8 local smoke artifacts
 tools/readiness_smoke.qvd
 tools/readiness_smoke_success.csv
+tools/readiness_link_table_success.csv
 readiness-report.json
 tools/READINESS.qvw
 tools/READINESS_FAILURE.qvw
