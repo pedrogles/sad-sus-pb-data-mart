@@ -127,27 +127,27 @@ Estado atual da Discovery de implementação:
 4. historização física de `DIM_ESTABELECIMENTO` e role-playing: concluídos no Boundary 5;
 5. arquitetura física do QlikView 12: concluída no Boundary 6;
 6. plano de implementação: concluído no Boundary 7;
-7. próximo passo: BOUNDARY 8 — Readiness;
-8. implementação definitiva somente após GO explícito do Boundary 8.
+7. Boundary 8 — Readiness: **IN PROGRESS / CONTROLLED NO-GO**;
+8. implementação definitiva permanece bloqueada até GO explícito.
 
 Documentos canônicos adicionais:
 
 - `docs/discovery/boundary-4-auxiliary-references.md`;
 - `docs/discovery/boundary-5-historization-role-playing.md`;
 - `docs/discovery/boundary-6-qlikview-physical-architecture.md`;
-- `docs/discovery/boundary-7-implementation-plan.md`.
+- `docs/discovery/boundary-7-implementation-plan.md`;
+- `docs/discovery/boundary-8-readiness.md`.
 
-Decisões operacionais do Boundary 7:
+Estado do readiness:
 
-- pré-processar DBC em Python para CSV UTF-8 antes do LOAD do QlikView;
-- usar `dbc-to-dbf==1.0.1` e `dbfread==2.0.7` como baseline de readiness, ainda sujeitos ao smoke test;
-- executar a V1 como full rebuild, sem carga incremental;
-- usar `ErrorMode=2` como padrão fail-fast no Qlik;
-- preservar scripts `.qvs` versionáveis;
-- gerar chaves persistentes de forma determinística;
-- exigir reconciliação antes de avançar entre camadas.
+- pacotes `dbc-to-dbf==1.0.1` e `dbfread==2.0.7` existem e são adequados como baseline de smoke test;
+- `tools/readiness_check.ps1` foi adicionado para validar o ambiente Windows local;
+- `tools/readiness_smoke.qvs` foi adicionado para validar `Must_Include`, reload e STORE;
+- o `.gitignore` foi alinhado à estrutura física planejada;
+- a política de erro em batch foi corrigida para `ErrorMode=0` + checagem explícita de erros, conforme documentação oficial do QlikView;
+- ainda faltam evidências do ambiente local: QlikView/Python/venv, 108 DBCs no workspace, smoke DBC, smoke QlikView e protótipo mínimo da Link Table.
 
-Não iniciar implementação definitiva ou dashboards antes do readiness gate.
+Não iniciar implementação definitiva ou dashboards enquanto o Boundary 8 estiver NO-GO.
 
 ## QlikView
 
@@ -209,5 +209,7 @@ Antes de adicionar datasets ao Git:
 - Boundary 5 — Historização / Role-playing: concluído;
 - Boundary 6 — Arquitetura física QlikView: concluído;
 - Boundary 7 — Plano de implementação: concluído;
+- Boundary 8 — Readiness: **IN PROGRESS / CONTROLLED NO-GO**;
 - fase atual: Data Acquisition / QlikView Implementation Discovery;
-- próximo boundary: **BOUNDARY 8 — Readiness**.
+- próxima ação: executar `tools/readiness_check.ps1` e os smoke tests locais;
+- implementação definitiva: **BLOQUEADA ATÉ GO**.
