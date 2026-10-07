@@ -366,27 +366,33 @@ A classificação não reduz nenhum critério; apenas define em qual gate ele é
 
 | Check | Status |
 |---|---|
-| QlikView 12 instalado/executável | UNVERIFIED |
-| caminho de `Qv.exe` | UNVERIFIED |
-| Python 3 >= 3.7 | UNVERIFIED |
-| `.venv` | UNVERIFIED |
+| QlikView executável | **PASS** |
+| QlikView major version 12.x | **UNVERIFIED — executar R15** |
+| caminho de `Qv.exe` | **PASS — C:\Program Files\QlikView\Qv.exe** |
+| Python 3 >= 3.7 | **PASS — 3.14.8** |
+| `.venv` | **PASS** |
 | pacote `dbc-to-dbf==1.0.1` existe | PASS |
 | pacote `dbfread==2.0.7` existe | PASS |
-| pacotes instalados localmente | UNVERIFIED |
-| imports Python | UNVERIFIED |
-| 108 DBCs no workspace local | UNVERIFIED |
+| pacotes instalados localmente | **PASS** |
+| imports Python | **PASS — IMPORT_OK** |
+| 108 DBCs no workspace local | **PASS — 36 RD + 36 LT + 36 ST** |
 | hashes reconciliados | UNVERIFIED |
-| DBC smoke conversion | UNVERIFIED |
-| CSV legível pelo QlikView | UNVERIFIED |
-| `Must_Include` local | UNVERIFIED |
-| `Qv.exe /r` local | UNVERIFIED |
-| ErrorMode batch controlado | PLANEJADO / UNVERIFIED |
-| IBGE 2017–2019 local | UNVERIFIED |
+| DBC smoke conversion | **PASS** |
+| CSV legível pelo QlikView | **PASS — 13.912 linhas** |
+| `Must_Include` local | **PASS** |
+| `Must_Include` aninhado | **PASS** |
+| `Qv.exe /r` local | **PASS** |
+| QVD STORE | **PASS** |
+| ErrorMode batch — caminho de sucesso | **PASS** |
+| ErrorMode batch — caminho de falha | UNVERIFIED |
+| IBGE 2017–2019 local | **PASS — 1 arquivo/ano** |
 | referências auxiliares materializadas | PARTIAL |
 | política de nome histórico | PASS |
 | `.gitignore` seguro | PASS |
-| espaço em disco | UNVERIFIED |
-| Link Table smoke | UNVERIFIED |
+| espaço em disco | **INFO — 74,07 GB livres no preflight** |
+| Link Table smoke | **PASS** |
+| synthetic keys no protótipo | **PASS — nenhuma $Syn visível** |
+| circular references no protótipo | **PASS — grafo acíclico** |
 | blocker acadêmico novo | NÃO |
 
 ---
@@ -506,19 +512,38 @@ Resultado:
 
 A toolchain DBC → DBF → CSV UTF-8 está comprovada no ambiente local.
 
+## Evidência de QlikView smoke
+
+Documento:
+
+`docs/discovery/boundary-8-qlikview-smoke-2026-10-07.md`
+
+Resultado observado:
+
+- CSV `RDPB1702.csv` carregado no QlikView: **13.912 linhas**;
+- `Must_Include`: **PASS**;
+- `Must_Include` aninhado: **PASS**;
+- QVD STORE: **PASS**;
+- `Qv.exe /r`: **PASS**;
+- marcador principal: `READINESS_SMOKE;PASS;13912`;
+- marcador Link Table: `LINK_TABLE_SMOKE;SCRIPT_PASS`;
+- Table Viewer: nenhuma tabela `$Syn` visível;
+- Table Viewer: nenhum ciclo visível;
+- papéis municipais residência/serviço permanecem separados.
+
+### FATO VERIFICADO
+
+O protótipo mínimo da arquitetura associativa aprovada no Boundary 6 carregou no QlikView sem synthetic key ou circular reference visível.
+
 Pendências antes do GO:
 
+- executar R15 e confirmar explicitamente QlikView **12.x**;
 - reconciliar hashes locais com o manifesto de aquisição;
-- validar a versão principal do QlikView como 12;
-- leitura do CSV pelo QlikView;
-- `Must_Include`;
-- `Qv.exe /r`;
-- tratamento de erro em batch;
-- protótipo mínimo da Link Table;
-- referências auxiliares necessárias materializadas ou tratadas explicitamente.
+- testar o caminho de falha do tratamento de erro em batch, se mantido como gate obrigatório;
+- materializar ou tratar explicitamente as referências auxiliares necessárias.
 
 O Boundary 8 permanece **IN PROGRESS**.
 
 Próxima ação:
 
-executar o smoke QlikView e inspecionar o Table Viewer.
+executar novamente `tools/readiness_check.ps1` para registrar R15 e avançar para a reconciliação de hashes.

@@ -149,7 +149,9 @@ Estado do readiness:
 - `tools/readiness_check.ps1`, `tools/readiness_dbc_smoke.py`, `tools/readiness_smoke.qvs` e `tools/readiness_link_table_smoke.qvs` compõem a suíte de readiness;
 - o `.gitignore` está alinhado à estrutura física planejada;
 - política de batch: `ErrorMode=0` + checagem explícita de erros;
-- ainda faltam: confirmar major version 12 do QlikView, reconciliar hashes, smoke CSV/QlikView/`Must_Include`/`Qv.exe /r`, validar Link Table no Table Viewer e fechar referências auxiliares necessárias.
+- smoke QlikView: **PASS** para CSV → QlikView, `Must_Include`, include aninhado, QVD STORE e `Qv.exe /r`;
+- protótipo mínimo da Link Table: **PASS**, sem `$Syn` ou circular reference visível no Table Viewer;
+- ainda faltam: confirmar major version 12.x via R15, reconciliar hashes, validar o caminho de falha de batch se mantido como gate e fechar referências auxiliares necessárias.
 
 Não iniciar implementação definitiva ou dashboards enquanto o Boundary 8 estiver NO-GO.
 
