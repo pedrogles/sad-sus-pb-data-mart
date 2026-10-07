@@ -606,15 +606,30 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**READY — IMPLEMENTAÇÃO AUTORIZADA**
+**IN PROGRESS — CHECKPOINT III-A DE STAGING DE SAÚDE IMPLEMENTADO; RELOAD LOCAL PENDENTE**
 
-Escopo autorizado conforme Boundary 7:
+Documento operacional:
 
-1. carregar os CSVs convertidos de RD, LT e ST;
-2. carregar os arquivos anuais do IBGE;
-3. materializar/carregar as referências auxiliares no estágio correspondente;
-4. aplicar somente normalizações de staging e metadados de origem;
-5. gerar os QVDs de staging e reconciliar a extração antes de iniciar qualquer transformação.
+`docs/discovery/phase-3-health-staging-implementation-2026-10-07.md`
+
+Implementado no repositório:
+
+1. carga explícita dos 36 CSVs SIH/RD para `SRC_SIH_RD.qvd`;
+2. carga explícita dos 36 CSVs CNES/LT para `SRC_CNES_LT.qvd`;
+3. carga explícita dos 36 CSVs CNES/ST para `SRC_CNES_ST.qvd`;
+4. metadados técnicos de arquivo, família, competência e caminho;
+5. reconciliação de quantidade de arquivos, linhas, 36 competências e competência interna × nome do arquivo;
+6. checkpoint parcial `_CHECKPOINT_EXTRACAO_SAUDE.csv` emitido somente após PASS das três famílias.
+
+Critérios embutidos no script:
+
+- RD = 36 arquivos / 566.672 registros;
+- LT = 36 arquivos / 35.518 registros;
+- ST = 36 arquivos / 220.390 registros;
+- 36 competências distintas por família;
+- 0 divergências de competência.
+
+A Fase III ainda exige IBGE e referências auxiliares antes do marcador final de extração. Os nomes físicos de planilha/cabeçalho dos arquivos IBGE ainda não estão persistidos com evidência suficiente e não serão inventados.
 
 Fora de escopo nesta fase:
 

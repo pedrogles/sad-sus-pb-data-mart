@@ -233,5 +233,6 @@ Antes de adicionar datasets ao Git:
 - Fase II — conversão integral: **108/108 PASS**;
 - T01–T06: **PASS**, incluindo T02 com 108/108 hashes/tamanhos reconciliados, 0 ausentes, 0 duplicados, 0 divergências e 0 extras;
 - Fase II — Conversão: **CONCLUÍDA**;
-- próxima ação: iniciar **FASE III — EXTRAÇÃO** conforme Boundary 7;
-- implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**, sem antecipar Transformação, Link Table, indicadores ou dashboards.
+- Fase III — Checkpoint III-A: staging SIH/RD + CNES/LT + CNES/ST implementado em `EXTRACAO/ext_main.qvs`;
+- próxima ação: validar localmente `EXT.qvw` e os três QVDs de saúde; depois inspecionar a estrutura física dos arquivos IBGE e materializar as referências auxiliares;
+- implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
