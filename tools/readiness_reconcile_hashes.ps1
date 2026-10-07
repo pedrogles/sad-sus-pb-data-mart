@@ -280,7 +280,7 @@ $result | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $OutputJson -Encodi
 $details | Export-Csv -LiteralPath $OutputCsv -NoTypeInformation -Encoding UTF8
 
 Write-Host ""
-Write-Host "=== BOUNDARY 8 — HASH RECONCILIATION ==="
+Write-Host "=== BOUNDARY 8 - HASH RECONCILIATION ==="
 Write-Host "Manifest items : $expectedCount"
 Write-Host "Local DBCs     : $localCount"
 Write-Host "Matched         : $matchCount"
