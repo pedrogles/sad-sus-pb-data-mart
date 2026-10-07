@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-B — IBGE População 2017–2019  
-**Status:** IMPLEMENTADO NO REPOSITÓRIO; RELOAD LOCAL PENDENTE
+**Status:** CORREÇÃO DE ENCODING BIFF IMPLEMENTADA; NOVO RELOAD LOCAL PENDENTE
 
 ## FATO VERIFICADO — inspeção física dos arquivos
 
@@ -108,6 +108,30 @@ Checkpoint parcial:
 Status esperado:
 
 `PASS_PARTIAL`
+
+## Evidência de primeira execução local
+
+O primeiro reload do Checkpoint III-B confirmou novamente o PASS integral do Checkpoint III-A.
+
+Ao iniciar o IBGE 2017, o log registrou:
+
+- o caminho do XLS corretamente;
+- a tabela BIFF como `MunicÃ­pios$`;
+- erro `Cannot locate table in BIFF file`;
+- `ScriptErrorList=Table Not Found`;
+- interrupção controlada antes de qualquer QVD IBGE.
+
+A inspeção física havia confirmado que a planilha real é `Municípios`. Portanto, a falha foi isolada na interpretação do literal UTF-8 acentuado do include `.qvs` pelo QlikView 12.
+
+### Correção
+
+Os identificadores acentuados usados pelo carregamento BIFF e pela validação dos cabeçalhos passam a ser construídos em runtime com `Chr(...)`:
+
+- `Municípios$` → `Chr(237)`;
+- `NOME DO MUNICÍPIO` → `Chr(205)`;
+- `POPULAÇÃO ESTIMADA` → `Chr(199)` e `Chr(195)`.
+
+A correção não altera arquivos fonte, campos de staging, totais esperados, granularidade ou modelagem.
 
 ## Próximo gate
 
