@@ -1,0 +1,7 @@
+// FASE I — Infraestrutura mínima
+// Script versionável carregado por PAINEL/PAINEL.qvw.
+// Indicadores e dashboards permanecem fora do escopo desta fase.
+
+SET ErrorMode=0;
+
+TRACE [PAINEL] Phase I infrastructure script loaded;

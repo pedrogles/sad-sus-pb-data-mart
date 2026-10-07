@@ -1,0 +1,7 @@
+// FASE I — Infraestrutura mínima
+// Script versionável carregado por TRANSFORMACAO/TRANSF.qvw.
+// Fatos, dimensões e LINK_ANALISE serão implementados somente nas fases aprovadas.
+
+SET ErrorMode=0;
+
+TRACE [TRANSFORMACAO] Phase I infrastructure script loaded;
