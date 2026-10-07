@@ -125,15 +125,25 @@ Estado atual da Discovery de implementação:
 2. validação integral dos dados: concluída no Boundary 3;
 3. referências auxiliares: concluídas no Boundary 4, com ajustes de materialização ainda pendentes;
 4. historização física de `DIM_ESTABELECIMENTO` e role-playing: concluídos no Boundary 5;
-5. próximo passo: definir a arquitetura física do QlikView 12 no Boundary 6;
-6. depois: plano de implementação, readiness e somente então implementação definitiva.
+5. arquitetura física do QlikView 12: concluída no Boundary 6;
+6. próximo passo: BOUNDARY 7 — Plano de implementação;
+7. depois: BOUNDARY 8 — Readiness e somente então implementação definitiva.
 
 Documentos canônicos adicionais:
 
 - `docs/discovery/boundary-4-auxiliary-references.md`;
-- `docs/discovery/boundary-5-historization-role-playing.md`.
+- `docs/discovery/boundary-5-historization-role-playing.md`;
+- `docs/discovery/boundary-6-qlikview-physical-architecture.md`.
 
-Não iniciar dashboards antes da arquitetura física, dos testes de reconciliação e do readiness gate.
+Decisão física principal do Boundary 6:
+
+- manter as três fatos separadas;
+- usar `LINK_ANALISE` como ponte associativa;
+- preservar o fluxo BASE → EXTRAÇÃO → TRANSFORMAÇÃO → PAINEL;
+- usar scripts `.qvs` externos versionáveis chamados pelos QVW;
+- evitar synthetic keys e circular references por desenho.
+
+Não iniciar dashboards antes do plano de implementação, dos testes de reconciliação e do readiness gate.
 
 ## QlikView
 
@@ -193,5 +203,6 @@ Antes de adicionar datasets ao Git:
 - Boundary 3 — Full Dataset Validation: concluído;
 - Boundary 4 — Referências Auxiliares: concluído com ajustes;
 - Boundary 5 — Historização / Role-playing: concluído;
+- Boundary 6 — Arquitetura física QlikView: concluído;
 - fase atual: Data Acquisition / QlikView Implementation Discovery;
-- próximo boundary: **BOUNDARY 6 — Arquitetura física QlikView**.
+- próximo boundary: **BOUNDARY 7 — Plano de implementação**.
