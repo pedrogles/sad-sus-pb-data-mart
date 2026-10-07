@@ -294,9 +294,15 @@ Evidência adicional:
 - R15 — QlikView major version: **PASS**;
 - versão observada: **12.0.20000.0**.
 
+Evidência adicional:
+
+- `docs/discovery/boundary-8-acquisition-manifest-structure-2026-10-07.md`;
+- `manifesto-execucao.json` confirmado como fonte dos `size_bytes` e `sha256` por DBC;
+- `tools/readiness_reconcile_hashes.ps1` adicionado para comparação 108/108.
+
 Bloqueios restantes para GO:
 
-- reconciliar hashes locais com o manifesto de aquisição;
+- executar a reconciliação de hashes/tamanhos 108/108;
 - validar o caminho de falha do tratamento de erro em batch, se mantido como gate;
 - materializar/tratar explicitamente as referências auxiliares necessárias.
 
