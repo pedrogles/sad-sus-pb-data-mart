@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$ZipPath,
 
-    [string]$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
+    [string]$RepoRoot = "",
 
     [string]$DataRoot = "",
 
@@ -14,6 +14,18 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    $scriptPath = $MyInvocation.MyCommand.Path
+    if ([string]::IsNullOrWhiteSpace($scriptPath)) {
+        throw "Could not determine script path to resolve RepoRoot."
+    }
+
+    $scriptDir = Split-Path -Parent $scriptPath
+    $RepoRoot = (Resolve-Path -LiteralPath (Join-Path $scriptDir "..")).Path
+} else {
+    $RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
+}
 
 if ([string]::IsNullOrWhiteSpace($DataRoot)) {
     $DataRoot = Join-Path $RepoRoot "BASE"
