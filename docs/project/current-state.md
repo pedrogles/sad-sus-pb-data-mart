@@ -530,7 +530,7 @@ Nenhuma conversão integral, dimensão, fato, Link Table definitiva, indicador o
 
 Status:
 
-**IN PROGRESS — SMOKE CONTROLADO PASS; CONVERSÃO 108/108 AUTORIZADA**
+**IN PROGRESS — CONVERSÃO 108/108 PASS; T02 PENDENTE**
 
 ### Evidência local do smoke — 07/10/2026
 
@@ -558,14 +558,32 @@ Manifesto do smoke:
 
 O layout local real mantém os DBCs em uma raiz compartilhada `BASE/DBC`. O conversor foi ajustado para selecionar recursivamente apenas a família indicada por `--source-family`, permitindo executar RD, LT e ST diretamente dessa raiz sem duplicar os 108 arquivos. Para a carga integral será usado `--expected-files 36` como proteção contra lote incompleto.
 
+### Conversão integral — evidência local de 07/10/2026
+
+Documento de evidência:
+
+`docs/discovery/phase-2-conversion-evidence-2026-10-07.md`
+
+Resultado:
+
+- RD: **36/36 PASS — 566.672 registros — 113 campos em 36/36**;
+- LT: **36/36 PASS — 35.518 registros — 28 campos em 36/36**;
+- ST: **36/36 PASS — 220.390 registros**;
+- ST: **201 campos em 35/36**;
+- `STPB1912.dbc`: **208 campos**;
+- manifesto de conversão: **108 linhas / 108 PASS**.
+
+Gates reconciliados:
+
+- T01: **PASS**;
+- T03: **PASS**;
+- T04: **PASS**;
+- T05: **PASS**;
+- T06: **PASS**.
+
 ### Próximo gate
 
-Executar:
-
-1. 36 RD;
-2. 36 LT;
-3. 36 ST;
-4. reconciliar T01–T06 antes de iniciar a Fase III — Extração.
+Permanece pendente somente T02 — hashes de entrada iguais ao inventário validado.
 
 A Fase II não autoriza ainda implementar `EXT.qvw` como extração definitiva, dimensões, fatos, `LINK_ANALISE`, indicadores ou dashboards.
 
@@ -579,9 +597,9 @@ Status:
 
 Próxima ação autorizada:
 
-1. executar a conversão integral 36 RD + 36 LT + 36 ST usando `tools/dbc_to_csv.py`;
-2. usar `--expected-files 36` em cada família;
-3. reconciliar 108/108, totais de registros T03–T05 e schema T06;
+1. executar T02 com `tools/readiness_reconcile_hashes.py` contra o manifesto de aquisição validado;
+2. exigir `VERDICT=PASS`, 108 matches, 0 ausentes, 0 duplicados, 0 divergências de hash/tamanho e 0 extras;
+3. somente após T02 PASS, encerrar formalmente a Fase II e liberar a Fase III — Extração;
 4. não iniciar ainda Extração definitiva, Transformação, Link Table, indicadores ou dashboards;
 5. preservar o fluxo acadêmico `BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
 

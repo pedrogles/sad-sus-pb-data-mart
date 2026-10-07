@@ -228,5 +228,6 @@ Antes de adicionar datasets ao Git:
 - infraestrutura versionável: scripts `.qvs`, conversor DBC, dependências e diretórios QVD materializados;
 - QVWs mínimos locais: **PASS** para `EXT.qvw`, `TRANSF.qvw` e `PAINEL.qvw`;
 - Fase II — smoke controlado: **PASS** para `RDPB1702.dbc`, `LTPB1712.dbc` e `STPB1912.dbc`;
-- próxima ação: executar a conversão integral **36 RD + 36 LT + 36 ST = 108 DBCs** e reconciliar T01–T06;
-- implementação: **LIBERADA PARA A CONVERSÃO INTEGRAL DA FASE II**, sem antecipar Extração/Transformação.
+- Fase II — conversão integral: **108/108 PASS**; T01/T03/T04/T05/T06 reconciliados;
+- próxima ação: executar a reconciliação final T02 contra o manifesto de aquisição validado;
+- implementação: **FASE II AINDA ABERTA ATÉ T02**, sem antecipar Extração/Transformação.
