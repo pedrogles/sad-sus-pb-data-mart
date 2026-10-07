@@ -239,5 +239,7 @@ Antes de adicionar datasets ao Git:
 - segunda execução local: **CHECKPOINT III-A PASS**; três QVDs de saúde gerados e checkpoint `PASS_PARTIAL` com RD=566.672, LT=35.518 e ST=220.390;
 - inspeção física IBGE: concluída para 2017–2019; planilha `Municípios`, título na linha 1 e cabeçalho na linha 2 confirmados;
 - Fase III — Checkpoint III-B: `SRC_IBGE_POPULACAO.qvd` implementado com gates de 669 linhas, 223 municípios por ano e totais anuais validados;
+- primeiro reload III-B: falhou controladamente em `Table Not Found`; o log mostrou `MunicÃ­pios$` no lugar da planilha real `Municípios`;
+- correção: nome de planilha e cabeçalhos acentuados usados pelo BIFF/schema são construídos em runtime com `Chr(...)`, evitando dependência da codificação do include `.qvs`;
 - próxima ação: repetir o reload local de `EXT.qvw` para validar III-B; depois materializar/reconciliar as referências auxiliares;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
