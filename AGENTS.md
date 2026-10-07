@@ -261,6 +261,8 @@ Antes de adicionar datasets ao Git:
 - as adições observadas incluem categorias CID de 3 caracteres com espaço ASCII de padding na quarta posição, alinhadas ao padrão já observado em `DIAG_PRINC`;
 - C2.6 **PASS**: 201912 adiciona 1.780 chaves, remove 0, altera 0 descrições/payload compartilhados e cobre 566.672/566.672 RD; 201901 deixa 1.901 linhas / 349 códigos de 3 caracteres sem cobertura, todos presentes em 201912;
 - decisão CID-10 confirmada para o Data Mart inicial: usar 201912 como referência descritiva estática/superset; não interpretar como vigência mensal; normalização = remover somente espaço ASCII à direita;
-- C2.7 implementado em `tools/materialize_cid10_reference.py` para materializar 14.230 códigos em CSV UTF-8 com manifesto/hashes;
-- próxima ação: executar C2.7 localmente; somente após PASS integrar `REF_CID10.qvd` ao `EXT.qvw`;
+- C2.7 primeira execução: bloqueio controlado no gate de distribuição; resultado real 2.042 códigos de comprimento 3 + 12.188 de comprimento 4;
+- causa: o gate confundia as 1.780 novas categorias de 3 caracteres de 201912 com o total de categorias de 3 caracteres; as 12.450 chaves anteriores já possuem 262;
+- C2.7 corrigido em `tools/materialize_cid10_reference.py` para exigir a distribuição completa 2.042/12.188;
+- próxima ação: repetir C2.7 localmente; somente após PASS integrar `REF_CID10.qvd` ao `EXT.qvw`;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
