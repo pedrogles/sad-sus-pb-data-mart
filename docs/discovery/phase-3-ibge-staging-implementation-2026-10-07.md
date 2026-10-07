@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-B — IBGE População 2017–2019  
-**Status:** CORREÇÃO DE NORMALIZAÇÃO POPULACIONAL IMPLEMENTADA; NOVO RELOAD LOCAL PENDENTE
+**Status:** CHECKPOINT III-B PASS
 
 ## FATO VERIFICADO — inspeção física dos arquivos
 
@@ -167,17 +167,30 @@ A normalização passa a considerar somente o trecho anterior ao primeiro `(` an
 
 A regra é aplicada uniformemente aos três anos e preserva o número principal da publicação, descartando apenas a anotação parentética.
 
+## Evidência de terceira execução local
+
+Após a correção da normalização populacional, o reload do `EXTRACAO/EXT.qvw` concluiu o Checkpoint III-B com sucesso.
+
+Artefatos gerados:
+
+- `SRC_IBGE_POPULACAO.qvd`;
+- `_CHECKPOINT_EXTRACAO_IBGE.csv`.
+
+Checkpoint observado:
+
+- `status=PASS_PARTIAL`;
+- `ibge_rows=669`;
+- 2017: 223 municípios / 4.025.558 habitantes;
+- 2018: 223 municípios / 3.996.496 habitantes;
+- 2019: 223 municípios / 4.018.127 habitantes.
+
+O resultado confirma o **PASS do Checkpoint III-B**.
+
 ## Próximo gate
 
-Executar localmente `EXTRACAO/EXT.qvw` após sincronizar a branch/PR mergeada e exigir:
+Materializar e reconciliar as referências auxiliares previstas na Fase III, preservando os gates já aprovados para SIGTAP, CID-10, caráter de atendimento, motivo de saída/permanência, tipo de leito e ponte municipal DATASUS ↔ IBGE.
 
-- `SRC_IBGE_POPULACAO.qvd` gerado;
-- 669 linhas;
-- 223 municípios em cada ano;
-- totais 4.025.558 / 3.996.496 / 4.018.127;
-- `_CHECKPOINT_EXTRACAO_IBGE.csv` com `PASS_PARTIAL`.
-
-A Fase III permanece aberta porque as referências auxiliares ainda precisam ser materializadas/reconciliadas.
+A Fase III permanece aberta até a conclusão dessas referências e da reconciliação final de extração.
 
 ## Fora de escopo
 
