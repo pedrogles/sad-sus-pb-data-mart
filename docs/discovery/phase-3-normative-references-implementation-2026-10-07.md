@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C1 — Caráter de Atendimento + Motivo de Saída/Permanência  
-**Status:** CARÁTER PASS; DOMÍNIO DE MOTIVO CORRIGIDO; REMATERIALIZAÇÃO E NOVO RELOAD PENDENTES
+**Status:** CHECKPOINT III-C1 PASS
 
 ## Estado de entrada
 
@@ -157,17 +157,35 @@ Gates embutidos:
 
 O checkpoint continua `PASS_PARTIAL`, pois outras referências auxiliares ainda permanecem pendentes.
 
-## Próximo gate
+## Evidência de rematerialização corrigida
 
-1. rematerializar os CSVs normativos com o materializador corrigido;
-2. confirmar `MOTIVO_ROWS=28` e reconciliar os novos hashes;
-3. executar novo reload local de `EXTRACAO/EXT.qvw` e exigir:
+A execução local após a correção normativa retornou:
 
-- os dois QVDs normativos gerados;
-- checkpoint normativo gerado;
+- `CARATER_ROWS=6`;
+- `MOTIVO_ROWS=28`;
+- `VERDICT=PASS`;
+- hashes 2/2 com `MATCH=True`.
+
+## Evidência do segundo reload Qlik do III-C1
+
+Foram gerados:
+
+- `REF_CARATER_ATENDIMENTO.qvd`;
+- `REF_MOTIVO_SAIDA.qvd`;
+- `_CHECKPOINT_EXTRACAO_REFERENCIAS_NORMATIVAS.csv`.
+
+Checkpoint observado:
+
+- `status=PASS_PARTIAL`;
 - `carater_rows=6`;
 - `carater_unmatched_rd_rows=0`;
 - `motivo_rows=28`;
 - `motivo_unmatched_rd_rows=0`.
 
-SIGTAP, CID-10, CNES tipo/leito, ponte DATASUS ↔ IBGE e estabelecimento histórico permanecem checkpoints posteriores da Fase III.
+**FATO VERIFICADO:** o Checkpoint III-C1 está PASS.
+
+## Próximo gate
+
+Materializar uma referência oficial CID-10 e executar o teste empírico de cobertura contra os valores reais de `DIAG_PRINC`. A regra exata de normalização da chave continua pendente até esse teste.
+
+SIGTAP, CNES tipo/leito, ponte DATASUS ↔ IBGE e estabelecimento histórico permanecem checkpoints posteriores da Fase III.
