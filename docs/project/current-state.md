@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1–C2.7 PASS; C2.8 QLIK PENDENTE DE RELOAD LOCAL**
+**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1–C2.7 PASS; C2.8 BLOQUEADO POR 9.093 UNMATCHED E EM DIAGNÓSTICO QLIK**
 
 Documento operacional:
 
@@ -669,7 +669,7 @@ O C2.7 foi reexecutado com **PASS**: `REFERENCE_COMPETENCE=201912`, 14.230 linha
 
 O C2.8 foi implementado em `EXTRACAO/ext_main.qvs`: carga da referência final, validação estrutural, `RTrim(DIAG_PRINC)` como remoção do padding técnico aprovado, reconciliação contra 566.672 RD, geração de `REF_CID10.qvd` e checkpoint parcial.
 
-Próximo gate: repetir o reload local do `EXT.qvw` e validar `REF_CID10.qvd` + `_CHECKPOINT_EXTRACAO_CID10.csv` com 0 unmatched. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+O primeiro reload C2.8 passou todos os gates estruturais da referência, mas encontrou 9.093 linhas RD sem match no QVD e interrompeu controladamente. Como o C2.6 sobre os CSVs convertidos havia obtido cobertura 100%, foi implementado um diagnóstico fail-closed que exporta os valores efetivos não cobertos de `SRC_SIH_RD.qvd`, com representação, comprimento, códigos ordinais e teste de `Upper(RTrim())`. Próximo gate: repetir o reload e inspecionar `_DIAGNOSTIC_CID10_QVD_UNMATCHED.csv` antes de alterar qualquer regra de normalização. SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
 
 Fora de escopo nesta fase:
 
