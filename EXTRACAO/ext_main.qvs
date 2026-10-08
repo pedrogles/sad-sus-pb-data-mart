@@ -980,7 +980,7 @@ LOAD
         If(
             ApplyMap(
                 'MAP_CID10',
-                RTrim(Text(DIAG_PRINC)),
+                Text(RTrim(Text(DIAG_PRINC))),
                 0
             ) = 0,
             1,
