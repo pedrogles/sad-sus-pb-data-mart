@@ -761,6 +761,30 @@ if ($LASTEXITCODE -eq 0 -and (Test-Path .\BASE\REFERENCIAS\cnes_nt32_201909_pair
 **Próximo teste discriminante (somente consulta):** usar o próprio seletor `COMPETÊNCIA 01/2017` e mudar para **09/2019**, navegar novamente em **CONSULTAS → Estabelecimentos de Saúde → Leitos**, registrar se aparece a **versão da terminologia** e seus códigos. Esta competência coincide com o **anexo Setembro/2019** da Nota Técnica nº 32/2019 já auditada, permitindo um controle positivo verificável. Se persistir `Nenhum resultado encontrado`, registrar `RTS_LEITOS_201909_EMPTY_VISIBLE` e **não presumir disponibilidade dos dados históricos Leitos no RTS**; avaliar, sem downloads massivos, a seção `Downloads` para existência de metadados de versão Leitos.
 
 
+
+### C4.2c.3b.2 — RTS Leitos disponível apenas a partir de 10/2019 no ensaio manual (08/10/2026)
+
+**FATO VERIFICADO — relato de testes do usuário e captura integral PDF (2 páginas):**
+
+- usuário tentou consultar a terminologia **Estabelecimentos de Saúde → Leitos** nas competências anteriores a **10/2019** e informou que sempre apareceu `Nenhum resultado encontrado`; **não foi apresentada enumeração verificável de todos os meses individualmente**, logo "indisponível antes de 10/2019" é conclusão do ensaio, não prova universal da base do portal;
+- para **10/2019**, a captura mostra o cabeçalho literal **`LEITO - VERSÃO 10/2019A`**, junto à competência global **`10/2019`**, uma tabela com `Código`, `Nome`, `Status` e `Competência Inicial`;
+- nas linhas exibidas, há `66 — Unidade de Isolamento` com status `ATIVO`, `70 — Fibrose Cística - Hospital Dia` com `ATIVO`, e `Competência Inicial=10/2019` para ambos. A tabela **não exibe `TP_LEITO` numérico como coluna**, portanto não declarar `3/66` provado por esta tela;
+- **proveniência da captura:** `screencapture-rts-saude-gov-br-2026-10-08-17_49_30.pdf`, 2 páginas, **916.695 bytes**, SHA-256 `a0fbe0a2dec3353e175ee74481ca872aa3d9ac1e2d944c6cd046bc38a31f6ba9` (PDF não versionado no Git e não alterado);
+- a apresentação da versão `10/2019A` e da competência inicial `10/2019` comprova **disponibilidade e status na terminologia publicada no RTS**, mas **não prova que o conceito, classificação ou código foi criado em outubro de 2019**, nem sua vigência anterior.
+
+**GATE C4.2c.3b:** `RTS_LEITOS_201910_VERSION_VISIBLE=PASS`, `RTS_LEITOS_PRE_201910=EMPTY_PER_USER_TESTS`, `RTS_LEITOS_201701_TO_201909_VALIDITY=NOT_VERIFIED`. **A trilha RTS de consultas, por si só, não fecha a prova normativa histórica da série PB 201701–201912.** Não retroprojetar a competência inicial do portal, não editar o perfil LT, não equiparar `2/66` a `3/66`, não gerar QVD.
+
+**EVIDÊNCIA ADICIONAL — atos normativos a verificar na linha temporal:**
+
+- [Portaria SAS/MS nº 298, de 01/03/2019, DOU 06/03/2019](https://bvsms.saude.gov.br/bvs/saudelegis/sas/2019/prt0298_06_03_2019.html): prevê reclassificação operacional de códigos de leitos `77 → 94` e `74 → 95`, mas o artigo 8º condiciona os **efeitos** à disponibilidade de versões de sistemas do DATASUS que implementem as modificações. O texto NÃO identifica por si só a competência de implementação efetiva, portanto não usar 06/03/2019 como corte operacional automático;
+- [Portaria SAES/MS nº 3.511, de 24/11/2025](https://bvs.saude.gov.br/bvs/saudelegis/Saes/2025/prt3511_05_12_2025.html) trata expressamente da exclusão dos códigos `74` e `77` ao fim do prazo de reclassificação e revoga a Portaria SAS/MS nº 298/2019. **Documento posterior ao recorte analítico**, usado apenas para impedir a inferência de que a determinação de 2019 causou exclusão normativa/operacional imediata. Não confundir reclassificação de leitos/habilitação com histórico mensal do catálogo.
+- Nota Técnica nº 32/2019, anexo setembro/2019, exibe códigos `74/77` com status `Ativo`. Não classificar essa relação como erro do MS sem apurar efetividade da portaria e a diferença entre catálogos e atos.
+
+**DECISÃO PENDENTE / PRÓXIMO CHECKPOINT C4.2c.4:** parar de usar consulta RTS anterior a 10/2019 como suposta prova mensal; priorizar pesquisa restrita de **atos oficiais e datas de efetivação** que alteraram especificamente os **57 pares observados** entre 2017–2019. Testar em amostra de versões oficiais apenas se houver arquivo histórico com competência/versão e estrutura comprovada. Se a obtenção falhar, submeter ao usuário uma decisão documentada sobre utilizar **retratro set/2019 como legenda descritiva de toda a série com limitação temporal explícita**, sem afirmar vigência normativa mensal nem aprovar silenciosamente T29 completo. Não usar esta hipótese para modificar dimensão, modelo ou relatórios acadêmicos já aprovados.
+
+**ESTADO PRESERVADO:** `C4.2c.2e.2=PASS_201909_SNAPSHOT_PAIR_COVERAGE_ONLY`, `C4.2c.3b=RTS_PRE_201910_UNAVAILABLE_IN_USER_TESTS`, `T29_FULL=NOT_APPROVED`, `FASE_III=IN_PROGRESS`.
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
