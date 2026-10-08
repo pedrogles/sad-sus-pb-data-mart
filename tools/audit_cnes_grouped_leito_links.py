@@ -48,9 +48,23 @@ def norm(value: str) -> str:
     return " ".join(value.upper().split())
 
 
+# Variantes textuais comprovadas por inspecao de SCNES_DOMINIOS.XLS e CNESNet.
+# Chave: (tipo numerico, descricao EXATA da planilha); valor: cabecalho HTML.
+# Isto NAO equivale codigos diferentes nem altera tipo/leito dos dados CNES/LT.
+GROUP_DISPLAY_ALIASES = {
+    ("4", "OBSTETRICOS"): "OBSTETRICO",
+    ("5", "PEDIATRICOS"): "PEDIATRICO",
+}
+
+
+def expected_group(kind: str, domain_description: str) -> str:
+    official = norm(domain_description)
+    return GROUP_DISPLAY_ALIASES.get((kind, official), official)
+
+
 def extract(html: str, competence: str, leitos: dict, tipos: dict) -> tuple[list[dict], list[dict]]:
     headings = [(m.start(), norm(m.group(1))) for m in HEADERS.finditer(html)]
-    allowed_groups = {norm(v) for v in tipos.values()}
+    allowed_groups = {expected_group(kind, description) for kind, description in tipos.items()}
     issues: list[dict] = []
     if len(headings) != 7 or {v for _, v in headings} != allowed_groups:
         issues.append({"kind": "HEADERS_MISMATCH", "headings": [v for _, v in headings]})
@@ -80,7 +94,7 @@ def extract(html: str, competence: str, leitos: dict, tipos: dict) -> tuple[list
             or displayed != code
             or kind not in tipos
             or code not in leitos
-            or group != norm(tipos.get(kind, ""))
+            or group != expected_group(kind, tipos.get(kind, ""))
             or month != competence
             or get("VEstado") != "00"
         ):
@@ -172,6 +186,10 @@ def main() -> int:
         "profile_sha256": sha256(PROFILE.read_bytes()),
         "expected_pb_pairs": len(expected),
         "expected_pb_rows": total,
+        "accepted_group_label_aliases": [
+            {"type": kind, "domain_label": domain_label, "html_label": html_label}
+            for (kind, domain_label), html_label in sorted(GROUP_DISPLAY_ALIASES.items())
+        ],
         "records": records,
         "common_pairs_across_captures": len(common),
         "union_pairs_across_captures": len(union),
