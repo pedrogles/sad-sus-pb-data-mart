@@ -1239,10 +1239,7 @@ IF $(vSIGTAPDistinctCompetences) <> 36 THEN
     EXIT SCRIPT;
 ENDIF
 
-IF $(vSIGTAPInvalidCompetences) <> 0
-    OR $(vSIGTAPInvalidProcedures) <> 0
-    OR $(vSIGTAPInvalidComposite) <> 0
-    OR $(vSIGTAPEmptyDescriptions) <> 0 THEN
+IF $(vSIGTAPInvalidCompetences) <> 0 OR $(vSIGTAPInvalidProcedures) <> 0 OR $(vSIGTAPInvalidComposite) <> 0 OR $(vSIGTAPEmptyDescriptions) <> 0 THEN
 
     TRACE [EXTRACAO][REF_SIGTAP] invalid fields: competence=$(vSIGTAPInvalidCompetences) procedure=$(vSIGTAPInvalidProcedures) composite=$(vSIGTAPInvalidComposite) empty_description=$(vSIGTAPEmptyDescriptions);
     EXIT SCRIPT;
