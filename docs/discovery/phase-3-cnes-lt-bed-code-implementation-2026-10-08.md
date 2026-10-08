@@ -539,6 +539,20 @@ $m.limits
 ```
 
 
+
+### C4.2c.2b — execução local: REVIEW_REQUIRED, discrepância tipo/código 3/66 (08/10/2026)
+
+**FATO VERIFICADO — saída do PowerShell/JSON apresentada pelo usuário:** após `git pull --ff-only origin main`, executou `tools/audit_cnes_grouped_leito_links.py` contra cinco HTMLs já capturados. Resultado `AUDIT_EXIT_CODE=2`, `VERDICT=REVIEW_REQUIRED`, com **5 HTMLs**, **65 links / 65 pares distintos por arquivo** e **56 dos 57 pares CNES/LT da PB encontrados em cada HTML**. Interseção e união entre as capturas são ambas **65 pares**; nenhuma divergência textual de descrição foi reportada entre capturas. O mesmo par `TP_LEITO=3, CODLEITO=66` ficou ausente **nas cinco capturas**. Resultado JSON: `issues_total=25`, sendo **cinco problemas apontados por captura** (um `HEADERS_MISMATCH`, quatro `LINK_OR_GROUP_MISMATCH` dos grupos OBSTÉTRICO e PEDIATRICO). Estes **25 apontamentos não são 25 códigos divergentes**: as ocorrências repetem os mesmos problemas entre as cinco amostras.
+
+**EVIDÊNCIA PRIMÁRIA MATERIALIZADA NO HTML:** `CNES_Leitos_Indicadores_201712_UF00.html` (SHA-256 `bc674e4e244701aa0f919ddac889290d937767cf10c7a1f58e40577134a62617`) inclui, sob o cabeçalho **CLÍNICO**, o registro `66 — UNIDADE ISOLAMENTO` com link `VCod_Leito=66&VTipo_Leito=2&...&VComp=201712`. Os dados LT da PB, conforme perfil validado, contêm `TP_LEITO="3 "` + `CODLEITO="66"`. Logo, é uma **divergência efetiva entre a classificação do indicador CNESNet e o par observado nos arquivos LT**, não um simples código ausente de ambos os domínios.
+
+**CORROBORAÇÃO SECUNDÁRIA CONTRÁRIA AO INDICADOR:** a tabela de domínio publicada pelo CONASS em https://wiki.conass.org.br/index.php?title=Tabela_de_dom%C3%ADnio_CNES_leito traz `tp_leito=3 / complementar / codleito=66 / unidade isolamento`, compatível com o LT da PB. Documentos institucionais de hospitais também posicionam 66 em COMPLEMENTAR, mas não são tabela normativa versionada para 2017–2019. **Não declarar que a discrepância implica erro factual do SIH/CNES original, troca histórica ou bug CNESNet sem validação normativa adicional.**
+
+**HIPÓTESE DE IMPLEMENTAÇÃO DO AUDITOR A INVESTIGAR:** os quatro `LINK_OR_GROUP_MISMATCH` por amostra concentram-se nos códigos 10/43 (OBSTÉTRICO) e 45/68 (PEDIATRICO). Os links possuem números de tipo `4` e `5` e códigos visíveis consistentes, segundo a saída; a verificação por **igualdade textual** do cabeçalho com a descrição da planilha `TIPOS DE LEITOS` pode ser mais estrita do que o necessário. Os valores **exatos** das duas nomenclaturas, ainda não exibidos pelo auditor, precisam ser inspecionados antes de classificar essas quatro ocorrências como falso positivo ou mudar o código. Não ocultar divergências por equivalência arbitrária.
+
+**GATE: C4.2c.2b = REVIEW_REQUIRED. T29 = NOT_APPROVED.** Nenhuma correção dos dados brutos, nenhuma atribuição automática de tipo 2↔3, nenhuma inferência de vigência normativa, nenhum QVD gerado. O próximo passo é **diagnóstico local read-only da nomenclatura exata dos sete tipos oficiais**, contagens/competências reais do par `3/66` no `cnes_lt_bed_code_pair_profile.csv` e inspeção da referência oficial `TB_LEITO` ou documento histórico equivalente. Preservar explicitamente a discrepância se não houver fonte conclusiva.
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
