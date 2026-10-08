@@ -499,6 +499,46 @@ $m.coverage_observed_against_uploaded_current_domains.exceptions
 **GATE ATUAL:** `C4.2c.1=PASS_PROVISIONAL_INDEPENDENT_LISTS`; `C4.2c.2=OFFICIAL_GROUPED_SOURCE_LOCATED_STRUCTURE_NOT_YET_VERIFIED_LOCALLY`; `T29=NOT_APPROVED`. Necessária inspeção de ao menos um dos HTMLs locais antes de desenvolver ou validar um parser adicional; nenhuma alteração do modelo, do Qlik ou dos arquivos de origem autorizada.
 
 
+
+### C4.2c.2b — inspeção física do HTML oficial 201712 e auditor de vínculos (08/10/2026)
+
+**FATO VERIFICADO — arquivo fornecido pelo usuário:** `CNES_Leitos_Indicadores_201712_UF00.html`, **53.009 bytes**, SHA-256 `bc674e4e244701aa0f919ddac889290d937767cf10c7a1f58e40577134a62617`. Inspeção local em bytes, decodificação `cp1252`, sem consultar rede ou modificar o arquivo.
+
+A estrutura do HTML revela informações que o extrator anterior (C4.2b.3a) não preservava:
+
+- **7 cabeçalhos de grupo**: CIRÚRGICO, CLÍNICO, OBSTÉTRICO, PEDIATRICO, OUTRAS ESPECIALIDADES, HOSPITAL DIA e COMPLEMENTAR;
+- **65 links de detalhe**, cada um com os parâmetros `VCod_Leito`, `VTipo_Leito` e `VComp`, contendo **65 pares únicos (tipo, código)**;
+- distribuição por grupo (tipo): **1/17**, **2/16**, **4/2**, **5/2**, **6/5**, **7/6**, **3/17**;
+- em **65/65** links `VComp=201712`, em **65/65** o código no texto da tabela confere com `VCod_Leito`, sem pares duplicados no HTML;
+- exemplo pontual: cabeçalho `HOSPITAL DIA`, código `70`, descrição `FIBROSE CISTICA`, `VTipo_Leito=7`, `VComp=201712`;
+- **limite persistente:** o `<select name="cboCompetencia">` só exibe a opção `00` e não possui `201712 selected`. A presença do parâmetro em links internos **não comprova** a competência efetivamente aplicada pelo servidor, nem vigência normativa.
+
+**VALOR DA NOVA EVIDÊNCIA:** a associação `tipo + código + descrição` está explicitamente materializada no HTML oficial de indicador, não apenas em listas independentes. É uma **corroboração operacional estrutural**, ainda não um catálogo normativo histórico ou um T29 aprovado. Os 65 pares de uma captura **não foram comparados neste ambiente com o CSV local dos 57 pares PB**; esse teste depende da execução local.
+
+**IMPLEMENTAÇÃO REPRODUZÍVEL:** adicionado `tools/audit_cnes_grouped_leito_links.py` em `main` para realizar uma auditoria **offline** restrita aos cinco HTMLs já capturados e seus hashes em `probe_summary.json`, usando o perfil `cnes_lt_bed_code_pair_profile.csv` e as listas de códigos/tipos de `SCNES_DOMINIOS.XLS`. O script:
+
+1. valida 5/5 hashes e tamanhos antes de interpretar os HTMLs;
+2. extrai links com código, tipo, competência e descrição; verifica o código da célula e o grupo pelo cabeçalho usando descrições da lista `TIPOS DE LEITOS`;
+3. compara os pares extraídos com os 57 pares observados PB **separadamente por captura**;
+4. compara conjuntos comuns/união e eventuais divergências de descrição entre as cinco capturas;
+5. gera apenas o relatório local `BASE/REFERENCIAS/cnes_leito_history_probe/grouped_type_code_audit.json`, sem modificar entradas ou QVD;
+6. registra, em qualquer resultado, `competence_selection_actually_applied_verified=false`, `normative_historical_validity_2017_2019_verified=false` e `t29_approved=false`.
+
+**STATUS C4.2c.2b: SCRIPT IMPLEMENTADO / EXECUÇÃO DOS 5 HTMLs LOCAIS PENDENTE.** A prova de associação operacional desta amostra **não fecha** a vigência histórica 2017–2019. Se a auditoria local demonstrar cobertura integral e estabilidade, será apenas suporte provisório para decisão fundamentada sobre tratamento descritivo; `T29` continua bloqueado até gate específico posterior. Não gerar `REF_TIPO_LEITO.qvd` ou alterar o modelo.
+
+**Execução local prevista (PowerShell na raiz, após `git pull --ff-only origin main`):**
+
+```powershell
+.\.venv\Scripts\python.exe -B .\tools\audit_cnes_grouped_leito_links.py
+$LASTEXITCODE
+$m = Get-Content .\BASE\REFERENCIAS\cnes_leito_history_probe\grouped_type_code_audit.json -Raw -Encoding UTF8 | ConvertFrom-Json
+$m.status
+$m.records | Select-Object requested_competence, links, distinct_pairs, observed_pb_pairs_matched, issues
+$m | Select-Object common_pairs_across_captures, union_pairs_across_captures, missing_pb_pairs_in_all_captures, pairs_with_different_descriptions, issues_total
+$m.limits
+```
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
