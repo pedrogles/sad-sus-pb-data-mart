@@ -44,7 +44,7 @@ Modelagem aprovada:
 - **Fase I — infraestrutura QlikView 12:** concluída.
 - **Fase II — conversão DBC:** concluída, 108/108 arquivos reconciliados.
 - **Fase III — EXTRAÇÃO / staging:** em andamento; RD/LT/ST, IBGE, referências normativas, CID-10 e SIGTAP aprovados nos checkpoints locais.
-- **CNES leitos / T29:** a Nota Técnica oficial de setembro/2019 cobre 57/57 pares e 35.518/35.518 ocorrências LT; **vigência de 2017–2019 não comprovada**, T29 integral não aprovado. Aprofundamento normativo suspenso até necessidade analítica/academica demonstrada.
+- **CNES leitos / T29:** a Nota Técnica oficial de setembro/2019 cobre 57/57 pares e 35.518/35.518 ocorrências LT; **vigência de 2017–2019 não comprovada**, T29 integral não aprovado. Aprofundamento normativo suspenso até necessidade analítica/acadêmica demonstrada.
 - **Transformação e painéis:** ainda não iniciados; não antecipar fases.
 
 Próxima ação: revisar o fechamento controlado de III-C4/T29 com a ressalva temporal explicitada e verificar os gates restantes da Fase III antes de iniciar `TRANSFORMACAO`.
