@@ -265,6 +265,8 @@ Antes de adicionar datasets ao Git:
 - causa: o gate confundia as 1.780 novas categorias de 3 caracteres de 201912 com o total de categorias de 3 caracteres; as 12.450 chaves anteriores já possuem 262;
 - C2.7 corrigido e reexecutado: **PASS**, 14.230 códigos únicos, distribuição 2.042/12.188, decisão `STATIC_DESCRIPTIVE_SUPERSET`, hash do CSV reconciliado com `MATCH=True`;
 - C2.8 primeiro reload: referência CID passou os gates estruturais, mas 9.093/566.672 linhas RD ficaram unmatched no QVD; reload interrompido controladamente;
-- C2.8a diagnóstico implementado no `EXTRACAO/ext_main.qvs` para exportar `_DIAGNOSTIC_CID10_QVD_UNMATCHED.csv` com valor efetivo, RTrim/Upper, comprimentos, ordinais e ocorrências;
-- próxima ação: repetir reload e inspecionar o diagnóstico; não ampliar normalização antes da evidência;
+- C2.8a/b: 9.093 linhas RD unmatched, 128 códigos distintos; todos são texto no QVD (`IsNum=0`, `IsText=-1`);
+- C2.8c **PASS**: os 128 códigos / 9.093 ocorrências têm `direct_text_match=1` e `text_after_rtrim_match=1`; o lookup antigo com `RTrim(Text(DIAG_PRINC))` falhou;
+- C2.8d implementado: `Text(RTrim(Text(DIAG_PRINC)))` no `ApplyMap` de cobertura, preservando a regra de padding à direita e sem alterar `SRC_SIH_RD.qvd`;
+- próxima ação: recarregar `EXT.qvw` e comprovar 0 unmatched, `REF_CID10.qvd` e checkpoint parcial;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
