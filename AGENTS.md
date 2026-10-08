@@ -271,7 +271,8 @@ Antes de adicionar datasets ao Git:
 - III-C2 — CID-10 **CONCLUÍDO — PASS**, T28 cobertura `DIAG_PRINC↔CID-10` **PASS**; decisão de referência `201912` descritiva/superset preservada, sem vigência mensal inferida;
 - Fase III-C3 — SIGTAP / `PROC_REA`: iniciado C3.1 em `tools/profile_proc_rea.py` para perfil read-only dos 36 CSVs RD; valida contagens, competências e formato bruto textual, gerando perfis mensal/por código e hashes locais;
 - C3.1 **PASS em 08/10/2026**: 36 RD, 566.672 linhas, 1.249 códigos `PROC_REA` distintos, 0 vazios, 100% com 10 dígitos ASCII e zero inicial; perfis código/mês com 1.249/36 linhas e SHA-256 reconciliados (`HashMatch=True`);
-- C3.2 **IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE**: `tools/inspect_sigtap_procedure_sample.py`, amostra controlada 201701/201801/201901/201912; inspeciona ZIPs temporários, membros e prévias de arquivos/layouts relacionados a procedimento;
-- T27 cobertura `PROC_REA↔SIGTAP` **NÃO AVALIADA**; inventário SIGTAP 36/36 já confirmado em C2.3;
-- próxima ação: executar C3.2 localmente, ler amostra física e validar layout antes de materializar histórico SIGTAP ou alterar staging Qlik;
+- C3.2 **PASS** em 08/10/2026: 4 ZIPs oficiais temporários (201701/201801/201901/201912), 87 membros por pacote, 18 DATA e 17 LAYOUT candidatos por pacote, 140 candidatos; identificado `tb_procedimento.txt` e `tb_procedimento_layout.txt` nos quatro meses; prévia confirma `CO_PROCEDIMENTO` (10 posições, início 1), ainda sem layout completo validado;
+- C3.3a **IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE**: `tools/materialize_sigtap_procedure_sample.py`, materialização somente dos dois arquivos físicos em cada um dos quatro ZIPs já comprovados; hashes ZIP comparados com C3.2, layout posicional e linhas inspecionados dinamicamente;
+- T27 cobertura `PROC_REA↔SIGTAP` **NÃO AVALIADA**; 36/36 pacotes disponíveis no inventário C2.3 mas aquisição histórica integral bloqueada até evidência C3.3a;
+- próxima ação: executar C3.3a localmente, analisar colunas, tamanhos, chaves, hashes e estabilidade do layout nos 4 meses antes de implementar o histórico por competência;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
