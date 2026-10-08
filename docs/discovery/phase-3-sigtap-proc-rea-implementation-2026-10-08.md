@@ -382,7 +382,7 @@ O arquivo `sigtap_procedure_history_inventory.csv` foi reconciliado externamente
 
 **Interpretação:** 165.203 é a soma das linhas das 36 referências mensais, não o número de procedimentos distintos em três anos. Nenhum join integral com SIH/RD foi executado nesta etapa.
 
-### C3.3b.2 — cobertura histórica e exceções (IMPLEMENTADO / RELOAD LOCAL PENDENTE)
+### C3.3b.2 — cobertura histórica e exceções (IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE)
 
 Script: `tools/profile_sigtap_procedure_full_coverage.py`. O código opera **somente sobre arquivos locais**, sem acesso à rede. Lê `proc_rea_profile_summary.json`, `sigtap_procedure_pilot_summary.json`, `sigtap_procedure_history_manifest.json` e valida hashes dos CSVs de entrada e dos TXT históricos. Reconcilia o manifesto histórico com o inventário de 36 competências e compara os códigos como **texto de 10 dígitos ASCII**, sem converter para número nem substituir valores.
 
