@@ -9,7 +9,7 @@ Conservar **todas as decisões acadêmicas, o modelo dimensional, a arquitetura 
 
 Mudanças da branch de higiene:
 - atualização de `README.md` à Fase III real e ao próximo gate;
-- `.gitignore`: `__pycache__/` e `*.py[cod]`;
+- `.gitignore`: `__pycache__/`, `*.py[cod]`, `.venv/`, `venv/` e arquivo de inventário temporário `branch-hygiene-preflight-*.txt`;
 - `docs/project/current-state-chronology-2026-10-08.md`: **cópia literal da cronologia anterior**, incluindo hashes, resultados de reload e validações; blob de origem `953d49978b2cb920dfc4991481c8be7c6c880ba4`;
 - `docs/project/current-state.md`: reduzido a estado operacional e links para provas, sem excluir decisões do arquivo de origem;
 - `AGENTS.md`: instruções permanentes e checkpoints atuais; históricos específicos permanecem em `docs/discovery`, cronologia e Git.
