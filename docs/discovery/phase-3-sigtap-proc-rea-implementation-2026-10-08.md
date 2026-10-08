@@ -227,9 +227,7 @@ $actual = (Get-FileHash $m.outputs.layout_fields.path -Algorithm SHA256).Hash.To
 
 Não baixar 36 competências ou gerar `REF_SIGTAP.qvd` antes da análise dos resultados.
 
-### C3.3 — materialização histórica e validação de cobertura
-
-### C3.3 — materialização histórica e validação de cobertura
+### C3.3b — materialização histórica e validação de cobertura
 
 Depois de confirmar fisicamente os membros/layouts, materializar referências por competência; medir códigos `PROC_REA` válidos/não encontrados para cada mês e produzir lista de exceções. Preservar o código real se não houver descrição ou correspondência, sem fabricar valores.
 
