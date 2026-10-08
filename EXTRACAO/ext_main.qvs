@@ -5,7 +5,7 @@
 // auxiliares efetivamente materializadas. Checkpoints já implementados:
 // saúde (RD/LT/ST), IBGE, referências normativas pequenas (III-C1),
 // CID-10 descritiva (III-C2 PASS), SIGTAP por competencia (III-C3 PASS)
-// e legenda datada de leitos CNES set/2019 (III-C4, reload local pendente).
+// e legenda datada de leitos CNES set/2019 (III-C4.3 PASS local 08/10/2026).
 // Historico de leitos ainda NAO verificado; sem transformacao dimensional.
 //
 // Não construir fatos, dimensões ou LINK_ANALISE neste script.
