@@ -123,13 +123,16 @@ def main() -> int:
     with PROFILE.open(encoding="utf-8", newline="") as file:
         observed = list(csv.DictReader(file, delimiter=";"))
     expected: set[tuple[str, str]] = set()
+    weights: dict[tuple[str, str], int] = {}
     total = 0
     for row in observed:
         kind, code = row["tp_leito_raw"], row["codleito_raw"]
         if not re.fullmatch(r"[1-7] ", kind) or not re.fullmatch(r"[0-9]{2}", code):
             raise RuntimeError(f"Perfil LT com formato inesperado: {row}")
-        expected.add((kind[0], code))
-        total += int(row["occurrences"])
+        pair = (kind[0], code)
+        expected.add(pair)
+        weights[pair] = int(row["occurrences"])
+        total += weights[pair]
     if len(observed) != 57 or len(expected) != 57 or total != 35518:
         raise RuntimeError("Perfil LT diverge do checkpoint III-C4.1 validado")
 
@@ -154,18 +157,25 @@ def main() -> int:
         all_rows.append(rows)
         issues_total += len(problems)
         missing = sorted(expected - pairs)
+        matched_rows = sum(weights[pair] for pair in expected & pairs)
         records.append({
             "requested_competence": competence,
             "html_sha256": sha256(raw),
             "links": len(rows),
             "distinct_pairs": len(pairs),
             "observed_pb_pairs_matched": len(expected & pairs),
-            "observed_pb_pairs_missing": [{"type": t, "code": c} for t, c in missing],
+            "observed_pb_pairs_missing": [
+                {"type": t, "code": c, "occurrences_in_pb_profile": weights[(t, c)]}
+                for t, c in missing
+            ],
+            "observed_pb_rows_matched_by_pair": matched_rows,
+            "observed_pb_rows_missing_by_pair": total - matched_rows,
             "issues": problems,
         })
         print(
             f"[{competence}] LINKS={len(rows)} PAIRS={len(pairs)} "
-            f"PB_MATCHED={len(expected & pairs)}/57 ISSUES={len(problems)}"
+            f"PB_MATCHED={len(expected & pairs)}/57 "
+            f"PB_ROWS_UNMATCHED={total - matched_rows} ISSUES={len(problems)}"
         )
     union = set.union(*sets)
     common = set.intersection(*sets)
@@ -194,7 +204,8 @@ def main() -> int:
         "common_pairs_across_captures": len(common),
         "union_pairs_across_captures": len(union),
         "missing_pb_pairs_in_all_captures": [
-            {"type": t, "code": c} for t, c in sorted(expected - union)
+            {"type": t, "code": c, "occurrences_in_pb_profile": weights[(t, c)]}
+            for t, c in sorted(expected - union)
         ],
         "pairs_with_different_descriptions": [
             {"type": t, "code": c} for t, c in changed
