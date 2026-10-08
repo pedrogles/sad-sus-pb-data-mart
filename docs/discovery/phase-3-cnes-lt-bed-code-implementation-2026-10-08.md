@@ -594,6 +594,33 @@ $m.limits
 ```
 
 
+
+### C4.2c.2c — reexecução local após equivalências nominais (08/10/2026)
+
+**FATO VERIFICADO — saída do PowerShell e relatório JSON fornecidos pelo usuário:** `git pull --ff-only origin main` atualizou `de632c0..973ab11` e a execução local de `tools/audit_cnes_grouped_leito_links.py` retornou `AUDIT_EXIT_CODE=2`, `VERDICT=REVIEW_REQUIRED`. Em cada uma das cinco capturas `201712, 201801, 201805, 201806, 201912`:
+
+- `LINKS=65`, `PAIRS=65`;
+- `PB_MATCHED=56/57`, `PB_ROWS_UNMATCHED=1480` (**ocorrências acumuladas do perfil PB das 36 competências**, não 1.480 por captura);
+- `ISSUES=0`: a equivalência nominal exata `OBSTETRICOS → OBSTETRICO` e `PEDIATRICOS → PEDIATRICO` removeu os 25 apontamentos textuais anteriores;
+- `missing_pb_pairs_in_all_captures = [{type:3, code:66, occurrences_in_pb_profile:1480}]`.
+  
+Assim, **34.038/35.518 linhas PB** estão associadas a 56 pares identificados nesses HTMLs. O par PB `3/66` permanece divergente do par exibido pelo CNESNet agregado `2/66`. O indicador não demonstra competência selecionada; o confronto dos cinco HTMLs continua **operacional/provisório**, não temporal normativo.
+
+### C4.2c.2d — evidência documental primária histórica para código 66 (08/10/2026)
+
+**FATO VERIFICADO — fontes oficiais externas consultadas, sem baixar arquivos para o projeto:**
+
+1. **SCNES 2017 em documento de secretaria municipal:** o [Plano Municipal de Saúde 2018–2021 de Barra Mansa/RJ](https://portaltransparencia.barramansa.rj.gov.br/wp-content/uploads/2024/02/Plano-Municipal-de-saude-2018-a-2021.pdf), páginas impressas 83 e 85 (índices PDF 82 e 84), inclui relatórios de estabelecimentos com `COMPLEMENTAR → 66-UNIDADE ISOLAMENTO`, citando `Fonte: SCNES, 2017`. É fonte **governamental contextual de 2017**, não uma tabela normativa versionada mês a mês.
+2. **Nota Técnica do próprio Ministério da Saúde com data impressa de 02/12/2019:** [SEI/MS 0012300247, hospedada em rts.saude.gov.br](https://rts.saude.gov.br/portal/documento/441/arquivo) está indexada com uma tabela de classificação que traz **`66 | UNIDADE ISOLAMENTO | Complementar | Portaria nº 511/SAS/MS, de 29 de dezembro de 2000 (republicada em 19/06/2001) | Ativo`**. **A URL e o trecho indexado foram identificados, mas a abertura/obtenção integral do documento não foi concluída (timeout); preservar ressalva de inspeção de original e integridade.**
+3. **Documento legislativo originário:** [Portaria SAS/MS nº 511/2000, cópia no portal da Secretaria de Saúde do Amazonas](https://www.saude.am.gov.br/wp-content/uploads/2025/01/PT-CNES-PORTARIA-No-511-DE29-DE-DEZEMBRO-DE-2000.pdf) aprova a FCES/Manual, mas seu texto principal consultado **não identifica diretamente a associação `3/66`**. Não promover essa Portaria isoladamente como prova da classificação.
+4. **Outra consulta DATASUS/CNESNet:** o [módulo de estabelecimento `Mod_Hospitalar.asp`](https://cnes2.datasus.gov.br/Mod_Hospitalar.asp?VCo_Unidade=2919554644360) exibe `66-UNIDADE ISOLAMENTO` no grupo `COMPLEMENTAR`; a [consulta detalhada do indicador com `VTipo_Leito=3`](https://cnes2.datasus.gov.br/Mod_Ind_Leitos_Listar.asp?VCod_Leito=66&VComp=&VEstado=33&VListar=1&VMun=330330&VTipo_Leito=3) é indexada como `Tipo Leito - Complementar - UNIDADE ISOLAMENTO`. Contrasta com os cinco HTMLs do indicador agregado (`VTipo_Leito=2`). Consulta atual não é prova isolada de vigência retroativa.
+5. A [tabela auxiliar CONASS](https://wiki.conass.org.br/index.php?title=Tabela_de_dom%C3%ADnio_CNES_leito) também registra `3/66`, mas é **secundária**, com outras possíveis inconsistências de nomenclatura.
+
+**Interpretação:** fontes governamentais contextualizadas em **2017** e **2019**, além do LT local em 36 competências, convergem para `3/66 — COMPLEMENTAR`. Há evidência de uma classificação divergente **na apresentação agregada CNESNet**; **não alterar a fonte CNES/LT para 2/66** nem tratar a divergência como erro provado do dado PB. Ainda não há prova completa de vigência normativa **de todos os 57 pares em todas as 36 competências**. A Nota Técnica de 2019 merece obtenção e inspeção integral, com URL, hash, tabela completa e eventuais alterações históricas, antes de decidir T29.
+
+**GATE ATUAL:** `III-C4.2c.2c=PASS_STRUCTURE_ONLY`; `III-C4.2c.2d=PRIMARY_HISTORICAL_CORROBORATION_PENDING_SOURCE_BYTES`; `T29=NOT_APPROVED`; `FASE_III=IN_PROGRESS`. Nenhuma referência QVD, nenhum mapeamento compensatório `2/66 → 3/66`, nenhum dado original ou modelo alterado.
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
