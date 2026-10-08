@@ -270,6 +270,8 @@ Antes de adicionar datasets ao Git:
 - C2.8d **PASS** em 08/10/2026 10:44:15: após `Text(RTrim(Text(DIAG_PRINC)))`, `REF_CID10.qvd` gerado e `_CHECKPOINT_EXTRACAO_CID10.csv` validado (`PASS_PARTIAL`; 14.230 códigos únicos; distribuição 2.042/12.188; 566.672 RD; **0 unmatched**);
 - III-C2 — CID-10 **CONCLUÍDO — PASS**, T28 cobertura `DIAG_PRINC↔CID-10` **PASS**; decisão de referência `201912` descritiva/superset preservada, sem vigência mensal inferida;
 - Fase III-C3 — SIGTAP / `PROC_REA`: iniciado C3.1 em `tools/profile_proc_rea.py` para perfil read-only dos 36 CSVs RD; valida contagens, competências e formato bruto textual, gerando perfis mensal/por código e hashes locais;
-- C3.1 **IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE**; T27 cobertura `PROC_REA↔SIGTAP` **NÃO AVALIADA**; inventário SIGTAP 36/36 já confirmado em C2.3;
-- próxima ação: executar `python tools/profile_proc_rea.py` e reconciliar outputs; inspecionar fisicamente ZIPs/layouts de procedimento em amostra controlada antes de baixar/materializar referência histórica;
+- C3.1 **PASS em 08/10/2026**: 36 RD, 566.672 linhas, 1.249 códigos `PROC_REA` distintos, 0 vazios, 100% com 10 dígitos ASCII e zero inicial; perfis código/mês com 1.249/36 linhas e SHA-256 reconciliados (`HashMatch=True`);
+- C3.2 **IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE**: `tools/inspect_sigtap_procedure_sample.py`, amostra controlada 201701/201801/201901/201912; inspeciona ZIPs temporários, membros e prévias de arquivos/layouts relacionados a procedimento;
+- T27 cobertura `PROC_REA↔SIGTAP` **NÃO AVALIADA**; inventário SIGTAP 36/36 já confirmado em C2.3;
+- próxima ação: executar C3.2 localmente, ler amostra física e validar layout antes de materializar histórico SIGTAP ou alterar staging Qlik;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
