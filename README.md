@@ -39,13 +39,20 @@ Modelagem aprovada:
 - constelação de esquemas estrela com dimensões conformadas;
 - DER e modelo lógico relacional normalizado concluídos.
 
-## Próxima etapa
+## Estado de implementação — 08/10/2026
 
-**SAD — SUS PB — DATA ACQUISITION / QLIKVIEW IMPLEMENTATION DISCOVERY**
+- **Fase I — infraestrutura QlikView 12:** concluída.
+- **Fase II — conversão DBC:** concluída, 108/108 arquivos reconciliados.
+- **Fase III — EXTRAÇÃO / staging:** em andamento; RD/LT/ST, IBGE, referências normativas, CID-10 e SIGTAP aprovados nos checkpoints locais.
+- **CNES leitos / T29:** a Nota Técnica oficial de setembro/2019 cobre 57/57 pares e 35.518/35.518 ocorrências LT; **vigência de 2017–2019 não comprovada**, T29 integral não aprovado. Aprofundamento normativo suspenso até necessidade analítica/acadêmica demonstrada.
+- **Transformação e painéis:** ainda não iniciados; não antecipar fases.
 
-A implementação deve começar pela aquisição e validação dos 36 meses completos e pelo fechamento da arquitetura física no QlikView 12, preservando o fluxo didático:
+Próxima ação: revisar o fechamento controlado de III-C4/T29 com a ressalva temporal explicitada e verificar os gates restantes da Fase III antes de iniciar `TRANSFORMACAO`.
 
-`BASE → EXTRAÇÃO/QVD → TRANSFORMAÇÃO/QVD → PAINEL/QVW`.
+Fluxo físico preservado:
+`BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
+
+Consulte `docs/project/current-state.md` para o estado atual, sem reconstruir decisões pelos chats.
 
 ## Documentação principal
 
