@@ -51,3 +51,29 @@ Get-Content .\EXTRACAO\QVD\_CHECKPOINT_EXTRACAO_MUNICIPAL_PREFLIGHT.csv
 ## 5. Limites e sequência
 
 O C5 não reabre III-A/B/C1/C2/C3/C4 já aprovados. `T29_HISTORICAL=NOT_APPROVED` permanece. Após o piloto C5, submeter o resultado de correspondência municipal à decisão de aceitação, materializar ponte somente se aprovada e inspecionar o gate histórico de estabelecimentos conforme Boundary 5. A Fase III permanece `IN_PROGRESS` até reconciliação final do Boundary 7.
+
+
+## 6. III-C5.1 — resultado de reload QlikView 12 (08/10/2026)
+
+**FATO VERIFICADO — evidência de saída PowerShell apresentada pelo usuário:**
+
+- `git fetch origin` e `git switch --track origin/feat/phase-3-c5-municipal-crosswalk-preflight` efetuados com árvore de trabalho limpa, sem descartar alterações.
+- Reload local `C:\Program Files\QlikView\Qv.exe /r ...\EXTRACAO\EXT.qvw` executado.
+- Checkpoint `EXTRACAO/QVD/_CHECKPOINT_EXTRACAO_MUNICIPAL_PREFLIGHT.csv` gerado, linha e cabeçalho:
+
+```text
+generated_at;stage;status;ibge_pb_official_codes7;unique_code6_candidates;st_distinct_codes6;st_unmatched_rows;lt_unmatched_rows;rd_attendance_unmatched_rows;rd_residence_pb_unmatched_rows;rd_residence_outside_pb_rows;official_bridge_status
+08/10/2026 20:46:59;EXTRACAO_C5_MUNICIPAL_PREFLIGHT;PASS_CANDIDATE_MAPPING_ONLY;223;223;223;0;0;0;0;5202;NOT_YET_MATERIALIZED
+```
+
+**INTERPRETAÇÃO VALIDADA NO RECORTE PB:** 223 códigos IBGE7 oficiais distintos; 223 prefixos de seis dígitos sem colisão, 223 municípios distintos em CNES/ST, zero ausência de cobertura em ST/LT/MUNIC_MOV e em MUNIC_RES dos residentes cujo código começa por 25. São **5.202 registros RD não classificados como residência PB no teste**, que permanecem independentes do denominador populacional PB. O teste garante unicidade e cobertura **no conjunto de dados inspecionado**, não todos os municípios do Brasil. O script não grava ponte oficial ou dimensão e não exclui internações externas; não atesta formato individual dos códigos de residentes externos.
+
+**FUNDAMENTAÇÃO OFICIAL ADICIONAL (documentação IBGE recuperada na consulta externa):**
+
+- IBGE — *Códigos dos Municípios*: código municipal completo de **sete dígitos**; UF nos dois primeiros: <https://www.ibge.gov.br/explica/codigos-dos-municipios.php>.
+- IBGE — *Estudos & análises* (publicação técnica oficial, `liv101575.pdf`): ao comparar a informação geográfica em bases do IBGE com sistemas `Sinasc` e `SIM` do Ministério da Saúde, descreve códigos IBGE (UF 2 + município 5) e códigos MS (UF 2 + município 4, sem dígito verificador). Relata padronizar o IBGE removendo o dígito verificador para tornar os formatos compatíveis. Fonte: <https://www.ibge.gov.br/biblioteca/visualizacao/livros/liv101575.pdf>. **Limite importante:** os exemplos textuais do IBGE são Sinasc/SIM, não prova direta de todos os campos SIH/CNES; estes foram auditados especificamente no reload do projeto.
+- Os `COD_IBGE_7` do projeto já são montados dos componentes oficiais dos XLS IBGE 2017/2018/2019. Não derivar, recalcular ou presumir o sétimo dígito a partir de seis caracteres.
+
+**GATE ATUAL:** `III-C5.1=PASS_LOCAL_CANDIDATE_MAPPING`; `223↔223` 1:1 no universo PB; zero unmatched do lado PB; `MUNICIPAL_BRIDGE=NOT_YET_MATERIALIZED`. O contrato de referência oficial do Boundary 7 foi testado com fonte IBGE oficial + compatibilidade empírica, mas **a decisão de aceitar este método para materializar a ponte municipal ainda será explicitada separadamente**; não transformar silenciosamente o piloto em tabela final. `PHASE_III=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
+
+**Próximo passo recomendado:** integrar apenas este preflight e suas evidências. Depois submeter decisão de materialização mínima de uma referência municipal PB com os pares DATASUS6 × IBGE7, proveniência do XLS IBGE oficial, verificação de unicidade e SHA; se aprovada, criar etapa Qlik separada para QVD de referência e checkpoint específico, sem criar dimensão/fato nem preencher códigos de residentes externos com população PB. Revisar cobertura de residentes de fora da PB apenas se for necessária para nome municipal em análises de fluxo.
