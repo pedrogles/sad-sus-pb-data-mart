@@ -473,6 +473,32 @@ $m.coverage_observed_against_uploaded_current_domains.exceptions
 **Próximo checkpoint C4.2c.2 — DECISÃO PENDENTE:** localizar e verificar evidência oficial que traga, **na mesma linha**, `CO_LEITO`, `DS_LEITO` e `TP_LEITO` (tabela `NFCES001/TB_LEITO` citada no dicionário ou equivalente), incluindo prova de aplicabilidade temporal para as 36 competências. Não alterar `REF_TIPO_LEITO.qvd`, QVDs existentes, dimensão aprovada, arquivos originais, nem modelagem nesta fase.
 
 
+
+### C4.2c.2a — descoberta restrita de fonte oficial para associação tipo × leito (08/10/2026)
+
+**Modo: READ-ONLY / SOURCE DISCOVERY.** Nenhum download em massa, transformação, QVD, materialização normativa ou teste T29 foi executado.
+
+**FATOS VERIFICADOS EM DOCUMENTAÇÃO E PÁGINAS OFICIAIS:**
+
+1. O dicionário SCNES já recebido especifica a tabela federal `NFCES001 / TB_LEITO` com `CO_LEITO`, `DS_LEITO` e `TP_LEITO` no mesmo registro. Existe também cópia pública de documentação DATASUS hospedada no governo do RJ: https://www.rio.rj.gov.br/dlstatic/10112/957482/DLFE-200518.pdf/DICIONARIO_DE_DADOS.pdf . **Isto descreve a estrutura, não fornece os registros nem versões históricas.**
+2. A documentação oficial do CNESNet informa que o relatório público de Leitos permite selecionar Estado, Município e **Competência**, apresentando **Tipo de Leitos**, **Código**, **Descrição**, **Existentes** e **SUS**: https://wiki.saude.gov.br/cnes/index.php/CNESNet .
+3. Uma consulta pública ao relatório do CNESNet, https://cnes2.datasus.gov.br/Mod_Ind_Tipo_Leito.asp?VEstado=00 , exibiu **sete agrupamentos textuais** (CIRÚRGICO, CLÍNICO, OBSTÉTRICO, PEDIÁTRICO, OUTRAS ESPECIALIDADES, HOSPITAL DIA e COMPLEMENTAR) com códigos e descrições abaixo de cada cabeçalho. Exemplo explícito: `HOSPITAL DIA → 70 FIBROSE CISTICA`. É evidência de agrupamento operacional exibido na consulta, **não certificado de vigência normativa por competência nem prova de domínio exaustivo**.
+4. A documentação oficial do Portal CNES afirma que os downloads de Base de Dados por competência estão disponíveis **a partir de 06/2017**: https://wiki.saude.gov.br/cnes/index.php/Categoria:Consumo_de_informa%C3%A7%C3%B5es_da_Base_Nacional_do_CNES_via_webservice_e_Download_da_Base_de_Dados . Não foi comprovado se os pacotes oferecem a tabela de domínio `TB_LEITO`, nem uma versão aplicável a `201701–201705`.
+5. O painel oficial ElastiCNES documenta campos de competência, tipo de leito, código e leito, mas não estabelece, pela documentação consultada, uma tabela normativa histórica de relação por competência: https://wiki.saude.gov.br/cnes/index.php/Pain%C3%A9is_ElastiCNES .
+
+**AVALIAÇÃO DE EVIDÊNCIA:** o caminho mais econômico é aproveitar **os cinco HTMLs oficiais locais já capturados** em C4.2b e fazer uma inspeção de sua estrutura de **cabeçalhos de grupo + linhas de código/descrição**, que o comparador anterior deliberadamente descartou ao extrair somente duas células por linha. Essa nova pergunta (associação grupo/código) **não repete** a comparação já concluída de rótulos e quantitativos.
+
+**DECISÕES PENDENTES ANTES DE ALTERAR CÓDIGO:**
+
+- conferir em um HTML original a posição e a estrutura física dos sete cabeçalhos, sua associação inequívoca às linhas e a competência efetivamente selecionada (0/5 confirmações nos detectores anteriores);
+- provar os 57 pares `(TP_LEITO,CODLEITO)` no(s) relatório(s) e registrar exceções, usando a aba oficial `TIPOS DE LEITOS` apenas para identificar o número do grupo por nome;
+- se o relatório não provar competência/vigência, manter o resultado como **corroboração operacional parcial**, sem promover para T29;
+- caso o agrupamento não possa ser extraído de forma reproduzível, investigar amostra de pacote público CNES (não download em massa), verificando primeiro manifesto/estrutura e existência de `NFCES001 / TB_LEITO`;
+- preservar explicitamente a lacuna `201701–201705` se o único caminho histórico público iniciar em `201706`.
+
+**GATE ATUAL:** `C4.2c.1=PASS_PROVISIONAL_INDEPENDENT_LISTS`; `C4.2c.2=OFFICIAL_GROUPED_SOURCE_LOCATED_STRUCTURE_NOT_YET_VERIFIED_LOCALLY`; `T29=NOT_APPROVED`. Necessária inspeção de ao menos um dos HTMLs locais antes de desenvolver ou validar um parser adicional; nenhuma alteração do modelo, do Qlik ou dos arquivos de origem autorizada.
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
