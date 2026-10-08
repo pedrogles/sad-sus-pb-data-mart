@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C2 — CID-10  
-**Status:** C2.1–C2.7 PASS; C2.8 BLOQUEADO POR 9.093 UNMATCHED NO QVD; DIAGNÓSTICO QLIK IMPLEMENTADO
+**Status:** C2.1–C2.7/C2.8c PASS; C2.8d CORREÇÃO DO LOOKUP IMPLEMENTADA, RELOAD QLIK PENDENTE
 
 ## Objetivo
 
@@ -478,6 +478,23 @@ Para cada valor distinto não coberto, o diagnóstico registra:
 
 Nenhuma regra de normalização nova foi aprovada.
 
+## Evidência final C2.8c — 08/10/2026
+
+O diagnóstico atualizado confirmou, nos 128 códigos distintos que representam 9.093 linhas RD sem match no gate original:
+
+- `direct_text_match=1`: 128 códigos / 9.093 registros;
+- `text_after_rtrim_match=1`: 128 códigos / 9.093 registros;
+- `upper_rtrim_match=0`: 128 códigos / 9.093 registros;
+- `IsNum(DIAG_PRINC)=0` e `IsText(DIAG_PRINC)=-1` no QVD.
+
+A comparação mostrou `RTrim(Text(DIAG_PRINC))` exibindo `R42` para `R042` e `R072` para `R72`, enquanto `Text(RTrim(Text(DIAG_PRINC)))` preserva a chave textual original e encontra a referência. A hipótese de alteração dos CSVs ou do valor armazenado no QVD não é sustentada.
+
+## Correção C2.8d — implementada, ainda não validada por reload
+
+No `EXTRACAO/ext_main.qvs`, o lookup de cobertura foi alterado de `RTrim(Text(DIAG_PRINC))` para `Text(RTrim(Text(DIAG_PRINC)))`.
+
+Permanecem: fonte oficial CID 201912, 14.230 códigos únicos, normalização com remoção de padding à direita, 566.672 RD obrigatórios, 0 unmatched obrigatório e `PASS_PARTIAL` apenas após os STOREs concluídos.
+
 ## Próximo gate
 
-Executar novo reload do `EXT.qvw`, obter o CSV diagnóstico e inspecionar os unmatched reais antes de alterar a regra de chave.
+Atualizar `main`, recarregar `EXTRACAO/EXT.qvw` e verificar `REF_CID10.qvd` com `_CHECKPOINT_EXTRACAO_CID10.csv` contendo `cid10_rows=14230`, `rd_rows=566672` e `cid10_unmatched_rd_rows=0`. Não encerrar a Fase III neste checkpoint.
