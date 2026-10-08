@@ -113,3 +113,12 @@ A primeira entrega impressa permanece prioritária. Os gates já encerrados não
 **Fase III:** a execução da higiene não aprova T29 histórico, não reabre os capítulos acadêmicos e não autoriza materialização de `REF_TIPO_LEITO.qvd` antes da decisão de uso descritivo e do gate específico de QlikView. A seguir, retomar apenas os gates restantes da Fase III de acordo com Boundary 7.
 
 
+
+
+### Execução local — primeiro dry-run bloqueado por PowerShell 5.1 (08/10/2026)
+
+**FATO VERIFICADO:** usuário executou `git pull --ff-only origin main` com sucesso até `1e249361`. Ao executar o primeiro script `sad_branch_hygiene_approved_2026-10-08.ps1`, o comando `git fetch origin --prune` retornou mensagem informativa no **stderr** ("From https://github.com/...") e o **Windows PowerShell 5.1**, sob `$ErrorActionPreference='Stop'`, levantou `NativeCommandError` na linha 32. O script interrompeu **antes de consultar PRs, construir manifesto ou executar qualquer exclusão**; nesse ensaio, `DELETED=0` e nenhum resultado `PREFLIGHT=PASS` foi produzido.
+
+**Correção local preparada:** `sad_branch_hygiene_approved_2026-10-08_v2.ps1` executa comandos Git via `Start-Process` com stdout/stderr em arquivos temporários e valida explicitamente `ExitCode`, evitando o erro espúrio do pipeline de stderr no PowerShell 5.1. Os caminhos de `git rev-parse`, `git merge-base` e rechecagem individual `git ls-remote` usam o mesmo mecanismo. **Mantidos**: `-Apply` explícito, inventário/manifesto de SHA antes de exclusão, 67 branches PR integradas, 3 ancestrais, 6 HOLD, `main` e branch de higiene protegidas, comparação `--force-with-lease` a cada ref, abort em qualquer divergência e pós-checagem de 8 refs. **Script v2 não executado no Windows até nova evidência do usuário.**
+
+**Próxima ação:** executar primeiro o novo script **v2 SEM `-Apply`**, verificar `PREFLIGHT=PASS DELETE_CANDIDATES=70 HOLD=6`, somente então executar **v2 `-Apply`** nos termos da aprovação existente. Em falha, enviar a saída; não assumir `DELETED=70` nem reexecutar `-Apply` cegamente.
