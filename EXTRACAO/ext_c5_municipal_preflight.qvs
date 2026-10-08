@@ -1,0 +1,201 @@
+// Fase III-C5 — PRE-FLIGHT de correspondencia municipal DATASUS 6 ↔ IBGE 7.
+// Somente leitura dos QVDs ja validados. Nao grava ponte municipal nem altera fontes.
+// O geocodigo IBGE7 vem da propria estimativa oficial IBGE 2017–2019.
+// Left(IBGE7,6) e apenas uma CHAVE CANDIDATA PARA TESTE: sua equivalencia
+// com codigo DATASUS so sera aceita se todas as verificacoes PASS.
+// Nao fabricar ou recalcular digito IBGE; nao associar residentes fora PB
+// a populacao restrita PB.
+// Este checkpoint nao declara Fase III concluida nem implementa DIM_MUNICIPIO.
+
+TRACE [EXTRACAO] Phase III-C5 municipal DATASUS IBGE pilot start;
+
+LET vC5ErrorsBefore = ScriptErrorCount;
+
+// 1) Verificar que os 669 pares municipio×ano ja estao no staging do IBGE.
+C5_IBGE_BASE_CHECK:
+LOAD
+    Count(*) AS n_rows,
+    Count(DISTINCT Text(ANO_REFERENCIA)) AS n_years,
+    Count(DISTINCT Text(COD_IBGE_7) & '|' & Text(ANO_REFERENCIA)) AS n_municipality_years,
+    Sum(
+        If(
+            Len(Trim(Text(COD_IBGE_7))) <> 7
+            OR Len(KeepChar(Trim(Text(COD_IBGE_7)), '0123456789')) <> 7
+            OR Left(Trim(Text(COD_IBGE_7)), 2) <> '25',
+            1, 0
+        )
+    ) AS invalid_ibge_rows
+FROM [QVD\SRC_IBGE_POPULACAO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vC5ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5_MUNICIPIO] IBGE base read error. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vC5IBGERows = Peek('n_rows', 0, 'C5_IBGE_BASE_CHECK');
+LET vC5IBGEYears = Peek('n_years', 0, 'C5_IBGE_BASE_CHECK');
+LET vC5IBGEGrains = Peek('n_municipality_years', 0, 'C5_IBGE_BASE_CHECK');
+LET vC5IBGEInvalid = Peek('invalid_ibge_rows', 0, 'C5_IBGE_BASE_CHECK');
+DROP TABLE C5_IBGE_BASE_CHECK;
+
+IF $(vC5IBGERows) <> 669 OR $(vC5IBGEYears) <> 3 OR $(vC5IBGEGrains) <> 669 OR $(vC5IBGEInvalid) <> 0 THEN
+    TRACE [EXTRACAO][C5_MUNICIPIO] IBGE grain/format mismatch. Rows=$(vC5IBGERows) Years=$(vC5IBGEYears) Grain=$(vC5IBGEGrains) Invalid=$(vC5IBGEInvalid);
+    EXIT SCRIPT;
+ENDIF
+
+// 2) Reunir somente codigos COMPLETOS oficiais, sem criar digito.
+C5_IBGE_PB_CODES:
+LOAD DISTINCT
+    Trim(Text(COD_IBGE_7)) AS _C5_IBGE7,
+    Left(Trim(Text(COD_IBGE_7)), 6) AS _C5_CANDIDATE_DATASUS6
+FROM [QVD\SRC_IBGE_POPULACAO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vC5ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5_MUNICIPIO] IBGE codes read error. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vC5IBGECodes = NoOfRows('C5_IBGE_PB_CODES');
+
+C5_IBGE_UNIQUENESS:
+LOAD
+    Count(DISTINCT _C5_IBGE7) AS n_ibge7,
+    Count(DISTINCT _C5_CANDIDATE_DATASUS6) AS n_candidate6
+RESIDENT C5_IBGE_PB_CODES;
+
+LET vC5Distinct7 = Peek('n_ibge7', 0, 'C5_IBGE_UNIQUENESS');
+LET vC5Distinct6 = Peek('n_candidate6', 0, 'C5_IBGE_UNIQUENESS');
+DROP TABLE C5_IBGE_UNIQUENESS;
+
+IF $(vC5IBGECodes) <> 223 OR $(vC5Distinct7) <> 223 OR $(vC5Distinct6) <> 223 THEN
+    TRACE [EXTRACAO][C5_MUNICIPIO] IBGE 7-to-6 candidate is not unique. Rows=$(vC5IBGECodes) IBGE7=$(vC5Distinct7) Candidate6=$(vC5Distinct6);
+    EXIT SCRIPT;
+ENDIF
+
+MAP_C5_OFFICIAL_IBGE7_BY_CANDIDATE6:
+MAPPING LOAD
+    _C5_CANDIDATE_DATASUS6,
+    _C5_IBGE7
+RESIDENT C5_IBGE_PB_CODES;
+
+// 3) Avaliar codes DATASUS realmente presentes em ST/LT e RD.
+C5_ST_COVERAGE:
+LOAD
+    Count(*) AS st_rows,
+    Count(DISTINCT Trim(Text(CODUFMUN))) AS st_distinct_municipalities,
+    Sum(
+        If(
+            Len(Trim(Text(CODUFMUN))) <> 6
+            OR ApplyMap('MAP_C5_OFFICIAL_IBGE7_BY_CANDIDATE6', Trim(Text(CODUFMUN)), '#NO_PB_MATCH#') = '#NO_PB_MATCH#',
+            1, 0
+        )
+    ) AS st_unmatched_rows
+FROM [QVD\SRC_CNES_ST.qvd] (qvd);
+
+IF ScriptErrorCount > $(vC5ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5_MUNICIPIO] ST coverage read error. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vC5STRows = Peek('st_rows', 0, 'C5_ST_COVERAGE');
+LET vC5STDistinct = Peek('st_distinct_municipalities', 0, 'C5_ST_COVERAGE');
+LET vC5STUnmatched = Peek('st_unmatched_rows', 0, 'C5_ST_COVERAGE');
+DROP TABLE C5_ST_COVERAGE;
+
+C5_LT_COVERAGE:
+LOAD
+    Count(*) AS lt_rows,
+    Count(DISTINCT Trim(Text(CODUFMUN))) AS lt_distinct_municipalities,
+    Sum(
+        If(
+            Len(Trim(Text(CODUFMUN))) <> 6
+            OR ApplyMap('MAP_C5_OFFICIAL_IBGE7_BY_CANDIDATE6', Trim(Text(CODUFMUN)), '#NO_PB_MATCH#') = '#NO_PB_MATCH#',
+            1, 0
+        )
+    ) AS lt_unmatched_rows
+FROM [QVD\SRC_CNES_LT.qvd] (qvd);
+
+IF ScriptErrorCount > $(vC5ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5_MUNICIPIO] LT coverage read error. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vC5LTRows = Peek('lt_rows', 0, 'C5_LT_COVERAGE');
+LET vC5LTDistinct = Peek('lt_distinct_municipalities', 0, 'C5_LT_COVERAGE');
+LET vC5LTUnmatched = Peek('lt_unmatched_rows', 0, 'C5_LT_COVERAGE');
+DROP TABLE C5_LT_COVERAGE;
+
+C5_RD_COVERAGE:
+LOAD
+    Count(*) AS rd_rows,
+    Sum(
+        If(
+            Len(Trim(Text(MUNIC_MOV))) <> 6
+            OR ApplyMap('MAP_C5_OFFICIAL_IBGE7_BY_CANDIDATE6', Trim(Text(MUNIC_MOV)), '#NO_PB_MATCH#') = '#NO_PB_MATCH#',
+            1, 0
+        )
+    ) AS rd_attendance_unmatched_rows,
+    Sum(If(Left(Trim(Text(MUNIC_RES)), 2) = '25', 1, 0)) AS rd_residence_pb_rows,
+    Sum(
+        If(
+            Left(Trim(Text(MUNIC_RES)), 2) = '25'
+            AND (
+                Len(Trim(Text(MUNIC_RES))) <> 6
+                OR ApplyMap('MAP_C5_OFFICIAL_IBGE7_BY_CANDIDATE6', Trim(Text(MUNIC_RES)), '#NO_PB_MATCH#') = '#NO_PB_MATCH#'
+            ),
+            1, 0
+        )
+    ) AS rd_residence_pb_unmatched_rows,
+    Sum(If(Left(Trim(Text(MUNIC_RES)), 2) <> '25', 1, 0)) AS rd_residence_outside_pb_rows
+FROM [QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vC5ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5_MUNICIPIO] RD coverage read error. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vC5RDRows = Peek('rd_rows', 0, 'C5_RD_COVERAGE');
+LET vC5RDAttUnmatched = Peek('rd_attendance_unmatched_rows', 0, 'C5_RD_COVERAGE');
+LET vC5RDResPB = Peek('rd_residence_pb_rows', 0, 'C5_RD_COVERAGE');
+LET vC5RDResPBUnmatched = Peek('rd_residence_pb_unmatched_rows', 0, 'C5_RD_COVERAGE');
+LET vC5RDResExternal = Peek('rd_residence_outside_pb_rows', 0, 'C5_RD_COVERAGE');
+DROP TABLE C5_RD_COVERAGE;
+
+// 4) Bloquear no primeiro mismatch. Residencia fora da PB e informacao
+// legitima para fluxo; nao requer matching a populacao PB.
+IF $(vC5STRows) <> 220390 OR $(vC5STDistinct) <> 223 OR $(vC5STUnmatched) <> 0 OR $(vC5LTRows) <> 35518 OR $(vC5LTUnmatched) <> 0 OR $(vC5RDRows) <> 566672 OR $(vC5RDAttUnmatched) <> 0 OR $(vC5RDResPBUnmatched) <> 0 OR $(vC5RDResPB) + $(vC5RDResExternal) <> 566672 THEN
+    TRACE [EXTRACAO][C5_MUNICIPIO] Candidate crosswalk requires review. ST=$(vC5STRows)/$(vC5STDistinct)/$(vC5STUnmatched) LT=$(vC5LTRows)/$(vC5LTUnmatched) RD=$(vC5RDRows)/$(vC5RDAttUnmatched) ResidencePB=$(vC5RDResPB)/$(vC5RDResPBUnmatched) External=$(vC5RDResExternal);
+    EXIT SCRIPT;
+ENDIF
+
+// Este arquivo nao e uma DIM_MUNICIPIO nem uma ponte de producao.
+C5_MUNICIPAL_PREFLIGHT_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'EXTRACAO_C5_MUNICIPAL_PREFLIGHT' AS stage,
+    'PASS_CANDIDATE_MAPPING_ONLY' AS status,
+    $(vC5IBGECodes) AS ibge_pb_official_codes7,
+    $(vC5Distinct6) AS unique_code6_candidates,
+    $(vC5STDistinct) AS st_distinct_codes6,
+    $(vC5STUnmatched) AS st_unmatched_rows,
+    $(vC5LTUnmatched) AS lt_unmatched_rows,
+    $(vC5RDAttUnmatched) AS rd_attendance_unmatched_rows,
+    $(vC5RDResPBUnmatched) AS rd_residence_pb_unmatched_rows,
+    $(vC5RDResExternal) AS rd_residence_outside_pb_rows,
+    'NOT_YET_MATERIALIZED' AS official_bridge_status
+AUTOGENERATE 1;
+
+STORE C5_MUNICIPAL_PREFLIGHT_CHECKPOINT
+INTO [QVD\_CHECKPOINT_EXTRACAO_MUNICIPAL_PREFLIGHT.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vC5ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5_MUNICIPIO] Checkpoint store failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE C5_MUNICIPAL_PREFLIGHT_CHECKPOINT;
+DROP TABLE C5_IBGE_PB_CODES;
+
+TRACE [EXTRACAO] PHASE_III_C5_MUNICIPAL_PREFLIGHT_PASS IBGE_7=$(vC5IBGECodes) ST_6=$(vC5STDistinct) ST_UNMATCHED=$(vC5STUnmatched) LT_UNMATCHED=$(vC5LTUnmatched) RD_ATT_UNMATCHED=$(vC5RDAttUnmatched) RD_RES_PB_UNMATCHED=$(vC5RDResPBUnmatched) RD_RES_EXTERNAL=$(vC5RDResExternal);
+TRACE [EXTRACAO] PHASE_III_IN_PROGRESS: municipal bridge not materialized and external residence unmapped.
