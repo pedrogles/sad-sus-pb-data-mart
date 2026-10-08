@@ -719,6 +719,32 @@ if ($LASTEXITCODE -eq 0 -and (Test-Path .\BASE\REFERENCIAS\cnes_nt32_201909_pair
 **RESULTADO DA TRIAGEM:** rotas oficiais de acesso **identificadas**, mas **nenhum arquivo normativo histórico `TB_LEITO` foi obtido ou identificado com versão/competência demonstradas**. **Não declarar C4.2c.3 PASS** nem preencher lacunas temporais de 201701–201705 por imputação. Próximo gate deve ser uma inspeção de metadados e estrutura de **amostra mínima** de versão histórica se acessível, ou uma decisão acadêmica documentada que aceite explicitamente a referência set/2019 como classificação descritiva com suas limitações temporais. Qualquer aceitação assim **não modifica retroativamente os dados oficiais**, não valida vigência não comprovada, nem aprova silenciosamente T29 pleno.
 
 
+
+### C4.2c.3a — identificação de terminologia oficial versionada "Leitos" no RTS (08/10/2026)
+
+**FATO VERIFICADO — documentação oficial do Ministério da Saúde (Wiki RTS, sem acesso aos dados do portal):**
+
+1. [RTS — Terminologias](https://wiki.saude.gov.br/RTS/index.php/Terminologias): **Leitos** consta expressamente no grupo **Estabelecimento de Saúde**. É uma terminologia identificada nominalmente no RTS, não mera coluna do relatório agregado CNESNet.
+2. [RTS — Portal](https://wiki.saude.gov.br/RTS/index.php/RTS_Portal): o portal público permite alterar a competência exibida, com competências documentadas **desde 01/2017**. O formato de versão da **terminologia** é `MM/AAAA/letra`; a terminologia só recebe nova versão quando algum termo é ativado, inativado ou alterado, e conserva a versão anterior se não houver mudanças.
+3. [RTS — Consultar terminologias](https://wiki.saude.gov.br/RTS/index.php/Consultar_terminologias): na consulta de termos, o portal exibe **código, nome, status ativo/inativo e a vigência do status**; entretanto, a forma e a disponibilidade **específicas de Leitos** ainda precisam ser verificadas visualmente no portal.
+4. [RTS — Download](https://wiki.saude.gov.br/RTS/index.php/Download): cada competência tem uma data de geração e uma **Nota Técnica**, com terminologias versionadas naquela competência. A nomenclatura foi alterada para `Relatório de Competência` a partir de **08/2020**; em 2017–2019, procurar o rótulo histórico `Nota Técnica`.
+5. [RTS — Documentos](https://wiki.saude.gov.br/RTS/index.php/Documentos): alterações nas terminologias são relacionadas a documentos oficiais, com opção de busca por data, tipo, número e ementa.
+6. [RTS — página principal](https://wiki.saude.gov.br/RTS/index.php/P%C3%A1gina_principal): o repositório é declarado um serviço público de versionamento permanente de termos; a instituição formal em 2018 não deve ser confundida com a disponibilidade retroativa de competências 2017 documentada no portal.
+
+**Limite de acesso nesta investigação:** a abertura direta de `https://rts.saude.gov.br` pelo ambiente de pesquisa retornou **timeout**. Assim, **não foi obtida nenhuma versão da terminologia Leitos, download de competência, tabela histórica de pares, arquivo `TB_LEITO` ou URL profunda autenticada**, tampouco foi demonstrada cobertura normativa 201701–201912. A documentação do RTS é evidência de **capacidade de consulta**, não da obtenção efetiva dos dados de Leitos.
+
+**PRÓXIMO GATE C4.2c.3b — piloto manual, somente consulta e inventário, sem download em massa:**
+
+- abrir **[Portal público RTS](https://rts.saude.gov.br)** em navegador local; registrar se acessível, URL real final e data da consulta; se indisponível, manter `ACCESS_BLOCKED` e não inventar API/endpoints;
+- selecionar competência **01/2017** e navegar para **Consultas → Estabelecimento(s) de Saúde → Leitos** (rótulos conforme exibidos), registrando: competência selecionada efetivamente, **versão literal da terminologia Leitos**, se constam código, descrição, tipo/grupo, status, vigência, histórico e documento/ato de mudança;
+- verificar no mesmo piloto **`66 — UNIDADE ISOLAMENTO`** (tipo **COMPLEMENTAR / 3** somente se a interface assim mostrar) e **`70 — FIBROSE CISTICA`** (HOSPITAL-DIA / 7), sem inferir ausência de um termo caso a página use paginação ou filtros;
+- se a consulta 01/2017 estiver acessível e de interpretação inequívoca, inspecionar apenas **12/2017, 09/2019 e 12/2019**, registrando a versão exata em cada data e a presença/atributos dos termos de controle; **não presumir que quatro amostras validam 36 competências**;
+- se disponíveis, registrar somente **metadados de versão e links reais** do download/Nota Técnica de competência, sem baixar massa de arquivos; o PDF NT nº 32/2019 já validado permanece separado da Nota Técnica **mensal** citada nos downloads do RTS;
+- para validar série histórica posteriormente, enumerar **todas as versões distintas de Leitos efetivas no intervalo** e suas fronteiras de vigência. Cada versão obtida deve ser confrontada por `(TP_LEITO,CODLEITO)`, descrição/status e intervalos com os **57 pares/35.518 LT PB**; não basta conferir termos de controle ou um só retrato de 09/2019.
+
+**REGRA DE DECISÃO:** `C4.2c.3a = OFFICIAL_VERSIONED_CHANNEL_DOCUMENTED`; `C4.2c.3b = PORTAL_QUERY_PENDING`; `T29_FULL = NOT_APPROVED`. O RTS documenta competências desde **01/2017**, diferente da janela de downloads de base CNES a partir de **06/2017**; **nenhuma dessas janelas implica automaticamente que a terminologia Leitos possua todas as versões aplicáveis acessíveis, completas e verificadas**. Não transformar cronograma em prova de vigência, não retroprojetar o snapshot de 2019 nem alterar `DIM_TIPO_LEITO`/QVDs.
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
