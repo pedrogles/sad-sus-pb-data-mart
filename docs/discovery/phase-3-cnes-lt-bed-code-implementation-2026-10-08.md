@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1/C4.1a PASS; C4.2a CÓDIGO 70 VALIDADO; C4.2b SONDAGEM OFICIAL IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; DOMÍNIO HISTÓRICO COMPLETO NÃO VALIDADO; T29 NÃO AVALIADO
+**Status:** C4.1/C4.1a PASS; C4.2a CÓDIGO 70 VALIDADO; C4.2b.1 5/5 HTMLs CAPTURADOS / COMPETÊNCIA NÃO CONFIRMADA; C4.2b.2 AUDITORIA OFFLINE IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; DOMÍNIO HISTÓRICO COMPLETO NÃO VALIDADO; T29 NÃO AVALIADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -220,6 +220,49 @@ $m.sources | Select-Object requested_competence, status, bytes, decoded_using,
 **Critério de interpretação:** respostas confiáveis somente após inspecionar conteúdo original/seleção de competência. Ainda que todos os cinco HTMLs sejam válidos, o resultado será apenas um **piloto de fontes históricas**, e não catálogo oficial de 57 códigos ou série de 36 meses.
 
 **DECISÕES PENDENTES PARA C4.2b:** encontrar tabela de domínio oficial versionada ou estabelecer alternativa transparente se ela não existir; definir tratamento de histórico e chave descritiva com evidência de pares `TP_LEITO+CODLEITO`; medir T29 sobre os 35.518 LT apenas após validação oficial do domínio.
+
+### C4.2b.1 — execução local em 08/10/2026: 5 HTMLs capturados, competência não comprovada
+
+**FATO VERIFICADO:** o usuário executou `tools/probe_cnes_leito_historical_indicators.py` após atualização de `main`. Foram capturados **5/5 HTMLs** oficiais (competências solicitadas 201712, 201801, 201805, 201806, 201912), com as seguintes saídas:
+
+| Solicitada | Bytes capturados | Decodificação | Indicadores/leitos | Hospital Dia | Código 70 | Competência selecionada |
+|---|---:|---|---|---|---|---|
+| 201712 | 53.009 | cp1252 | Sim | Sim | Sim | **Não confirmada** |
+| 201801 | 53.008 | cp1252 | Sim | Sim | Sim | **Não confirmada** |
+| 201805 | 53.007 | cp1252 | Sim | Sim | Sim | **Não confirmada** |
+| 201806 | 53.006 | cp1252 | Sim | Sim | Sim | **Não confirmada** |
+| 201912 | 53.008 | cp1252 | Sim | Sim | Sim | **Não confirmada** |
+
+O manifesto declarou `HISTORICAL_DOMAIN_REFERENCE=NOT_APPROVED`, `T29_COVERAGE=NOT_EVALUATED`, `VERDICT=SOURCE_INSPECTION_REQUIRED`. O marcador `COMPETENCE_SELECTED=False` em 5/5 pode decorrer da forma como a página expõe controles ou do retorno de competência padrão. **Não permite afirmar** que o portal ignora os parâmetros; tampouco permite afirmar que as cinco páginas representam períodos históricos corretos. As diferenças de **1–3 bytes** não provam alteração de classificação ou conteúdo.
+
+**C4.2b.1: CAPTURA CONCLUÍDA, INTERPRETAÇÃO HISTÓRICA AINDA EM REVIEW.** É inadequado criar `REF_TIPO_LEITO`, atribuir validade mensal ou executar T29 com base nos cinco HTMLs apenas.
+
+### C4.2b.2 — auditoria diferencial offline (IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE)
+
+Para isolar variação de template/HTML de alteração real do conteúdo, foi adicionado `tools/audit_cnes_leito_historical_html.py`. O script **não usa rede**: relê os cinco HTMLs existentes e o manifesto, confere hashes/tamanhos, decodifica com o encoding registrado, procura `<select>`/`<input>` de competência e compara três assinaturas SHA-256 distintas:
+
+- **bytes HTML** (inclui template, seleção, códigos, formatação etc.);
+- **texto visível normalizado** (pode incluir listas de meses ou cabeçalhos);
+- **conteúdo textual a partir do grupo CIRÚRGICO** (aproximação de corpo de indicadores; não é extração normativa validada).
+
+Os três fingerprints serão interpretados em conjunto. `HTML_SHA` diferente com `BED_SHA` idêntico é evidência de **diferença fora do corpo indicado**, mas não demonstra validade histórica. `BED_SHA` diferente exige comparação semântica dos grupos/linhas e prova da competência. Em qualquer cenário, `COMPETENCE_SELECTED` não identificado **não é prova automática** de parâmetro ignorado.
+
+Comando (raiz do repositório):
+
+```powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\audit_cnes_leito_historical_html.py
+```
+
+Resumo local não versionado: `BASE/REFERENCIAS/cnes_leito_history_probe/html_diff_audit_summary.json`. Para inspecionar os sinais:
+
+```powershell
+$m = Get-Content .\BASE\REFERENCIAS\cnes_leito_history_probe\html_diff_audit_summary.json -Raw -Encoding UTF8 | ConvertFrom-Json
+$m | Select-Object status, captured_samples_verified, integrity_failures, distinct_html_hashes, distinct_visible_text_hashes, distinct_bed_content_hashes, competences_explicitly_confirmed
+$m.records | Select-Object competence, manifest_hash_match, requested_competence_present_in_html, competence_explicitly_confirmed, selected_competence_values, competence_input_values, bed_content_start_found, bed_content_sha256 | Format-Table -AutoSize
+```
+
+**DECISÃO PENDENTE:** após essa conferência, determinar se a fonte é confiável para uma descrição histórica amostral ou se precisamos localizar a versão oficial do **Dicionário de Dados/Tabelas de Domínio** por outra rota. **Não** presumir que consultas de indicador componham domínio completo de 57 códigos nem que `CODLEITO` isolado seja chave normativa.
 
 ## 4. Gate seguinte — C4.2 referência oficial
 
