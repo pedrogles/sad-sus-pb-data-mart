@@ -274,7 +274,8 @@ Antes de adicionar datasets ao Git:
 - C3.2 **PASS** em 08/10/2026: 4 ZIPs oficiais temporários (201701/201801/201901/201912), 87 membros por pacote, 18 DATA e 17 LAYOUT candidatos por pacote, 140 candidatos; identificado `tb_procedimento.txt` e `tb_procedimento_layout.txt` nos quatro meses; prévia confirma `CO_PROCEDIMENTO` (10 posições, início 1), ainda sem layout completo validado;
 - C3.3a **PASS** em 08/10/2026: referência `tb_procedimento` com 4.542/4.587/4.609/4.624 linhas nas competências 201701/201801/201901/201912; 16 campos, 330 bytes/registro, 0 chaves inválidas/comprimentos inválidos/duplicações, `LAYOUT_DISTINCT_HASHES=1`, manifesto local PASS;
 - layout físico confirmado: `CO_PROCEDIMENTO` 1–10, `NO_PROCEDIMENTO` 11–260, `DT_COMPETENCIA` 325–330; descrições de grupo/subgrupo/forma de organização ainda exigem fonte/relacionamento oficial verificado;
-- C3.3a.1 **IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE**: `tools/profile_sigtap_procedure_pilot.py` cruza somente 4 competências RD com 4 SIGTAP locais e registra correspondências/exceções por mês, sem downloads;
-- T27 `PROC_REA↔SIGTAP` **INTEGRAL NÃO AVALIADO**; 36/36 pacotes inventariados, histórico completo pendente de gate do piloto;
-- próxima ação: executar o piloto local de quatro competências, analisar cobertura e exceções; somente depois decidir C3.3b histórico 36 meses;
+- C3.3a.1 **PASS** em 08/10/2026: piloto `PROC_REA + competência` contra SIGTAP para 201701/201801/201901/201912 = **59.365/59.365 RD cobertos**, 0 unmatched e 0 pares código/competência sem match; RD mensais 14.726 / 14.501 / 15.155 / 14.983;
+- C3.3b.1 **IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE**: `tools/materialize_sigtap_procedure_history.py` reutiliza 4 competências aprovadas, baixa apenas 32 pacotes adicionais do inventário oficial, valida layout de 16 campos/330 bytes, chaves únicas, `DT_COMPETENCIA`, hashes e proveniência dos dois arquivos da referência;
+- C3.3b.2 **PENDENTE**: cobertura histórica de 566.672 RD nas 36 competências somente após C3.3b.1 PASS; T27 **INTEGRAL NÃO AVALIADO**;
+- próxima ação: executar C3.3b.1 localmente e inspecionar manifesto de 36 meses, interrompendo se houver mudança de layout; não produzir QVD prematuramente;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
