@@ -706,6 +706,19 @@ if ($LASTEXITCODE -eq 0 -and (Test-Path .\BASE\REFERENCIAS\cnes_nt32_201909_pair
 **Decisão operacional preservada:** Fase III `IN_PROGRESS`; `T29_FULL=NOT_APPROVED`; sem `REF_TIPO_LEITO.qvd`, sem alteração da `DIM_TIPO_LEITO`, CSVs LT, QVDs ou relatório acadêmico aprovado.
 
 
+
+### C4.2c.3 — triagem de vias de versionamento histórico (READ-ONLY / 08/10/2026)
+
+**FATOS VERIFICADOS — documentação pública oficial consultada, sem aquisição de arquivos novos:**
+
+- [Portal CNES — Base de Dados](https://wiki.saude.gov.br/cnes/index.php/Portal_CNES) e [Categoria Downloads Base Nacional](https://wiki.saude.gov.br/cnes/index.php/Categoria:Consumo_de_informa%C3%A7%C3%B5es_da_Base_Nacional_do_CNES_via_webservice_e_Download_da_Base_de_Dados): informam disponibilização de downloads **por competência a partir de 06/2017**. A presença, granularidade, conteúdo e versionamento da tabela `NFCES001/TB_LEITO` **nesses pacotes não foram verificadas**.
+- [Wiki CNES — Cronograma](https://wiki.saude.gov.br/cnes/index.php/Cronograma) e [Cronogramas dos Anos Anteriores](https://wiki.saude.gov.br/cnes/index.php/Cronogramas_dos_Anos_Anteriores): documentam **disponibilização por competência do RTS** e de versões do CNES Desktop; entretanto, a existência de downloads históricos utilizáveis das tabelas de leitos em 2017–2019 **não foi comprovada**. Uma competência pode ter mais de uma versão publicada, portanto o mês sozinho não identifica inequivocamente a versão de software/referência.
+- [Guia oficial de instalação SCNES](https://wiki.saude.gov.br/cnes/index.php/Guia_de_Instala%C3%A7%C3%A3o_dos_Sistemas): distingue `SCNES Completo` e `SCNES Atualização`; o aplicativo completo instala tabelas de base e atualizações geralmente refletem novas regras. Não foi demonstrado acesso a uma sequência auditável das tabelas `TB_LEITO` com hashes/versões históricas.
+- [Documentação do CNESNet](https://wiki.saude.gov.br/cnes/index.php/CNESNet) e [Painéis ElastiCNES](https://wiki.saude.gov.br/cnes/index.php/Pain%C3%A9is_ElastiCNES): suportam consulta operacional com tipo/código/competência. **Não são substitutos automaticamente equivalentes ao catálogo normativo versionado**; preserva-se a divergência conhecida `2/66` vs `3/66`.
+
+**RESULTADO DA TRIAGEM:** rotas oficiais de acesso **identificadas**, mas **nenhum arquivo normativo histórico `TB_LEITO` foi obtido ou identificado com versão/competência demonstradas**. **Não declarar C4.2c.3 PASS** nem preencher lacunas temporais de 201701–201705 por imputação. Próximo gate deve ser uma inspeção de metadados e estrutura de **amostra mínima** de versão histórica se acessível, ou uma decisão acadêmica documentada que aceite explicitamente a referência set/2019 como classificação descritiva com suas limitações temporais. Qualquer aceitação assim **não modifica retroativamente os dados oficiais**, não valida vigência não comprovada, nem aprova silenciosamente T29 pleno.
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
