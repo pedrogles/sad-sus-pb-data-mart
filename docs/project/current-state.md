@@ -72,11 +72,17 @@ Decisões detalhadas em [boundary-5](../discovery/boundary-5-historization-role-
 
 Evidências específicas: [Saúde](../discovery/phase-3-health-staging-implementation-2026-10-07.md), [IBGE](../discovery/phase-3-ibge-staging-implementation-2026-10-07.md), [Referências normativas](../discovery/phase-3-normative-references-implementation-2026-10-07.md), [CID-10](../discovery/phase-3-cid10-reference-implementation-2026-10-07.md), [SIGTAP](../discovery/phase-3-sigtap-proc-rea-implementation-2026-10-08.md), [CNES leitos](../discovery/phase-3-cnes-lt-bed-code-implementation-2026-10-08.md).
 
-## 4. Sequência segura a seguir
+## 4. Higiene do repositório — concluída
 
-1. **Higiene de repositório:** revisar PR `chore/repository-hygiene-2026-10-08`, mantendo documentação acadêmica e fontes inalteradas; qualquer exclusão de branch requer preflight e autorização específicos.
-2. **Fase III:** confirmar a decisão explícita sobre uso **descritivo limitado** da referência de leitos set/2019 e fechar apenas os critérios pertinentes; não inventar vigência normativa mensal.
-3. Verificar pelo [Boundary 7](../discovery/boundary-7-implementation-plan.md) os **gates de extração realmente pendentes** e registrar o fechamento com evidência QlikView local.
-4. Somente depois passar à Fase IV / `TRANSFORMACAO`, Link Table, dimensões e fatos; painéis na etapa prevista. Preservar o prazo da primeira entrega impressa.
+**PASS em 08/10/2026:** PR #69 de higiene documental integrado à `main`; o usuário executou o executor de branch hygiene v3 após dry-run completo. Registro de aplicação: `POSTCHECK=PASS REMOTE_BRANCHES=8 DELETED=70 PROTECTED=8`. Consulta remota independente confirmou oito branches (a `main`, `chore/repository-hygiene-2026-10-08` e seis branches `HOLD`). Nenhuma outra exclusão está autorizada. Manifesto e log de rollback permanecem locais em `BASE/REFERENCIAS`.
+
+Detalhes: [repository-hygiene-review-2026-10-08.md](repository-hygiene-review-2026-10-08.md).
+
+## 5. Sequência segura — Fase III retomada
+
+1. **Revisar decisão específica de uso da referência CNES de setembro/2019.** FATO VERIFICADO: a Nota Técnica cobre os **57/57 pares e 35.518/35.518 ocorrências LT**; **não** prova vigência da classificação em todos os 36 meses. A portaria/RTS não forneceu prova completa da série. **DECISÃO PENDENTE:** utilizar essas descrições apenas como **legenda de referência datada**, explicitamente não histórica, ou manter descrições de tipo/leito sem enriquecimento até fonte temporal adequada. Não converter snapshot em fato de vigência histórica.
+2. **Preservar decisão do Boundary 7 para chave de tipo/leito**: sem prova de invariância, não aplicar retrospectivamente classificações posteriores e não eliminar `COMPETENCIA_REFERENCIA` de eventual chave física. Qualquer decisão que altere contrato aprovado deve ser avaliada/documentada antes de implementar.
+3. **Reconciliar gates da Fase III**: T27 e T28 PASS, T29 cobertura de snapshot PASS somente neste escopo, sem status histórico integral. Verificar critérios físicos de carga, integridade e rastreabilidade de eventual referência `REF_TIPO_LEITO` na extração, apenas após decisão aprovada e reload local QlikView 12.
+4. **Somente após fechamento verificável da extração**, iniciar a Fase IV de transformação dimensional (dimensões, fatos, Link Table na ordem do Boundary 7). Priorizar a entrega impressa dos Capítulos 1 e 2 já aprovada.
 
 **Histórico completo anterior à consolidação:** [current-state-chronology-2026-10-08.md](current-state-chronology-2026-10-08.md). Este resumo substitui a cronologia como rota operacional; os documentos originais e o histórico Git seguem consultáveis.
