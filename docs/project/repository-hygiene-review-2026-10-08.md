@@ -131,3 +131,25 @@ A primeira entrega impressa permanece prioritária. Os gates já encerrados não
 **HIPÓTESE TÉCNICA:** `$prs = @(Invoke-RestMethod ...)` pode devolver um único objeto contendo o array em Windows PowerShell 5.1, em vez da coleção de 69 objetos esperada. A mensagem isolada não comprova se o envelope era um array aninhado ou se o servidor de fato devolveu um item.
 
 **Mitigação preparada — script `sad_branch_hygiene_approved_2026-10-08_v3.ps1`:** recuperar resposta por `Invoke-WebRequest -UseBasicParsing`, confirmar que o corpo é uma lista JSON, fazer `ConvertFrom-Json -InputObject` e normalizar explicitamente a coleção, com diagnósticos de contagem e abort sem delete. Mantidos 78 refs pré-higiene, 67 PRs integrados+3 ancestrais, seis HOLD, dois protegidos estruturais, `-Apply` explícito, `--force-with-lease`, manifesto pré-delete e verificação pós. **Ainda não há evidência de dry-run PASS da v3 nem exclusão remota executada.** Pedir ao usuário **somente dry-run da v3** primeiro, depois avaliação do resultado; não instruir `-Apply` diante de falha.
+
+
+## 7. Fechamento do APPLY — 08/10/2026
+
+**FATO VERIFICADO — duas evidências independentes:**
+
+1. O usuário executou no PowerShell 5.1 o script aprovado `sad_branch_hygiene_approved_2026-10-08_v3.ps1 -Apply` após dry-run `PR_FETCH=PASS TOTAL=69` e `PREFLIGHT=PASS DELETE_CANDIDATES=70 HOLD=6`. A saída informou `DELETED 1/70` até `DELETED 70/70` e `POSTCHECK=PASS REMOTE_BRANCHES=8 DELETED=70 PROTECTED=8`.
+2. Consulta read-only GitHub realizada **após o APPLY** confirmou precisamente estas **oito branches remotas**:
+   - `main`;
+   - `chore/repository-hygiene-2026-10-08`;
+   - `fix/phase-3-cid10-dual-diagnostic`;
+   - `fix/phase-3-cid10-dual-diagnostic-v2`;
+   - `fix/phase-3-cid10-dual-diagnostic-v3`;
+   - `fix/phase-3-ibge-biff-sheet-encoding`;
+   - `fix/phase-3-ibge-population-notes`;
+   - `fix/readiness-hash-ps51-compat`.
+
+**Manifesto local de rollback:** `BASE/REFERENCIAS/branch-hygiene-preflight-20261008-183500.csv`.  
+**Log de execução local:** `BASE/REFERENCIAS/branch-hygiene-preflight-20261008-183500.txt`.  
+Ambos permanecem **locais, não versionados**; sua existência foi relatada pelo script e seus bytes **não foram auditados remotamente**.
+
+**Veredito final:** `BRANCH_HYGIENE=APPLIED_PASS`; `DELETED=70`; `PROTECTED_REMAINING=8`; `UNAUTHORIZED_DELETION_OBSERVED=0`. Não executar novamente `-Apply`, não excluir as seis refs HOLD nem a branch de higiene sem novo inventário/autorização. Esta seção atualiza o estado histórico descrito acima como DRY-RUN e torna a higiene uma **atividade concluída**. O foco volta à Fase III.
