@@ -17,6 +17,8 @@ __pycache__/
 # Local environment
 .env
 .env.*
+.venv/
+venv/
 
 # SAD — local source data and derived artifacts
 BASE/DBC/**
@@ -49,3 +51,6 @@ tools/READINESS.qvw
 tools/READINESS_FAILURE.qvw
 tools/readiness_failure_handled.csv
 tools/readiness_failure_unexpected.csv
+
+# Temporary remote branch inventory (never versioned)
+branch-hygiene-preflight-*.txt
