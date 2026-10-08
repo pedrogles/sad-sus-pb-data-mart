@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1/C4.1a PASS; C4.2a CÓDIGO 70 VALIDADO; C4.2b.1 CAPTURAS 5/5; C4.2b.2 INTEGRIDADE PASS / DIFERENÇAS NÃO INTERPRETADAS; C4.2b.3 COMPARADOR DE LINHAS HTML IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE; DOMÍNIO HISTÓRICO NÃO VALIDADO; T29 NÃO AVALIADO
+**Status:** C4.1/C4.1a PASS; C4.2a código 70 validado; C4.2b.1 capturas 5/5; C4.2b.2 integridade PASS; C4.2b.3 comparação de 77 linhas/competência PASS estrutural e diferenças quantitativas observadas; C4.2b.3a isolamento de código/descrição IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE; domínio histórico NÃO VALIDADO; T29 NÃO AVALIADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -317,6 +317,59 @@ $m.comparisons[0].raw_table_diff.diff_examples | ConvertTo-Json -Depth 6
 ```
 
 **Limites:** o extrator HTML é uma sonda estrutural, não um parser oficial de domínios; diferenças em linhas podem ser apenas de indicadores quantitativos por competência. A prova de `VComp` e o catálogo normativo completo continuam pendentes. **T29 não executado.**
+
+### C4.2b.3 — resultado local: linhas comparadas, interpretação normativa ainda REVIEW (08/10/2026)
+
+**FATO VERIFICADO:** o usuário atualizou `main` e executou `tools/compare_cnes_leito_html_table_rows.py` com êxito. O script reconferiu a integridade das **cinco capturas** e extraiu **77 linhas de tabela por HTML**, identificando **uma linha de `70 FIBROSE CISTICA` em cada**. Contagens das diferenças entre linhas HTML:
+
+| Transição solicitada | Linhas iguais | Linhas diferentes | Linhas diferentes após neutralizar eco YYYYMM |
+|---|---:|---:|---:|
+| 201712→201801 | 12 | 65 | 65 |
+| 201801→201805 | 10 | 67 | 67 |
+| 201805→201806 | 16 | 61 | 61 |
+| 201806→201912 | 9 | 68 | 68 |
+
+A diferença persistiu após neutralização limitada de textos `YYYYMM`. Nos **exemplos** inspecionados, as duas primeiras células contêm mesmo código e descrição entre consultas, enquanto as células seguintes exibem números diferentes. Exemplos entre 201712 e 201801: `01 BUCO MAXILO FACIAL 1176/722 → 1167/718`, `02 CARDIOLOGIA 5260/3042 → 5279/3051`, `10 OBSTETRICIA CIRURGICA 27793/19373 → 27741/19354`.
+
+**Limite:** os exemplos não provam estabilidade de código/descrição nas **77 linhas** ou associação com os sete tipos, pois o comparador anterior tratava cada `<tr>` inteiro como uma unidade. As mudanças numéricas são **compatíveis com variações operacionais dos indicadores**, mas a seleção explícita de `VComp` não foi demonstrada (`EXPLICIT_COMPETENCES=0` anteriormente). Não concluir que cinco versões normativas diferem nem que não há mudanças de catálogo em outros meses.
+
+O script original registrou `VERDICT=SEMANTIC_INSPECTION_REQUIRED`, `OFFICIAL_DOMAIN=NOT_APPROVED` e `T29_COVERAGE=NOT_EVALUATED`. **C4.2b.3: análise estrutural executada com integridade PASS; evidência semântica insuficiente para aprovar domínio histórico.**
+
+### C4.2b.3a — separar código/descrição de valores numéricos (IMPLEMENTADO / REEXECUÇÃO PENDENTE)
+
+Foi estendido o script **existente** `tools/compare_cnes_leito_html_table_rows.py`, sem nova aquisição, novo diretório ou nova fonte. Ele continua auditando os SHA-256 de todos os HTMLs antes da leitura e agora:
+
+- seleciona apenas linhas com **primeira célula contendo exatamente dois dígitos** e segunda célula não vazia, mantendo `(código, descrição)` sem presumir que seja uma chave normativa;
+- calcula o SHA-256 do **multiconjunto ordenado** dos pares por HTML, preservando repetições;
+- compara a quantidade de pares adicionados/removidos entre competências solicitadas; registra até doze exemplos de cada;
+- distingue linhas com os **mesmos código/descrição nas duas primeiras células** nas quais **outras células** variaram (prováveis valores numéricos);
+- registra também se um código aparece mais de uma vez na mesma página.
+
+**Limitação crítica:** cabeçalhos de grupo/tipo com apenas uma célula não são preservados no extrator atual. Portanto, identidade `(código, descrição)` estável **não comprova tipo de leito, chave composta, vigência normativa, nem cobertura dos 57 códigos observados na PB**. A consulta é um indicador, não o catálogo oficial completo.
+
+Comandos locais, na raiz do repositório:
+
+```powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\compare_cnes_leito_html_table_rows.py
+```
+
+```powershell
+$m = Get-Content .\BASE\REFERENCIAS\cnes_leito_history_probe\table_row_diff_summary.json -Raw -Encoding UTF8 | ConvertFrom-Json
+$m.captured_htmls | Select-Object competence_requested,table_rows,code_description_candidates,code_description_distinct_pairs,duplicate_code_values_in_table,code_description_multiset_sha256 | Format-Table -AutoSize
+$m.comparisons | ForEach-Object {
+    $d = $_.classification_code_description_diff
+    [pscustomobject]@{
+        Transicao = "$($_.from_competence_requested)->$($_.to_competence_requested)"
+        ParesAdicionados = $d.added_occurrences
+        ParesRemovidos = $d.removed_occurrences
+        MesmoRotuloNaPosicao = $d.same_labels_at_same_row_positions
+        AlteracoesOutrasCelulasMesmoRotulo = $d.numeric_or_other_cells_changed_at_same_label_positions
+    }
+} | Format-Table -AutoSize
+```
+
+**Gate:** decidir apenas se os pares `código/descrição` exibidos no **indicador oficial** permaneceram estáveis nas cinco capturas. A futura origem normativa (Tabelas de Domínio SCNES) e T29 permanecem **PENDENTES**; nenhuma alteração do QlikView/CSV LT foi autorizada.
 
 ## 4. Gate seguinte — C4.2 referência oficial
 
