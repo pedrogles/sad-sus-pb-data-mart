@@ -1328,3 +1328,7 @@ $(Must_Include=ext_c4_cnes_leitos.qvs);
 
 // Ainda nao ha evidencia de fechamento final da Fase III.
 TRACE [EXTRACAO] PARTIAL ONLY: referencia municipal e nomes historicos de ST permanecem em revisao. No final extraction success marker emitted.
+
+// III-C5: somente probe em QVDs. Testar a chave candidata 6<->7 no IBGE oficial.
+// Nao materializa ponte nem altera SRC_* ja validados.
+$(Must_Include=ext_c5_municipal_preflight.qvs);
