@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1/C4.1a PASS; C4.2a CÓDIGO 70 VALIDADO POR FONTE OFICIAL HISTÓRICA; C4.2b DOMÍNIO COMPLETO/HISTÓRICO PENDENTE; T29 NÃO AVALIADO
+**Status:** C4.1/C4.1a PASS; C4.2a CÓDIGO 70 VALIDADO; C4.2b SONDAGEM OFICIAL IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; DOMÍNIO HISTÓRICO COMPLETO NÃO VALIDADO; T29 NÃO AVALIADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -184,6 +184,42 @@ O material secundário do [CONASS — Tabela de domínio CNES leito](https://wik
 2. inspecionar fisicamente colunas/formatos e provar unicidade do par de código/tipo em cada referência, preservando os códigos de dois caracteres e o espaço de preenchimento de `TP_LEITO` na origem;
 3. conferir alterações de descrição ou classificação entre competências; na ausência de arquivo normativo versionado, documentar explicitamente a limitação temporal e evitar supor um catálogo mensal;
 4. somente após montar e provar a referência oficial, medir a cobertura T29 de **35.518 linhas CNES/LT**, registrar exceções e então considerar `REF_TIPO_LEITO.qvd`.
+
+### C4.2b.1 — sondagem controlada dos indicadores históricos oficiais (IMPLEMENTADA / LOCAL PENDENTE)
+
+**FATOS VERIFICADOS NA DESCOBERTA WEB:**
+
+- O [CNES oficial — consulta nacional de leitos](https://cnes2.datasus.gov.br/Mod_Ind_Tipo_Leito.asp?VEstado=00) lista grupos, códigos, descrições e totais existentes/SUS, mas só expõe especialidades com valores registrados na consulta selecionada; **não é catálogo normativo exaustivo**.
+- A [consulta oficial CNES de 201712 / SP](https://cnes2.datasus.gov.br/Mod_Ind_Tipo_Leito.asp?VComp=201712&VEstado=35&VMun=) e a [consulta de 201910 / CE](https://cnes2.datasus.gov.br/Mod_Ind_Tipo_Leito.asp?VComp=201910&VEstado=23&VMun=) demonstram existência de **páginas de indicadores por competência**, mas **não demonstram que o servidor atualmente responda a qualquer competência solicitada**; a execução local precisa testar HTTP, conteúdo e eventual seleção de competência.
+- A [tabela de domínio CNES leito do CONASS](https://wiki.conass.org.br/index.php?title=Tabela_de_dom%C3%ADnio_CNES_leito) apresenta pares repetidos de `codleito` em diferentes `tp_leito` (ex.: `01` e `02` aparecem associados a tipos diferentes). **É evidência secundária de risco de colisão**, mas não equivale à prova de chaves/cardinalidades do domínio oficial de 2017–2019. Consequentemente, **não aprovar `CODLEITO` isolado como chave universal de descrição**.
+- O [portal oficial de documentação CNES](https://cnes.datasus.gov.br/pages/downloads/documentacao.jsp) anuncia `Tabelas de Domínio` e `Dicionário de Dados do SCNES`; o HTML público observado contém templates JavaScript e não disponibiliza URL do arquivo ou versão histórica verificável em leitura simples.
+
+**Implementação de discovery:** `tools/probe_cnes_leito_historical_indicators.py`, sem dependências além da biblioteca padrão Python.
+
+A sonda consulta **somente cinco** combinações `VComp` (`201712`, `201801`, `201805`, `201806`, `201912`) com `VEstado=00` e `VMun` vazio no domínio oficial `cnes2.datasus.gov.br`. Em cada requisição, limite 2 MB / timeout 18 s, redirecionamento restrito ao host, tipo de conteúdo HTML e HTTP 200. Grava **apenas cópias brutas desses cinco HTMLs oficiais, se acessíveis**, e manifest JSON com SHA-256, tamanho, URL, charset e sinais de página; tudo em `BASE/REFERENCIAS/cnes_leito_history_probe/` (ignorado pelo Git).
+
+A inspeção da página é **heurística/não normativa**: presença de indicadores/leitos, grupo `HOSPITAL DIA`, código `70 FIBROSE CISTICA` e `VComp` possivelmente selecionada. Se a página não expuser competência selecionada, esse atributo será marcado falso — **não assumir que o retorno é realmente daquela competência**. O script não extrai a tabela como verdade dimensional, não converte códigos e não calcula T29. Um HTTP 200 isolado não aprova a validade histórica.
+
+**Executar no PowerShell**, a partir da raiz do repositório:
+
+```powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\probe_cnes_leito_historical_indicators.py
+```
+
+Conferência read-only dos artefatos locais:
+
+```powershell
+$m = Get-Content .\BASE\REFERENCIAS\cnes_leito_history_probe\probe_summary.json -Raw -Encoding UTF8 | ConvertFrom-Json
+$m.sources | Select-Object requested_competence, status, bytes, decoded_using,
+    @{Name='SelectedCompetence';Expression={$_.inspection.page_signals.requested_competence_selected}},
+    @{Name='HospitalDia';Expression={$_.inspection.page_signals.grupo_hospital_dia}},
+    @{Name='Error';Expression={$_.error}} | Format-Table -AutoSize
+```
+
+**Critério de interpretação:** respostas confiáveis somente após inspecionar conteúdo original/seleção de competência. Ainda que todos os cinco HTMLs sejam válidos, o resultado será apenas um **piloto de fontes históricas**, e não catálogo oficial de 57 códigos ou série de 36 meses.
+
+**DECISÕES PENDENTES PARA C4.2b:** encontrar tabela de domínio oficial versionada ou estabelecer alternativa transparente se ela não existir; definir tratamento de histórico e chave descritiva com evidência de pares `TP_LEITO+CODLEITO`; medir T29 sobre os 35.518 LT apenas após validação oficial do domínio.
 
 ## 4. Gate seguinte — C4.2 referência oficial
 
