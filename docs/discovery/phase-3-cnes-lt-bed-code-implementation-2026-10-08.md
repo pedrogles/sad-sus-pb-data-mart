@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1 PERFIL CNES/LT PASS; C4.1a INSPEÇÃO DE CÓDIGOS/WHITESPACE PENDENTE; T29 NÃO AVALIADO
+**Status:** C4.1/C4.1a PASS (evidência física); C4.2 DISCOVERY DE REFERÊNCIA OFICIAL INICIADA / ARTEFATO HISTÓRICO AINDA NÃO VALIDADO; T29 NÃO AVALIADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -106,6 +106,61 @@ Format-Table -AutoSize
 A lista de pares com menos de 36 competências **não prova isoladamente** qual par foi exclusivo de janeiro–maio de 2018, pois podem existir lacunas intermediárias. Se necessário, comparar o conjunto de códigos dos CSVs `LTPB1712.csv`, `LTPB1801.csv`, `LTPB1805.csv` e `LTPB1806.csv` para apontar o código exato antes de formular hipóteses de vigência.
 
 **Gate C4.1a:** obter caracteres físicos e códigos reais sem normalização, além das diferenças efetivas entre competências relevantes. Nenhuma decisão de `Trim()`, `Text()`, `Num()` ou chave oficial está autorizada por este perfil.
+
+### Resultado C4.1a — PASS na inspeção física restrita (08/10/2026)
+
+**FATO VERIFICADO (PowerShell sobre os arquivos locais):** os sete valores brutos de `TP_LEITO` são `"1 "`, `"2 "`, `"3 "`, `"4 "`, `"5 "`, `"6 "`, `"7 "`. Em todos, os códigos Unicode são respectivamente **49–55 no primeiro caractere e 32 (espaço ASCII) no segundo**. O espaço é **trailing**, não inicial nem interno. A distribuição observada de códigos `CODLEITO` associados a esses tipos no perfil de 57 pares foi:
+
+| `TP_LEITO` bruto | Códigos `CODLEITO` associados |
+|---|---:|
+| `"1 "` | 15 |
+| `"2 "` | 13 |
+| `"3 "` | 16 |
+| `"4 "` | 2 |
+| `"5 "` | 2 |
+| `"6 "` | 5 |
+| `"7 "` | 4 |
+| **Total** | **57** |
+
+**FATO VERIFICADO:** comparação dos conjuntos de `CODLEITO` entre dezembro/2017 e janeiro/2018 apresentou apenas `70` do lado de **janeiro/2018** (`=>`). Entre maio/2018 e junho/2018, apresentou apenas `70` do lado de **maio/2018** (`<=`). Isso explica as transições de 56 para 57 e de 57 para 56 códigos.
+
+**Limite da evidência:** as duas comparações não comprovam, por si só, presença/ausência de `70` em **cada um** dos 36 meses, nem seu `TP_LEITO` específico, descrição oficial ou data normativa de inclusão/exclusão. Essas informações continuam pendentes de verificação. Não normalizar o campo no CSV original; qualquer `RTrim()` em futuras chaves deverá ser documentado e testado explicitamente.
+
+**C4.1a: PASS** quanto à posição dos espaços e às duas transições comparadas. **T29 continua NÃO AVALIADO.**
+
+### Fontes públicas oficiais localizadas para C4.2 (apenas descoberta)
+
+- [Portal CNES — Downloads > Documentação](https://cnes.datasus.gov.br/pages/downloads/documentacao.jsp): seção **Dicionário de Dados do SCNES** e **Tabelas de Domínio**, candidatas prioritárias à identificação oficial de códigos, tipos e descrições. A listagem HTML pública usa dados carregados dinamicamente; não foi possível validar pelo texto disponível uma URL estática e uma versão histórica exata dos anexos.
+- [Wiki CNES — Portal CNES](https://wiki.saude.gov.br/cnes/index.php/Portal_CNES): informa que o download da base CNES por competência está disponível a partir de **06/2017**. A disponibilidade da base mensal **não comprova**, isoladamente, a existência de tabelas de domínio versionadas para cada competência.
+- [ElastiCNES — Leitos](https://wiki.datasus.gov.br/cnes/index.php/Pain%C3%A9is_ElastiCNES): documentação oficial distingue **tipo de leito**, **código de leito**, **leito/especialidade**, leitos existentes e leitos SUS, e apresenta filtros por ano/competência.
+- [OpenDataSUS — Hospitais e Leitos](https://opendatasus.saude.gov.br/pt_BR/dataset/hospitais-e-leitos): catálogo público indexado com recursos CSV anuais para **2017, 2018 e 2019**. É fonte de dados operacionais candidata à **checagem cruzada**, mas **não foi validada como tabela normativa histórica de domínio**. O portal antigo atualmente redireciona para nova plataforma, exigindo descoberta do recurso atual.
+
+**DECISÃO PENDENTE C4.2:** localizar e inspecionar a **tabela de domínio oficial do CNES**, com código, descrição, grupo e versão/data aplicável. Atribuir `CODLEITO=70` a uma descrição, especialidade ou `TP_LEITO` exige confrontar o par observado no LT e a fonte oficial (possivelmente histórica). Não converter uma publicação atual ou secundária automaticamente em versão 2017–2019.
+
+**Próxima inspeção read-only opcional, sem scripts adicionais:**
+
+```powershell
+$p = Import-Csv .\BASE\REFERENCIAS\cnes_lt_bed_code_pair_profile.csv -Delimiter ';'
+$p | Where-Object { $_.codleito_raw -eq '70' } |
+    Select-Object tp_leito_raw,codleito_raw,first_competence,last_competence,competences_observed,occurrences |
+    Format-Table -AutoSize
+
+2017..2019 | ForEach-Object {
+    $y = $_
+    1..12 | ForEach-Object {
+        $m = '{0:D2}' -f $_
+        $ym = '{0}{1}' -f $y,$m
+        $csv = ".\BASE\CONVERTIDA\LT\LTPB$($y.ToString().Substring(2))$m.csv"
+        $matches = @(Import-Csv $csv -Delimiter ';' | Where-Object { $_.CODLEITO -eq '70' })
+        if($matches.Count -gt 0) {
+            [pscustomobject]@{
+                Competencia=$ym; Linhas70=$matches.Count;
+                Tipos=($matches | Select-Object -ExpandProperty TP_LEITO -Unique) -join ','
+            }
+        }
+    }
+} | Format-Table -AutoSize
+```
 
 ## 4. Gate seguinte — C4.2 referência oficial
 
