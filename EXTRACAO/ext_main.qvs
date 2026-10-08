@@ -3,8 +3,9 @@
 //
 // A Fase III implementa staging das fontes validadas e das referências
 // auxiliares efetivamente materializadas. Checkpoints já implementados:
-// saúde (RD/LT/ST), IBGE, referências normativas pequenas (III-C1) e
-// integração CID-10 descritiva (III-C2; reload local ainda valida o gate).
+// saúde (RD/LT/ST), IBGE, referências normativas pequenas (III-C1),
+// CID-10 descritiva (III-C2 PASS) e SIGTAP por competência (III-C3.4b
+// implementado, com reload local pendente).
 // Referências auxiliares restantes continuam pendentes antes do fechamento.
 //
 // Não construir fatos, dimensões ou LINK_ANALISE neste script.
@@ -1139,4 +1140,189 @@ ENDIF
 DROP TABLE EXTRACAO_CID10_CHECKPOINT;
 
 TRACE [EXTRACAO] PHASE_III_C2_CID10_STAGING_PASS ROWS=$(vCID10Rows) UNMATCHED_RD=$(vCID10UnmatchedRows);
-TRACE [EXTRACAO] PARTIAL ONLY — SIGTAP procedure, CNES tipo/leito, municipal reference and establishment history remain pending; no final extraction success marker emitted.
+// -----------------------------------------------------------------------------
+// SIGTAP — procedimentos oficiais por competência (III-C3.4b)
+// Fonte intermediária UTF-8 C3.4a (cp1252 validado na auditoria C3.4a.1).
+// Chave de lookup operacional YYYYMM|PROC_REA — texto, sem coerção numérica.
+// -----------------------------------------------------------------------------
+
+TRACE [EXTRACAO] Phase III-C3 SIGTAP procedure staging start;
+
+REF_SIGTAP:
+LOAD
+    Text(SIGTAP_COMPETENCIA) AS SIGTAP_COMPETENCIA,
+    Text(SIGTAP_CO_PROCEDIMENTO) AS SIGTAP_CO_PROCEDIMENTO,
+    Text(SIGTAP_NO_PROCEDIMENTO) AS SIGTAP_NO_PROCEDIMENTO,
+    Text(SIGTAP_COMPETENCIA_CODIGO) AS SIGTAP_COMPETENCIA_CODIGO,
+    FileName() AS _META_SOURCE_FILE,
+    'REF_SIGTAP' AS _META_SOURCE_FAMILY,
+    FilePath() AS _META_SOURCE_PATH
+FROM [..\BASE\REFERENCIAS\sigtap_procedimento_staging_candidate.csv]
+(txt, utf8, embedded labels, delimiter is ';', msq);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_SIGTAP] CSV LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vSIGTAPRows = NoOfRows('REF_SIGTAP');
+
+TMP_SIGTAP_CHECK:
+LOAD
+    Count(DISTINCT SIGTAP_COMPETENCIA_CODIGO) AS distinct_composite_keys,
+    Count(DISTINCT SIGTAP_COMPETENCIA) AS distinct_competences,
+    Sum(
+        If(
+            Len(Text(SIGTAP_COMPETENCIA)) <> 6
+            OR Len(KeepChar(Text(SIGTAP_COMPETENCIA), '0123456789')) <> 6
+            OR Match(Left(Text(SIGTAP_COMPETENCIA), 4), '2017', '2018', '2019') = 0
+            OR Match(Right(Text(SIGTAP_COMPETENCIA), 2),
+                     '01', '02', '03', '04', '05', '06',
+                     '07', '08', '09', '10', '11', '12') = 0,
+            1,
+            0
+        )
+    ) AS invalid_competence_rows,
+    Sum(
+        If(
+            Len(Text(SIGTAP_CO_PROCEDIMENTO)) <> 10
+            OR Len(KeepChar(Text(SIGTAP_CO_PROCEDIMENTO), '0123456789')) <> 10,
+            1,
+            0
+        )
+    ) AS invalid_procedure_code_rows,
+    Sum(
+        If(
+            Len(Text(SIGTAP_COMPETENCIA_CODIGO)) <> 17
+            OR Text(SIGTAP_COMPETENCIA_CODIGO) <>
+                Text(Text(SIGTAP_COMPETENCIA) & '|' & Text(SIGTAP_CO_PROCEDIMENTO)),
+            1,
+            0
+        )
+    ) AS invalid_composite_key_rows,
+    Sum(
+        If(
+            IsNull(SIGTAP_NO_PROCEDIMENTO)
+            OR Len(Trim(Text(SIGTAP_NO_PROCEDIMENTO))) = 0,
+            1,
+            0
+        )
+    ) AS empty_description_rows
+RESIDENT REF_SIGTAP;
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_SIGTAP] integrity aggregation failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vSIGTAPDistinctKeys = Peek('distinct_composite_keys', 0, 'TMP_SIGTAP_CHECK');
+LET vSIGTAPDistinctCompetences = Peek('distinct_competences', 0, 'TMP_SIGTAP_CHECK');
+LET vSIGTAPInvalidCompetences = Peek('invalid_competence_rows', 0, 'TMP_SIGTAP_CHECK');
+LET vSIGTAPInvalidProcedures = Peek('invalid_procedure_code_rows', 0, 'TMP_SIGTAP_CHECK');
+LET vSIGTAPInvalidComposite = Peek('invalid_composite_key_rows', 0, 'TMP_SIGTAP_CHECK');
+LET vSIGTAPEmptyDescriptions = Peek('empty_description_rows', 0, 'TMP_SIGTAP_CHECK');
+
+DROP TABLE TMP_SIGTAP_CHECK;
+
+IF $(vSIGTAPRows) <> 165203 THEN
+    TRACE [EXTRACAO][REF_SIGTAP] reference rows mismatch. Expected=165203 Actual=$(vSIGTAPRows);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vSIGTAPDistinctKeys) <> 165203 THEN
+    TRACE [EXTRACAO][REF_SIGTAP] duplicate/missing composite keys. Expected=165203 Actual=$(vSIGTAPDistinctKeys);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vSIGTAPDistinctCompetences) <> 36 THEN
+    TRACE [EXTRACAO][REF_SIGTAP] competence count mismatch. Expected=36 Actual=$(vSIGTAPDistinctCompetences);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vSIGTAPInvalidCompetences) <> 0
+    OR $(vSIGTAPInvalidProcedures) <> 0
+    OR $(vSIGTAPInvalidComposite) <> 0
+    OR $(vSIGTAPEmptyDescriptions) <> 0 THEN
+
+    TRACE [EXTRACAO][REF_SIGTAP] invalid fields: competence=$(vSIGTAPInvalidCompetences) procedure=$(vSIGTAPInvalidProcedures) composite=$(vSIGTAPInvalidComposite) empty_description=$(vSIGTAPEmptyDescriptions);
+    EXIT SCRIPT;
+ENDIF
+
+MAP_SIGTAP_PROC:
+MAPPING LOAD
+    SIGTAP_COMPETENCIA_CODIGO,
+    1
+RESIDENT REF_SIGTAP;
+
+TMP_SIGTAP_RD_COVERAGE:
+LOAD
+    Count(*) AS rd_rows,
+    Sum(
+        If(
+            ApplyMap(
+                'MAP_SIGTAP_PROC',
+                Text(Text(_META_SOURCE_COMPETENCE) & '|' & Text(PROC_REA)),
+                0
+            ) = 0,
+            1,
+            0
+        )
+    ) AS unmatched_rows
+FROM [QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_SIGTAP] RD coverage LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vSIGTAPRDRows = Peek('rd_rows', 0, 'TMP_SIGTAP_RD_COVERAGE');
+LET vSIGTAPUnmatchedRD = Peek('unmatched_rows', 0, 'TMP_SIGTAP_RD_COVERAGE');
+
+DROP TABLE TMP_SIGTAP_RD_COVERAGE;
+
+IF $(vSIGTAPRDRows) <> 566672 THEN
+    TRACE [EXTRACAO][REF_SIGTAP] RD reconciliation mismatch. Expected=566672 Actual=$(vSIGTAPRDRows);
+    EXIT SCRIPT;
+ENDIF
+
+IF $(vSIGTAPUnmatchedRD) <> 0 THEN
+    TRACE [EXTRACAO][REF_SIGTAP] RD procedure lookup mismatch. Unmatched=$(vSIGTAPUnmatchedRD);
+    EXIT SCRIPT;
+ENDIF
+
+STORE REF_SIGTAP INTO [QVD\REF_SIGTAP.qvd] (qvd);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_SIGTAP] QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+TRACE [EXTRACAO][REF_SIGTAP] PASS rows=$(vSIGTAPRows) distinct_keys=$(vSIGTAPDistinctKeys) competences=$(vSIGTAPDistinctCompetences) matched_rd=$(vSIGTAPRDRows) unmatched_rd=$(vSIGTAPUnmatchedRD);
+
+DROP TABLE REF_SIGTAP;
+
+EXTRACAO_SIGTAP_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'EXTRACAO_SIGTAP' AS stage,
+    'PASS_PARTIAL' AS status,
+    $(vSIGTAPRows) AS sigtap_rows,
+    $(vSIGTAPDistinctKeys) AS sigtap_distinct_code_month_keys,
+    $(vSIGTAPDistinctCompetences) AS sigtap_competences,
+    $(vSIGTAPRDRows) AS rd_rows,
+    $(vSIGTAPUnmatchedRD) AS sigtap_unmatched_rd_rows
+AUTOGENERATE 1;
+
+STORE EXTRACAO_SIGTAP_CHECKPOINT
+INTO [QVD\_CHECKPOINT_EXTRACAO_SIGTAP.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_SIGTAP] checkpoint STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE EXTRACAO_SIGTAP_CHECKPOINT;
+
+TRACE [EXTRACAO] PHASE_III_C3_SIGTAP_STAGING_PASS ROWS=$(vSIGTAPRows) UNMATCHED_RD=$(vSIGTAPUnmatchedRD);
+TRACE [EXTRACAO] PARTIAL ONLY — CNES tipo/leito, municipal reference and establishment history remain pending; no final extraction success marker emitted.

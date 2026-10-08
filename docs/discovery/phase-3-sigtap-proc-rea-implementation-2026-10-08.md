@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração / staging  
 **Checkpoint:** III-C3 — Referência oficial de procedimentos  
-**Status:** C3.1–C3.3b.2 PASS; T27 PASS; C3.4a ESTRUTURA/HASH PASS, ENCODING PENDENTE; C3.4a.1 AUDITORIA TEXTUAL IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; C3.4b QLIK PENDENTE
+**Status:** C3.1–C3.3b.2/T27 PASS; C3.4a/C3.4a.1 PASS (cp1252 operacional); C3.4b SCRIPT QLIK IMPLEMENTADO / RELOAD LOCAL PENDENTE; FASE III PARCIAL
 
 ## 1. Contrato aprovado
 
@@ -492,11 +492,59 @@ git pull origin main
 
 **Gate:** conferência visual dos 16 nomes diversificados e investigação de quaisquer `SUSPECT_MOJIBAKE_MARKERS` reportados. A ausência de marcadores não prova, por si só, a codificação de 100% das descrições, mas melhora a evidência para aprovar `cp1252` como interpretação operacional; a validação final deve ser registrada antes da carga Qlik.
 
-O status de C3.4a permanece **ESTRUTURA/HASH PASS; ENCODING AVALIAÇÃO PENDENTE**. Não confundir com PASS definitivo da etapa C3.4b.
+### Evidência C3.4a.1 e decisão de encoding — PASS (08/10/2026)
 
-### C3.4b — staging QlikView 12 (PENDENTE)
+**FATO VERIFICADO:** a auditoria local `tools/audit_sigtap_staging_encoding.py` retornou:
 
-Somente após C3.4a ser validado, implementar a carga via script externo versionável no `EXTRACAO/EXT.qvw` e produzir `REF_SIGTAP.qvd` e checkpoint `PASS_PARTIAL`. Revalidar **no QlikView** 165.203 pares distintos (código + competência) e match dos 566.672 RD; impedir conversão dos códigos para números. Não criar fatos, dimensões, painel ou status final da Fase III.
+```text
+ROWS=165203
+COMPETENCES=36
+DISTINCT_CODE_MONTH_KEYS=165203
+NON_ASCII_DESCRIPTION_ROWS=48749
+CSV_SHA_MATCH=True
+SUSPECT_MOJIBAKE_MARKERS=0
+ENCODING_FINAL_APPROVAL=AWAITING_HUMAN_VISUAL_REVIEW
+```
+
+Foram apresentados 16 nomes distribuídos nas competências 201701, 201801, 201901 e 201912, abrangendo acentos agudos e circunflexos, til e cedilha. Exemplos visivelmente legíveis: `ATIVIDADE EDUCATIVA / ORIENTAÇÃO EM GRUPO NA ATENÇÃO BÁSICA`, `PRÁTICA CORPORAL / ATIVIDADE FÍSICA EM GRUPO`, `AÇÃO COLETIVA DE APLICAÇÃO TÓPICA DE FLÚOR GEL` e `INSPEÇÃO DOS ESTABELECIMENTOS SUJEITOS À VIGILÂNCIA SANITÁRIA`.
+
+**DECISÃO TÉCNICA DOCUMENTADA:** aprovar a leitura `cp1252` como **interpretação operacional** de `NO_PROCEDIMENTO` para o CSV intermediário já preparado. A decisão é apoiada pela amostra diversificada, pelo hash do CSV e pela ausência de marcadores de mojibake na auditoria. **Não** é uma declaração de que o DATASUS publicou oficialmente esse encoding, nem prova absoluta da correção de todas as descrições.
+
+**C3.4a e C3.4a.1: PASS operacional**, sem alterar ou regenerar TXT/CSV da referência.
+
+### C3.4b — staging QlikView 12 (IMPLEMENTADO / RELOAD LOCAL PENDENTE)
+
+Implementação integrada no **script externo versionável existente** `EXTRACAO/ext_main.qvs`, consumido pelo `EXTRACAO/EXT.qvw`. O código foi acrescentado **após o checkpoint CID-10**, sem alterar as cargas anteriores, e lê:
+
+`..\BASE\REFERENCIAS\sigtap_procedimento_staging_candidate.csv` (UTF-8, ponto e vírgula, cabeçalhos embutidos).
+
+Campos da `REF_SIGTAP` (staging, **não dimensão acadêmica**): `SIGTAP_COMPETENCIA`, `SIGTAP_CO_PROCEDIMENTO`, `SIGTAP_NO_PROCEDIMENTO`, `SIGTAP_COMPETENCIA_CODIGO` e campos de proveniência da carga. Todas as chaves e nomes são tratados com `Text()`.
+
+O script Qlik exige **antes de gerar o QVD**:
+
+- 165.203 registros da referência e 165.203 chaves operacionais únicas;
+- 36 competências válidas 201701–201912;
+- códigos de 10 dígitos, competência de 6 dígitos, chave composta consistente com `YYYYMM|CO_PROCEDIMENTO` e descrições não vazias;
+- 566.672 registros RD no `SRC_SIH_RD.qvd`;
+- **zero** `PROC_REA` não encontrados na referência SIGTAP do mês `_META_SOURCE_COMPETENCE`, usando `Text(Text(_META_SOURCE_COMPETENCE) & '|' & Text(PROC_REA))`.
+
+O padrão do C2 permanece: fail-closed com `EXIT SCRIPT`, `SET ErrorMode=0`, `ScriptErrorCount` e mensagem de erro no `TRACE`. Somente após a cobertura passar serão gerados:
+
+- `EXTRACAO/QVD/REF_SIGTAP.qvd`;
+- `EXTRACAO/QVD/_CHECKPOINT_EXTRACAO_SIGTAP.csv`, colunas `generated_at;stage;status;sigtap_rows;sigtap_distinct_code_month_keys;sigtap_competences;rd_rows;sigtap_unmatched_rd_rows`, com status `PASS_PARTIAL`.
+
+**Status atual:** script disponível no repositório, mas **não executado/validado em QlikView 12**. Os números 165.203/36/566.672/0 são critérios de aceitação, **não resultado já confirmado no QlikView**.
+
+#### Gate de validação local
+
+1. Atualizar a `main` via `git pull origin main`;
+2. conferir SHA-256 do CSV intermediário com o manifesto C3.4a; o hash confirmado antes do reload foi `75237997a26bea243b101af1bd19e04e3f4905fb237ac9d227db860cbd14b482`;
+3. abrir `EXTRACAO/EXT.qvw` no QlikView 12 e executar `Ctrl+R`;
+4. conferir log `[EXTRACAO][REF_SIGTAP] PASS rows=165203 distinct_keys=165203 competences=36 matched_rd=566672 unmatched_rd=0`;
+5. conferir ambos os arquivos gerados e o checkpoint `EXTRACAO_SIGTAP;PASS_PARTIAL;165203;165203;36;566672;0` (precedido por timestamp);
+6. encerrar o C3.4b apenas após o resultado local e registrar a evidência no repositório.
+
+**Não** emitir marcador de conclusão da Fase III. CNES tipo/leito (T29), ponte municipal e estabelecimento histórico continuam pendentes. Não criar fatos/dimensões/painéis.
 
 ## 4. Limites
 
