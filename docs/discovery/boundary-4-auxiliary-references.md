@@ -221,7 +221,7 @@ Ainda deve ser materializada e comparada a série histórica de referência para
 
 **DECISÃO PENDENTE HISTÓRICA PRESERVADA:** demonstrar ou não a vigência mensal continua sem evidência. A versão inicial pode avançar nas análises quantitativas independentes de rótulos, mas `T29_HISTORICAL` **não é PASS**. O contrato do Boundary 7 continua competência-aware enquanto não houver prova de invariância, evitando retroprojeção de descrições.
 
-**Implementação proposta, ainda sem reload local:** `tools/materialize_cnes_201909_legend.py` valida o PDF, o CSV transcrito e o perfil antes de materializar `BASE/REFERENCIAS/cnes_leitos_legenda_201909.csv`. O `EXTRACAO/ext_c4_cnes_leitos.qvs` gera `REF_TIPO_LEITO.qvd` somente como **snapshot descritivo de 201909**, calcula cobertura sem enriquecer os LT, e gera checkpoint parcial, sem conclusão da Fase III. Exige evidência de teste no QlikView 12.
+**Implementação e reload local CONFIRMADOS em 08/10/2026 (PR #70 integrado):** `tools/materialize_cnes_201909_legend.py` validou PDF, CSV transcrito e perfil PB, gerando localmente `BASE/REFERENCIAS/cnes_leitos_legenda_201909.csv` (65 pares, SHA-256 `dddb261e754f2f3bb82a462c94ae8219b84cd77c1fce3204cd6f3867c3d3bd5e`). O QlikView 12 executou `EXTRACAO/ext_c4_cnes_leitos.qvs`, com checkpoint `PASS_PARTIAL_SNAPSHOT_ONLY;65;35518;57;36;0;201909;NOT_VERIFIED;NOT_APPROVED`. O QVD `REF_TIPO_LEITO.qvd` é somente **snapshot descritivo de 201909**, sem JOIN para LT histórico nem fechamento da Fase III. Detalhes e limitações no checkpoint `III-C4.3.1` da Discovery.
 
 ## 8. Estabelecimento — nome histórico
 
