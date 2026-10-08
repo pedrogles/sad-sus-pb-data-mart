@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração / staging  
 **Checkpoint:** III-C3 — Referência oficial de procedimentos  
-**Status:** C3.1 PERFIL IMPLEMENTADO, EXECUÇÃO LOCAL PENDENTE; T27 NÃO AVALIADO
+**Status:** C3.1 PASS; C3.2 INSPEÇÃO CONTROLADA IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; T27 NÃO AVALIADO
 
 ## 1. Contrato aprovado
 
@@ -89,7 +89,30 @@ $paths | ForEach-Object {
 
 **Esperado conforme a fase anterior:** `RD_FILES=36`, `RD_ROWS=566672`, `RD_COMPETENCES=36` e hashes das duas saídas com `HashMatch=True`.
 
-**A verificar a partir dos dados reais:** quantidade de códigos distintos, comprimento/caracteres, presença de zeros à esquerda, vazios, variação mensal e `VERDICT`. Não registrar `PASS` antes da execução local.
+**FATO VERIFICADO — C3.1 PASS (08/10/2026):** a execução local retornou:
+
+```text
+MODE=READ_ONLY_INPUT_PROFILING
+RD_FILES=36
+RD_ROWS=566672
+RD_COMPETENCES=36
+PROC_REA_DISTINCT_RAW=1249
+PROC_REA_BLANK_ROWS=0
+PROC_REA_TEN_DIGIT_ROWS=566672
+PROC_REA_NONCONFORMING_ROWS=0
+PROC_REA_LEADING_ZERO_ROWS=566672
+PROC_REA_LENGTH_COUNTS={"10": 566672}
+PROC_REA_SHAPE_COUNTS={"TEN_ASCII_DIGITS": 566672}
+T27_COVERAGE=NOT_EVALUATED
+VERDICT=PASS
+```
+
+Foram reconciliados dois arquivos locais:
+
+- `proc_rea_raw_profile.csv`: **1.249 linhas**, SHA-256 `24b41c3819e1eb704eeb03d54f882879190fe64886a9f1088de99279c61dac80`, `HashMatch=True`;
+- `proc_rea_monthly_profile.csv`: **36 linhas**, SHA-256 `1ba3ced5c99b185bdf3c70d3eb5f64c08214a9e623487923b157d8856170572d`, `HashMatch=True`.
+
+**Veredito C3.1: PASS.** Os 566.672 códigos brutos têm exatamente 10 dígitos ASCII e começam com zero. Isso descreve a **forma observada**, não a existência de cada código no SIGTAP na sua competência.
 
 O status C3.1 **não é** o status T27: `T27_COVERAGE=NOT_EVALUATED` até o lookup oficial por competência.
 
@@ -97,7 +120,43 @@ O status C3.1 **não é** o status T27: `T27_COVERAGE=NOT_EVALUATED` até o look
 
 ### C3.2 — inspeção controlada dos pacotes SIGTAP
 
-Reutilizar `BASE/REFERENCIAS/sigtap_package_inventory_2017_2019.csv`, já materializado no III-C2. Inspecionar **amostra pequena e representativa** do conteúdo dos ZIPs para identificar os arquivos reais do procedimento e respectivos layouts. Não supor que `tb_cid` sirva como referência de procedimento e não baixar 36 pacotes sem a inspeção prévia.
+Implementação: `tools/inspect_sigtap_procedure_sample.py`, usando o mesmo inventário validado no C2.3.
+
+**Amostra padrão controlada:** 201701, 201801, 201901, 201912 (**4 de 36 pacotes**). A seleção é restrita a essas quatro competências (pode-se escolher subconjuntos com `--competences`). O script:
+
+- usa FTP oficial já identificado em C2.3, com limite de 250 MiB **por ZIP** e checagem ZIP/CRC;
+- baixa cada ZIP apenas em diretório temporário e o descarta após a inspeção;
+- registra o nome de **todos** os membros, tamanhos e CRCs;
+- seleciona para análise preliminar os nomes contendo `proced`, classificando `LAYOUT` se também contiverem `layout` ou `DATA` nos demais casos;
+- registra uma prévia limitada a 3 linhas de até 250 bytes por arquivo candidato (decodificação `cp1252` apenas para visualização, **não** para afirmar encoding definitivo);
+- gera manifesto de proveniência (SHA-256 de cada ZIP) e hashes dos dois CSVs produzidos;
+- retorna `REVIEW` se a amostra não apresentar simultaneamente candidatos de dados e de layout.
+
+**Não valida automaticamente campos, posições, granularidade, vigência ou cobertura.** A classificação por nome de arquivo é hipótese de busca e precisa ser confrontada com o conteúdo real inspecionado.
+
+Arquivos **locais/ignorados pelo Git**:
+
+- `BASE/REFERENCIAS/sigtap_procedure_sample_members.csv` — inventário de membros de todos os ZIPs selecionados;
+- `BASE/REFERENCIAS/sigtap_procedure_sample_candidates.csv` — candidatos a procedimento e prévias;
+- `BASE/REFERENCIAS/sigtap_procedure_sample_summary.json` — arquivos, hashes, competências, veredito.
+
+Execução local (na raiz do repositório):
+
+```powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\inspect_sigtap_procedure_sample.py
+```
+
+Inspeção dos resultados:
+
+```powershell
+Get-Content .\BASE\REFERENCIAS\sigtap_procedure_sample_summary.json -Encoding UTF8
+Import-Csv .\BASE\REFERENCIAS\sigtap_procedure_sample_candidates.csv -Delimiter ';' |
+  Select-Object competence, basename, role, uncompressed_size, preview_1_cp1252, preview_2_cp1252 |
+  Format-List
+```
+
+**Gate C3.2:** 4 competências selecionadas e presentes no inventário, ZIPs íntegros, candidatos identificados em ambas as classes e hashes reconciláveis. O gate depende de execução local. `T27_COVERAGE=NOT_EVALUATED` continua explícito. Não inferir estabilidade dos 36 meses com base na amostra.
 
 ### C3.3 — materialização histórica e validação de cobertura
 
