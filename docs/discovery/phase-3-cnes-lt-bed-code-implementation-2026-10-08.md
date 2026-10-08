@@ -658,6 +658,32 @@ $m.limits
 ```
 
 
+
+### C4.2c.2e.1 — diagnóstico de incompatibilidade de quebra de linha do CSV (08/10/2026)
+
+**FATO VERIFICADO — execução PowerShell recebida do usuário:** o PDF original foi encontrado em `BASE/REFERENCIAS/Nota Técnica  32-2019 Leitos.pdf` e passou no gate de SHA-256 `43de32e91b9ed2611bacde8f4cea60576cb162017fa4db69797dd177c4f7632e`. Contudo, `tools/audit_cnes_nt32_2019_pairs.py` retornou `AUDIT_EXIT_CODE=2` e `AUDIT_INPUT_ERROR` na transcrição versionada, antes de ler o perfil LT ou comparar pares; o JSON `cnes_nt32_201909_pair_audit.json` **não foi criado**. A consulta posterior a `$m` no PowerShell não é resultado de auditoria (variável nula ou estado anterior).
+
+**CAUSA IDENTIFICADA DE FORMA REPRODUZÍVEL:** o SHA-256 do CSV versionado `docs/discovery/cnes-nt32-2019-codigos-leito.csv`, tal como publicado no GitHub com LF, é `c44d1075ed4b628106587f11cb38eab794d3573986e2079844738ad8c4b3f2c6`. O **mesmo conteúdo** com LF substituído exclusivamente por CRLF tem SHA-256 `f9cc289b0a27557dd92b04bcfb558ac33d528900e6937549e71b373f36ccc363`, **exatamente o valor obtido pelo usuário** no checkout Windows. Ausência de `.gitattributes` específica para este CSV; a diferença pode resultar da conversão padrão de final de linha no checkout. Nenhuma hipótese de alteração de códigos, tipos, nomes ou status é necessária para explicar os hashes.
+
+**CORREÇÃO ESTRITAMENTE TÉCNICA implementada:** `tools/audit_cnes_nt32_2019_pairs.py` foi ajustado para aceitar **somente os dois hashes exatos previamente verificados** (LF e CRLF) **exclusivamente para o CSV de transcrição**. PDF e perfil LT continuam exigindo seus hashes originais únicos; não houve flexibilização genérica de integridade nem modificação de arquivos de origem. O relatório agora diferencia hash real do arquivo de checkout, hash canônico LF da transcrição no Git e convenção de final de linha.
+
+**Gate atual:** `C4.2c.2e.1=HASH_ROOT_CAUSE_CONFIRMED_AND_PATCHED`; `C4.2c.2e=LOCAL_REEXECUTION_PENDING`; `T29=NOT_APPROVED`. O resultado anterior **não informa cobertura** da Nota Técnica sobre os 57 pares/35.518 registros LT, e a referência continua sendo o retrato de `Setembro/2019`, sem atribuição de vigência integral em 2017–2019.
+
+**Ação local (sem recópia do PDF ou edição do CSV):**
+
+```powershell
+git pull --ff-only origin main
+.\.venv\Scripts\python.exe -B .\tools\audit_cnes_nt32_2019_pairs.py
+Write-Host "AUDIT_EXIT_CODE=$LASTEXITCODE"
+if ($LASTEXITCODE -eq 0 -and (Test-Path .\BASE\REFERENCIAS\cnes_nt32_201909_pair_audit.json)) {
+    $m = Get-Content .\BASE\REFERENCIAS\cnes_nt32_201909_pair_audit.json -Raw -Encoding UTF8 | ConvertFrom-Json
+    $m | Select-Object status,pb_matched_pairs,pb_matched_lt_rows,pb_unmatched_lt_rows,unmatched_pairs
+    $m | Select-Object derived_transcription_sha256,derived_transcription_git_lf_sha256,derived_transcription_checkout_line_endings
+    $m.limits
+}
+```
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
