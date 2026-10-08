@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração / staging  
 **Checkpoint:** III-C3 — Referência oficial de procedimentos  
-**Status:** C3.1 PASS; C3.2 INSPEÇÃO CONTROLADA IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; T27 NÃO AVALIADO
+**Status:** C3.1 PASS; C3.2 PASS; C3.3a MATERIALIZAÇÃO AMOSTRAL DE PROCEDIMENTO IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; T27 NÃO AVALIADO
 
 ## 1. Contrato aprovado
 
@@ -156,7 +156,78 @@ Import-Csv .\BASE\REFERENCIAS\sigtap_procedure_sample_candidates.csv -Delimiter 
   Format-List
 ```
 
-**Gate C3.2:** 4 competências selecionadas e presentes no inventário, ZIPs íntegros, candidatos identificados em ambas as classes e hashes reconciláveis. O gate depende de execução local. `T27_COVERAGE=NOT_EVALUATED` continua explícito. Não inferir estabilidade dos 36 meses com base na amostra.
+**FATO VERIFICADO — C3.2 PASS (08/10/2026):** os quatro ZIPs oficiais foram baixados somente para inspeção controlada e lidos com integridade ZIP/CRC. Cada ZIP contém **87 membros**, com **18 candidatos DATA** e **17 candidatos LAYOUT** por critério nominal, totalizando **348 membros** e **140 candidatos**. O `VERDICT=PASS` refere-se somente ao gate de inventário da amostra; não confirma cobertura T27, nem campos/layouts completos.
+
+Os quatro ZIPs encontrados (nomes e bytes efetivamente observados) são:
+
+| Competência | Arquivo | Bytes |
+|---|---|---:|
+| 201701 | `TabelaUnificada_201701_v1702061521.zip` | 1.734.340 |
+| 201801 | `TabelaUnificada_201801_v1801051551.zip` | 1.775.727 |
+| 201901 | `TabelaUnificada_201901_v1901041617.zip` | 1.861.290 |
+| 201912 | `TabelaUnificada_201912_v1912021555.zip` | 1.912.985 |
+
+Em **todas** as competências a inspeção local identificou exatamente os dois arquivos principais candidatos à referência descritiva de procedimentos:
+
+- `tb_procedimento.txt` — tabela física, com prévia de chave de 10 dígitos seguida de descrição (linha truncada no C3.2, portanto largura/colunas ainda não definidas);
+- `tb_procedimento_layout.txt` — arquivo de posições com cabeçalho `Coluna,Tamanho,Inicio,Fim,Tipo`; a prévia confirma `CO_PROCEDIMENTO,10,1,10,VARCHAR2`.
+
+**FATO VERIFICADO:** o arquivo `rl_procedimento_tuss.txt` está vazio nas quatro competências; `DATASUS - Tabela de Procedimentos - Lay-out.xls` foi classificado como candidato apenas pelo nome, mas é binário XLS, não um TXT posicional a ser interpretado como texto. Essas ocorrências não devem contaminar o parser principal.
+
+Hash SHA-256 registrado pelo próprio materializador C3.2 nos dois CSVs locais:
+
+- `sigtap_procedure_sample_members.csv`: 348 linhas, `110e9c22ed79cbab47e5c7726b9d19f9f2fe7117f7519e81d1319fca5583d0ad`;
+- `sigtap_procedure_sample_candidates.csv`: 140 linhas, `c6702dd45e2258ee9dfe6ed532e67fe9da4f7e1b6816dba6c2e9046ee77ad02e`.
+
+Os hashes foram registrados no resumo C3.2; a checagem independente dos hashes dos CSVs ainda não foi apresentada. O C3.3a irá comparar o hash de **cada pacote baixado** contra o manifesto C3.2 antes de extrair os arquivos.
+
+### C3.3a — materialização controlada dos arquivos exatos da amostra
+
+Implementação: `tools/materialize_sigtap_procedure_sample.py`.
+
+O script recebe somente a seleção fechada (201701, 201801, 201901, 201912), reutiliza o inventário C2.3 e o resumo C3.2, recarrega apenas ZIPs temporários e **rejeita** divergências de hash SHA-256 ou tamanho frente aos quatro ZIPs já inspecionados.
+
+Para cada competência, materializa somente:
+
+- `BASE/REFERENCIAS/SIGTAP/PROCEDIMENTO/YYYYMM/tb_procedimento.txt`;
+- `BASE/REFERENCIAS/SIGTAP/PROCEDIMENTO/YYYYMM/tb_procedimento_layout.txt`.
+
+Valida a integridade física do ZIP, exige exatamente um arquivo de cada nome, interpreta o layout posicional de forma dinâmica, valida contiguidade/intervalos/nomes únicos de campos e chave `CO_PROCEDIMENTO` nas posições 1–10 (observada no C3.2). Conta registros, comprimentos físicos das linhas, códigos distintos, formatos e possíveis duplicidades por competência. Descobre nomes e posições adicionais **a partir do arquivo real**; nenhum outro campo é inventado. Preserva os bytes originais e registra SHA-256 de arquivos e pacotes.
+
+Outputs locais ignorados:
+
+- `BASE/REFERENCIAS/sigtap_procedure_sample_layout_fields.csv` — todas as colunas oficiais observadas por competência;
+- `BASE/REFERENCIAS/sigtap_procedure_sample_manifest.json` — proveniência e diagnóstico físico, com amostra de registros.
+
+Execução:
+
+```powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\materialize_sigtap_procedure_sample.py
+```
+
+Visualização do layout real:
+
+```powershell
+Import-Csv .\BASE\REFERENCIAS\sigtap_procedure_sample_layout_fields.csv -Delimiter ';' |
+  Select-Object competence, field, width, start, end, type |
+  Format-Table -AutoSize
+```
+
+Verificação do manifesto e SHA-256 do CSV:
+
+```powershell
+$m = Get-Content .\BASE\REFERENCIAS\sigtap_procedure_sample_manifest.json -Raw -Encoding UTF8 | ConvertFrom-Json
+Get-Content .\BASE\REFERENCIAS\sigtap_procedure_sample_manifest.json -Encoding UTF8
+$actual = (Get-FileHash $m.outputs.layout_fields.path -Algorithm SHA256).Hash.ToLowerInvariant()
+"LAYOUT_FIELDS_SHA_MATCH=$($actual -eq $m.outputs.layout_fields.sha256.ToLowerInvariant())"
+```
+
+**Gate C3.3a:** amostra de quatro competências com pacotes iguais aos do C3.2, dois membros exatos por competência, layout posicional válido, comprimentos das linhas compatíveis, chave de 10 dígitos/linha e ausência de duplicidade inesperada. **Ainda não** é cobertura do `PROC_REA` por competência nem fechamento T27.
+
+Não baixar 36 competências ou gerar `REF_SIGTAP.qvd` antes da análise dos resultados.
+
+### C3.3 — materialização histórica e validação de cobertura
 
 ### C3.3 — materialização histórica e validação de cobertura
 
