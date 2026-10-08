@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1 PERFIL CNES/LT IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE; T29 NÃO AVALIADO
+**Status:** C4.1 PERFIL CNES/LT PASS; C4.1a INSPEÇÃO DE CÓDIGOS/WHITESPACE PENDENTE; T29 NÃO AVALIADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -62,7 +62,52 @@ $m.observed_codes
 }
 ```
 
-## 3. Gate seguinte — C4.2 referência oficial
+## 3. Evidência C4.1 — PASS (08/10/2026)
+
+**FATO VERIFICADO:** a execução real do perfil CNES/LT em 36 competências retornou `VERDICT=PASS`, com **35.518 linhas**, **7 valores brutos distintos de `TP_LEITO`**, **57 valores brutos distintos de `CODLEITO`** e **57 pares brutos distintos**. Não houve `TP_LEITO`/ `CODLEITO` exatamente vazios (`""`) ou registros com competência divergente (`COMPETENCE_MISMATCH_ROWS=0`).
+
+O valor `CODLEITO` possui comprimento 2 e `ASCII_DIGITS` em todos os 35.518 registros. O valor `TP_LEITO` tem comprimento 2 e foi classificado como **`WHITESPACE` em todas as 35.518 linhas**. A categoria `WHITESPACE` no script significa presença de ao menos um caractere de espaço em um valor que não é totalmente numérico/alfanumérico; **não significa que o campo inteiro está em branco**. Ainda não foi demonstrado se há espaço inicial, final ou interno nem se a retirada de preenchimento preserva unicidade.
+
+Não há `CODLEITO` observado associado a dois `TP_LEITO` diferentes (`CODLEITO_MULTIPLE_TP_LEITO=0`), mas isso comprova apenas o comportamento nos arquivos inspecionados, **não a hierarquia normativa nem a chave oficial**.
+
+Padrão mensal: de 201701 a 201712, 56 códigos distintos por mês; de **201801 a 201805, 57**; de 201806 a 201912, 56. O perfil de 57 códigos no total **não demonstra qual código aparece/desaparece, nem se houve mudança oficial de classificação**. Esse dado será inspecionado explicitamente antes da aquisição da referência.
+
+Arquivos locais e hashes SHA-256, verificados pelo usuário (`HashMatch=True`):
+
+| Saída | Registros | SHA-256 |
+|---|---:|---|
+| `cnes_lt_bed_code_monthly_profile.csv` | 36 | `73ddcfd5cc73342f7c2d75d4565f798b95c92e2fec0edb3f92b5d225fd698c34` |
+| `cnes_lt_bed_code_pair_profile.csv` | 57 | `4afe0741b1bf43434192e467a043a0bcb7f2a96e25214f92f47557531e238449` |
+
+### C4.1a — inspeção restrita de espaços, valores e presença histórica (READ-ONLY)
+
+Sem alterar código, dados, chaves ou QVDs, examinar os **57 pares observados** no `cnes_lt_bed_code_pair_profile.csv`. O objetivo é registrar os sete valores brutos de `TP_LEITO`, posições/códigos Unicode de eventuais espaços e as competências do código adicional de 2018.
+
+PowerShell (na raiz do repositório):
+
+```powershell
+$p = Import-Csv .\BASE\REFERENCIAS\cnes_lt_bed_code_pair_profile.csv -Delimiter ';'
+$p | Group-Object tp_leito_raw | ForEach-Object {
+    $raw = $_.Name
+    [pscustomobject]@{
+        TP_Leito_Visivel = "[$raw]"
+        CodigoUnicodePorCaractere = (([char[]]$raw | ForEach-Object { [int][char]$_ }) -join ',')
+        CodleitosAssociados = $_.Count
+        LinhasLT = ($_.Group | Measure-Object -Property occurrences -Sum).Sum
+    }
+} | Format-Table -AutoSize
+
+$p | Where-Object { [int]$_.competences_observed -lt 36 } |
+Select-Object tp_leito_raw, codleito_raw, first_competence,
+    last_competence, competences_observed, occurrences |
+Format-Table -AutoSize
+```
+
+A lista de pares com menos de 36 competências **não prova isoladamente** qual par foi exclusivo de janeiro–maio de 2018, pois podem existir lacunas intermediárias. Se necessário, comparar o conjunto de códigos dos CSVs `LTPB1712.csv`, `LTPB1801.csv`, `LTPB1805.csv` e `LTPB1806.csv` para apontar o código exato antes de formular hipóteses de vigência.
+
+**Gate C4.1a:** obter caracteres físicos e códigos reais sem normalização, além das diferenças efetivas entre competências relevantes. Nenhuma decisão de `Trim()`, `Text()`, `Num()` ou chave oficial está autorizada por este perfil.
+
+## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
 
