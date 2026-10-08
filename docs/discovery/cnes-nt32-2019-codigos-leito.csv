@@ -1,0 +1,66 @@
+codleito;tp_leito;nome_cnes;tipo_cnes;status;pdf_page
+01;1;BUCO MAXILO FACIAL;Cirúrgico;Ativo;2
+02;1;CARDIOLOGIA;Cirúrgico;Ativo;2
+03;1;CIRURGIA GERAL;Cirúrgico;Ativo;2
+04;1;ENDOCRINOLOGIA;Cirúrgico;Ativo;2
+05;1;GASTROENTEROLOGIA;Cirúrgico;Ativo;2
+06;1;GINECOLOGIA;Cirúrgico;Ativo;2
+07;7;CIRURGICO/DIAGNOSTICO/TERAPEUTICO;Hospital-Dia;Ativo;2
+08;1;NEFROLOGIA/UROLOGIA;Cirúrgico;Ativo;2
+09;1;NEUROCIRURGIA;Cirúrgico;Ativo;2
+10;4;OBSTETRICIA CIRURGICA;Obstétrico;Ativo;3
+11;1;OFTALMOLOGIA;Cirúrgico;Ativo;3
+12;1;ONCOLOGIA;Cirúrgico;Ativo;3
+13;1;ORTOPEDIATRAUMATOLOGIA;Cirúrgico;Ativo;3
+14;1;OTORRINOLARINGOLOGIA;Cirúrgico;Ativo;3
+15;1;PLASTICA;Cirúrgico;Ativo;3
+16;1;TORACICA;Cirúrgico;Ativo;3
+31;2;AIDS;Clinico;Ativo;3
+32;2;CARDIOLOGIA;Clinico;Ativo;3
+33;2;CLINICA GERAL;Clinico;Ativo;3
+34;6;CRONICOS;Outras Especialidades;Ativo;4
+35;2;DERMATOLOGIA;Clinico;Ativo;4
+36;2;GERIATRIA;Clinico;Ativo;4
+37;2;HANSENOLOGIA;Clinico;Ativo;4
+38;2;HEMATOLOGIA;Clinico;Ativo;4
+40;2;NEFROUROLOGIA;Clinico;Ativo;4
+41;2;NEONATOLOGIA;Clinico;Ativo;4
+42;2;NEUROLOGIA;Clinico;Ativo;4
+43;4;OBSTETRICIA CLINICA;Obstétrico;Ativo;4
+44;2;ONCOLOGIA;Clinico;Ativo;4
+45;5;PEDIATRIA CLINICA;Pediátrico;Ativo;5
+46;2;PNEUMOLOGIA;Clinico;Ativo;5
+47;6;PSIQUIATRIA;Outras Especialidades;Ativo;5
+48;6;REABILITACAO;Outras Especialidades;Ativo;5
+49;6;PNEUMOLOGIA SANITARIA;Outras Especialidades;Ativo;5
+65;3;UNIDADE INTERMEDIARIA NEONATAL;Complementar;Ativo;5
+66;3;UNIDADE ISOLAMENTO;Complementar;Ativo;5
+67;1;TRANSPLANTE;Cirúrgico;Ativo;5
+68;5;PEDIATRIA CIRURGICA;Pediátrico;Ativo;5
+69;7;AIDS*;Hospital-Dia;Ativo;5
+70;7;FIBROSE CISTICA;Hospital-Dia;Ativo;5
+71;7;INTERCORRENCIA POS-TRANSPLANTE;Hospital-Dia;Ativo;6
+72;7;GERIATRIA;Hospital-Dia;Ativo;6
+73;7;SAUDE MENTAL;Hospital-Dia;Ativo;6
+74;3;UTI ADULTO - TIPO I;Complementar;Ativo;6
+75;3;UTI ADULTO - TIPO II;Complementar;Ativo;6
+76;3;UTI ADULTO - TIPO III;Complementar;Ativo;6
+77;3;UTI PEDIATRICA - TIPO I;Complementar;Ativo;6
+78;3;UTI PEDIATRICA - TIPO II;Complementar;Ativo;6
+79;3;UTI PEDIATRICA - TIPO III;Complementar;Ativo;6
+80;3;UTI NEONATAL - TIPO I;Complementar;Ativo;6
+81;3;UTI NEONATAL - TIPO II;Complementar;Ativo;6
+82;3;UTI NEONATAL - TIPO III;Complementar;Ativo;6
+83;3;UTI DE QUEIMADOS;Complementar;Ativo;6
+84;6;ACOLHIMENTO NOTURNO;Outras Especialidades;Ativo;6
+85;3;UTI CORONARIANA TIPO II - UCO TIPO II;Complementar;Ativo;7
+86;3;UTI CORONARIANA TIPO III - UCO TIPO III;Complementar;Ativo;7
+87;2;SAUDE MENTAL;Clinico;Ativo;7
+88;2;QUEIMADO ADULTO;Clinico;Ativo;7
+89;2;QUEIMADO PEDIATRICO;Clinico;Ativo;7
+90;1;QUEIMADO ADULTO;Cirúrgico;Ativo;7
+91;1;QUEIMADO PEDIATRICO;Cirúrgico;Ativo;7
+92;3;UNIDADE DE CUIDADOS INTERMEDIARIOS NEONATAL CONVENCIONAL;Complementar;Ativo;7
+93;3;UNIDADE DE CUIDADOS INTERMEDIARIOS NEONATAL CANGURU;Complementar;Ativo;7
+94;3;UNIDADE DE CUIDADOS INTERMEDIARIOS PEDIATRICO;Complementar;Ativo;7
+95;3;UNIDADE DE CUIDADOS INTERMEDIARIOS ADULTO;Complementar;Ativo;7
