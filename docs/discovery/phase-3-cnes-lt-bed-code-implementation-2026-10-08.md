@@ -621,6 +621,43 @@ Assim, **34.038/35.518 linhas PB** estão associadas a 56 pares identificados ne
 **GATE ATUAL:** `III-C4.2c.2c=PASS_STRUCTURE_ONLY`; `III-C4.2c.2d=PRIMARY_HISTORICAL_CORROBORATION_PENDING_SOURCE_BYTES`; `T29=NOT_APPROVED`; `FASE_III=IN_PROGRESS`. Nenhuma referência QVD, nenhum mapeamento compensatório `2/66 → 3/66`, nenhum dado original ou modelo alterado.
 
 
+
+### C4.2c.2e — Nota Técnica nº 32/2019 integral recebida e tabela estruturada (08/10/2026)
+
+**FATO VERIFICADO — arquivo PDF disponibilizado pelo usuário e inspecionado integralmente, 8 páginas:**
+
+- `Nota Técnica  32-2019 Leitos.pdf`, **193.268 bytes**, SHA-256 `43de32e91b9ed2611bacde8f4cea60576cb162017fa4db69797dd177c4f7632e`; PDF v1.4, metadata de criação `2019-12-02 12:25:31 UTC` (não é prova independente da autenticidade normativa);
+- cabeçalho `NOTA TÉCNICA Nº 32/2019-CGSI/DRAC/SAES/MS`, SEI/MS `0012300247`; item 2 descreve objetivo de relacionar nomenclatura de leitos à legislação; anexo intitulado **`Tabela de Leitos Setembro/2019`** (p. 1);
+- página 8: declaração de assinatura eletrônica por **Leandro Manassi Panitz**, em **29/11/2019 às 11:45**, código verificador **0012300247**, CRC **25B0C110**, processo **25000.192815/2019-55**. **O documento contém dados de autenticação SEI, mas a validação online destes códigos não foi efetuada nesta rodada**;
+- 65 linhas código/nome/tipo/legislação/status extraídas das páginas 2–7, **65 códigos distintos**, todos `Ativo`; número de linhas por página `2:9, 3:10, 4:10, 5:11, 6:14, 7:11`;
+- classificação de 65 registros por grupo `1 CIRÚRGICO:17`, `2 CLÍNICO:15`, `3 COMPLEMENTAR:18`, `4 OBSTÉTRICO:2`, `5 PEDIÁTRICO:2`, `6 OUTRAS ESPECIALIDADES:5`, `7 HOSPITAL-DIA:6`. Os códigos numéricos `1..7` decorrem do cruzamento dos nomes com a aba `TIPOS DE LEITOS` do arquivo SCNES já verificado; a Nota Técnica apresenta **nomes dos tipos**, não o número do tipo;
+- **página 5:** `66 | UNIDADE ISOLAMENTO | Complementar | Portaria nº 511/SAS/MS de 29/12/2000 (republicada 19/06/2001) | Ativo`; `70 | FIBROSE CISTICA | Hospital-Dia | Portaria nº 44/GM/MS de 10/01/2001 | Ativo`;
+- comparação exata dos **65 pares código/tipo** da Nota Técnica com os **65 links da captura CNESNet 201712**: são conjuntos iguais exceto **`(3,66)` presente apenas na Nota Técnica** e **`(2,66)` presente apenas no indicador CNESNet**. Todos os 65 **códigos** estão presentes nos dois conjuntos. Isso identifica de maneira precisa a divergência entre fontes.
+
+**AVALIAÇÃO DE COBERTURA (ainda inferência, não execução real local):** na rodada anterior, o auditor do indicador exibiu `56/57` pares CNES/LT da Paraíba presentes, com único par ausente `3/66`. Como o conjunto transcrito da Nota Técnica difere do indicador *exatamente* por substituir `2/66` por `3/66`, **é esperado que a Nota Técnica cubra 57/57 pares PB (35.518 linhas)**. Isto precisa de **execução independente** contra o CSV real antes de declarar qualquer cobertura aferida.
+
+**ARTEFATOS TEXTUAIS REPRODUZÍVEIS (não são dados normativos originais):**
+
+- `docs/discovery/cnes-nt32-2019-codigos-leito.csv`: **transcrição derivada** de 65 linhas, UTF-8, `;` delimitado, campos `codleito,tp_leito,nome_cnes,tipo_cnes,status,pdf_page`; SHA-256 `c44d1075ed4b628106587f11cb38eab794d3573986e2079844738ad8c4b3f2c6`. Cada linha aponta para a página do PDF; a transcrição não é um arquivo oficial de domínio CNES independente do PDF;
+- `tools/audit_cnes_nt32_2019_pairs.py`: Python stdlib somente; exige SHA-256 exato do PDF original, da transcrição versionada e do perfil PB (`4afe0741...`); valida `65` registros/regras da Nota Técnica, `57` pares/`35.518` ocorrências do perfil, compara as **associações compostas** `TP_LEITO + CODLEITO`, discrimina exceções e quantifica ocorrências. Gera somente `BASE/REFERENCIAS/cnes_nt32_201909_pair_audit.json`, não QVD nem alteração das fontes;
+- PDF original, grande e binário, **permanece fora do Git**, no `BASE/REFERENCIAS` ignorado. Copiar sem editar para `BASE/REFERENCIAS/Nota Técnica  32-2019 Leitos.pdf` antes de executar (ou usar `--pdf caminho` para apontar ao original).
+
+**LIMITES TEMPORAIS INEGOCIÁVEIS:** o documento é anexo da **Tabela de Leitos Setembro/2019**, não um conjunto de 36 versões mensais nem uma demonstração de estabilidade contínua de nomes/tipos. Status `Ativo` e indicação de portaria de inclusão anterior a 2017 **não** provam ausência de alteração normativa posterior. Mesmo que haja `PASS_201909_SNAPSHOT_PAIR_COVERAGE_ONLY` no teste local, **T29 integral 2017–2019 fica NOT_APPROVED**, sem `REF_TIPO_LEITO.qvd` ou mudança de `DIM_TIPO_LEITO`.
+
+**Gate C4.2c.2e:** `PDF_RECEIVED_AND_65_ROWS_INSPECTED / SOURCE_PAIR_AUDIT_IMPLEMENTED / LOCAL_EXECUTION_PENDING`. O próximo passo é testar a cobertura sobre os 57 pares/35.518 ocorrências efetivos e, depois, decidir separadamente o grau de validade temporal aceitável conforme os requisitos do projeto, priorizando evidência normativa ou de bases versionadas.
+
+**Execução local (sem download de dados ou modificação dos originais):**
+
+```powershell
+git pull --ff-only origin main
+.\.venv\Scripts\python.exe -B .\tools\audit_cnes_nt32_2019_pairs.py
+Write-Host "AUDIT_EXIT_CODE=$LASTEXITCODE"
+$m = Get-Content .\BASE\REFERENCIAS\cnes_nt32_201909_pair_audit.json -Raw -Encoding UTF8 | ConvertFrom-Json
+$m | Select-Object status,pb_matched_pairs,pb_matched_lt_rows,pb_unmatched_lt_rows,unmatched_pairs
+$m.limits
+```
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
