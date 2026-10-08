@@ -815,3 +815,22 @@ A Fase III permanece `IN PROGRESS`. Não modificar os fatos/dimensões, arquivos
 5. **Limite para fases futuras:** na Fase IV, `DIM_TIPO_LEITO` deve preservar `COMPETENCIA_REFERENCIA` quando necessário; **não atribuir descrições 201909 a todas as 36 competências como se fossem historicamente válidas**. A legenda poderá aparecer como referência auxiliar datada independente, não comprovação retrospectiva.
 
 **Estado do gate:** `III-C4.3=IMPLEMENTED_CODE_LOCAL_QV_RELOAD_PENDING`; `T29_201909_PAIR_COVERAGE=PASS`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_III=IN_PROGRESS`. A ausência de prova de vigência mensal deixa de bloquear análise quantitativa por código, mas permanece uma limitação factual explícita. Nenhuma reabertura da primeira entrega acadêmica ou construção prematura de fatos/dimensões.
+
+
+### III-C4.3.1 — execução real Python + QlikView 12 PASS (08/10/2026)
+
+**FATO VERIFICADO — saída PowerShell local fornecida pelo usuário após `git fetch origin`, árvore local limpa e checkout da branch `feat/phase-3-c4-cnes-201909-dated-legend`:**
+
+- `tools/materialize_cnes_201909_legend.py`: `PDF_INTEGRITY=PASS`, `TRANSCRIPTION_INTEGRITY=PASS`, `PROFILE_INTEGRITY=PASS`, `NOTE_SNAPSHOT_PAIRS=65`, `PB_MATCHED_PAIRS=57/57`, `PB_MATCHED_ROWS=35518/35518`, `UNMATCHED_PAIRS=0`.
+- Legenda local: `BASE/REFERENCIAS/cnes_leitos_legenda_201909.csv`, `LEGEND_ROWS=65 DISTINCT_PAIRS=65`, SHA-256 `dddb261e754f2f3bb82a462c94ae8219b84cd77c1fce3204cd6f3867c3d3bd5e`, referência `201909`.
+- Manifesto local: `BASE/REFERENCIAS/cnes_leitos_legenda_201909_manifest.json`. Veredito: `PASS_MATERIALIZED_DESCRIPTIVE_SNAPSHOT_ONLY`; `T29_HISTORICAL=NOT_APPROVED`.
+- O usuário executou `C:\Program Files\QlikView\Qv.exe /r ...\EXTRACAO\EXT.qvw` e leu o checkpoint gerado `EXTRACAO/QVD/_CHECKPOINT_EXTRACAO_CNES_LEITO_201909.csv`:
+
+```text
+generated_at;stage;status;reference_pairs;observed_lt_rows;observed_lt_pairs;observed_lt_competences;unmatched_snapshot_pair_rows;reference_competence;historical_validity;t29_historical
+08/10/2026 19:05:05;EXTRACAO_CNES_LEITO_201909;PASS_PARTIAL_SNAPSHOT_ONLY;65;35518;57;36;0;201909;NOT_VERIFIED;NOT_APPROVED
+```
+
+**Interpretação:** o QlikView chegou ao checkpoint parcial de C4 após o comando `STORE REF_TIPO_LEITO INTO [QVD\\REF_TIPO_LEITO.qvd] (qvd)` e sua verificação de `ScriptErrorCount`, conforme o código versionado. A presença de checkpoint com as contagens esperadas sustenta `III-C4.3=PASS_LOCAL_STAGING_SNAPSHOT_ONLY`, mas o QVD binário não foi inspecionado independentemente neste chat e a referência **não constitui série histórica**. Nenhum `JOIN` retroativo da legenda foi realizado no script. **T29 de vigência normativa histórica permanece `NOT_APPROVED`** e a **Fase III permanece `IN_PROGRESS`**; tampouco se emitiu marcador final de sucesso da extração.
+
+**Próxima atividade autorizada:** fechar documentalmente este checkpoint e integrar PR #70 após revisão de escopo. Depois, inventariar somente os gates reais ainda pendentes da Fase III (referência municipal DATASUS↔IBGE, estabelecimento histórico se aplicável e reconciliação final), sem avançar prematuramente para `TRANSFORMACAO`/dimensões/fatos.
