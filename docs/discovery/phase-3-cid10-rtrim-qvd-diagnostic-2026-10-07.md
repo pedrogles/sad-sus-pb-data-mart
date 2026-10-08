@@ -90,6 +90,6 @@ Executar `EXTRACAO/EXT.qvw` após atualizar `main`; exigir:
 
 ## Resultado da validação local — C2.8d PASS
 
-O reload de 08/10/2026 10:44:15 confirmou a correção sem reconstruir o QVD de origem. `REF_CID10.qvd` (945.638 bytes) e `_CHECKPOINT_EXTRACAO_CID10.csv` (205 bytes) foram gerados. O checkpoint registrou `EXTRACAO_CID10;PASS_PARTIAL;14230;14230;2042;12188;566672;0`.
+O reload de 08/10/2026 10:44:15 confirmou a correção sem exigir mudança na lógica de carga do QVD de origem. `REF_CID10.qvd` (945.638 bytes) e `_CHECKPOINT_EXTRACAO_CID10.csv` (205 bytes) foram gerados. O checkpoint registrou `EXTRACAO_CID10;PASS_PARTIAL;14230;14230;2042;12188;566672;0`.
 
 O gate C2.8d está **PASS**. O III-C2 está **CONCLUÍDO**, mas a Fase III continua parcial.
