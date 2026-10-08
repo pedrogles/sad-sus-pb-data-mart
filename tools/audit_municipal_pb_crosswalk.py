@@ -155,6 +155,17 @@ def write_atomic(path: Path, content: bytes) -> None:
 
 
 def audit(args: argparse.Namespace) -> int:
+    since = datetime.fromisoformat(args.since_utc.replace("Z", "+00:00"))
+    if since.tzinfo is None:
+        raise ValueError("--since-utc deve incluir o fuso (por exemplo, Z)")
+    since_ts = since.timestamp()
+    # Nao aceitar artefatos de um reload anterior como novos PASS.
+    for path in (args.csv, args.qvd, args.checkpoint, args.preflight, args.ibge_qvd):
+        if not path.is_file():
+            raise ValueError(f"Artefato exigido ausente: {path}")
+        if path.stat().st_mtime < since_ts - 2:
+            raise ValueError(f"Artefato nao gerado no reload atual: {path}")
+
     ref_rows = rows_from_csv(args.csv, COLUMNS)
     validate_pairs(ref_rows)
     chk = check_single_checkpoint(args.checkpoint, CHECKPOINT)
@@ -227,6 +238,10 @@ def audit(args: argparse.Namespace) -> int:
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument(
+        "--since-utc", required=True,
+        help="Timestamp UTC ISO-8601 salvo ANTES do reload QlikView, ex. 2026-10-08T23:00:00Z",
+    )
     p.add_argument("--csv", type=Path, default=Path("EXTRACAO/QVD/REF_MUNICIPIO_PB_DERIVADA.csv"))
     p.add_argument("--qvd", type=Path, default=Path("EXTRACAO/QVD/REF_MUNICIPIO_PB_DERIVADA.qvd"))
     p.add_argument("--ibge-qvd", type=Path, default=Path("EXTRACAO/QVD/SRC_IBGE_POPULACAO.qvd"))
