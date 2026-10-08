@@ -4,9 +4,9 @@
 // A Fase III implementa staging das fontes validadas e das referências
 // auxiliares efetivamente materializadas. Checkpoints já implementados:
 // saúde (RD/LT/ST), IBGE, referências normativas pequenas (III-C1),
-// CID-10 descritiva (III-C2 PASS) e SIGTAP por competência (III-C3.4b
-// implementado, com reload local pendente).
-// Referências auxiliares restantes continuam pendentes antes do fechamento.
+// CID-10 descritiva (III-C2 PASS), SIGTAP por competencia (III-C3 PASS)
+// e legenda datada de leitos CNES set/2019 (III-C4, reload local pendente).
+// Historico de leitos ainda NAO verificado; sem transformacao dimensional.
 //
 // Não construir fatos, dimensões ou LINK_ANALISE neste script.
 
@@ -1322,4 +1322,9 @@ ENDIF
 DROP TABLE EXTRACAO_SIGTAP_CHECKPOINT;
 
 TRACE [EXTRACAO] PHASE_III_C3_SIGTAP_STAGING_PASS ROWS=$(vSIGTAPRows) UNMATCHED_RD=$(vSIGTAPUnmatchedRD);
-TRACE [EXTRACAO] PARTIAL ONLY — CNES tipo/leito, municipal reference and establishment history remain pending; no final extraction success marker emitted.
+// Etapa separada para controlar referencia datada; sem join retroativo.
+// MUST_INCLUDE resolvido relativamente ao EXT.qvw em EXTRACAO.
+$(Must_Include=ext_c4_cnes_leitos.qvs);
+
+// Ainda nao ha evidencia de fechamento final da Fase III.
+TRACE [EXTRACAO] PARTIAL ONLY: referencia municipal e nomes historicos de ST permanecem em revisao. No final extraction success marker emitted.

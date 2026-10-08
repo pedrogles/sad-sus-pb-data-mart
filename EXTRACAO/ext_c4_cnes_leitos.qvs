@@ -1,0 +1,176 @@
+// III-C4 — CNES/LT: legenda descritiva da Nota Tecnica 32/2019, SET/2019.
+// Este QVD contem somente o retrato datado (65 pares); nao e uma serie historica.
+// Nunca JOIN/MAP descricoes na SRC_CNES_LT por competencias 2017-2019.
+// A cobertura abaixo compara pares brutos com o retrato; NAO prova vigencia mensal.
+// DIM_TIPO_LEITO e SK sensivel a competencia permanecem na fase de transformacao.
+
+TRACE [EXTRACAO] Phase III-C4 CNES bed code 201909 descriptive legend start;
+
+LET vC4ErrorsBefore = ScriptErrorCount;
+
+REF_TIPO_LEITO:
+LOAD
+    Text(tp_leito) AS REF_LEITO_TP_LEITO,
+    Text(codleito) AS REF_LEITO_CODLEITO,
+    Text(nome_cnes) AS REF_LEITO_NOME_CNES,
+    Text(tipo_cnes) AS REF_LEITO_TIPO_CNES,
+    Text(status) AS REF_LEITO_STATUS,
+    Text(pdf_page) AS REF_LEITO_PDF_PAGE,
+    Text(competencia_referencia) AS REF_LEITO_COMPETENCIA_REFERENCIA,
+    Text(fonte_documento) AS REF_LEITO_FONTE_DOCUMENTO,
+    Text(uso_permitido) AS REF_LEITO_USO_PERMITIDO,
+    Text(vigencia_historica_verificada) AS REF_LEITO_VIGENCIA_HISTORICA_VERIFICADA,
+    FileName() AS _META_SOURCE_FILE,
+    'REF_TIPO_LEITO_SNAPSHOT_201909' AS _META_SOURCE_FAMILY,
+    FilePath() AS _META_SOURCE_PATH
+FROM [..\BASE\REFERENCIAS\cnes_leitos_legenda_201909.csv]
+(txt, utf8, embedded labels, delimiter is ';', msq);
+
+IF ScriptErrorCount > $(vC4ErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_LEITO_201909] CSV LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vC4ReferenceRows = NoOfRows('REF_TIPO_LEITO');
+
+TMP_C4_REFERENCE_CHECK:
+LOAD
+    Count(DISTINCT REF_LEITO_TP_LEITO & '|' & REF_LEITO_CODLEITO) AS distinct_pair_count,
+    Sum(
+        If(
+            Match(REF_LEITO_TP_LEITO, '1', '2', '3', '4', '5', '6', '7') = 0
+            OR Len(REF_LEITO_CODLEITO) <> 2
+            OR Len(KeepChar(REF_LEITO_CODLEITO, '0123456789')) <> 2,
+            1, 0
+        )
+    ) AS invalid_code_count,
+    Sum(
+        If(
+            REF_LEITO_COMPETENCIA_REFERENCIA <> '201909'
+            OR REF_LEITO_FONTE_DOCUMENTO <> 'NT_32_2019_ANEXO_TABELA_LEITOS_SET_2019'
+            OR REF_LEITO_USO_PERMITIDO <> 'LEGENDA_DESCRITIVA_DATADA_SEM_JOIN_HISTORICO'
+            OR REF_LEITO_VIGENCIA_HISTORICA_VERIFICADA <> 'NAO'
+            OR REF_LEITO_STATUS <> 'Ativo',
+            1, 0
+        )
+    ) AS invalid_provenance_count,
+    Sum(
+        If(
+            Len(Trim(REF_LEITO_NOME_CNES)) = 0
+            OR Len(Trim(REF_LEITO_TIPO_CNES)) = 0,
+            1, 0
+        )
+    ) AS empty_label_count,
+    Sum(
+        If(
+            REF_LEITO_TP_LEITO = '3'
+            AND REF_LEITO_CODLEITO = '66'
+            AND REF_LEITO_NOME_CNES = 'UNIDADE ISOLAMENTO',
+            1, 0
+        )
+    ) AS code_66_control_count,
+    Sum(
+        If(
+            REF_LEITO_TP_LEITO = '7'
+            AND REF_LEITO_CODLEITO = '70'
+            AND REF_LEITO_NOME_CNES = 'FIBROSE CISTICA',
+            1, 0
+        )
+    ) AS code_70_control_count
+RESIDENT REF_TIPO_LEITO;
+
+LET vC4DistinctPairs = Peek('distinct_pair_count', 0, 'TMP_C4_REFERENCE_CHECK');
+LET vC4InvalidCodes = Peek('invalid_code_count', 0, 'TMP_C4_REFERENCE_CHECK');
+LET vC4InvalidProvenance = Peek('invalid_provenance_count', 0, 'TMP_C4_REFERENCE_CHECK');
+LET vC4EmptyLabels = Peek('empty_label_count', 0, 'TMP_C4_REFERENCE_CHECK');
+LET vC4Code66Control = Peek('code_66_control_count', 0, 'TMP_C4_REFERENCE_CHECK');
+LET vC4Code70Control = Peek('code_70_control_count', 0, 'TMP_C4_REFERENCE_CHECK');
+
+DROP TABLE TMP_C4_REFERENCE_CHECK;
+
+IF $(vC4ReferenceRows) <> 65 OR $(vC4DistinctPairs) <> 65 OR $(vC4InvalidCodes) <> 0 OR $(vC4InvalidProvenance) <> 0 OR $(vC4EmptyLabels) <> 0 OR $(vC4Code66Control) <> 1 OR $(vC4Code70Control) <> 1 THEN
+
+    TRACE [EXTRACAO][REF_LEITO_201909] Snapshot reference gate failed;
+    EXIT SCRIPT;
+ENDIF
+
+// Aplicar MAPPING somente como PROVA DE COBERTURA, nunca enriquecer LT historico.
+MAP_C4_201909_PAIRS:
+MAPPING LOAD
+    REF_LEITO_TP_LEITO & '|' & REF_LEITO_CODLEITO,
+    1
+RESIDENT REF_TIPO_LEITO;
+
+TMP_C4_LT_COVERAGE:
+LOAD
+    Count(*) AS lt_rows,
+    Count(DISTINCT Text(Trim(Text(TP_LEITO))) & '|' & Text(CODLEITO)) AS distinct_lt_pairs,
+    Count(DISTINCT Text(COMPETEN)) AS distinct_lt_competences,
+    Sum(
+        If(
+            ApplyMap(
+                'MAP_C4_201909_PAIRS',
+                Text(Trim(Text(TP_LEITO))) & '|' & Text(CODLEITO),
+                0
+            ) = 0,
+            1, 0
+        )
+    ) AS unmatched_lt_rows
+FROM [QVD\SRC_CNES_LT.qvd] (qvd);
+
+IF ScriptErrorCount > $(vC4ErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_LEITO_201909] LT QVD coverage LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vC4LTRows = Peek('lt_rows', 0, 'TMP_C4_LT_COVERAGE');
+LET vC4LTPairs = Peek('distinct_lt_pairs', 0, 'TMP_C4_LT_COVERAGE');
+LET vC4LTCompetences = Peek('distinct_lt_competences', 0, 'TMP_C4_LT_COVERAGE');
+LET vC4LTUnmatched = Peek('unmatched_lt_rows', 0, 'TMP_C4_LT_COVERAGE');
+
+DROP TABLE TMP_C4_LT_COVERAGE;
+
+IF $(vC4LTRows) <> 35518 OR $(vC4LTPairs) <> 57 OR $(vC4LTCompetences) <> 36 OR $(vC4LTUnmatched) <> 0 THEN
+
+    TRACE [EXTRACAO][REF_LEITO_201909] Snapshot pair coverage failed. LT_Rows=$(vC4LTRows) Pairs=$(vC4LTPairs) Competences=$(vC4LTCompetences) Unmatched=$(vC4LTUnmatched);
+    EXIT SCRIPT;
+ENDIF
+
+STORE REF_TIPO_LEITO INTO [QVD\REF_TIPO_LEITO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vC4ErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_LEITO_201909] QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE REF_TIPO_LEITO;
+
+EXTRACAO_CNES_LEITO_201909_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'EXTRACAO_CNES_LEITO_201909' AS stage,
+    'PASS_PARTIAL_SNAPSHOT_ONLY' AS status,
+    $(vC4ReferenceRows) AS reference_pairs,
+    $(vC4LTRows) AS observed_lt_rows,
+    $(vC4LTPairs) AS observed_lt_pairs,
+    $(vC4LTCompetences) AS observed_lt_competences,
+    $(vC4LTUnmatched) AS unmatched_snapshot_pair_rows,
+    '201909' AS reference_competence,
+    'NOT_VERIFIED' AS historical_validity,
+    'NOT_APPROVED' AS t29_historical
+AUTOGENERATE 1;
+
+STORE EXTRACAO_CNES_LEITO_201909_CHECKPOINT
+INTO [QVD\_CHECKPOINT_EXTRACAO_CNES_LEITO_201909.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vC4ErrorsBefore) THEN
+    TRACE [EXTRACAO][REF_LEITO_201909] checkpoint STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE EXTRACAO_CNES_LEITO_201909_CHECKPOINT;
+
+TRACE [EXTRACAO] PHASE_III_C4_201909_SNAPSHOT_COVERAGE_PASS Pairs=$(vC4LTPairs) LT=$(vC4LTRows) Unmatched=$(vC4LTUnmatched);
+TRACE [EXTRACAO] T29_HISTORICAL_NOT_APPROVED: 201909 labels are NOT historical validity.
+TRACE [EXTRACAO] PHASE_III_IN_PROGRESS: no final extraction success marker emitted.

@@ -61,12 +61,12 @@ Decisões detalhadas em [boundary-5](../discovery/boundary-5-historization-role-
 | III-C1 — Caráter e Motivo de Saída | **PASS** | 6 e 28 registros de referência; 0 RD unmatched; QVDs de referência |
 | III-C2 — CID-10 / T28 | **PASS** | Referência descritiva `201912` de 14.230 códigos; 566.672 RD cobertos, 0 unmatched; QVD |
 | III-C3 — SIGTAP / T27 | **PASS** | Referência por 36 competências, 165.203 procedimentos/linhas e 566.672 RD cobertos, 0 unmatched; QVD |
-| III-C4 — Tipo/código de leitos | **PASS de cobertura do retrato set/2019, ressalva temporal** | 57/57 pares e 35.518/35.518 ocorrências LT cobertos pelo anexo da Nota Técnica MS nº 32/2019 |
+| III-C4 — Legenda CNES set/2019 | **PASS LOCAL — STAGING DESCRITIVO DATADO** | Python + QlikView 12 executados em 08/10/2026; 65 pares na legenda, 57/57 pares PB, 35.518/35.518 LT, 36 competências, 0 unmatched; checkpoint `PASS_PARTIAL_SNAPSHOT_ONLY` |
 | T29 — validade normativa histórica integral | **NÃO APROVADO** | Vigência de todos os pares para cada competência `201701–201912` não demonstrada |
 
 **Conflito de fonte CNES:** indicador agregado CNESNet apresentou `2/66`, mas o perfil PB, a Nota Técnica MS de setembro/2019 e outras fontes registram `3/66 — UNIDADE ISOLAMENTO / COMPLEMENTAR`. Não reclassificar automaticamente os dados. O RTS só exibiu Leitos a partir de `10/2019A` no ensaio manual; isso não significa criação de códigos nessa data.
 
-**Decisão operacional ainda a formalizar:** a cobertura do retrato set/2019 é suficiente para **descrição dos pares observados na versão inicial**, com ressalva explícita da falta de validação temporal? Essa hipótese de encaminhamento pode impedir que a investigação normativa detenha indefinidamente o projeto, **sem marcar o T29 histórico como PASS**. A decisão não está automaticamente aprovada por uma auditoria de cobertura.
+**DECISÃO APROVADA PELO RESPONSÁVEL DO PROJETO (08/10/2026):** utilizar a tabela da Nota Técnica MS 32/2019 como **legenda auxiliar com competência de referência 201909**, sem inferir classificação, descrição ou status normativamente válidos nos meses anteriores/posteriores. Preservar `TP_LEITO`/`CODLEITO`/competência e quantidades originais; não realizar JOIN retroativo da legenda na LT. O contrato de chave competência-aware do Boundary 7 permanece. **T29 histórico segue NÃO APROVADO.** A materialização Python e o reload QlikView 12 foram executados localmente em 08/10/2026, com `LEGEND_SHA256=dddb261e754f2f3bb82a462c94ae8219b84cd77c1fce3204cd6f3867c3d3bd5e` e checkpoint `EXTRACAO_CNES_LEITO_201909;PASS_PARTIAL_SNAPSHOT_ONLY;65;35518;57;36;0;201909;NOT_VERIFIED;NOT_APPROVED`. O arquivo QVD não foi inspecionado independentemente neste chat.
 
 **Ressalva de ST:** evitar imputar versões futuras a estabelecimentos históricos; lacuna de razão social/nome fantasia em `201701–201705` permanece quando não houver fonte comprovada. `STPB1912.dbc` apresenta drift técnico de schema de 2019-12; preservar seleção por nomes e tolerância verificada.
 
@@ -80,9 +80,9 @@ Detalhes: [repository-hygiene-review-2026-10-08.md](repository-hygiene-review-20
 
 ## 5. Sequência segura — Fase III retomada
 
-1. **Revisar decisão específica de uso da referência CNES de setembro/2019.** FATO VERIFICADO: a Nota Técnica cobre os **57/57 pares e 35.518/35.518 ocorrências LT**; **não** prova vigência da classificação em todos os 36 meses. A portaria/RTS não forneceu prova completa da série. **DECISÃO PENDENTE:** utilizar essas descrições apenas como **legenda de referência datada**, explicitamente não histórica, ou manter descrições de tipo/leito sem enriquecimento até fonte temporal adequada. Não converter snapshot em fato de vigência histórica.
-2. **Preservar decisão do Boundary 7 para chave de tipo/leito**: sem prova de invariância, não aplicar retrospectivamente classificações posteriores e não eliminar `COMPETENCIA_REFERENCIA` de eventual chave física. Qualquer decisão que altere contrato aprovado deve ser avaliada/documentada antes de implementar.
-3. **Reconciliar gates da Fase III**: T27 e T28 PASS, T29 cobertura de snapshot PASS somente neste escopo, sem status histórico integral. Verificar critérios físicos de carga, integridade e rastreabilidade de eventual referência `REF_TIPO_LEITO` na extração, apenas após decisão aprovada e reload local QlikView 12.
-4. **Somente após fechamento verificável da extração**, iniciar a Fase IV de transformação dimensional (dimensões, fatos, Link Table na ordem do Boundary 7). Priorizar a entrega impressa dos Capítulos 1 e 2 já aprovada.
+1. **Checkpoint III-C4.3 ENCERRADO — PASS de snapshot datado:** manter o CSV local e `REF_TIPO_LEITO.qvd` exclusivamente como legenda de `201909`, sem associar descrições automaticamente aos 36 meses. `T29_HISTORICAL=NOT_APPROVED`.
+2. **Próximo Boundary da Fase III:** inventariar e fechar referências **DATASUS↔IBGE municipal** e **estabelecimento histórico** apenas onde realmente exigidas pelos contratos, usando dados comprovados. Não reconstruir códigos nem nomes sem fonte; registrar gaps de `201701–201705` como exceções explícitas.
+3. **Reconciliação final de staging:** conferir os QVDs e checkpoints das famílias + referências, requisitos T07/T08 e qualquer pendência aplicável do Boundary 7. Só emitir sucesso integral de Fase III após testes físicos no QlikView 12.
+4. **Somente após gate de extração fechado**, iniciar Fase IV — dimensões, Fase V — fatos, Fase VI — Link Table. Preservar os Capítulos 1 e 2 já aprovados.
 
 **Histórico completo anterior à consolidação:** [current-state-chronology-2026-10-08.md](current-state-chronology-2026-10-08.md). Este resumo substitui a cronologia como rota operacional; os documentos originais e o histórico Git seguem consultáveis.
