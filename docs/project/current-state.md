@@ -606,7 +606,7 @@ Com isso, T01–T06 estão **PASS** e a Fase II está encerrada.
 
 Status:
 
-**IN PROGRESS — III-A/III-B/III-C1 PASS; III-C2 C2.1–C2.7 E C2.8c PASS; C2.8d CORREÇÃO TEXTUAL AGUARDA RELOAD QLIK**
+**IN PROGRESS — III-A/III-B/III-C1/III-C2 PASS; CID-10 T28 PASS; REFERÊNCIAS RESTANTES PENDENTES**
 
 Documento operacional:
 
@@ -669,7 +669,7 @@ O C2.7 foi reexecutado com **PASS**: `REFERENCE_COMPETENCE=201912`, 14.230 linha
 
 O C2.8 foi implementado em `EXTRACAO/ext_main.qvs`: carga da referência final, validação estrutural, `RTrim(DIAG_PRINC)` como remoção do padding técnico aprovado, reconciliação contra 566.672 RD, geração de `REF_CID10.qvd` e checkpoint parcial.
 
-O primeiro reload C2.8 passou todos os gates estruturais da referência, mas encontrou 9.093 linhas RD sem match no QVD e interrompeu controladamente. O C2.8b confirmou que os 128 códigos distintos envolvidos eram texto no QVD (`IsNum=0`, `IsText=-1`). O diagnóstico C2.8c, executado em 08/10/2026, comprovou que os mesmos 128 códigos / 9.093 registros encontram a referência tanto por `Text(DIAG_PRINC)` quanto por `Text(RTrim(Text(DIAG_PRINC)))`, enquanto a expressão original `RTrim(Text(DIAG_PRINC))` falha. A correção C2.8d altera somente a expressão da comparação para `Text(RTrim(Text(DIAG_PRINC)))`, mantendo a normalização aprovada e os gates fail-closed. Próximo gate: recarregar `EXT.qvw` e exigir `REF_CID10.qvd` e `_CHECKPOINT_EXTRACAO_CID10.csv` com 14.230 códigos CID, 566.672 RD e 0 unmatched. A Fase III continua parcial; SIGTAP procedimento, tipo/leito, ponte municipal e estabelecimento histórico permanecem pendentes.
+O primeiro reload C2.8 passou todos os gates estruturais da referência, mas encontrou 9.093 linhas RD sem match no QVD e interrompeu controladamente. O C2.8b confirmou que os 128 códigos distintos envolvidos eram texto no QVD (`IsNum=0`, `IsText=-1`). O diagnóstico C2.8c, executado em 08/10/2026, comprovou que os mesmos 128 códigos / 9.093 registros encontram a referência tanto por `Text(DIAG_PRINC)` quanto por `Text(RTrim(Text(DIAG_PRINC)))`, enquanto a expressão original `RTrim(Text(DIAG_PRINC))` falha. A correção C2.8d altera somente a expressão da comparação para `Text(RTrim(Text(DIAG_PRINC)))`, mantendo a normalização aprovada e os gates fail-closed. O reload local de **08/10/2026 10:44:15** confirmou o **C2.8d PASS**: `REF_CID10.qvd` gerado (945.638 bytes) e `_CHECKPOINT_EXTRACAO_CID10.csv` gerado com `stage=EXTRACAO_CID10`, `status=PASS_PARTIAL`, `cid10_rows=14230`, `cid10_distinct_codes=14230`, `cid10_length_3=2042`, `cid10_length_4=12188`, `rd_rows=566672` e `cid10_unmatched_rd_rows=0`. O **Checkpoint III-C2 — CID-10** está **CONCLUÍDO — PASS**; a reconciliação de cobertura `DIAG_PRINC × CID-10` atende ao gate T28 (0 exceções observadas). A Fase III permanece **IN PROGRESS**, sem marcador de conclusão final. Próxima frente: **SIGTAP / PROC_REA por competência (T27)**; CNES tipo/leito (T29), ponte municipal e estabelecimento histórico também permanecem pendentes.
 
 Fora de escopo nesta fase:
 

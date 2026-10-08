@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração  
 **Checkpoint:** III-C2 — CID-10  
-**Status:** C2.1–C2.7/C2.8c PASS; C2.8d CORREÇÃO DO LOOKUP IMPLEMENTADA, RELOAD QLIK PENDENTE
+**Status:** III-C2 CONCLUÍDO — C2.1–C2.8d PASS; T28 cobertura CID-10 PASS; FASE III PARCIAL
 
 ## Objetivo
 
@@ -497,4 +497,23 @@ Permanecem: fonte oficial CID 201912, 14.230 códigos únicos, normalização co
 
 ## Próximo gate
 
-Atualizar `main`, recarregar `EXTRACAO/EXT.qvw` e verificar `REF_CID10.qvd` com `_CHECKPOINT_EXTRACAO_CID10.csv` contendo `cid10_rows=14230`, `rd_rows=566672` e `cid10_unmatched_rd_rows=0`. Não encerrar a Fase III neste checkpoint.
+A validação local foi executada e aprovada em 08/10/2026. Este gate está **PASS**; não há nova execução pendente para fechar III-C2. A Fase III segue parcial e deve avançar para `PROC_REA × SIGTAP` (T27), sem iniciar dimensões/fatos.
+
+ 
+## Fechamento C2.8d — reload QlikView PASS (08/10/2026)
+
+**FATO VERIFICADO:** após atualização da `main` para a correção `Text(RTrim(Text(DIAG_PRINC)))`, o reload do `EXTRACAO/EXT.qvw` gerou, em 08/10/2026 às 10:44:
+
+- `EXTRACAO/QVD/REF_CID10.qvd`, tamanho local **945.638 bytes**;
+- `EXTRACAO/QVD/_CHECKPOINT_EXTRACAO_CID10.csv`, tamanho local **205 bytes**.
+
+Conteúdo comprovado do checkpoint:
+
+```csv
+generated_at;stage;status;cid10_rows;cid10_distinct_codes;cid10_length_3;cid10_length_4;rd_rows;cid10_unmatched_rd_rows
+08/10/2026 10:44:15;EXTRACAO_CID10;PASS_PARTIAL;14230;14230;2042;12188;566672;0
+```
+
+**Veredito:** C2.8d **PASS**, III-C2 **CONCLUÍDO**; cobertura de `DIAG_PRINC` em **566.672/566.672 registros**, **0 unmatched**. Gate acadêmico-operacional **T28 — DIAG_PRINC↔CID-10 PASS**. A referência `201912` permanece um dicionário descritivo estático/superset, sem alegar vigência histórica mensal.
+
+**Controle de escopo:** `PASS_PARTIAL` é intencional; não implica conclusão da Extração. Permanecem pendentes `SIGTAP / PROC_REA` por competência (T27), CNES tipo/leito (T29), ponte DATASUS↔IBGE, estabelecimento histórico e reconciliação final. Nenhum dado bruto, QVD ou artefato derivado deve ser versionado.
