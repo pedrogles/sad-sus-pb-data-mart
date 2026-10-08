@@ -300,7 +300,7 @@ Import-Csv .\BASE\REFERENCIAS\sigtap_procedure_pilot_coverage.csv -Delimiter ';'
 Get-Content .\BASE\REFERENCIAS\sigtap_procedure_pilot_summary.json -Raw -Encoding UTF8
 ~~~
 
-**Gate C3.3a.1:** reconciliação física e de competências, contagens mensais RD confirmadas e exceções integralmente registradas. Cobertura 100% na amostra seria um resultado possível, mas ainda **não foi verificado**. Mesmo `PASS` nesse piloto não conclui T27, pois **32 competências não foram testadas**. O T27 integral somente poderá ser decidido em C3.3b após materialização histórica e cobertura de todos os 36 meses.
+**Gate C3.3a.1:** reconciliação física e de competências, contagens mensais RD confirmadas e exceções integralmente registradas. Este gate foi **atingido com PASS** na execução local detalhada abaixo. O resultado **não conclui T27**, pois 32 competências ainda precisam de referência e lookup mensal. O T27 integral somente poderá ser decidido após C3.3b.1 e C3.3b.2.
 
 ### Evidência de C3.3a.1 — piloto PASS (08/10/2026)
 
