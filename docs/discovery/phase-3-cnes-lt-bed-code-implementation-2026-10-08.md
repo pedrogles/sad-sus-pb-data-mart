@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1/C4.1a PASS (evidência física); C4.2 DISCOVERY DE REFERÊNCIA OFICIAL INICIADA / ARTEFATO HISTÓRICO AINDA NÃO VALIDADO; T29 NÃO AVALIADO
+**Status:** C4.1/C4.1a PASS; C4.2a CÓDIGO 70 VALIDADO POR FONTE OFICIAL HISTÓRICA; C4.2b DOMÍNIO COMPLETO/HISTÓRICO PENDENTE; T29 NÃO AVALIADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -135,7 +135,7 @@ A lista de pares com menos de 36 competências **não prova isoladamente** qual 
 - [ElastiCNES — Leitos](https://wiki.datasus.gov.br/cnes/index.php/Pain%C3%A9is_ElastiCNES): documentação oficial distingue **tipo de leito**, **código de leito**, **leito/especialidade**, leitos existentes e leitos SUS, e apresenta filtros por ano/competência.
 - [OpenDataSUS — Hospitais e Leitos](https://opendatasus.saude.gov.br/pt_BR/dataset/hospitais-e-leitos): catálogo público indexado com recursos CSV anuais para **2017, 2018 e 2019**. É fonte de dados operacionais candidata à **checagem cruzada**, mas **não foi validada como tabela normativa histórica de domínio**. O portal antigo atualmente redireciona para nova plataforma, exigindo descoberta do recurso atual.
 
-**DECISÃO PENDENTE C4.2:** localizar e inspecionar a **tabela de domínio oficial do CNES**, com código, descrição, grupo e versão/data aplicável. Atribuir `CODLEITO=70` a uma descrição, especialidade ou `TP_LEITO` exige confrontar o par observado no LT e a fonte oficial (possivelmente histórica). Não converter uma publicação atual ou secundária automaticamente em versão 2017–2019.
+**DECISÃO PENDENTE C4.2:** localizar e inspecionar a **tabela de domínio oficial do CNES**, com código, descrição, grupo e versão/data aplicável. O mapeamento pontual `CODLEITO=70` → `FIBROSE CISTICA` / `HOSPITAL DIA` foi agora confirmado em consulta oficial com competência 201712 e confrontado com o par observado no LT (`TP_LEITO="7 "`). Isso **não** fecha a aquisição normativa dos 57 códigos nem autoriza atribuir versões mensais inexistentes; conferir o gate C4.2b acima.
 
 **Próxima inspeção read-only opcional, sem scripts adicionais:**
 
@@ -161,6 +161,29 @@ $p | Where-Object { $_.codleito_raw -eq '70' } |
     }
 } | Format-Table -AutoSize
 ```
+
+### Evidência complementar C4.2a — código `70` e fonte oficial de 2017
+
+**FATO VERIFICADO — perfil CNES/LT da Paraíba fornecido pelo usuário em 08/10/2026:** a linha filtrada do `cnes_lt_bed_code_pair_profile.csv` para `CODLEITO=70` trouxe `tp_leito_raw="7 "`, `first_competence=201801`, `last_competence=201805`, `competences_observed=5` e `occurrences=5`. Associada à variação mensal previamente inspecionada (57 códigos de janeiro a maio, 56 nos outros meses), sustenta que o par apareceu uma vez em cada mês de janeiro–maio de 2018. Não identifica, por si, quantidades de leitos SUS nem a vigência da classificação normativa.
+
+**FATO VERIFICADO — fonte primária DATASUS/CNES:** a própria consulta oficial de indicadores do CNES apresenta o código `70` com a descrição **`FIBROSE CISTICA`** dentro do grupo **`HOSPITAL DIA`**; o grupo corresponde ao `TP_LEITO=7` na nomenclatura CNES. Foram encontradas consultas oficiais indexadas com competências **201512** e **201712**, ambas para **São Paulo (UF 35)**, contendo esse par:
+
+- [CNES oficial — indicadores de leitos, competência 201712, UF 35](https://cnes2.datasus.gov.br/Mod_Ind_Tipo_Leito.asp?VComp=201712&VEstado=35&VMun=);
+- [CNES oficial — indicadores de leitos, competência 201512, UF 35](https://cnes2.datasus.gov.br/Mod_Ind_Tipo_Leito.asp?VComp=201512&VEstado=35&VMun=);
+- [CNES oficial — consulta de leitos (visão atual)](https://cnes2.datasus.gov.br/Mod_Ind_Tipo_Leito.asp?VEstado=00).
+
+**INTERPRETAÇÃO CONTROLADA:** a presença de `70 / FIBROSE CISTICA / HOSPITAL DIA` na consulta CNES da competência **201712 em outra UF** comprova que esse código/descritivo já era utilizado pelo CNES antes da primeira ocorrência no recorte **PB em 201801**. **Não** interpretar entrada/saída do recorte PB como criação ou extinção oficial do domínio. A consulta comprova a nomenclatura oficial do código na competência exibida, mas **não** constitui extração/versão consolidada de tabela de domínio para as 36 competências e 57 códigos do projeto.
+
+O material secundário do [CONASS — Tabela de domínio CNES leito](https://wiki.conass.org.br/index.php?title=Tabela_de_dom%C3%ADnio_CNES_leito) também contém `tp_leito=7`, `codleito=70` e `no_leito=fibrose cistica`. Serve como confirmação cruzada, **não substitui** a fonte primária ou versão histórica para T29.
+
+**C4.2a — referência pontual `70`: COMPROVADA** quanto à descrição/grupo oficial e à existência pré-2018 em consulta oficial. **C4.2b — domínio completo e histórico: PENDENTE. T29: NÃO AVALIADO.**
+
+### Próximo gate C4.2b — domínio histórico de leitos, sem inferir vigência
+
+1. Identificar arquivo ou consulta oficial com os códigos/descrições de todos os **57 `CODLEITO`** e correspondentes sete tipos, contendo evidência de versão/competência utilizável em 2017–2019;
+2. inspecionar fisicamente colunas/formatos e provar unicidade do par de código/tipo em cada referência, preservando os códigos de dois caracteres e o espaço de preenchimento de `TP_LEITO` na origem;
+3. conferir alterações de descrição ou classificação entre competências; na ausência de arquivo normativo versionado, documentar explicitamente a limitação temporal e evitar supor um catálogo mensal;
+4. somente após montar e provar a referência oficial, medir a cobertura T29 de **35.518 linhas CNES/LT**, registrar exceções e então considerar `REF_TIPO_LEITO.qvd`.
 
 ## 4. Gate seguinte — C4.2 referência oficial
 
