@@ -122,3 +122,12 @@ A primeira entrega impressa permanece prioritária. Os gates já encerrados não
 **Correção local preparada:** `sad_branch_hygiene_approved_2026-10-08_v2.ps1` executa comandos Git via `Start-Process` com stdout/stderr em arquivos temporários e valida explicitamente `ExitCode`, evitando o erro espúrio do pipeline de stderr no PowerShell 5.1. Os caminhos de `git rev-parse`, `git merge-base` e rechecagem individual `git ls-remote` usam o mesmo mecanismo. **Mantidos**: `-Apply` explícito, inventário/manifesto de SHA antes de exclusão, 67 branches PR integradas, 3 ancestrais, 6 HOLD, `main` e branch de higiene protegidas, comparação `--force-with-lease` a cada ref, abort em qualquer divergência e pós-checagem de 8 refs. **Script v2 não executado no Windows até nova evidência do usuário.**
 
 **Próxima ação:** executar primeiro o novo script **v2 SEM `-Apply`**, verificar `PREFLIGHT=PASS DELETE_CANDIDATES=70 HOLD=6`, somente então executar **v2 `-Apply`** nos termos da aprovação existente. Em falha, enviar a saída; não assumir `DELETED=70` nem reexecutar `-Apply` cegamente.
+
+
+### Segundo dry-run — resposta de PRs mal interpretada na v2 (08/10/2026)
+
+**FATO VERIFICADO — PowerShell enviado pelo usuário:** após `git pull --ff-only origin main`, a v2 passou do `PRECHECK: fetching origin; no remote changes`, mas interrompeu em sua linha 106: `Expected 69 PRs (#1-#69); got 1. Abort.`. Portanto **não chegou ao plano, ao manifesto de rollback ou ao bloco protegido por `-Apply`; nenhuma exclusão foi feita nesse ensaio**.
+
+**HIPÓTESE TÉCNICA:** `$prs = @(Invoke-RestMethod ...)` pode devolver um único objeto contendo o array em Windows PowerShell 5.1, em vez da coleção de 69 objetos esperada. A mensagem isolada não comprova se o envelope era um array aninhado ou se o servidor de fato devolveu um item.
+
+**Mitigação preparada — script `sad_branch_hygiene_approved_2026-10-08_v3.ps1`:** recuperar resposta por `Invoke-WebRequest -UseBasicParsing`, confirmar que o corpo é uma lista JSON, fazer `ConvertFrom-Json -InputObject` e normalizar explicitamente a coleção, com diagnósticos de contagem e abort sem delete. Mantidos 78 refs pré-higiene, 67 PRs integrados+3 ancestrais, seis HOLD, dois protegidos estruturais, `-Apply` explícito, `--force-with-lease`, manifesto pré-delete e verificação pós. **Ainda não há evidência de dry-run PASS da v3 nem exclusão remota executada.** Pedir ao usuário **somente dry-run da v3** primeiro, depois avaliação do resultado; não instruir `-Apply` diante de falha.
