@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração / staging  
 **Checkpoint:** III-C3 — Referência oficial de procedimentos  
-**Status:** C3.1/C3.2/C3.3a/C3.3a.1/C3.3b.1 PASS; C3.3b.2 COBERTURA HISTÓRICA IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; T27 INTEGRAL NÃO AVALIADO
+**Status:** C3.1/C3.2/C3.3a/C3.3a.1/C3.3b.1/C3.3b.2 PASS; T27 PASS; C3.4a CSV DE STAGING IMPLEMENTADO / EXECUÇÃO LOCAL E REVISÃO DE ENCODING PENDENTES; C3.4b QLIK PENDENTE
 
 ## 1. Contrato aprovado
 
@@ -421,11 +421,67 @@ $m.totals
 $m.t27
 ```
 
-**Gate T27:** a cobertura completa só pode ser encerrada após a execução local do C3.3b.2. O script retorna `VERDICT=PASS` com zero exceções ou `VERDICT=REVIEW` se alguma linha RD não possuir referência correspondente na mesma competência; ambos preservam o relatório de exceções. Uma eventual execução `REVIEW` exige investigação, não substituição arbitrária de códigos. O estado da Fase III continua parcial e o QVD de procedimentos ainda não foi gerado.
+**Gate T27 — PASS em 08/10/2026:** execução local completa apresentada e reconciliada, com 36 competências, 566.672 RD cobertos, 0 unmatched e hashes 2/2 conferidos. O estado da Fase III continua parcial e o QVD de procedimentos ainda não foi gerado.
 
-### C3.4 — staging QlikView 12
+### Evidência C3.3b.2 — PASS e fechamento T27 (08/10/2026)
 
-Somente após o gate de referência e cobertura: integrar carga aos scripts externos do `EXT.qvw`, produzir `REF_SIGTAP.qvd` e checkpoint parcial sem construir fatos/dimensões no estágio de Extração.
+**FATO VERIFICADO:** o script `tools/profile_sigtap_procedure_full_coverage.py` executou integralmente as 36 competências, confrontando `PROC_REA` com `CO_PROCEDIMENTO` do SIGTAP na **mesma competência**. A saída e o manifesto registraram:
+
+- `RD_ROWS=566672` e `MATCHED_RD_ROWS=566672`;
+- `UNMATCHED_RD_ROWS=0` e `UNMATCHED_CODE_COMPETENCE_PAIRS=0`;
+- `REFERENCE_PROCEDURE_MONTH_ROWS=165203`;
+- `rd_code_competence_pairs=21031` (pares distintos de código + competência observados nos RD; não são procedimentos globalmente distintos);
+- `coverage_pct=100.000000`;
+- `T27_GATE=PASS`, `VERDICT=PASS`;
+- CSV cobertura: 36 linhas e `HashMatch=True`;
+- CSV unmatched: 0 linhas e `HashMatch=True`.
+
+O manifesto `sigtap_procedure_full_coverage_summary.json` registrou `status=PASS` e `t27.gate=PASS`. Portanto **C3.3b.2 e T27 PASS**, sem exceções. O SIGTAP histórico comprovou existência do procedimento por competência, **não** ainda as descrições textuais de grupo/subgrupo/forma de organização nem a conversão Qlik.
+
+### C3.4a — CSV candidato de referência por competência (IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE)
+
+Implementação: `tools/materialize_sigtap_staging_candidate.py`. Pré-requisitos obrigatórios: manifestos C3.3b.1 e C3.3b.2 PASS, hashes do inventário, CSVs de cobertura e todos os TXT históricos validados.
+
+O script prepara **CSV local intermediário**, sem criar QVD e sem modificar SIH/RD, com campos baseados nas evidências físicas do layout:
+
+- `SIGTAP_COMPETENCIA` ← `DT_COMPETENCIA` (6 caracteres, mês);
+- `SIGTAP_CO_PROCEDIMENTO` ← `CO_PROCEDIMENTO` (10 caracteres, preservando zeros à esquerda);
+- `SIGTAP_NO_PROCEDIMENTO` ← `NO_PROCEDIMENTO` (posição 11–260, removendo apenas o preenchimento ASCII à direita);
+- `SIGTAP_COMPETENCIA_CODIGO` ← `YYYYMM|CO_PROCEDIMENTO` (chave **operacional derivada**, alfanumérica, para evitar coerção numérica no Qlik).
+
+Exige 165.203 pares únicos código/competência, 36 meses, contagens mensais de referência reconciliadas e hashes SHA-256 dos TXT antes de gravar CSV. A chave derivada não altera a chave de negócio aprovada nem antecipa a dimensão acadêmica.
+
+**DECISÃO PENDENTE — encoding descritivo:** `NO_PROCEDIMENTO` é decodificado como **candidato cp1252**, seguindo hipótese técnica ainda não aprovada para esta tabela. O script rejeita bytes incompatíveis e caracteres de controle, produz amostras com acentos no manifesto e emite explicitamente `STRUCTURE_PASS_ENCODING_REVIEW`; não declara o staging Qlik aprovado sem avaliação visual dos nomes por competência.
+
+Saídas locais ignoradas pelo Git:
+
+- `BASE/REFERENCIAS/sigtap_procedimento_staging_candidate.csv`;
+- `BASE/REFERENCIAS/sigtap_procedimento_staging_candidate_manifest.json`.
+
+Execução na raiz do repositório:
+
+~~~powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\materialize_sigtap_staging_candidate.py
+~~~
+
+Confira contagem, integridade e amostras de descrições:
+
+~~~powershell
+$m = Get-Content .\BASE\REFERENCIAS\sigtap_procedimento_staging_candidate_manifest.json -Raw -Encoding UTF8 | ConvertFrom-Json
+$m.status
+$m.rows
+$m.distinct_code_month_keys
+$m.description_encoding
+$h = (Get-FileHash $m.outputs.csv -Algorithm SHA256).Hash.ToLowerInvariant()
+"CSV_SHA_MATCH=$($h -eq $m.outputs.sha256.ToLowerInvariant())"
+~~~
+
+**Gate C3.4a:** estrutura e hashes PASS + avaliação explícita do texto/acentos da referência. Não confundir o `STRUCTURE_PASS_ENCODING_REVIEW` com PASS definitivo da camada Qlik.
+
+### C3.4b — staging QlikView 12 (PENDENTE)
+
+Somente após C3.4a ser validado, implementar a carga via script externo versionável no `EXTRACAO/EXT.qvw` e produzir `REF_SIGTAP.qvd` e checkpoint `PASS_PARTIAL`. Revalidar **no QlikView** 165.203 pares distintos (código + competência) e match dos 566.672 RD; impedir conversão dos códigos para números. Não criar fatos, dimensões, painel ou status final da Fase III.
 
 ## 4. Limites
 
