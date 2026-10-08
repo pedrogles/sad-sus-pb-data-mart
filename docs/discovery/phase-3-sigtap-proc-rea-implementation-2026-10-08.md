@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração / staging  
 **Checkpoint:** III-C3 — Referência oficial de procedimentos  
-**Status:** C3.1–C3.3b.2/T27 PASS; C3.4a/C3.4a.1 PASS (cp1252 operacional); C3.4b SCRIPT QLIK IMPLEMENTADO / RELOAD LOCAL PENDENTE; FASE III PARCIAL
+**Status:** C3.1–C3.4b PASS; T27 PASS; REF_SIGTAP.qvd e checkpoint Qlik gerados/validados localmente; FASE III PARCIAL
 
 ## 1. Contrato aprovado
 
@@ -533,7 +533,7 @@ O padrão do C2 permanece: fail-closed com `EXIT SCRIPT`, `SET ErrorMode=0`, `Sc
 - `EXTRACAO/QVD/REF_SIGTAP.qvd`;
 - `EXTRACAO/QVD/_CHECKPOINT_EXTRACAO_SIGTAP.csv`, colunas `generated_at;stage;status;sigtap_rows;sigtap_distinct_code_month_keys;sigtap_competences;rd_rows;sigtap_unmatched_rd_rows`, com status `PASS_PARTIAL`.
 
-**Status atual:** script disponível no repositório, mas **não executado/validado em QlikView 12**. Os números 165.203/36/566.672/0 são critérios de aceitação, **não resultado já confirmado no QlikView**.
+**Estado na implementação inicial C3.4b:** script disponível, ainda sem execução local. **Esse estado foi superado:** o reload de 08/10/2026 às 12:44:24 produziu o QVD e checkpoint com 165.203/165.203/36/566.672/0, conforme evidência de PASS registrada abaixo.
 
 #### Diagnóstico C3.4b.1 — erro de sintaxe no QlikView (08/10/2026)
 
@@ -552,9 +552,25 @@ Erro: Comando desconhecido
 
 **Correção pontual implementada (C3.4b.1):** a mesma expressão, preservando integralmente os quatro predicados (`vSIGTAPInvalidCompetences`, `vSIGTAPInvalidProcedures`, `vSIGTAPInvalidComposite`, `vSIGTAPEmptyDescriptions`), agora está em uma única linha de `IF ... THEN`. A inspeção estática de `EXTRACAO/ext_main.qvs` não encontrou outros `IF` sem `THEN` na própria linha.
 
-**STATUS: CORREÇÃO IMPLEMENTADA / RELOAD LOCAL PENDENTE.** Não há evidência de defeito físico nos dados SIGTAP, tampouco prova ainda da cobertura QVD em QlikView. T27 Python permanece PASS, enquanto C3.4b segue pendente até execução real do script corrigido e conferência dos artefatos.
+**STATUS HISTÓRICO NO MOMENTO DO DIAGNÓSTICO:** correção implementada, reload local ainda pendente. **O reload posterior às 12:44:24 passou**, conforme evidência C3.4b PASS abaixo. A ausência de defeito físico nos dados SIGTAP foi sustentada pelos controles; T27 Python permanece PASS.
 
-#### Gate de validação local
+#### Evidência C3.4b — PASS no QlikView 12 (08/10/2026)
+
+**FATO VERIFICADO:** após o merge da correção sintática C3.4b.1 (`IF` em uma única linha, PR #58, commit `97cee2b62d39d5e28fe356a38ef29c4def64d057`), o usuário executou novo reload local do `EXTRACAO/EXT.qvw` e confirmou a geração de:
+
+- `EXTRACAO/QVD/REF_SIGTAP.qvd`: **4.606.958 bytes**, data local 08/10/2026 12:44;
+- `EXTRACAO/QVD/_CHECKPOINT_EXTRACAO_SIGTAP.csv`: **202 bytes**, data local 08/10/2026 12:44.
+
+Conteúdo efetivo do checkpoint lido por PowerShell:
+
+```text
+generated_at;stage;status;sigtap_rows;sigtap_distinct_code_month_keys;sigtap_competences;rd_rows;sigtap_unmatched_rd_rows
+08/10/2026 12:44:24;EXTRACAO_SIGTAP;PASS_PARTIAL;165203;165203;36;566672;0
+```
+
+**Gate C3.4b: PASS.** A evidência comprova a geração do QVD e do checkpoint, com os totais exigidos e 0 RD sem correspondência por competência. A validação Qlik complementa o T27 já aprovado na reconciliação Python. Não significa conclusão da Fase III nem validação de referências CNES/municipal/estabelecimento.
+
+#### Procedimento de validação local (executado e confirmado em 08/10/2026)
 
 1. Atualizar a `main` via `git pull origin main`;
 2. conferir SHA-256 do CSV intermediário com o manifesto C3.4a; o hash confirmado antes do reload foi `75237997a26bea243b101af1bd19e04e3f4905fb237ac9d227db860cbd14b482`;
@@ -563,7 +579,7 @@ Erro: Comando desconhecido
 5. conferir ambos os arquivos gerados e o checkpoint `EXTRACAO_SIGTAP;PASS_PARTIAL;165203;165203;36;566672;0` (precedido por timestamp);
 6. encerrar o C3.4b apenas após o resultado local e registrar a evidência no repositório.
 
-**Não** emitir marcador de conclusão da Fase III. CNES tipo/leito (T29), ponte municipal e estabelecimento histórico continuam pendentes. Não criar fatos/dimensões/painéis.
+**Limite persistente:** a Fase III permanece em andamento. CNES tipo/leito (T29), ponte municipal e estabelecimento histórico continuam pendentes. Não criar fatos/dimensões/painéis nesta etapa.
 
 ## 4. Limites
 
