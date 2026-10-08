@@ -77,3 +77,19 @@ generated_at;stage;status;ibge_pb_official_codes7;unique_code6_candidates;st_dis
 **GATE ATUAL:** `III-C5.1=PASS_LOCAL_CANDIDATE_MAPPING`; `223↔223` 1:1 no universo PB; zero unmatched do lado PB; `MUNICIPAL_BRIDGE=NOT_YET_MATERIALIZED`. O contrato de referência oficial do Boundary 7 foi testado com fonte IBGE oficial + compatibilidade empírica, mas **a decisão de aceitar este método para materializar a ponte municipal ainda será explicitada separadamente**; não transformar silenciosamente o piloto em tabela final. `PHASE_III=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
 
 **Próximo passo recomendado:** integrar apenas este preflight e suas evidências. Depois submeter decisão de materialização mínima de uma referência municipal PB com os pares DATASUS6 × IBGE7, proveniência do XLS IBGE oficial, verificação de unicidade e SHA; se aprovada, criar etapa Qlik separada para QVD de referência e checkpoint específico, sem criar dimensão/fato nem preencher códigos de residentes externos com população PB. Revisar cobertura de residentes de fora da PB apenas se for necessária para nome municipal em análises de fluxo.
+
+
+## 7. Decisão do responsável — materialização PB aprovada em 08/10/2026
+
+**DECISÃO APROVADA PELO RESPONSÁVEL DO PROJETO:** após a execução de III-C5.1, foi aprovada a **materialização restrita dos 223 pares PB** `COD_DATASUS_6 ↔ COD_IBGE_7`, usando os **códigos IBGE7 completos obtidos dos XLS oficiais** já inspecionados e o prefixo de seis dígitos como correspondência **empiricamente validada** para os códigos existentes em SIH/CNES. **Não exigir novo arquivo externo de equivalência** para este recorte, porque a técnica tem fundamento documental e o cruzamento nos dados reais mostrou unicidade 1:1, zero unmatched em PB.
+
+**Limites obrigatórios da aprovação:**
+
+1. A ponte será **derivada pelo projeto a partir de arquivos oficiais do IBGE e dados DATASUS/CNES**, e não será rotulada como tabela de equivalência oficial publicada separadamente pelo IBGE/Ministério da Saúde.
+2. Não inventar, deduzir ou recalcular o sétimo dígito IBGE a partir do código DATASUS: reutilizar **exatamente o código IBGE7 oficial de origem** e verificar a unicidade `223 COD_IBGE_7 ↔ 223 COD_DATASUS_6`.
+3. Materializar somente o universo dos **223 municípios PB**; preservar as **5.202 internações com residência externa à PB** sem associá-las indevidamente ao denominador de população PB. Cobertura nacional externa é outra questão, **não aprovada neste recorte**.
+4. Versionar script de construção/validação em texto, não versionar QVDs/datasets derivados. Evidenciar **fonte original, origem por ano, integridade SHA-256, contagem, unicidade, cobertura e exceções**, usando `BASE/REFERENCIAS` e/ou `EXTRACAO/QVD` para saídas locais existentes.
+5. Não construir `DIM_MUNICIPIO`, `FATO_POPULACAO`, `LINK_ANALISE` nem alterar modelagem acadêmica durante a Fase III. Não fechar Fase III antes da materialização testada e da reconciliação final de extração.
+6. Implementar em **novo PR originado de `main` atualizada APÓS merge do PR #71**. Não continuar o desenvolvimento da ponte diretamente na branch squash-merged de preflight, evitando repetir diffs/história divergente.
+
+**Status:** `MUNICIPAL_PB_223_CROSSWALK_APPROVED_FOR_IMPLEMENTATION`, `III-C5.1=PASS_LOCAL`, `CROSSWALK_QVD=NOT_YET_MATERIALIZED`, `PHASE_III=IN_PROGRESS`, `T29_HISTORICAL=NOT_APPROVED`. Próximo gate é implementar e validar a referência derivada no QlikView 12, sem escopo adicional.
