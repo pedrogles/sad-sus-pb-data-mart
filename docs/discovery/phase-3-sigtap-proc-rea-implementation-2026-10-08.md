@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração / staging  
 **Checkpoint:** III-C3 — Referência oficial de procedimentos  
-**Status:** C3.1/C3.2/C3.3a/C3.3a.1/C3.3b.1/C3.3b.2 PASS; T27 PASS; C3.4a CSV DE STAGING IMPLEMENTADO / EXECUÇÃO LOCAL E REVISÃO DE ENCODING PENDENTES; C3.4b QLIK PENDENTE
+**Status:** C3.1–C3.3b.2 PASS; T27 PASS; C3.4a ESTRUTURA/HASH PASS, ENCODING PENDENTE; C3.4a.1 AUDITORIA TEXTUAL IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; C3.4b QLIK PENDENTE
 
 ## 1. Contrato aprovado
 
@@ -477,7 +477,22 @@ $h = (Get-FileHash $m.outputs.csv -Algorithm SHA256).Hash.ToLowerInvariant()
 "CSV_SHA_MATCH=$($h -eq $m.outputs.sha256.ToLowerInvariant())"
 ~~~
 
-**Gate C3.4a:** estrutura e hashes PASS + avaliação explícita do texto/acentos da referência. Não confundir o `STRUCTURE_PASS_ENCODING_REVIEW` com PASS definitivo da camada Qlik.
+**FATO VERIFICADO — execução C3.4a em 08/10/2026:** os 36 meses retornaram `STRUCTURE_PASS` no materializador; o CSV gerado contém 165.203 linhas e 165.203 pares únicos código+competência. As 48.749 descrições com caracteres não ASCII foram decodificadas provisoriamente como `cp1252`, sem falha de decodificação no processamento. O CSV apresentou SHA-256 `75237997a26bea243b101af1bd19e04e3f4905fb237ac9d227db860cbd14b482` e `CSV_SHA_MATCH=True` em conferência independente. O manifesto mantém `STRUCTURE_PASS_ENCODING_REVIEW` de forma intencional.
+
+As primeiras 12 amostras reproduziram apenas dois nomes recorrentes por competência: `ATIVIDADE EDUCATIVA / ORIENTAÇÃO EM GRUPO NA ATENÇÃO BÁSICA` e `ATIVIDADE EDUCATIVA / ORIENTAÇÃO EM GRUPO NA ATENÇÃO ESPECIALIZADA`. Os acentos estão legíveis nesses exemplos, mas **a diversidade textual da amostra não é suficiente para aprovar sozinho o encoding do conjunto completo**.
+
+### C3.4a.1 — auditoria descritiva read-only (IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE)
+
+O script `tools/audit_sigtap_staging_encoding.py` relê o CSV candidato e seu manifesto, verifica SHA-256, 165.203 linhas, 36 competências, unicidade da chave operacional, formato textual de códigos e 48.749 descrições não ASCII. Examina marcadores conservadores de possíveis problemas de recodificação e seleciona amostras distintas, distribuídas por **201701 / 201801 / 201901 / 201912** e por tipos de diacríticos (**cedilha, til, acento agudo e circunflexo**).
+
+```powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\audit_sigtap_staging_encoding.py
+```
+
+**Gate:** conferência visual dos 16 nomes diversificados e investigação de quaisquer `SUSPECT_MOJIBAKE_MARKERS` reportados. A ausência de marcadores não prova, por si só, a codificação de 100% das descrições, mas melhora a evidência para aprovar `cp1252` como interpretação operacional; a validação final deve ser registrada antes da carga Qlik.
+
+O status de C3.4a permanece **ESTRUTURA/HASH PASS; ENCODING AVALIAÇÃO PENDENTE**. Não confundir com PASS definitivo da etapa C3.4b.
 
 ### C3.4b — staging QlikView 12 (PENDENTE)
 
