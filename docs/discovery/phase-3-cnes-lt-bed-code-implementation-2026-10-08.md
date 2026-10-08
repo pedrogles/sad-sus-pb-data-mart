@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1/C4.1a PASS; C4.2a CÓDIGO 70 VALIDADO; C4.2b.1 5/5 HTMLs CAPTURADOS / COMPETÊNCIA NÃO CONFIRMADA; C4.2b.2 AUDITORIA OFFLINE IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; DOMÍNIO HISTÓRICO COMPLETO NÃO VALIDADO; T29 NÃO AVALIADO
+**Status:** C4.1/C4.1a PASS; C4.2a CÓDIGO 70 VALIDADO; C4.2b.1 CAPTURAS 5/5; C4.2b.2 INTEGRIDADE PASS / DIFERENÇAS NÃO INTERPRETADAS; C4.2b.3 COMPARADOR DE LINHAS HTML IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE; DOMÍNIO HISTÓRICO NÃO VALIDADO; T29 NÃO AVALIADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -263,6 +263,60 @@ $m.records | Select-Object competence, manifest_hash_match, requested_competence
 ```
 
 **DECISÃO PENDENTE:** após essa conferência, determinar se a fonte é confiável para uma descrição histórica amostral ou se precisamos localizar a versão oficial do **Dicionário de Dados/Tabelas de Domínio** por outra rota. **Não** presumir que consultas de indicador componham domínio completo de 57 códigos nem que `CODLEITO` isolado seja chave normativa.
+
+### C4.2b.2 — auditoria diferencial executada: integridade PASS / interpretação histórica REVIEW (08/10/2026)
+
+**FATO VERIFICADO — execução Python local:** cinco HTMLs foram reabertos e seus hashes/tamanhos reconciliados com o manifesto original (`VERIFIED_HTML=5`, `INTEGRITY_FAILURES=0`, `manifest_hash_match=True` para os cinco arquivos). A auditoria obteve:
+
+```text
+DISTINCT_HTML_HASHES=5
+DISTINCT_VISIBLE_TEXT_HASHES=5
+DISTINCT_BED_CONTENT_HASHES=5
+EXPLICIT_COMPETENCES=0
+VERDICT=HTML_COMPARISON_REVIEW_REQUIRED
+T29_COVERAGE=NOT_EVALUATED
+```
+
+Cada HTML contém o valor `YYYYMM` solicitado em algum ponto (`requested_competence_present_in_html=True`), mas **nenhum** o comprovou como seleção efetiva nos controles `<select>`/`<input>`. Cinco hashes de corpo diferentes comprovam apenas diferenças no trecho textual adotado pela heurística que começa em `CIRÚRGICO`. Esse trecho **não foi demonstrado ser exclusivamente uma tabela de domínio** e pode conter competência solicitada, contagens operacionais ou elementos do template.
+
+**Gate de integridade da captura: PASS. Gate de interpretação temporal/normativa: REVIEW.** Não há base para declarar cinco versões de domínio distintas, nem para concluir que o portal ignorou `VComp`.
+
+### C4.2b.3 — comparador offline de linhas de tabelas HTML (IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE)
+
+Script: `tools/compare_cnes_leito_html_table_rows.py`. Lê somente os cinco HTMLs já capturados e revalida integridade de bytes/tamanho contra `probe_summary.json`. Por competência, enumera linhas HTML `<tr>` e células `<td>`/`<th>`, com texto normalizado para fins de comparação (sem gerar referência nem reformatar arquivos originais). Registra:
+
+- quantidade de linhas de tabela capturadas por página e SHA-256 derivado dessas linhas;
+- ocorrências da competência solicitada e das outras quatro competências no HTML bruto (um eco do parâmetro sozinho não confirma filtro aplicado);
+- exemplos pontuais de linha do código `70`, quando puder identificá-la na estrutura;
+- comparação diferencial dos pares 201712→201801, 201801→201805, 201805→201806 e 201806→201912, mostrando linhas iguais/alteradas e até 12 exemplos de grupos de alteração;
+- comparação **exploratória** que substitui somente os cinco valores `YYYYMM` solicitados por marcador comum, para testar se as diferenças são explicadas por ecos explícitos dos meses. Isso **não** prova equivalência semântica nem identifica automaticamente vigência histórica.
+
+Saída JSON local (ignorada no Git): `BASE/REFERENCIAS/cnes_leito_history_probe/table_row_diff_summary.json`.
+
+Execução:
+
+```powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\compare_cnes_leito_html_table_rows.py
+```
+
+Consulta resumida:
+
+```powershell
+$m = Get-Content .\BASE\REFERENCIAS\cnes_leito_history_probe\table_row_diff_summary.json -Raw -Encoding UTF8 | ConvertFrom-Json
+$m.captured_htmls | Select-Object competence_requested, table_rows, code70_row_count
+$m.comparisons | ForEach-Object {
+    [pscustomobject]@{
+        Transicao = "$($_.from_competence_requested)->$($_.to_competence_requested)"
+        Iguais = $_.raw_table_diff.equal_rows
+        Alteradas = $_.raw_table_diff.replace_rows + $_.raw_table_diff.insert_rows + $_.raw_table_diff.delete_rows
+        AlteradasSemEcoMes = $_.month_echo_neutralized_exploratory_diff.replace_rows + $_.month_echo_neutralized_exploratory_diff.insert_rows + $_.month_echo_neutralized_exploratory_diff.delete_rows
+    }
+} | Format-Table -AutoSize
+$m.comparisons[0].raw_table_diff.diff_examples | ConvertTo-Json -Depth 6
+```
+
+**Limites:** o extrator HTML é uma sonda estrutural, não um parser oficial de domínios; diferenças em linhas podem ser apenas de indicadores quantitativos por competência. A prova de `VComp` e o catálogo normativo completo continuam pendentes. **T29 não executado.**
 
 ## 4. Gate seguinte — C4.2 referência oficial
 
