@@ -19,6 +19,7 @@ from pathlib import Path
 
 PDF_SHA = "43de32e91b9ed2611bacde8f4cea60576cb162017fa4db69797dd177c4f7632e"
 REF_SHA = "c44d1075ed4b628106587f11cb38eab794d3573986e2079844738ad8c4b3f2c6"
+REF_SHA_CRLF = "f9cc289b0a27557dd92b04bcfb558ac33d528900e6937549e71b373f36ccc363"  # Windows checkout
 PROFILE_SHA = "4afe0741b1bf43434192e467a043a0bcb7f2a96e25214f92f47557531e238449"
 GROUP_LABELS = {
     "1": "Cirúrgico", "2": "Clinico", "3": "Complementar",
@@ -28,12 +29,12 @@ GROUP_LABELS = {
 EXPECTED_GROUP_SIZES = {"1": 17, "2": 15, "3": 18, "4": 2, "5": 2, "6": 5, "7": 6}
 
 
-def verified_bytes(path: Path, expected_hash: str) -> bytes:
+def verified_bytes(path: Path, expected_hash: str, *, allowed_hashes: tuple[str, ...] = ()) -> bytes:
     if not path.is_file():
         raise RuntimeError(f"Arquivo de entrada ausente: {path}")
     data = path.read_bytes()
     actual = hashlib.sha256(data).hexdigest()
-    if actual != expected_hash:
+    if actual not in (expected_hash, *allowed_hashes):
         raise RuntimeError(
             f"SHA-256 divergente: {path}; esperado={expected_hash}; obtido={actual}"
         )
@@ -53,8 +54,11 @@ def read_csv(data: bytes, columns: set[str]) -> list[dict[str, str]]:
 
 def run(pdf: Path, reference: Path, profile: Path, output: Path) -> int:
     verified_bytes(pdf, PDF_SHA)  # confere bytes originais; nao interpreta PDF na auditoria
+    # A transcricao e versionada com LF; Windows pode fazer checkout CRLF.
+    # Aceitamos somente estes dois SHA-256 exatos previamente verificados.
+    reference_bytes = verified_bytes(reference, REF_SHA, allowed_hashes=(REF_SHA_CRLF,))
     reference_rows = read_csv(
-        verified_bytes(reference, REF_SHA),
+        reference_bytes,
         {"codleito", "tp_leito", "nome_cnes", "tipo_cnes", "status", "pdf_page"},
     )
     profile_rows = read_csv(
@@ -124,7 +128,11 @@ def run(pdf: Path, reference: Path, profile: Path, output: Path) -> int:
         "official_document": "Nota Tecnica 32/2019-CGSI/DRAC/SAES/MS, Anexo Setembro/2019",
         "pdf_sha256": PDF_SHA,
         "reference_path": str(reference),
-        "derived_transcription_sha256": REF_SHA,
+        "derived_transcription_sha256": hashlib.sha256(reference_bytes).hexdigest(),
+        "derived_transcription_git_lf_sha256": REF_SHA,
+        "derived_transcription_checkout_line_endings": (
+            "LF" if hashlib.sha256(reference_bytes).hexdigest() == REF_SHA else "CRLF"
+        ),
         "profile_sha256": PROFILE_SHA,
         "snapshot_reference_pairs": len(index),
         "snapshot_reference_distinct_codes": len(code_set),
