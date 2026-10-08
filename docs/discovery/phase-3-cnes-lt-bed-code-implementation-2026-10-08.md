@@ -745,6 +745,22 @@ if ($LASTEXITCODE -eq 0 -and (Test-Path .\BASE\REFERENCIAS\cnes_nt32_201909_pair
 **REGRA DE DECISÃO:** `C4.2c.3a = OFFICIAL_VERSIONED_CHANNEL_DOCUMENTED`; `C4.2c.3b = PORTAL_QUERY_PENDING`; `T29_FULL = NOT_APPROVED`. O RTS documenta competências desde **01/2017**, diferente da janela de downloads de base CNES a partir de **06/2017**; **nenhuma dessas janelas implica automaticamente que a terminologia Leitos possua todas as versões aplicáveis acessíveis, completas e verificadas**. Não transformar cronograma em prova de vigência, não retroprojetar o snapshot de 2019 nem alterar `DIM_TIPO_LEITO`/QVDs.
 
 
+
+### C4.2c.3b.1 — evidência visual RTS Leito 01/2017 (08/10/2026)
+
+**FATO VERIFICADO — captura de tela enviada pelo usuário, inspeção visual (sem exportação HTML/dados):**
+
+- o portal **RTS** abriu em navegador, com rótulo de competência **`01/2017`** no canto superior direito;
+- menu **CONSULTAS → Estabelecimentos de Saúde → Leitos** aparece à esquerda, e a página central indica **`LEITO`**;
+- a área de resultados informa literalmente **`Nenhum resultado encontrado.`**;
+- **não há versão da terminologia Leito visível**, nem código, descrição, tipo, status ou vigência nos resultados desta consulta;
+- a tela **não** evidencia ausência normativa de leitos em 01/2017, inexistência da terminologia em toda a série, inexistência de versões no download RTS, erro dos CSVs CNES/LT ou ausência de leitos físicos. Ela comprova **somente resultado vazio na interface para este contexto exibido**.
+
+**INTERPRETAÇÃO E GATE:** `RTS_ACCESS=PASS`; `LEITOS_201701_QUERY=EMPTY_VISIBLE`; `LEITOS_201701_VERSION=NOT_SHOWN`; `HISTORICAL_PAIR_VALIDITY=NOT_VERIFIED`; `T29_FULL=NOT_APPROVED`. O primeiro teste **não** confirmou a disponibilidade histórica para Leitos, mesmo com competências RTS desde 2017 na documentação oficial.
+
+**Próximo teste discriminante (somente consulta):** usar o próprio seletor `COMPETÊNCIA 01/2017` e mudar para **09/2019**, navegar novamente em **CONSULTAS → Estabelecimentos de Saúde → Leitos**, registrar se aparece a **versão da terminologia** e seus códigos. Esta competência coincide com o **anexo Setembro/2019** da Nota Técnica nº 32/2019 já auditada, permitindo um controle positivo verificável. Se persistir `Nenhum resultado encontrado`, registrar `RTS_LEITOS_201909_EMPTY_VISIBLE` e **não presumir disponibilidade dos dados históricos Leitos no RTS**; avaliar, sem downloads massivos, a seção `Downloads` para existência de metadados de versão Leitos.
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
