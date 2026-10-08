@@ -267,6 +267,7 @@ Antes de adicionar datasets ao Git:
 - C2.8 primeiro reload: referência CID passou os gates estruturais, mas 9.093/566.672 linhas RD ficaram unmatched no QVD; reload interrompido controladamente;
 - C2.8a/b: 9.093 linhas RD unmatched, 128 códigos distintos; todos são texto no QVD (`IsNum=0`, `IsText=-1`);
 - C2.8c **PASS**: os 128 códigos / 9.093 ocorrências têm `direct_text_match=1` e `text_after_rtrim_match=1`; o lookup antigo com `RTrim(Text(DIAG_PRINC))` falhou;
-- C2.8d implementado: `Text(RTrim(Text(DIAG_PRINC)))` no `ApplyMap` de cobertura, preservando a regra de padding à direita e sem alterar `SRC_SIH_RD.qvd`;
-- próxima ação: recarregar `EXT.qvw` e comprovar 0 unmatched, `REF_CID10.qvd` e checkpoint parcial;
+- C2.8d **PASS** em 08/10/2026 10:44:15: após `Text(RTrim(Text(DIAG_PRINC)))`, `REF_CID10.qvd` gerado e `_CHECKPOINT_EXTRACAO_CID10.csv` validado (`PASS_PARTIAL`; 14.230 códigos únicos; distribuição 2.042/12.188; 566.672 RD; **0 unmatched**);
+- III-C2 — CID-10 **CONCLUÍDO — PASS**, T28 cobertura `DIAG_PRINC↔CID-10` **PASS**; decisão de referência `201912` descritiva/superset preservada, sem vigência mensal inferida;
+- próxima ação: iniciar a descoberta/materialização de `SIGTAP / PROC_REA` por competência (T27); manter Fase III parcial e preservar os demais gates;
 - implementação: **LIBERADA SOMENTE PARA A FASE III — EXTRAÇÃO/STAGING**; não emitir conclusão final da fase antes de IBGE + referências + reconciliação.
