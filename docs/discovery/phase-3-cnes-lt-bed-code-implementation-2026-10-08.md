@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1/C4.1a PASS; C4.2a código 70 validado; C4.2b.1 capturas 5/5; C4.2b.2 integridade PASS; C4.2b.3 comparação de 77 linhas/competência PASS estrutural e diferenças quantitativas observadas; C4.2b.3a isolamento de código/descrição IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE; domínio histórico NÃO VALIDADO; T29 NÃO AVALIADO
+**Status:** C4.1/C4.1a PASS; C4.2a código 70 validado; C4.2b.1 cinco capturas; C4.2b.2 integridade PASS; C4.2b.3 estrutura PASS; C4.2b.3a 65 pares de rótulos estáveis nas cinco capturas — PASS AMOSTRAL; C4.2c DOCUMENTAÇÃO OFICIAL DE DOMÍNIO PENDENTE; T29 NÃO AVALIADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -370,6 +370,31 @@ $m.comparisons | ForEach-Object {
 ```
 
 **Gate:** decidir apenas se os pares `código/descrição` exibidos no **indicador oficial** permaneceram estáveis nas cinco capturas. A futura origem normativa (Tabelas de Domínio SCNES) e T29 permanecem **PENDENTES**; nenhuma alteração do QlikView/CSV LT foi autorizada.
+
+### C4.2b.3a — resultado executado: estabilidade amostral de pares código/descrição (08/10/2026)
+
+**FATO VERIFICADO (execução local apresentada pelo usuário):** depois de `git pull origin main`, o script `tools/compare_cnes_leito_html_table_rows.py` confirmou integridade dos cinco HTMLs, **77 linhas de tabela e uma linha de código 70 por página**. Para cada uma das cinco competências **solicitadas**, extraiu **65 pares distintos `(código, descrição)`**, sem valores de código repetidos **nessas linhas filtradas**.
+
+| Transição solicitada | Pares adicionados | Pares removidos | Linhas com o mesmo rótulo em mesma posição | Outras células diferentes nesses rótulos |
+|---|---:|---:|---:|---:|
+| 201712 → 201801 | 0 | 0 | 73 | 61 |
+| 201801 → 201805 | 0 | 0 | 73 | 63 |
+| 201805 → 201806 | 0 | 0 | 74 | 58 |
+| 201806 → 201912 | 0 | 0 | 73 | 64 |
+
+**PASS AMOSTRAL DE ESTABILIDADE DOS RÓTULOS:** as quatro diferenças de multiconjuntos de `(código, descrição)` foram nulas entre capturas. Entretanto, **não** significa validação de competência selecionada (0/5 controles anteriormente confirmados), de hierarquia `TP_LEITO`, de chave global de descrição, nem de domínio exaustivo para 2017–2019. O filtro estrutural usa apenas primeira célula com dois dígitos e segunda célula textual, descartando contexto de grupo/tipo. O HTML mostra indicadores e contagens, não tabela oficial de domínio com versionamento demonstrado.
+
+**T29: NÃO AVALIADO**, pois falta reconciliar cada um dos **57 pares `TP_LEITO/CODLEITO` observados** nos 35.518 registros CNES/LT contra fonte oficial aprovada. Não materializar `REF_TIPO_LEITO.qvd` nesta etapa.
+
+### C4.2c — aquisição assistida do documento oficial CNES (próximo gate)
+
+A [documentação do Portal CNES](https://cnes.datasus.gov.br/pages/downloads/documentacao.jsp) anuncia **`Dicionário de Dados do SCNES`** e **`Tabelas de Domínio`**, mas seu HTML público apresenta placeholders como `{{scnesTabelasDominio.dtAtualizacao}}`; portanto **nenhum link direto ou versão de 2017–2019 foi comprovado nesta descoberta**. O [guia oficial do CNES sobre conceitos de leitos](https://wiki.saude.gov.br/cnes/index.php/Principais_Conceitos) explicita a separação tipo/detalhamento e existente/SUS. A tabela [CONASS — domínio CNES leito](https://wiki.conass.org.br/index.php?title=Tabela_de_dom%C3%ADnio_CNES_leito) é candidata a comparação **secundária** e inclui códigos reaproveitados entre tipos; **não substituir a referência primária pela secundária**.
+
+**Ação local solicitada, sem alterar o repositório:** no navegador, acessar o Portal CNES → Downloads → Documentação e tentar baixar o arquivo disponível sob **Tabelas de Domínio**. Idealmente baixar também o **Dicionário de Dados do SCNES**. Preservar nome original, formato, data/versão informada e URL concreta de cada arquivo, sem alterar conteúdo ou atribuir competência histórica. Disponibilizar o(s) arquivo(s) para inspeção. Se o portal falhar ou mostrar apenas versão atual, registrar esse bloqueio em vez de inferir URLs.
+
+**Gate seguinte após arquivo real:** identificar dentro do documento uma tabela de leitos com os quatro atributos efetivamente existentes (nome do tipo, código do tipo, código do leito e descrição conforme a fonte), inspecionar data/versão, provar cardinalidade e existência dos 57 pares observados, investigar o código `70`, **antes** de definir estratégia de temporalidade ou executar T29. Se só houver documento atual, a aplicabilidade retroativa a 2017–2019 continua uma **DECISÃO PENDENTE**.
+
+**Sem mudanças em** `EXTRACAO/ext_main.qvs`, QVDs, arquivos de origem, modelos dimensional/normalizado ou requisitos acadêmicos nesta rodada.
 
 ## 4. Gate seguinte — C4.2 referência oficial
 
