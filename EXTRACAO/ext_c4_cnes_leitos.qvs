@@ -88,13 +88,7 @@ LET vC4Code70Control = Peek('code_70_control_count', 0, 'TMP_C4_REFERENCE_CHECK'
 
 DROP TABLE TMP_C4_REFERENCE_CHECK;
 
-IF $(vC4ReferenceRows) <> 65
-    OR $(vC4DistinctPairs) <> 65
-    OR $(vC4InvalidCodes) <> 0
-    OR $(vC4InvalidProvenance) <> 0
-    OR $(vC4EmptyLabels) <> 0
-    OR $(vC4Code66Control) <> 1
-    OR $(vC4Code70Control) <> 1 THEN
+IF $(vC4ReferenceRows) <> 65 OR $(vC4DistinctPairs) <> 65 OR $(vC4InvalidCodes) <> 0 OR $(vC4InvalidProvenance) <> 0 OR $(vC4EmptyLabels) <> 0 OR $(vC4Code66Control) <> 1 OR $(vC4Code70Control) <> 1 THEN
 
     TRACE [EXTRACAO][REF_LEITO_201909] Snapshot reference gate failed;
     EXIT SCRIPT;
@@ -136,10 +130,7 @@ LET vC4LTUnmatched = Peek('unmatched_lt_rows', 0, 'TMP_C4_LT_COVERAGE');
 
 DROP TABLE TMP_C4_LT_COVERAGE;
 
-IF $(vC4LTRows) <> 35518
-    OR $(vC4LTPairs) <> 57
-    OR $(vC4LTCompetences) <> 36
-    OR $(vC4LTUnmatched) <> 0 THEN
+IF $(vC4LTRows) <> 35518 OR $(vC4LTPairs) <> 57 OR $(vC4LTCompetences) <> 36 OR $(vC4LTUnmatched) <> 0 THEN
 
     TRACE [EXTRACAO][REF_LEITO_201909] Snapshot pair coverage failed. LT_Rows=$(vC4LTRows) Pairs=$(vC4LTPairs) Competences=$(vC4LTCompetences) Unmatched=$(vC4LTUnmatched);
     EXIT SCRIPT;
@@ -181,5 +172,5 @@ ENDIF
 DROP TABLE EXTRACAO_CNES_LEITO_201909_CHECKPOINT;
 
 TRACE [EXTRACAO] PHASE_III_C4_201909_SNAPSHOT_COVERAGE_PASS Pairs=$(vC4LTPairs) LT=$(vC4LTRows) Unmatched=$(vC4LTUnmatched);
-TRACE [EXTRACAO] T29_HISTORICAL_NOT_APPROVED — 201909 labels are NOT historical validity.
-TRACE [EXTRACAO] PHASE_III_IN_PROGRESS — no final extraction success marker emitted.
+TRACE [EXTRACAO] T29_HISTORICAL_NOT_APPROVED: 201909 labels are NOT historical validity.
+TRACE [EXTRACAO] PHASE_III_IN_PROGRESS: no final extraction success marker emitted.
