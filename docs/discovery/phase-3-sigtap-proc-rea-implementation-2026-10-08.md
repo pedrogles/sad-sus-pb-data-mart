@@ -535,6 +535,25 @@ O padrão do C2 permanece: fail-closed com `EXIT SCRIPT`, `SET ErrorMode=0`, `Sc
 
 **Status atual:** script disponível no repositório, mas **não executado/validado em QlikView 12**. Os números 165.203/36/566.672/0 são critérios de aceitação, **não resultado já confirmado no QlikView**.
 
+#### Diagnóstico C3.4b.1 — erro de sintaxe no QlikView (08/10/2026)
+
+**FATO VERIFICADO:** o reload local de 08/10/2026 às 12:38:44 chegou ao bloco SIGTAP em `EXTRACAO/ext_main.qvs`, carregou **165.203 registros** de referência e realizou com sucesso as verificações de linhas, chaves compostas e 36 competências. As quatro verificações de campos inválidos calcularam **0/0/0/0**.
+
+O arquivo de log `EXT.qvw.2026_10_08_12_38_28.log` registrou, em seguida, erro de parser na linha 1243:
+
+```text
+IF 0 <> 0
+Erro: Erro na linha do script:
+OR 0 <> 0
+Erro: Comando desconhecido
+```
+
+**Causa identificada:** o `IF` de validação consolidada dos quatro contadores foi escrito em múltiplas linhas no script QlikView 12. O interpretador tratou `OR` no início da linha seguinte como comando isolado. A execução foi interrompida **antes do mapeamento de cobertura RD, do `REF_SIGTAP.qvd` e do checkpoint**.
+
+**Correção pontual implementada (C3.4b.1):** a mesma expressão, preservando integralmente os quatro predicados (`vSIGTAPInvalidCompetences`, `vSIGTAPInvalidProcedures`, `vSIGTAPInvalidComposite`, `vSIGTAPEmptyDescriptions`), agora está em uma única linha de `IF ... THEN`. A inspeção estática de `EXTRACAO/ext_main.qvs` não encontrou outros `IF` sem `THEN` na própria linha.
+
+**STATUS: CORREÇÃO IMPLEMENTADA / RELOAD LOCAL PENDENTE.** Não há evidência de defeito físico nos dados SIGTAP, tampouco prova ainda da cobertura QVD em QlikView. T27 Python permanece PASS, enquanto C3.4b segue pendente até execução real do script corrigido e conferência dos artefatos.
+
 #### Gate de validação local
 
 1. Atualizar a `main` via `git pull origin main`;
