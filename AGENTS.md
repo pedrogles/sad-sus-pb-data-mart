@@ -117,9 +117,9 @@ O estado operacional confiável está em **`docs/project/current-state.md`**. Co
 
 - **Primeira entrega acadêmica (Capítulos 1 e 2): FECHADA / PRONTA PARA IMPRESSÃO**; prazo do professor: **13/10/2026**. Não reabrir regras de negócio, DER, lógico ou dimensional sem nova evidência/exigência acadêmica.
 - **Boundaries 3–8: concluídos; Boundary 8 GO.** Fase I de infraestrutura e Fase II de conversão: **PASS**, com 108/108 DBCs conferidos.
-- **FASE III — EXTRAÇÃO/STAGING: IN PROGRESS.** Saúde RD/LT/ST, IBGE, referências normativas, CID-10/T28 e SIGTAP/T27 já passaram seus gates locais; C4/CNES leitos possui cobertura **57/57 pares e 35.518/35.518 LT** contra o retrato **setembro/2019**, mas **validade temporal integral 2017–2019/T29 continua não aprovada**.
+- **FASE III — EXTRAÇÃO/STAGING: IN PROGRESS.** Saúde RD/LT/ST, IBGE, referências normativas, CID-10/T28 e SIGTAP/T27 já passaram seus gates locais. C4/CNES leitos possui cobertura **57/57 pares e 35.518/35.518 LT** contra o retrato de **setembro/2019**; **T29 histórico 2017–2019 continua NÃO aprovado**. A legenda descritiva datada `201909` está aprovada, com código/Qlik preparado e **reload local pendente**.
 - A trilha RTS investigada mostrou primeiro resultado na consulta `10/2019A` do usuário; não inferir que os códigos surgiram nesse mês. Preservar `TP_LEITO="3 "` e `CODLEITO="66"` da PB: não substituir silenciosamente por `2/66` do indicador agregado CNESNet.
-- Não aprofundar portarias/versionamento histórico apenas para acumular evidências. Qualquer classificação descritiva estática de setembro/2019 usada sobre a série completa exige **decisão explícita documentada e ressalva de temporalidade**; não marcar T29 integral como PASS por conveniência.
+- **Decisão aprovada em 08/10/2026:** materializar referência CNES de setembro/2019 **somente como legenda datada, sem join sobre o LT histórico ou atribuição de vigência retroativa**. Preservar a chave competência-aware do Boundary 7 e testar a carga de `REF_TIPO_LEITO.qvd` no QlikView 12 antes de marcar C4 staging PASS. Não aprofundar portarias/versionamento sem nova necessidade acadêmica/analítica; nunca marcar T29 histórico como PASS por conveniência.
 - Não iniciar TRANSFORMAÇÃO, LINK_ANALISE, dimensões, fatos ou painéis antes de encerramento verificável da extração/staging, seguindo o Boundary 7.
 - Arquivos e testes locais permanecem fora do Git; revalidar os gates afetados quando scripts forem alterados.
 - Higiene de branches não autoriza deletar referências: inventário e dry-run antes, aprovação específica, verificação de HEAD/PR e rollback rastreável.
@@ -187,7 +187,7 @@ Antes de adicionar datasets ao Git:
 - **Modelagem:** 3 fatos, 8 dimensões, Star Schema por processo, constelação com dimensões conformadas. Granularidades, chaves, regras e limitações acadêmicas aprovadas estão em `docs/academic/chapter-1-2-modeling.md` e `docs/project/current-state.md`.
 - **Implementação:** somente **FASE III — EXTRAÇÃO/STAGING** até gate final; a história de cada passo está nos documentos `docs/discovery/phase-3-*.md`.
 - **Referências:** T27 SIGTAP e T28 CID-10 PASS. T29 **PASS apenas de cobertura do snapshot setembro/2019**; associação por competência/vigência histórica integral não validada.
-- **Decisões pendentes relevantes:** limites de utilização descritiva do snapshot CNES set/2019; gate de fechamento da Fase III; lacunas históricas de nomes de estabelecimentos onde não houver fonte.
+- **Decisões pendentes relevantes:** reload Qlik e gate de fechamento da Fase III; validade normativa histórica de tipos/leitos (não comprovada); lacunas históricas de nomes de estabelecimentos onde não houver fonte. A utilização apenas descritiva e datada do snapshot de set/2019 **já está aprovada**.
 - **Não alterar** fontes brutas, relatórios acadêmicos encerrados, arquitetura QlikView 12 ou modelo dimensional sem análise explícita e aprovação.
 
 A cronologia anterior do projeto permanece em `docs/project/current-state-chronology-2026-10-08.md` para auditoria, e o histórico Git conserva as versões anteriores de `AGENTS.md`. Não carregar essa cronologia por padrão.
