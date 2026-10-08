@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração / staging  
 **Checkpoint:** III-C3 — Referência oficial de procedimentos  
-**Status:** C3.1/C3.2/C3.3a/C3.3a.1 PASS; C3.3b.1 AQUISIÇÃO HISTÓRICA IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; T27 INTEGRAL NÃO AVALIADO
+**Status:** C3.1/C3.2/C3.3a/C3.3a.1/C3.3b.1 PASS; C3.3b.2 COBERTURA HISTÓRICA IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; T27 INTEGRAL NÃO AVALIADO
 
 ## 1. Contrato aprovado
 
@@ -355,13 +355,73 @@ $actual = (Get-FileHash $m.outputs.inventory.path -Algorithm SHA256).Hash.ToLowe
 "HISTORY_INVENTORY_SHA_MATCH=$($actual -eq $m.outputs.inventory.sha256.ToLowerInvariant())"
 ```
 
-**Gate C3.3b.1:** arquivo `PASS` somente se os 36 meses forem obtidos/reutilizados e fisicamente validados com layout, chaves e competências internas coerentes. Caso contrário, a execução interrompe-se sem gerar um manifesto final PASS.
+**Gate C3.3b.1 — PASS (08/10/2026):** a execução local confirmou 36 meses materializados (quatro já validados e 32 pacotes adicionais), com estrutura, chaves e competências internas válidas. O inventário histórico foi reconciliado por SHA-256; ver a evidência detalhada abaixo.
 
 **Não é T27 PASS.** O cruzamento dos 566.672 RD só poderá ser executado no **C3.3b.2 — cobertura histórica**, depois da validação deste manifesto. Se algum mês tiver layout diferente, registrar evidência e resolver a compatibilidade antes de prosseguir.
 
-### C3.3b.2 — cobertura histórica e exceções (PENDENTE)
+### Evidência C3.3b.1 — PASS (08/10/2026)
 
-Após o C3.3b.1 PASS, medir os 36 pares `PROC_REA + competência` com as 36 tabelas oficiais correspondentes, validar as 566.672 linhas e registrar detalhadamente eventuais códigos não encontrados, sem inventar substituições ou descrições. Só então avaliar o gate acadêmico-operacional **T27**.
+**FATO VERIFICADO:** a execução local de `tools/materialize_sigtap_procedure_history.py` retornou:
+
+```text
+COMPETENCES_VALIDATED=36
+SAMPLE_MONTHS_REUSED=4
+NEW_PACKAGES_DOWNLOADED=32
+TOTAL_PROCEDURE_ROWS=165203
+T27_COVERAGE=NOT_EVALUATED
+VERDICT=PASS
+```
+
+O manifesto `BASE/REFERENCIAS/sigtap_procedure_history_manifest.json` apresenta `status=PASS`, `competences=36`, `sample_months_reused=4`, `new_packages_downloaded=32` e `total_procedure_rows=165203`. Os 36 `tb_procedimento.txt` possuem códigos únicos e competência interna válida, sem erros reportados. O layout de 16 campos, largura de 330 bytes, permaneceu idêntico nos 36 meses, com SHA-256:
+
+`75641d897c8205d3d2e94ddb96431d51bf7a9ed5871ba0645484715cffffb88a`
+
+O arquivo `sigtap_procedure_history_inventory.csv` foi reconciliado externamente (`HISTORY_INVENTORY_SHA_MATCH=True`), com SHA-256:
+
+`23eb6942d69c8c81f30bde5eded896cad2881b64c77cacd1b80b3bb57ad2af8a`
+
+**Interpretação:** 165.203 é a soma das linhas das 36 referências mensais, não o número de procedimentos distintos em três anos. Nenhum join integral com SIH/RD foi executado nesta etapa.
+
+### C3.3b.2 — cobertura histórica e exceções (IMPLEMENTADO / RELOAD LOCAL PENDENTE)
+
+Script: `tools/profile_sigtap_procedure_full_coverage.py`. O código opera **somente sobre arquivos locais**, sem acesso à rede. Lê `proc_rea_profile_summary.json`, `sigtap_procedure_pilot_summary.json`, `sigtap_procedure_history_manifest.json` e valida hashes dos CSVs de entrada e dos TXT históricos. Reconcilia o manifesto histórico com o inventário de 36 competências e compara os códigos como **texto de 10 dígitos ASCII**, sem converter para número nem substituir valores.
+
+Regra preservada (Boundary 4 e 7):
+
+```text
+(RD.Competência, RD.PROC_REA)
+    =
+(SIGTAP.DT_COMPETENCIA, SIGTAP.CO_PROCEDIMENTO)
+```
+
+Gates do script: 36 competências; 566.672 linhas RD; 165.203 linhas SIGTAP somadas por competência; integridade de cada `CO_PROCEDIMENTO`; igualdade de `DT_COMPETENCIA` ao mês do RD; hashes dos arquivos de referência; validação das linhas e códigos distintos RD contra o perfil C3.1; comparação das quatro competências do piloto para evitar regressão; somas globais dos pares cobertos/não cobertos.
+
+Saídas locais e ignoradas pelo Git:
+
+- `BASE/REFERENCIAS/sigtap_procedure_full_coverage.csv` — resumo de 36 linhas, uma por competência;
+- `BASE/REFERENCIAS/sigtap_procedure_full_unmatched.csv` — exceções como `competence;proc_rea_raw;unmatched_occurrences`;
+- `BASE/REFERENCIAS/sigtap_procedure_full_coverage_summary.json` — síntese, competência, checksums e gate T27.
+
+Execução (raiz do repositório):
+
+```powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\profile_sigtap_procedure_full_coverage.py
+```
+
+Validação independente de hashes:
+
+```powershell
+$m = Get-Content .\BASE\REFERENCIAS\sigtap_procedure_full_coverage_summary.json -Raw -Encoding UTF8 | ConvertFrom-Json
+@($m.outputs.coverage, $m.outputs.unmatched) | ForEach-Object {
+    $hash = (Get-FileHash $_.path -Algorithm SHA256).Hash.ToLowerInvariant()
+    [pscustomobject]@{ Path = $_.path; Rows = $_.rows; HashMatch = ($hash -eq $_.sha256.ToLowerInvariant()) }
+}
+$m.totals
+$m.t27
+```
+
+**Gate T27:** a cobertura completa só pode ser encerrada após a execução local do C3.3b.2. O script retorna `VERDICT=PASS` com zero exceções ou `VERDICT=REVIEW` se alguma linha RD não possuir referência correspondente na mesma competência; ambos preservam o relatório de exceções. Uma eventual execução `REVIEW` exige investigação, não substituição arbitrária de códigos. O estado da Fase III continua parcial e o QVD de procedimentos ainda não foi gerado.
 
 ### C3.4 — staging QlikView 12
 
