@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1/C4.1a PASS; C4.2a código 70 validado; C4.2b.1 cinco capturas; C4.2b.2 integridade PASS; C4.2b.3 estrutura PASS; C4.2b.3a 65 pares de rótulos estáveis nas cinco capturas — PASS AMOSTRAL; C4.2c DOCUMENTAÇÃO OFICIAL DE DOMÍNIO PENDENTE; T29 NÃO AVALIADO
+**Status:** C4.1/C4.1a PASS; C4.2a código 70 validado; C4.2b.1–3a PASS amostral com ressalvas; C4.2c DOCUMENTOS CNES RECEBIDOS / ESTRUTURAS E HASHES VERIFICADOS; C4.2c.1 AUDITORIA DE COBERTURA LOCAL IMPLEMENTADA / EXECUÇÃO PENDENTE; T29 NÃO APROVADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -395,6 +395,58 @@ A [documentação do Portal CNES](https://cnes.datasus.gov.br/pages/downloads/do
 **Gate seguinte após arquivo real:** identificar dentro do documento uma tabela de leitos com os quatro atributos efetivamente existentes (nome do tipo, código do tipo, código do leito e descrição conforme a fonte), inspecionar data/versão, provar cardinalidade e existência dos 57 pares observados, investigar o código `70`, **antes** de definir estratégia de temporalidade ou executar T29. Se só houver documento atual, a aplicabilidade retroativa a 2017–2019 continua uma **DECISÃO PENDENTE**.
 
 **Sem mudanças em** `EXTRACAO/ext_main.qvs`, QVDs, arquivos de origem, modelos dimensional/normalizado ou requisitos acadêmicos nesta rodada.
+
+### C4.2c — dois artefatos CNES fornecidos pelo usuário e inspecionados (08/10/2026)
+
+**FATO VERIFICADO — fonte recebida:** os anexos foram fornecidos pelo usuário após solicitação do Portal CNES. Não foi documentada uma URL direta dos arquivos nem um número formal de versão normativa. **Não versionar os binários recebidos**, nem considerar seus metadados de criação/edição como vigência dos códigos.
+
+| Original | Tamanho | SHA-256 | Metadados internos |
+|---|---:|---|---|
+| `SCNES_DOMINIOS.XLS` | 1.339.918 bytes | `ae3f678f1f2307d759412c735f79bf1ace5a91410261f4050dc6e86c671c2af4` | formato interno OOXML ZIP/Excel 2007+ apesar da extensão `.XLS`; criado `2019-10-15T20:05:02Z`, modificado `2019-10-15T20:06:58Z` |
+| `DICIONARIO_DE_DADOS.docx` | 611.303 bytes | `086bfcbdbf47ea13d89542a21128c691367c0560a9f6bf8a2319e8a6eadb973b` | criado `2013-10-10T20:23:00Z`, modificado `2026-01-15T14:20:00Z`; **não implica** versão histórica aplicável a 2017–2019 |
+
+**FATO VERIFICADO — planilha `SCNES_DOMINIOS.XLS`:**
+
+- possui **56 abas**; as relevantes ao recorte são `LEITOS` e `TIPOS DE LEITOS`;
+- aba `LEITOS`: colunas **`LEITO`**, **`DESCRIÇÃO`**; **66 códigos de dois dígitos**, únicos, sem descrições vazias. Exemplo: `70 → FIBROSE CISTICA`;
+- aba `TIPOS DE LEITOS`: colunas **`TIPO DE LEITO`**, **`DESCRIÇÃO`**; **7 tipos de um dígito**, únicos, sem descrições vazias. Exemplo: `7 → HOSPITAL DIA`;
+- **as duas abas NÃO fornecem uma coluna de associação `TP_LEITO` para cada `LEITO`**; não é possível inferir o tipo do código `70` exclusivamente a partir da planilha. O tipo `7` para `70` foi comprovado previamente por fonte oficial histórica pontual e nos arquivos PB, não pela associação física nessa planilha.
+
+**FATO VERIFICADO — dicionário de dados CNES:**
+
+- `LFCES002 / RL_ESTAB_COMPLEMENTAR` registra `COD_LEITO → CO_LEITO`, `CODTPLEITO → CO_TIPO_LEITO`, `QTDE_EXIST → QT_EXIST` e `QTDE_SUS → QT_SUS`, com referências aos cadastros `NFCES001` e `NFCES028` (tabela de leitos hospitalares, página 6);
+- `NFCES001 / TB_LEITO` contém `CO_LEITO` (código), `DS_LEITO` (descrição) e `TP_LEITO` (tipo via `IND_LEITO`, referenciando `NFCES028` com `COD_IND='006'`);
+- `NFCES028 / TB_ATRIBUTO` caracteriza códigos `CO_INDICADOR`, `CO_ATRIBUTO`, `DS_ATRIBUTO`, com `006 = Tipos de Leitos`.
+
+**Interpretação restrita:** o dicionário documenta uma relação de tipo de leito no esquema federal, mas o arquivo tabular de domínio recebido expõe **listas independentes** de leitos e tipos. Consequentemente, uma simples correspondência de código e de tipo em abas separadas **não valida a relação `TP_LEITO+CODLEITO`**, não comprova estabilidade de descrição em 2017–2019 nem aprova a dimensão.
+
+### C4.2c.1 — auditoria local dos 57 pares CNES/LT contra listas oficiais recebidas (IMPLEMENTADA / EXECUÇÃO PENDENTE)
+
+Script novo: `tools/audit_cnes_official_domains.py`. Somente biblioteca padrão Python, leitura **read-only** do arquivo OOXML com extensão `.XLS` e do perfil já validado `cnes_lt_bed_code_pair_profile.csv`.
+
+O script compara os códigos observados com a aba `LEITOS`, e os tipos observados com a aba `TIPOS DE LEITOS`, **em avaliações independentes**. Na comparação de tipos, remove **somente o espaço ASCII final** dos códigos brutos `"1 "`…`"7 "`, preservando-os no relatório e nos CSVs de origem. Exige estrutura esperada **66 códigos / 7 tipos** e confronta **57 pares / 35.518 ocorrências**, registrando exceções e hash SHA-256.
+
+A saída `BASE/REFERENCIAS/cnes_domain_code_coverage_audit.json` é apenas **auditoria de cobertura de listas** e nunca contém associação oficial código-tipo já aprovada, tampouco referência histórica por competência. Mesmo um resultado `CODE_AND_TYPE_COVERAGE_PROVISIONAL` **NÃO equivale a T29 PASS**.
+
+Execução no PowerShell, na raiz do repositório, depois de colocar **uma cópia sem editar** da planilha original em `BASE/REFERENCIAS/SCNES_DOMINIOS.XLS` (pasta já ignorada pelo Git):
+
+```powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\audit_cnes_official_domains.py
+```
+
+```powershell
+$m = Get-Content .\BASE\REFERENCIAS\cnes_domain_code_coverage_audit.json -Raw -Encoding UTF8 | ConvertFrom-Json
+$m.status
+$m.domain_source | Select-Object sha256,leitos_codes,tipos_codes,code_70_label,type_7_label
+$m.observed_profile | Select-Object pairs,occurrences_total,distinct_codleito,distinct_tp_leito
+$m.coverage_observed_against_uploaded_current_domains | Select-Object matched_pairs_code_and_type_independently,matched_source_rows,unmatched_pairs,unmatched_source_rows
+$m.coverage_observed_against_uploaded_current_domains.exceptions
+```
+
+**Gate C4.2c.1**: comprovar quantitativamente presença dos códigos e tipos observados nas listas recebidas, sem declarar vínculo oficial ou período de vigência.
+
+**DECISÃO PENDENTE subsequente:** obter fonte de `NFCES001/TB_LEITO` contendo **`CO_LEITO`, `DS_LEITO`, `TP_LEITO` por registro**, idealmente com versão histórica 2017–2019, ou evidência oficial equivalente. Só com essa correspondência comprovada será possível avaliar integralmente T29 e decidir o tratamento temporal, sem alterar `DIM_TIPO_LEITO` já aprovada.
 
 ## 4. Gate seguinte — C4.2 referência oficial
 
