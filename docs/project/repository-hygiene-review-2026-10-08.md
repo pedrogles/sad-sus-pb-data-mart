@@ -103,3 +103,13 @@ A primeira entrega impressa permanece prioritária. Os gates já encerrados não
 - próximo checkpoint da Fase III descrito objetivamente.
 
 **STATUS: DRY-RUN DOCUMENTADO / PR DE HIGIENE PARA REVISÃO / DELETE REMOTO NÃO AUTORIZADO.**
+
+**ATUALIZAÇÃO OPERACIONAL DEPOIS DO MERGE — 08/10/2026:** PR #69 de higiene documental foi efetivamente integrado à `main` por squash (`2de6a53725d6b2eb29b847fd0c8318ede8ef3283`). Posteriormente, **o usuário aprovou expressamente a exclusão controlada das 70 candidatas**, desde que os SHAs sejam reconfirmados e as 6 HOLD, `main` e a branch de higiene permaneçam protegidas. Portanto, a linha histórica acima sobre ausência de autorização refere-se **apenas ao dry-run original**, não ao estado atual.
+
+**EXECUÇÃO REMOTA: AINDA NÃO REALIZADA.** O conector GitHub instalado não disponibiliza exclusão de branches; ele permite atualização de refs, que **não deve ser confundida com exclusão**. Foi preparado um script PowerShell local de uso único, com `-Apply` explícito, que: (i) valida `origin` e as 78 refs, (ii) consulta em uma requisição os PRs GitHub #1–69, (iii) exige 67 PRs antigos integrados com HEAD exatamente igual, (iv) prova três ancestrais de `main`, (v) preserva 6 HOLD, `main` e branch de higiene, (vi) salva manifesto e log em `BASE/REFERENCIAS` (ignorado), (vii) utiliza `git push --force-with-lease=<ref>:<sha>` individualmente, interrompendo na primeira divergência, (viii) verifica 8 refs remotas finais.
+
+**Gate de fechamento:** somente após o usuário executar localmente e enviar saída `POSTCHECK=PASS REMOTE_BRANCHES=8 DELETED=70 PROTECTED=8` (ou o inventário real resultante) a limpeza poderá ser marcada como APPLIED. Enquanto isso o status é `DELETE_AUTHORIZED / APPLY_PENDING_LOCAL`. Se houver erro ou mudança de SHAs, interromper e reclassificar, **não forçar**. A execução também precisa de acesso de escrita à `origin` na máquina do usuário; em caso de negação, nenhum sucesso deve ser alegado.
+
+**Fase III:** a execução da higiene não aprova T29 histórico, não reabre os capítulos acadêmicos e não autoriza materialização de `REF_TIPO_LEITO.qvd` antes da decisão de uso descritivo e do gate específico de QlikView. A seguir, retomar apenas os gates restantes da Fase III de acordo com Boundary 7.
+
+
