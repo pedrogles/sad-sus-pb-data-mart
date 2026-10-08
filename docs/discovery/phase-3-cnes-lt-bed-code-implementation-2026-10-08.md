@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1/C4.1a PASS; C4.2a código 70 validado; C4.2b.1–3a PASS amostral com ressalvas; C4.2c DOCUMENTOS CNES RECEBIDOS / ESTRUTURAS E HASHES VERIFICADOS; C4.2c.1 AUDITORIA DE COBERTURA LOCAL IMPLEMENTADA / EXECUÇÃO PENDENTE; T29 NÃO APROVADO
+**Status:** C4.1/C4.1a PASS; C4.2a código 70 validado; C4.2b.1–3a PASS amostral com ressalvas; C4.2c DOCUMENTOS CNES RECEBIDOS / ESTRUTURAS E HASHES VERIFICADOS; C4.2c.1 COBERTURA INDEPENDENTE PASS PROVISÓRIO (57/57 pares, 35.518/35.518 registros); C4.2c.2 ASSOCIAÇÃO OFICIAL/HISTÓRICO PENDENTES; T29 NÃO APROVADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -447,6 +447,31 @@ $m.coverage_observed_against_uploaded_current_domains.exceptions
 **Gate C4.2c.1**: comprovar quantitativamente presença dos códigos e tipos observados nas listas recebidas, sem declarar vínculo oficial ou período de vigência.
 
 **DECISÃO PENDENTE subsequente:** obter fonte de `NFCES001/TB_LEITO` contendo **`CO_LEITO`, `DS_LEITO`, `TP_LEITO` por registro**, idealmente com versão histórica 2017–2019, ou evidência oficial equivalente. Só com essa correspondência comprovada será possível avaliar integralmente T29 e decidir o tratamento temporal, sem alterar `DIM_TIPO_LEITO` já aprovada.
+
+
+### C4.2c.1 — execução local e gate de cobertura independente (08/10/2026)
+
+**FATO VERIFICADO — evidência de execução PowerShell enviada pelo usuário:** após `git pull --ff-only origin main` (fast-forward `43f2baf..5fdcf13`), os arquivos originais em `BASE/REFERENCIAS` foram verificados localmente, antes da auditoria:
+
+| Artefato | SHA-256 confrontado | Resultado |
+|---|---|---|
+| `SCNES_DOMINIOS.XLS` | `ae3f678f1f2307d759412c735f79bf1ace5a91410261f4050dc6e86c671c2af4` | `HASH PASS` |
+| `DICIONARIO_DE_DADOS.docx` | `086bfcbdbf47ea13d89542a21128c691367c0560a9f6bf8a2319e8a6eadb973b` | `HASH PASS` |
+| `cnes_lt_bed_code_pair_profile.csv` | `4afe0741b1bf43434192e467a043a0bcb7f2a96e25214f92f47557531e238449` | `HASH PASS` |
+
+`tools/audit_cnes_official_domains.py` retornou `AUDIT_EXIT_CODE=0` e `VERDICT=CODE_AND_TYPE_COVERAGE_PROVISIONAL`. A inspeção do JSON `BASE/REFERENCIAS/cnes_domain_code_coverage_audit.json` confirmou:
+
+- listas oficiais independentes: **66 códigos de leito** e **7 tipos**;
+- perfil CNES/LT: **57 pares**, **57 `CODLEITO` distintos**, **7 `TP_LEITO` distintos**, **35.518 ocorrências**;
+- códigos e tipos cobertos **independentemente**: **57/57 pares** e **35.518/35.518 ocorrências**, com **0 pares e 0 linhas sem cobertura**;
+- nenhum `CODLEITO` observado associado a mais de um tipo bruto **no recorte PB**, o que não prova unicidade normativa nacional;
+- `TP_LEITO` bruto preservado como um dígito seguido de espaço ASCII; listas independentes, sem relacionamento par-a-par;
+- limites do JSON: `association_of_tp_leito_with_codleito_officially_verified=false`, `effective_normative_validity_2017_2019_verified=false`, `full_T29_approved=false`, `new_qvd_created=false`, `source_files_modified=false`.
+
+**RESULTADO DO GATE C4.2c.1: PASS apenas para cobertura independente nas listas do arquivo recebido.** O status `PROVISIONAL` deve permanecer explícito; **não foi executado nem aprovado o T29**, não foi materializada referência oficial `(tipo, código, descrição)` e não foi demonstrada vigência histórica em 2017–2019.
+
+**Próximo checkpoint C4.2c.2 — DECISÃO PENDENTE:** localizar e verificar evidência oficial que traga, **na mesma linha**, `CO_LEITO`, `DS_LEITO` e `TP_LEITO` (tabela `NFCES001/TB_LEITO` citada no dicionário ou equivalente), incluindo prova de aplicabilidade temporal para as 36 competências. Não alterar `REF_TIPO_LEITO.qvd`, QVDs existentes, dimensão aprovada, arquivos originais, nem modelagem nesta fase.
+
 
 ## 4. Gate seguinte — C4.2 referência oficial
 
