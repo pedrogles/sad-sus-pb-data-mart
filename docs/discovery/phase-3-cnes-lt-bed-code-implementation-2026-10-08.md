@@ -553,6 +553,47 @@ $m.limits
 **GATE: C4.2c.2b = REVIEW_REQUIRED. T29 = NOT_APPROVED.** Nenhuma correção dos dados brutos, nenhuma atribuição automática de tipo 2↔3, nenhuma inferência de vigência normativa, nenhum QVD gerado. O próximo passo é **diagnóstico local read-only da nomenclatura exata dos sete tipos oficiais**, contagens/competências reais do par `3/66` no `cnes_lt_bed_code_pair_profile.csv` e inspeção da referência oficial `TB_LEITO` ou documento histórico equivalente. Preservar explicitamente a discrepância se não houver fonte conclusiva.
 
 
+
+### C4.2c.2c — diagnóstico de nomes, impacto e correção restrita do auditor (08/10/2026)
+
+**FATO VERIFICADO — saída do diagnóstico local enviada pelo usuário:**
+
+- `TIPOS DE LEITOS` (SCNES): `4 = OBSTETRICOS` e `5 = PEDIATRICOS`, sem correspondência literal aos cabeçalhos do relatório;
+- HTML CNESNet: `OBSTETRICO` e `PEDIATRICO`; os outros **5/7 tipos** têm correspondência exata após remoção de acentos para comparação;
+- o par **`TP_LEITO="3 "` + `CODLEITO="66"`** aparece em **1.480 registros LT** da Paraíba, de `201701` a `201912`, em **36/36 competências**, com espaços brutos preservados;
+- com isso, os 25 `issues` prévios do auditor representam apenas problemas de igualdade textual de grupo repetidos cinco vezes; são **dois pares de nomenclatura** diferentes, não 25 divergências semânticas.
+
+**FATO VERIFICADO — fontes oficiais com agrupamento divergente:**
+
+- relatório agregado CNESNet (HTML local 201712): `66 — UNIDADE ISOLAMENTO` aparece em **CLÍNICO / VTipo_Leito=2**;
+- páginas de estabelecimento no **próprio CNESNet** apresentam `66 — UNIDADE ISOLAMENTO` sob **COMPLEMENTAR**, por exemplo https://cnes2.datasus.gov.br/Cabecalho_Reduzido_Competencia.asp?VCod_Unidade=3143902195453 e https://cnes2.datasus.gov.br/cabecalho_reduzido.asp?VCod_Unidade=3205300011746 .
+- fonte secundária CONASS também registra `tp_leito=3`, `codleito=66`, `COMPLEMENTAR`: https://wiki.conass.org.br/index.php?title=Tabela_de_dom%C3%ADnio_CNES_leito .
+
+**INTERPRETAÇÃO RESTRITA:** há **inconsistência de classificação entre visões oficiais acessadas do CNESNet** e discrepância com os dados observados da PB. A correspondência de páginas de estabelecimento e fonte secundária fortalece a classificação `3/66` no contexto operacional, mas ainda **não demonstra regra normativa e vigência exata para 2017–2019**. Não inferir defeito da base LT, migração de tipo ou revisão temporal sem prova.
+
+**Correção implementada no script, execução local pendente:**
+
+- `tools/audit_cnes_grouped_leito_links.py` recebeu **apenas duas equivalências explícitas e condicionadas à combinação exata (tipo, rótulo oficial)**: `("4", "OBSTETRICOS") → "OBSTETRICO"` e `("5", "PEDIATRICOS") → "PEDIATRICO"`;
+- a comparação continua **estrita** para os outros cinco tipos e exige equivalência literal do código numérico do link e da célula, sem permitir associação arbitrária de códigos;
+- inclusão em `grouped_type_code_audit.json` do manifesto `accepted_group_label_aliases` e da cobertura **ponderada pelos `occurrences` do perfil PB**, com `observed_pb_rows_matched_by_pair`, `observed_pb_rows_missing_by_pair` e ocorrências dos pares ausentes;
+- o par `3/66` permanece **obrigatoriamente incompatível** com o par `2/66` do HTML; mesmo `issues_total=0` não pode produzir `PASS` se persistir `56/57`;
+- não foram alterados CSVs LT, XLS/DOCX recebidos, HTMLs, QVDs, `DIM_TIPO_LEITO` nem requisitos acadêmicos.
+
+**GATE:** C4.2c.2c `CODE_PATCH_IMPLEMENTED_LOCAL_AUDIT_PENDING`; C4.2c.2 `REVIEW_REQUIRED`; T29 `NOT_APPROVED`. Para reexecutar:
+
+```powershell
+git pull --ff-only origin main
+.\.venv\Scripts\python.exe -B .\tools\audit_cnes_grouped_leito_links.py
+Write-Host "AUDIT_EXIT_CODE=$LASTEXITCODE"
+$m = Get-Content .\BASE\REFERENCIAS\cnes_leito_history_probe\grouped_type_code_audit.json -Raw -Encoding UTF8 | ConvertFrom-Json
+$m.records | Select-Object requested_competence,observed_pb_pairs_matched,observed_pb_rows_missing_by_pair,issues
+$m.accepted_group_label_aliases
+$m.missing_pb_pairs_in_all_captures
+$m.status
+$m.limits
+```
+
+
 ## 4. Gate seguinte — C4.2 referência oficial
 
 Somente **após avaliar o resultado real de C4.1**:
