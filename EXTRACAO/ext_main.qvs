@@ -3,8 +3,9 @@
 //
 // A Fase III implementa staging das fontes validadas e das referências
 // auxiliares efetivamente materializadas. Checkpoints já implementados:
-// saúde (RD/LT/ST), IBGE, referências normativas pequenas (III-C1) e
-// integração CID-10 descritiva (III-C2; reload local ainda valida o gate).
+// saúde (RD/LT/ST), IBGE, referências normativas pequenas (III-C1),
+// CID-10 descritiva (III-C2 PASS) e SIGTAP por competência (III-C3.4b
+// implementado, com reload local pendente).
 // Referências auxiliares restantes continuam pendentes antes do fechamento.
 //
 // Não construir fatos, dimensões ou LINK_ANALISE neste script.
