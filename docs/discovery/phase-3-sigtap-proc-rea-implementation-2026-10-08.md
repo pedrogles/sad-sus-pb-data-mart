@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Fase:** III — Extração / staging  
 **Checkpoint:** III-C3 — Referência oficial de procedimentos  
-**Status:** C3.1 PASS; C3.2 PASS; C3.3a MATERIALIZAÇÃO AMOSTRAL DE PROCEDIMENTO IMPLEMENTADA / EXECUÇÃO LOCAL PENDENTE; T27 NÃO AVALIADO
+**Status:** C3.1 PASS; C3.2 PASS; C3.3a PASS; C3.3a.1 PILOTO DE COBERTURA IMPLEMENTADO / EXECUÇÃO LOCAL PENDENTE; T27 INTEGRAL NÃO AVALIADO
 
 ## 1. Contrato aprovado
 
@@ -226,6 +226,81 @@ $actual = (Get-FileHash $m.outputs.layout_fields.path -Algorithm SHA256).Hash.To
 **Gate C3.3a:** amostra de quatro competências com pacotes iguais aos do C3.2, dois membros exatos por competência, layout posicional válido, comprimentos das linhas compatíveis, chave de 10 dígitos/linha e ausência de duplicidade inesperada. **Ainda não** é cobertura do `PROC_REA` por competência nem fechamento T27.
 
 Não baixar 36 competências ou gerar `REF_SIGTAP.qvd` antes da análise dos resultados.
+
+### Evidência C3.3a — PASS na amostra (08/10/2026)
+
+**FATO VERIFICADO:** os quatro pacotes SIGTAP foram novamente obtidos, com conferência do hash/tamanho de cada ZIP contra o C3.2, e os arquivos exatos `tb_procedimento.txt` e `tb_procedimento_layout.txt` foram materializados localmente.
+
+A execução retornou:
+
+| Competência | Registros | Códigos distintos | Colunas | Largura física | Chaves inválidas | Larguras inválidas | Duplicidades |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 201701 | 4.542 | 4.542 | 16 | 330 bytes | 0 | 0 | 0 |
+| 201801 | 4.587 | 4.587 | 16 | 330 bytes | 0 | 0 | 0 |
+| 201901 | 4.609 | 4.609 | 16 | 330 bytes | 0 | 0 | 0 |
+| 201912 | 4.624 | 4.624 | 16 | 330 bytes | 0 | 0 | 0 |
+
+`LAYOUT_DISTINCT_HASHES=1`, `LAYOUT_IDENTICAL_IN_SAMPLE=True`, `VERDICT=PASS`. O CSV local de 64 linhas de campos de layout foi gerado com SHA-256 `bd49b1e73afed898b04505c724613264b4e81dc183a2975dcaac681995a69118` registrado pelo script (reconciliação externa desse hash ainda não apresentada).
+
+**Layout físico confirmado na competência 201701** (mesmo hash de layout nas outras três):
+
+| Campo | Posições | Tipo |
+|---|---|---|
+| `CO_PROCEDIMENTO` | 1–10 | VARCHAR2 |
+| `NO_PROCEDIMENTO` | 11–260 | VARCHAR2 |
+| `TP_COMPLEXIDADE` | 261 | VARCHAR2 |
+| `TP_SEXO` | 262 | VARCHAR2 |
+| `QT_MAXIMA_EXECUCAO` | 263–266 | NUMBER |
+| `QT_DIAS_PERMANENCIA` | 267–270 | NUMBER |
+| `QT_PONTOS` | 271–274 | NUMBER |
+| `VL_IDADE_MINIMA` | 275–278 | NUMBER |
+| `VL_IDADE_MAXIMA` | 279–282 | NUMBER |
+| `VL_SH` | 283–292 | NUMBER |
+| `VL_SA` | 293–302 | NUMBER |
+| `VL_SP` | 303–312 | NUMBER |
+| `CO_FINANCIAMENTO` | 313–314 | VARCHAR2 |
+| `CO_RUBRICA` | 315–320 | VARCHAR2 |
+| `QT_TEMPO_PERMANENCIA` | 321–324 | NUMBER |
+| `DT_COMPETENCIA` | 325–330 | CHAR |
+
+**Controle de escopo:** o layout observado não contém campos explícitos de nome de grupo, subgrupo ou forma de organização. A estrutura acadêmica de `DIM_PROCEDIMENTO` continua aprovada, porém as descrições desses níveis exigem confirmação de fontes/arquivos oficiais e regras de relacionamento antes da materialização dimensional. Não inferir essas descrições a partir da tabela física de procedimentos.
+
+### C3.3a.1 — piloto de correspondência temporal sobre quatro competências
+
+Implementação: `tools/profile_sigtap_procedure_pilot.py`, **sem download**. Consome as quatro tabelas materializadas em C3.3a e os quatro CSVs RD correspondentes (201701, 201801, 201901, 201912).
+
+O script:
+
+- exige manifestos locais C3.1 e C3.3a em `PASS`;
+- confere hash SHA-256 dos dois TXT físicos em cada competência contra o manifesto C3.3a;
+- interpreta `CO_PROCEDIMENTO` e `DT_COMPETENCIA` pelas posições efetivas do layout e valida os códigos de 10 dígitos/competência em cada linha;
+- confere as quantidades de linhas RD contra o perfil C3.1;
+- compara somente **`PROC_REA + competência RD` com `CO_PROCEDIMENTO + DT_COMPETENCIA SIGTAP`**;
+- calcula cobertura em linhas e códigos distintos por mês, preserva os códigos não encontrados em CSV separado e gera SHA-256 das saídas;
+- retorna `REVIEW` se existir qualquer código não encontrado, sem ocultar exceções e sem assumir correção automática.
+
+Saídas locais ignoradas pelo Git:
+
+- `BASE/REFERENCIAS/sigtap_procedure_pilot_coverage.csv`;
+- `BASE/REFERENCIAS/sigtap_procedure_pilot_unmatched.csv`;
+- `BASE/REFERENCIAS/sigtap_procedure_pilot_summary.json`.
+
+Execução:
+
+~~~powershell
+git pull origin main
+.\.venv\Scripts\python.exe .\tools\profile_sigtap_procedure_pilot.py
+~~~
+
+Leitura resumida:
+
+~~~powershell
+Import-Csv .\BASE\REFERENCIAS\sigtap_procedure_pilot_coverage.csv -Delimiter ';' |
+    Format-Table -AutoSize
+Get-Content .\BASE\REFERENCIAS\sigtap_procedure_pilot_summary.json -Raw -Encoding UTF8
+~~~
+
+**Gate C3.3a.1:** reconciliação física e de competências, contagens mensais RD confirmadas e exceções integralmente registradas. Cobertura 100% na amostra seria um resultado possível, mas ainda **não foi verificado**. Mesmo `PASS` nesse piloto não conclui T27, pois **32 competências não foram testadas**. O T27 integral somente poderá ser decidido em C3.3b após materialização histórica e cobertura de todos os 36 meses.
 
 ### C3.3b — materialização histórica e validação de cobertura
 
