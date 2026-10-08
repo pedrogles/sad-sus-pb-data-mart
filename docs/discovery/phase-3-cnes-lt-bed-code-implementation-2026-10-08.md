@@ -3,7 +3,7 @@
 **Projeto:** SAD — Data Mart SUS PB  
 **Data de abertura:** 08/10/2026  
 **Fase:** III — Extração / staging  
-**Status:** C4.1/C4.1a PASS; C4.2a código 70 validado; C4.2b.1–3a PASS amostral com ressalvas; C4.2c DOCUMENTOS CNES RECEBIDOS / ESTRUTURAS E HASHES VERIFICADOS; C4.2c.1 COBERTURA INDEPENDENTE PASS PROVISÓRIO (57/57 pares, 35.518/35.518 registros); C4.2c.2 ASSOCIAÇÃO OFICIAL/HISTÓRICO PENDENTES; T29 NÃO APROVADO
+**Status:** C4.1/C4.1a PASS; C4.2a código 70 validado; C4.2b.1–3a PASS amostral com ressalvas; C4.2c DOCUMENTOS CNES RECEBIDOS / ESTRUTURAS E HASHES VERIFICADOS; C4.2c.1 COBERTURA INDEPENDENTE PASS PROVISÓRIO (57/57 pares, 35.518/35.518 registros); C4.2c.2e PASS DE COBERTURA DO RETRATO NORMATIVO SET/2019 (57/57 PARES, 35.518/35.518 LINHAS); VIGÊNCIA HISTÓRICA 2017–2019 PENDENTE; T29 INTEGRAL NÃO APROVADO
 
 ## 1. Fontes e decisões preservadas
 
@@ -682,6 +682,28 @@ if ($LASTEXITCODE -eq 0 -and (Test-Path .\BASE\REFERENCIAS\cnes_nt32_201909_pair
     $m.limits
 }
 ```
+
+
+
+### C4.2c.2e.2 — execução local aprovada: cobertura da Nota Técnica Setembro/2019 (08/10/2026)
+
+**FATO VERIFICADO — execução PowerShell e consulta ao JSON enviadas pelo usuário após `git pull --ff-only origin main` (fast-forward `8efb009..ef471c2`):**
+
+- script executado: `tools/audit_cnes_nt32_2019_pairs.py`; `AUDIT_EXIT_CODE=0`;
+- `PDF_INTEGRITY=PASS`, `TRANSCRIPTION_INTEGRITY=PASS`, `PROFILE_INTEGRITY=PASS`;
+- `NOTE_SNAPSHOT_PAIRS=65` (tabela derivada do anexo `Tabela de Leitos Setembro/2019`);
+- `PB_MATCHED_PAIRS=57/57`, `PB_MATCHED_ROWS=35518/35518`, `UNMATCHED_PAIRS=0`;
+- saída local: `BASE/REFERENCIAS/cnes_nt32_201909_pair_audit.json`; `status=PASS_201909_SNAPSHOT_PAIR_COVERAGE_ONLY`;
+- SHA-256 efetivo do CSV derivado no checkout Windows (CRLF) `f9cc289b0a27557dd92b04bcfb558ac33d528900e6937549e71b373f36ccc363`, reconhecido com hash canônico LF também aprovado; integridade dos arquivos originais preservada;
+- limites registrados pelo próprio JSON: `this_is_a_transcription_not_original_normative_dataset=true`, `reference_is_snapshot_201909=true`, `complete_validity_across_201701_201912_verified=false`, `t29_full_approved=false`, `new_qvd_created=false`, `source_files_modified=false`.
+
+**RESULTADO DO GATE C4.2c.2e — PASS apenas para cobertura de pares compostos da amostra de referência oficial Setembro/2019.** A transcrição derivada, com campo `pdf_page`, permitiu reconciliar todos os pares `TP_LEITO + CODLEITO` efetivamente observados nas 35.518 linhas LT da PB. O par `3/66 — UNIDADE ISOLAMENTO / COMPLEMENTAR` é coberto pela Nota Técnica, sem substituí-lo pelo `2/66` do indicador agregado CNESNet, que permanece documentado como conflito entre fontes.
+
+**Interpretação temporal restrita:** todas as 36 competências locais **usam pares que constam no catálogo de setembro/2019**, mas esse confronto não prova que o catálogo (nomes, classificação, status) era **normativamente válido sem mudança em cada mês** de 201701 a 201912. Também não prova se um código foi efetivo em toda a série; ocorrência física e vigência normativa não são intercambiáveis.
+
+**Próximo checkpoint proposto — C4.2c.3, DESCOBERTA HISTÓRICA RESTRITA / READ-ONLY:** verificar se há fonte oficial versionada por competência ou atos normativos de alteração que possam sustentar o uso retrospectivo da tabela de setembro/2019. Priorizar (i) versões/alterações normativas das 65 linhas do anexo, com destaque ao par `3/66`, (ii) fonte primária de domínio `NFCES001/TB_LEITO`, se disponível por período, (iii) lacuna de downloads públicos antes de 06/2017. **Não solicitar novas cargas massivas, não reprocessar os 35.518 registros e não emitir T29 integral enquanto a vigência histórica não for fundamentada ou a limitação temporal não for explicitamente aceita como decisão de modelagem.**
+
+**Decisão operacional preservada:** Fase III `IN_PROGRESS`; `T29_FULL=NOT_APPROVED`; sem `REF_TIPO_LEITO.qvd`, sem alteração da `DIM_TIPO_LEITO`, CSVs LT, QVDs ou relatório acadêmico aprovado.
 
 
 ## 4. Gate seguinte — C4.2 referência oficial
