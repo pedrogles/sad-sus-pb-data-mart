@@ -1,7 +1,225 @@
-// FASE I — Infraestrutura mínima
-// Script versionável carregado por TRANSFORMACAO/TRANSF.qvw.
-// Fatos, dimensões e LINK_ANALISE serão implementados somente nas fases aprovadas.
+// FASE IV — DIM_TEMPO (checkpoint isolado, sem fatos/Link Table).
+// Fonte: Boundary 7 e staging Fase III reconciliado.
+// Uma DIM_TEMPO.qvd canonica em grao DIA; aliases por data/mes/ano
+// sao projeções DISTINCT no PAINEL, nao dimensoes academicas adicionais.
+// Nenhum _SUCCESS_TRANSFORMACAO.csv e emitido nesta fase parcial.
 
 SET ErrorMode=0;
+LET vP4ErrorsBefore = ScriptErrorCount;
 
-TRACE [TRANSFORMACAO] Phase I infrastructure script loaded;
+TRACE [TRANSFORMACAO][IV-TEMPO] START_DIM_TEMPO_ONLY;
+
+// Precondicao: marcador FINAL da extracao; nao aceitar PASS_PARTIAL.
+P4_STAGE_GATE:
+LOAD
+    Text(stage) AS _P4_STAGE,
+    Text(status) AS _P4_STATUS,
+    Num(qvd_count) AS _P4_QVDS,
+    Num(required_fields_verified) AS _P4_FIELDS,
+    Num(t07_families) AS _P4_FAMILIES,
+    Num(t07_competences_per_family) AS _P4_MONTHS,
+    Num(rd_rows) AS _P4_RD,
+    Num(lt_rows) AS _P4_LT,
+    Num(st_rows) AS _P4_ST,
+    Num(ibge_rows) AS _P4_IBGE,
+    Text(t29_historical_validity) AS _P4_T29,
+    Text(dimensional_transformation) AS _P4_TRANSF
+FROM [..\EXTRACAO\QVD\_SUCCESS_EXTRACAO.csv]
+(txt, utf8, embedded labels, delimiter is ';', msq);
+
+IF ScriptErrorCount > $(vP4ErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL stage marker missing or unreadable;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4GateRows = NoOfRows('P4_STAGE_GATE');
+
+IF $(vP4GateRows) <> 1 THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL extraction marker must have exactly one row;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4Stage = Peek('_P4_STAGE', 0, 'P4_STAGE_GATE');
+LET vP4Status = Peek('_P4_STATUS', 0, 'P4_STAGE_GATE');
+LET vP4QVDs = Peek('_P4_QVDS', 0, 'P4_STAGE_GATE');
+LET vP4Fields = Peek('_P4_FIELDS', 0, 'P4_STAGE_GATE');
+LET vP4Families = Peek('_P4_FAMILIES', 0, 'P4_STAGE_GATE');
+LET vP4Months = Peek('_P4_MONTHS', 0, 'P4_STAGE_GATE');
+LET vP4RD = Peek('_P4_RD', 0, 'P4_STAGE_GATE');
+LET vP4LT = Peek('_P4_LT', 0, 'P4_STAGE_GATE');
+LET vP4ST = Peek('_P4_ST', 0, 'P4_STAGE_GATE');
+LET vP4IBGE = Peek('_P4_IBGE', 0, 'P4_STAGE_GATE');
+LET vP4T29 = Peek('_P4_T29', 0, 'P4_STAGE_GATE');
+LET vP4PrevTransformation = Peek('_P4_TRANSF', 0, 'P4_STAGE_GATE');
+
+IF '$(vP4Stage)' <> 'EXTRACAO' OR '$(vP4Status)' <> 'PASS_FINAL_RECONCILED' OR $(vP4QVDs) <> 10 OR $(vP4Fields) <> 107 OR $(vP4Families) <> 3 OR $(vP4Months) <> 36 OR $(vP4RD) <> 566672 OR $(vP4LT) <> 35518 OR $(vP4ST) <> 220390 OR $(vP4IBGE) <> 669 OR '$(vP4T29)' <> 'NOT_APPROVED' OR '$(vP4PrevTransformation)' <> 'NOT_STARTED' THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL extraction gate values diverged from phase III contract;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4_STAGE_GATE;
+
+// Data de internacao e de saida reais podem estar fora de 2017-2019;
+// gerar calendario dinamicamente sem perder esses papeis temporais.
+// Boundary 3 comprovou 0 datas invalidas na origem. Revalidar no QVD.
+P4_DATE_INPUT:
+LOAD
+    Text(DT_INTER) AS _P4_RAW_DATE,
+    'DT_INTER' AS _P4_DATE_ROLE
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4ErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL RD QVD DT_INTER load;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4InterRows = NoOfRows('P4_DATE_INPUT');
+
+CONCATENATE (P4_DATE_INPUT)
+LOAD
+    Text(DT_SAIDA) AS _P4_RAW_DATE,
+    'DT_SAIDA' AS _P4_DATE_ROLE
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4ErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL RD QVD DT_SAIDA load;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4DateInputRows = NoOfRows('P4_DATE_INPUT');
+
+IF $(vP4InterRows) <> 566672 OR $(vP4DateInputRows) <> 1133344 THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL RD temporal input row count mismatch;
+    EXIT SCRIPT;
+ENDIF
+
+P4_DATE_PROFILE:
+LOAD
+    Count(_P4_RAW_DATE) AS _P4_NON_NULL_DATES,
+    Count(DISTINCT _P4_DATE_ROLE) AS _P4_ROLES,
+    Sum(If(
+        Len(Trim(Text(_P4_RAW_DATE))) <> 8
+        OR Len(KeepChar(Trim(Text(_P4_RAW_DATE)), '0123456789')) <> 8
+        OR IsNull(Date#(Trim(Text(_P4_RAW_DATE)), 'YYYYMMDD'))
+        OR Text(Date(Date#(Trim(Text(_P4_RAW_DATE)), 'YYYYMMDD'), 'YYYYMMDD')) <> Trim(Text(_P4_RAW_DATE)),
+        1, 0
+    )) AS _P4_INVALID_DATES,
+    Min(Floor(Date#(Trim(Text(_P4_RAW_DATE)), 'YYYYMMDD'))) AS _P4_MIN_DATE,
+    Max(Floor(Date#(Trim(Text(_P4_RAW_DATE)), 'YYYYMMDD'))) AS _P4_MAX_DATE
+RESIDENT P4_DATE_INPUT;
+
+IF ScriptErrorCount > $(vP4ErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL date parsing profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4NonNullDates = Peek('_P4_NON_NULL_DATES', 0, 'P4_DATE_PROFILE');
+LET vP4DateRoles = Peek('_P4_ROLES', 0, 'P4_DATE_PROFILE');
+LET vP4InvalidDates = Peek('_P4_INVALID_DATES', 0, 'P4_DATE_PROFILE');
+LET vP4ObservedMinDay = Peek('_P4_MIN_DATE', 0, 'P4_DATE_PROFILE');
+LET vP4ObservedMaxDay = Peek('_P4_MAX_DATE', 0, 'P4_DATE_PROFILE');
+
+IF $(vP4NonNullDates) <> 1133344 OR $(vP4DateRoles) <> 2 OR $(vP4InvalidDates) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL invalid dates or unexpected source coverage;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4_DATE_PROFILE;
+DROP TABLE P4_DATE_INPUT;
+
+// Baseline mensal (RD/LT/ST) e anual (IBGE) inclui 2017-01-01..2019-12-31.
+// Expandir para datas RD anteriores/posteriores se existirem.
+LET vP4FirstDay = Floor(RangeMin(MakeDate(2017, 1, 1), $(vP4ObservedMinDay)));
+LET vP4LastDay = Floor(RangeMax(MakeDate(2019, 12, 31), $(vP4ObservedMaxDay)));
+LET vP4ExpectedDays = $(vP4LastDay) - $(vP4FirstDay) + 1;
+
+// Protecao operacional contra range irreal: nunca truncar datas silenciosamente.
+IF $(vP4ExpectedDays) < 1095 OR $(vP4ExpectedDays) > 36525 THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL implausible calendar range requires review;
+    EXIT SCRIPT;
+ENDIF
+
+DIM_TEMPO:
+LOAD
+    Hash128('DATA', Text(Date($(vP4FirstDay) + IterNo() - 1, 'YYYYMMDD'))) AS [%SK_TEMPO_DATA],
+    Hash128('MES', Text(Date($(vP4FirstDay) + IterNo() - 1, 'YYYYMM'))) AS [%SK_TEMPO_COMPETENCIA],
+    Hash128('ANO', Year($(vP4FirstDay) + IterNo() - 1)) AS [%SK_TEMPO_ANO],
+    Date($(vP4FirstDay) + IterNo() - 1, 'YYYY-MM-DD') AS TEMPO_DATA,
+    Text(Date($(vP4FirstDay) + IterNo() - 1, 'YYYYMMDD')) AS TEMPO_DATA_YYYYMMDD,
+    Text(Date($(vP4FirstDay) + IterNo() - 1, 'YYYYMM')) AS TEMPO_COMPETENCIA,
+    Year($(vP4FirstDay) + IterNo() - 1) AS TEMPO_ANO,
+    Num(Month($(vP4FirstDay) + IterNo() - 1)) AS TEMPO_MES,
+    Day($(vP4FirstDay) + IterNo() - 1) AS TEMPO_DIA
+AUTOGENERATE 1
+WHILE $(vP4FirstDay) + IterNo() - 1 <= $(vP4LastDay);
+
+IF ScriptErrorCount > $(vP4ErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL calendar generation;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4CalendarRows = NoOfRows('DIM_TEMPO');
+
+P4_CALENDAR_CHECK:
+LOAD
+    Count(DISTINCT [%SK_TEMPO_DATA]) AS _P4_UNIQUE_DAY_KEYS,
+    Count(DISTINCT If(TEMPO_ANO >= 2017 AND TEMPO_ANO <= 2019, TEMPO_COMPETENCIA)) AS _P4_MONTHS_2017_2019,
+    Count(DISTINCT If(TEMPO_ANO >= 2017 AND TEMPO_ANO <= 2019, TEMPO_ANO)) AS _P4_YEARS_2017_2019,
+    Sum(If(Len(Trim(Text([%SK_TEMPO_DATA]))) = 0 OR Len(Trim(Text([%SK_TEMPO_COMPETENCIA]))) = 0 OR Len(Trim(Text([%SK_TEMPO_ANO]))) = 0, 1, 0)) AS _P4_EMPTY_KEYS
+RESIDENT DIM_TEMPO;
+
+IF ScriptErrorCount > $(vP4ErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL calendar integrity check;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4UniqueDays = Peek('_P4_UNIQUE_DAY_KEYS', 0, 'P4_CALENDAR_CHECK');
+LET vP4CoveredMonths = Peek('_P4_MONTHS_2017_2019', 0, 'P4_CALENDAR_CHECK');
+LET vP4CoveredYears = Peek('_P4_YEARS_2017_2019', 0, 'P4_CALENDAR_CHECK');
+LET vP4EmptyKeys = Peek('_P4_EMPTY_KEYS', 0, 'P4_CALENDAR_CHECK');
+
+IF $(vP4CalendarRows) <> $(vP4ExpectedDays) OR $(vP4UniqueDays) <> $(vP4CalendarRows) OR $(vP4CoveredMonths) <> 36 OR $(vP4CoveredYears) <> 3 OR $(vP4EmptyKeys) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL day/month/year key integrity;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4_CALENDAR_CHECK;
+
+STORE DIM_TEMPO INTO [QVD\DIM_TEMPO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4ErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL QVD STORE. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+// Marcador PARCIAL e exclusivo da dimensao. Nao representa fase IV completa.
+P4_DIM_TEMPO_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'TRANSFORMACAO_DIM_TEMPO' AS stage,
+    'PASS_PARTIAL_DIM_TEMPO_ONLY' AS status,
+    $(vP4CalendarRows) AS calendar_day_rows,
+    $(vP4CoveredMonths) AS months_2017_2019,
+    $(vP4CoveredYears) AS years_2017_2019,
+    $(vP4InterRows) AS rd_inter_rows,
+    $(vP4DateInputRows) AS rd_total_date_rows,
+    $(vP4InvalidDates) AS invalid_date_rows,
+    Text(Date($(vP4ObservedMinDay), 'YYYY-MM-DD')) AS rd_min_date,
+    Text(Date($(vP4ObservedMaxDay), 'YYYY-MM-DD')) AS rd_max_date,
+    Text(Date($(vP4FirstDay), 'YYYY-MM-DD')) AS calendar_min_date,
+    Text(Date($(vP4LastDay), 'YYYY-MM-DD')) AS calendar_max_date,
+    'NOT_APPROVED' AS t29_historical,
+    'NOT_STARTED' AS facts_and_link_table
+AUTOGENERATE 1;
+
+STORE P4_DIM_TEMPO_CHECKPOINT INTO [QVD\_CHECKPOINT_DIM_TEMPO.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vP4ErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-TEMPO] FAIL checkpoint STORE. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4_DIM_TEMPO_CHECKPOINT;
+TRACE [TRANSFORMACAO][IV-TEMPO] DIM_TEMPO_QVD_STORED_AND_PARTIAL_CHECKPOINT_WRITTEN;
+TRACE [TRANSFORMACAO][IV-TEMPO] PHASE_IV_PARTIAL_ONLY no facts no link table no final success marker;
