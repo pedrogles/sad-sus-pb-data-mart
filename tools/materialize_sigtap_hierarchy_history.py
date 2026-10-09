@@ -220,6 +220,12 @@ def main() -> int:
             "sha256": digest, "size_bytes": len(content),
         })
 
+    # Se existe manifesto anterior contraditorio, bloquear ANTES da escrita.
+    if OUTPUT_MANIFEST.exists() and not args.validate_only:
+        previous = json.loads(OUTPUT_MANIFEST.read_text(encoding="utf-8"))
+        if previous.get("status") != "PASS" or previous.get("files") != outputs:
+            raise RuntimeError("Manifesto historico existente divergente; sem escrita")
+
     if args.validate_only:
         print("MONTHS_VALIDATED=36")
         print("MEMBERS_VALIDATED=216")
@@ -260,10 +266,7 @@ def main() -> int:
         "facts_and_link_table": "NOT_STARTED",
     }
     # Manifesto derivado fica fora do controle de versao; substituicao atomica.
-    if OUTPUT_MANIFEST.exists():
-        old = json.loads(OUTPUT_MANIFEST.read_text(encoding="utf-8"))
-        if old.get("status") == "PASS" and old.get("files") != outputs:
-            raise RuntimeError("Manifesto anterior contraditorio; nao sobrescrever")
+    # Compatibilidade de um manifesto anterior ja foi verificada ANTES dos writes.
     with tempfile.NamedTemporaryFile(
         mode="w", encoding="utf-8", newline="\n", suffix=".tmp",
         prefix=".sigtap_hierarchy_", dir=OUTPUT_MANIFEST.parent,
