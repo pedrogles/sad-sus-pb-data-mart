@@ -598,3 +598,22 @@ Comparação de códigos contra `docs/discovery/cnes-nt32-2019-codigos-leito.csv
 4. Trazer log QlikView (ou trechos com horário inequívoco), checkpoint e saída completa do auditor para revisão independente. **Não abrir PR/merge nem iniciar fatos/PAINEL com base apenas no teste estático**. Regressão em outras sete dimensões ou qualquer desvio numérico resulta em `REVIEW_REQUIRED`.
 
 **STATUS:** `A2_CONTRACT=APPROVED`; `IV_TIPO_LEITO=CODE_READY_QV12_NOT_RUN`; `PRESENTATION_CNES_HISTORICAL_CAVEAT=REQUIRED_NOT_RENDERED`; `T29_HISTORICAL=NOT_APPROVED`; `MAIN_DIMENSIONS=7/8`; `FACTS_LINK_TABLE_PANEL=NOT_STARTED`.
+
+## IV-TIPO_LEITO — primeiro reload QlikView 12: falha na integridade LT, diagnóstico instrumentado (09/10/2026)
+
+**FATO VERIFICADO — saída local fornecida pelo responsável:** executou `TRANSFORMACAO/TRANSF.qvw` no QlikView 12 e inspecionou `TRANSF.qvw.2026_10_09_14_13_59.log` (108.960 bytes, última gravação 14:14:13). A sétima dimensão concluiu seu checkpoint; o include da oitava dimensão iniciou às 14:14:13 e carregou fisicamente `SRC_CNES_LT.qvd` em `P4L_LT_SOURCE` com **6 campos e 35.518 linhas**. O script criou `P4L_LT_PROFILE` e parou no seu `IF` de integridade antes de carregar a referência descritiva.
+
+**Expressão avaliada registrada no log:**
+
+```text
+IF 35518 <> 35518 OR 36 <> 36 OR 57 <> 57 OR 2021 <> 2021
+OR 35518 <> 35518 OR 35518 <> 0 OR 1480 <> 1480 OR 5 <> 5 THEN
+TRACE [TRANSFORMACAO][IV-LEITO] FAIL LT source/grain profile
+EXIT SCRIPT
+```
+
+**Verificado:** `vP4LLTRows=35518`, `vP4LMonths=36`, `vP4LPairs=57`, `vP4LPairMonths=2021`, `vP4LFactKeys=35518`, `vP4L3_66=1480`, `vP4L7_70=5` **passaram**; apenas `vP4LInvalid=35518` divergiu de zero. O script identifica um **OR entre vários predicados** (CNES, formato de tipo bruto, código de leito, competência, metadado); **a causa individual não está comprovada pelo log**. Hipótese principal a testar: conversão/armazenamento de `TP_LEITO` com perda do espaço ASCII final no `Text()` QlikView/QVD, embora o CSV bruto tenha `"N "` comprovado no preflight Python. Não alterar schema, fazer `Trim` indiscriminado nem fabricar forma bruta antes de provar a transformação.
+
+**Correção de observabilidade versionada:** commit `45a8630a49ec01e6005fb390475ca7ce0605f7de` adiciona **sete contadores diagnósticos segregados** ao mesmo `P4L_LT_PROFILE` e o `TRACE [TRANSFORMACAO][IV-LEITO][DIAG]` antes da guarda atual: `CNES`, `RawLen`, `RawTrailingASCII32`, `Type`, `Bed`, `Competence`, `MetaMismatch`. Esta mudança **não afrouxa a expressão de aceitação, não modifica dados ou referências, não reclassifica códigos e não gera QVD da oitava dimensão por si só**. O resultado do reload com instrumentação continua **PENDENTE**.
+
+**Próxima execução:** `git pull --ff-only` da branch `feat/phase-4-dim-tipo-leito-discovery` no Windows; confirmar backup já feito dos QVDs; executar **uma** recarga QlikView 12 e extrair do novo log a linha **executada** `[TRANSFORMACAO][IV-LEITO][DIAG] InvalidTotal=...`, mais o `FAIL` e final. Somente com a decomposição determinar eventual correção mínima de representação no estágio de transformação. Não rodar auditor de QVD enquanto a oitava dimensão não for produzida. **T29_HISTORICAL=NOT_APPROVED**, **MAIN=7/8**, **A2=APPROVED** e o aviso visível obrigatório de **1.965/2.021 pares-mês (97,2%) sem descrição histórica comprovada** permanecem inalterados.
