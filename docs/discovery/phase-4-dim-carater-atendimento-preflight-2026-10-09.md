@@ -115,3 +115,19 @@ Os 36 CSVs SIH/RD físicos têm `CAR_INT` **textual com exatamente dois dígitos
 4. Enviar **o log QlikView e a saída do auditor**, sem assumir aprovação da transformação a partir do preflight somente. Nenhum PR/merge sem esses gates.
 
 **Estado:** `IV-CARATER_ATENDIMENTO=PHYSICAL_PREFLIGHT_PASS_QLIK_SCRIPT_AUDITOR_READY_NOT_RUN`, `MAIN_INTEGRATED_DIMENSIONS=5/8`, `T29_HISTORICAL=NOT_APPROVED`, `FACTS_AND_LINK_TABLE=NOT_STARTED`. As descrições 05/06 são preservadas literalmente conforme C1, e diferenças gráficas do documento acadêmico fechado continuam registradas.
+
+## Sexto checkpoint — QVD e checkpoint físicos reconciliados (09/10/2026); log do reload pendente
+
+**FATO VERIFICADO — saída PowerShell fornecida pelo responsável**, após fast-forward da branch `99f6751..c495b58` e execução local de `tools/audit_dim_carater_atendimento_qvd.py`:
+
+- Preflight do auditor **reexecutou** verificações do manifesto/CSV normativos e dos 36 CSV SIH/RD: `REFERENCE_ROWS=6`, `REFERENCE_DISTINCT_CODES=6`, `REFERENCE_CODES=01,02,03,04,05,06`, SHA CSV `3e40a9b2a4d0e1e65df8a9000f55af6fd24880468c12faaa24384f4722330ea8`, `REFERENCE_LABELS=EXACT_MATCH_TO_APPROVED_NORMATIVE_MATERIALIZER`.
+- QVD da extração `REF_CARATER_ATENDIMENTO.qvd`: **6 linhas e 6 campos** de cabeçalho; QVD `SRC_SIH_RD.qvd`: **566672 linhas**. `CHECKPOINT_C1=PASS_PARTIAL_ZERO_UNMATCHED`.
+- Os 36 CSVs originais têm 566672 linhas, 4 códigos observados sem alteração de normalização e **0 sem correspondência**: `01=80167`, `02=470512`, `05=1670`, `06=14323`; `03=0`, `04=0`. Totais anuais: `2017=187726`, `2018=187293`, `2019=191653`.
+- O arquivo **local** `TRANSFORMACAO/QVD/DIM_CARATER_ATENDIMENTO.qvd` agora existe com cabeçalho **6 linhas e 4 campos**, tamanho **3383 bytes**, SHA-256 **`b43851e7c57e33804ddde812ff47959510c07950a8db54d8aa9406dfa01861b4`**.
+- O checkpoint local `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_CARATER_ATENDIMENTO.csv` existe com **535 bytes**, SHA-256 **`97fffb687609c6566fac39da97b4a9e059c32efae5ee7144f1ebc5cc5dba87a0`**. O auditor conferiu `PASS_PARTIAL_DIM_CARATER_ATENDIMENTO_ONLY`, 6 chaves substitutas únicas **declaradas pelo checkpoint Qlik**, 0 inválidos, RD 566672/0 unmatched, distribuição por código e `facts_and_link_table=NOT_STARTED`.
+- `VERDICT=PASS_LOCAL_DIM_CARATER_QVD_HEADER_CHECKPOINT_RECONCILED` e `LIMIT=QVD_BINARY_BODY_NOT_INDEPENDENTLY_DECODED`. Esta auditoria usa SHA, cabeçalho QVD e **valores gravados pelo próprio Qlik no CSV**, mas **não** decodifica independentemente cada registro da dimensão ou comprova a conclusão do reload.
+- **O log do reload QlikView 12 NÃO foi enviado nesta execução.** Portanto, os traces `SOURCE`, `COVER`, `COUNTS`, `STORE`, encerramento normal sem erros e horário contemporâneo dos dois arquivos **ainda exigem confirmação por log**.
+
+**Estado atual:** `IV-CARATER_ATENDIMENTO=LOCAL_QVD_HEADER_CHECKPOINT_PASS_RELOAD_LOG_PENDING`. Há QVD/checkpoint locais inspecionados; **a sexta dimensão ainda NÃO está integrada à main**, que permanece em **5/8 dimensões**. `T29_HISTORICAL=NOT_APPROVED` e fatos/Link Table/PAINEL `NOT_STARTED` permanecem.
+
+**Próximo gate:** localizar `TRANSFORMACAO/TRANSF.qvw*.log` mais recente, correlacionar seu horário com o QVD/checkpoint e comprovar **na mesma execução** `[IV-CARATER] SOURCE Rows=6 Fields=4 Codes=6 Invalid=0`, `COVER RD=566672 Distinct=4 UNMATCHED=0 Invalid=0`, `COUNTS 01=80167 02=470512 03=0 04=0 05=1670 06=14323`, `DIM_CARATER_ATENDIMENTO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN` e finalização normal. Guardas impressas `IF ScriptErrorCount > 0 THEN` **não** constituem erros de execução. Somente após essa evidência e revisão do diff encaminhar PR, sem executar merge automático.
