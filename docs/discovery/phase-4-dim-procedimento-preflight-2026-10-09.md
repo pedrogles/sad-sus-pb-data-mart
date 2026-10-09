@@ -484,3 +484,29 @@ if ($LASTEXITCODE -ne 0) { throw "Falha na auditoria independente do CSV SIGTAP"
 **DECISÃO PENDENTE:** manter `DESCRICAO_OFICIAL` como NULL/status explícito por falta de campo detalhado distinto, até prova de outra fonte SIGTAP; não preencher repetindo `NOME_PROCEDIMENTO` sem decisão consciente. A decisão acadêmica sobre dimensão é preservada, e o atributo está previsto fisicamente mas sem dados. A versão retrospectiva 201808 continua com T29 não aprovado.
 
 **Estado:** `IV-PROCEDIMENTO=STAGING_CSV_AUDIT_PASS_QLIK_CODE_READY_NOT_RUN`; `DIM_PROCEDIMENTO_QVD=NOT_YET_VALIDATED`; `PHASE_IV=IN_PROGRESS`; 3/8 dimensões integradas; `T29_HISTORICAL=NOT_APPROVED`.
+
+## IV-PROCEDIMENTO — QVD e checkpoint físicos reconciliados (09/10/2026), log de reload pendente
+
+**FATO VERIFICADO — PowerShell fornecido pelo responsável:**
+
+- `git pull --ff-only` em `feat/phase-4-dim-procedimento` realizou fast-forward `cc9fe24..83e1b7b` e recebeu `TRANSFORMACAO/transf_dim_procedimento.qvs`, seu `Must_Include` em `transf_main.qvs`, e `tools/audit_dim_procedimento_qvd.py`.
+- O responsável executou `.\.venv\Scripts\python.exe .\tools\audit_dim_procedimento_qvd.py` com sucesso. **Não forneceu nesta mensagem o log de execução/reload do QlikView 12 nem seu resumo `Execution finished`/ausência de erros.**
+- Auditor read-only do arquivo físico `TRANSFORMACAO/QVD/DIM_PROCEDIMENTO.qvd`: `SOURCE_CSV_SHA256=cf75e51400c09896fe0e296bd3a4d448353de4c196bbb40985a58f24012b6db7`, `QVD_SHA256=620b3f9d4d1babdf25b2d1f2f5653ad7089e4003986048bdb746b5662f2de56b`, `QVD_ROWS=165203`, `QVD_FIELDS=12`.
+- Cabeçalho XML físico QVD em ordem: `%SK_PROCEDIMENTO`, `COD_PROCEDIMENTO`, `COMPETENCIA_REFERENCIA`, `NOME_PROCEDIMENTO`, `DESCRICAO_OFICIAL`, `DESCRICAO_OFICIAL_STATUS`, `CO_GRUPO`, `NO_GRUPO`, `CO_SUB_GRUPO`, `NO_SUB_GRUPO`, `CO_FORMA_ORGANIZACAO`, `NO_FORMA_ORGANIZACAO`.
+- Auditor do checkpoint `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_PROCEDIMENTO.csv`: `CHECKPOINT_SHA256=b6180cecb7b91b93d2fd5906ed7034549ce38105cde4d6d0eb0f03b4a7639543`, `CHECKPOINT_STATUS=PASS_PARTIAL_DIM_PROCEDIMENTO_ONLY`, `RD_ROWS=566672`, `RD_PROCEDURE_UNMATCHED=0`, `T29_HISTORICAL=NOT_APPROVED`, `FACTS_AND_LINK_TABLE=NOT_STARTED`.
+- Resultado do auditor: **`VERDICT=PASS_LOCAL_DIM_PROCEDIMENTO_QVD_HEADER_CHECKPOINT_RECONCILED`**, com limite explícito `LIMIT=QVD_BINARY_ROWS_NOT_INDEPENDENTLY_DECODED`. O auditor verificou também contadores do checkpoint (36 competências, 165203 chaves substitutas únicas, 165203 versões procedimento×competência e 0 registros inválidos), esquema e frescor relativo dos arquivos.
+- Isso comprova a existência do QVD, seu tamanho lógico pelo cabeçalho, nomes de campos, SHA-256, reconciliação do checkpoint e dos resultados nele **registrados**. **Não equivale a comprovar a execução sem falhas de todo o reload**, pois não houve log Qlik fornecido nesta rodada; o auditor não decompõe o corpo binário do QVD.
+
+**Estado correto do gate:** `IV-PROCEDIMENTO=LOCAL_QVD_HEADER_AND_PARTIAL_CHECKPOINT_PASS_RELOAD_LOG_PENDING`. O CSV de staging 165203×10 e seus 216 arquivos originais seguem PASS. **Não promover PR/merge ainda**; Fase IV possui **3/8 dimensões integradas na main**, com `DIM_PROCEDIMENTO` materializada/validada fisicamente apenas na estação local e não integrada. `T29_HISTORICAL=NOT_APPROVED`; sem fatos, Link Table, PAINEL nem `_SUCCESS_TRANSFORMACAO.csv`.
+
+### Gate final de evidência do QlikView 12
+
+Identificar o **log mais recente de `TRANSF.qvw` realmente correspondente ao novo QVD** e conferir, na mesma execução:
+
+1. `[TRANSFORMACAO][IV-PROCEDIMENTO] SOURCE Rows=165203 Fields=10 Keys=165203 Months=36 Invalid=0`;
+2. `[TRANSFORMACAO][IV-PROCEDIMENTO] COVER RD=566672 UNMATCHED=0`;
+3. `[TRANSFORMACAO][IV-PROCEDIMENTO] DIM_PROCEDIMENTO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN`;
+4. encerramento normal (`Execution finished` ou marca equivalente no log Qlik), sem falha `ScriptError`/abortos, e timestamps compatíveis com os arquivos auditados;
+5. sem evidência de criação de fatos, Link Table ou marcador global `_SUCCESS_TRANSFORMACAO.csv`.
+
+Após receber o log real, revisar o conjunto do PR e somente então classificar esta dimensão como candidata à integração. Não inferir o PASS de reload com base no arquivo QVD isolado.
