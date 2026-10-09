@@ -162,3 +162,13 @@ VERDICT=PASS_MOTIVO_28_CODE_REFERENCE_AND_RD_PREFLIGHT_ONLY
 **Revisão estática de escopo:** PASS — a alteração mantém as seis dimensões anteriores, não modifica extração, QVDs/datasets versionados, capítulos acadêmicos, fatos, Link Table, painéis ou marcador global. Gates físicos Python e reload real QlikView 12 passaram **localmente**, com limites de auditoria já documentados. Não afirmar CI ou revisão formal de terceiros como PASS sem evidência adicional.
 
 **DECISÃO PENDENTE:** concluir a revisão do PR #80 e promover de Draft para Ready for review; **squash merge requer autorização específica separada**. Até merge efetivo, `main` permanece **6/8 dimensões integradas**. `T29_HISTORICAL=NOT_APPROVED` e fatos/Link Table/PAINEL `NOT_STARTED`.
+
+## PR #80 — Ready for review (09/10/2026)
+
+**FATO VERIFICADO NO GITHUB:** após solicitação de prosseguimento do responsável, PR [#80](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/80) promovido de Draft para **Ready for review**. `state=open`, `draft=false`, `merged=false`, `mergeable=true` confirmado em consulta após a promoção (o cálculo de mergeabilidade retornou `false` transitoriamente antes da atualização; não comprova conflito persistente).
+
+**Conferência final de escopo:** diff `feat/phase-4-dim-motivo-saida-permanencia` vs `main` com `behind_by=0` e somente **7 arquivos** QlikView/Python/documentação. Revisão estática da SK `Hash128('MOT', COBRANCA normalizado)`, domínio C1 28 códigos/6 grupos, equivalência `24→2.4`, preservação dos seis checkpoints anteriores, cobertura 566672 RD/0 unmatched, frequência dos 26 códigos e gravação exclusivamente de QVD/checkpoint **parciais**: PASS. Não houve alteração de fatos, Link Table, painel, extração ou capítulos acadêmicos.
+
+**Verificações de colaboração/CI:** consulta remota para commit `52febcb1135b11604b1afa3fe49f8a2229db8350` retornou **status checks e workflow runs vazios**; até a promoção, a API também não mostrou revisões formais ou threads. Isso **não** significa CI PASS ou aprovação por terceiros. Os testes QlikView e auditoria física foram **locais**, log recebido em trechos e QVD binário sem decodificação externa independente.
+
+**DECISÃO PENDENTE:** autorização específica do responsável para eventual **squash merge do PR #80**, após nova checagem de `mergeable`, head SHA e escopo. Não executar merge sem autorização. A `main` permanece **6/8 dimensões integradas**. Depois do merge, a próxima fase dimensional é a Discovery de `DIM_TIPO_LEITO`, sujeita à pendência `T29_HISTORICAL=NOT_APPROVED` (vigência histórica CNES); não inferir aprovação ou começar implementação sem resolução do gate.
