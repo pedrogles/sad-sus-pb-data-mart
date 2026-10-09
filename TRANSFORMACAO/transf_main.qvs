@@ -252,3 +252,9 @@ $(Must_Include=transf_dim_carater_atendimento.qvs);
 // Preflight 28 referencias/26 codigos RD/566672 registros/0 unmatched PASS.
 // QVD/checkpoint PARCIAIS, sem tabela fato, Link Table ou sucesso global.
 $(Must_Include=transf_dim_motivo_saida_permanencia.qvs);
+
+// FASE IV — oitavo checkpoint ISOLADO: DIM_TIPO_LEITO por par+competencia CNES/LT.
+// A2 aprovado, descricoes de 201909 apenas naquele mes; outros meses NULL.
+// Ressalva para futuros graficos: 1965/2021 pares-mes sem descricao historica.
+// T29 historico NOT_APPROVED; sem fatos, Link Table ou PAINEL.
+$(Must_Include=transf_dim_tipo_leito.qvs);
