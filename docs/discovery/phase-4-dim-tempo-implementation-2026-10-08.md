@@ -156,3 +156,18 @@ Para gerar log no QlikView Desktop, abrir `TRANSFORMACAO/TRANSF.qvw` e habilitar
 2. Conferir `LastWriteTime` e SHA-256 de `TRANSFORMACAO/QVD/DIM_TEMPO.qvd` apos o reload recente.
 3. Inspecionar todo o log contemporâneo para `Error`, `Failed`, `Cannot`, `Access`, `STORE`, `ScriptError`, alem do fechamento normal.
 4. Somente apos localizar a causa corrigir caminho/gravacao, se necessario. Nao apagar QVDs da extração, nem alterar fatos, chaves ou modelo acadêmico.
+
+## 9. Diagnostico posterior — persistencia e log confirmados (08/10/2026 22:40:12)
+
+**FATO VERIFICADO — nova saida PowerShell do responsavel:**
+- Busca recursiva no repositorio local encontrou **exatamente uma ocorrencia reportada de cada arquivo** no caminho esperado: `TRANSFORMACAO/QVD/DIM_TEMPO.qvd` e `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_TEMPO.csv`.
+- `DIM_TEMPO.qvd`: **269.347 bytes**, `LastWriteTime=08/10/2026 22:40:12`, `SHA256=2E38647C8DBA58ED823D5E6D19DF427E78C8D41FA3A0315EBE54176AC7A5C828`.
+- `_CHECKPOINT_DIM_TEMPO.csv`: **397 bytes**, `LastWriteTime=08/10/2026 22:40:12`. Existencia fisica no destino correto confirmada. **O conteudo do CSV novo ainda nao foi lido com sucesso nesta evidencia.**
+- Log contemporaneo `TRANSFORMACAO/TRANSF.qvw.2026_10_08_22_40_08.log`: comandos `STORE` para QVD e checkpoint, `TRACE DIM_TEMPO_QVD_STORED_AND_PARTIAL_CHECKPOINT_WRITTEN` e `Execution finished`. A pesquisa no log apresentada encontrou somente essas linhas e mencoes em `IF ScriptErrorCount > 0` / `SET ErrorMode=0`, sem linha de falha concreta no trecho pesquisado.
+- Conversao independente em PowerShell dos seriais Qlik **39448 e 43830**, com origem `1899-12-30`: `2008-01-01` e `2019-12-31`. Intervalo calendario inclusivo **4383 dias**, coerente com o checkpoint e cabecalho QVD anterior. Os limites foram derivados pelo script de `DT_INTER`/`DT_SAIDA` RD e baseline 2017–2019, mas **a causa dos registros RD com data em 2008 ainda depende de inspecao de registros da origem**.
+
+**Correcao do diagnostico anterior:** o bloqueio `BLOCKED_CHECKPOINT_PATH_OR_WRITE_DIAGNOSTIC` foi **resolvido quanto a existencia do arquivo**, sem alteracao de codigo ou caminho. A falha anterior de `Import-Csv` ocorreu em uma consulta anterior; **nao ha causa comprovada para a falha pontual**. Nao diagnosticar automaticamente problema de filesystem, sincronizacao, concorrencia ou Qlik.
+
+**Veredito atual:** `IV-TEMPO=PASS_LOCAL_RELOAD_AND_PHYSICAL_PERSISTENCE`; `CSV_CONTENT_VALIDATION=PENDING`; `PRE_2017_RD_DATE_INVESTIGATION=PENDING`; `PR_74=DRAFT`; `PHASE_IV=IN_PROGRESS`. Nenhuma aprovacao de T29 nem implementacao dos fatos/Link Table.
+
+**Proxima verificacao read-only, sem novo reload:** importar agora o CSV encontrado, conferir os 15 campos e os limites `rd_min_date`, `rd_max_date`, `calendar_min_date`, `calendar_max_date`; calcular dias inclusivos com falha explicita se arquivo ou colunas estiverem ausentes. Se PASS, investigar em separado registros RD anteriores a 2017 (validade semantica, cardinalidade e papel temporal) antes de merge.
