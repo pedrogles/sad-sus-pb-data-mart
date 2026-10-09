@@ -1,0 +1,162 @@
+// Phase III final extraction gate (Boundary 7 T07/T08).
+// Must execute LAST, after III-C5.2. No dimension/fact/link created.
+// Batch runner MUST remove previous _SUCCESS_EXTRACAO.csv before every reload.
+// The marker represents QVD/schema/competence reconciliation ONLY.
+// T29 is snapshot coverage, not historical normative approval.
+
+TRACE [EXTRACAO][FINAL] Reconciling staging QVDs, T07 and T08;
+
+LET vP3ErrorsBefore = ScriptErrorCount;
+
+P3_GATE_CONTRACTS:
+LOAD * INLINE [
+qvd_name,expected_rows,required_fields
+SRC_SIH_RD,566672,ANO_CMPT|MES_CMPT|N_AIH|IDENT|MUNIC_RES|MUNIC_MOV|CNES|PROC_SOLIC|PROC_REA|DIAG_PRINC|CAR_INT|COBRANCA|DT_INTER|DT_SAIDA|DIAS_PERM|VAL_TOT|MORTE|_META_SOURCE_FILE|_META_SOURCE_FAMILY|_META_SOURCE_COMPETENCE|_META_SOURCE_PATH
+SRC_CNES_LT,35518,CNES|CODUFMUN|TP_LEITO|CODLEITO|QT_EXIST|QT_SUS|QT_NSUS|COMPETEN|_META_SOURCE_FILE|_META_SOURCE_FAMILY|_META_SOURCE_COMPETENCE|_META_SOURCE_PATH
+SRC_CNES_ST,220390,CNES|CODUFMUN|COD_CEP|CNPJ_MAN|VINC_SUS|TPGESTAO|TP_UNID|NATUREZA|NAT_JUR|COMPETEN|_META_SOURCE_FILE|_META_SOURCE_FAMILY|_META_SOURCE_COMPETENCE|_META_SOURCE_PATH
+SRC_IBGE_POPULACAO,669,ANO_REFERENCIA|UF|COD_UF_IBGE_2|COD_MUNIC_IBGE_5|COD_IBGE_7|NOME_MUNICIPIO|POPULACAO_ESTIMADA|_META_SOURCE_FILE|_META_SOURCE_FAMILY|_META_SOURCE_YEAR|_META_SOURCE_PATH
+REF_CARATER_ATENDIMENTO,6,CAR_INT|CARATER_DESCRICAO|CARATER_FONTE_OFICIAL|_META_SOURCE_FILE|_META_SOURCE_FAMILY|_META_SOURCE_PATH
+REF_MOTIVO_SAIDA,28,COBRANCA|MOTIVO_CODIGO_NORMATIVO|MOTIVO_DESCRICAO|MOTIVO_GRUPO|MOTIVO_FONTE_OFICIAL_BASE|MOTIVO_FONTE_OFICIAL_ATUALIZACAO|_META_SOURCE_FILE|_META_SOURCE_FAMILY|_META_SOURCE_PATH
+REF_CID10,14230,CID10_CODIGO|CID10_DESCRICAO|CID10_COMPETENCIA_REFERENCIA|CID10_FONTE_ARQUIVO|_META_SOURCE_FILE|_META_SOURCE_FAMILY|_META_SOURCE_PATH
+REF_SIGTAP,165203,SIGTAP_COMPETENCIA|SIGTAP_CO_PROCEDIMENTO|SIGTAP_NO_PROCEDIMENTO|SIGTAP_COMPETENCIA_CODIGO|_META_SOURCE_FILE|_META_SOURCE_FAMILY|_META_SOURCE_PATH
+REF_TIPO_LEITO,65,REF_LEITO_TP_LEITO|REF_LEITO_CODLEITO|REF_LEITO_NOME_CNES|REF_LEITO_TIPO_CNES|REF_LEITO_STATUS|REF_LEITO_PDF_PAGE|REF_LEITO_COMPETENCIA_REFERENCIA|REF_LEITO_FONTE_DOCUMENTO|REF_LEITO_USO_PERMITIDO|REF_LEITO_VIGENCIA_HISTORICA_VERIFICADA|_META_SOURCE_FILE|_META_SOURCE_FAMILY|_META_SOURCE_PATH
+REF_MUNICIPIO_PB_DERIVADA,223,COD_DATASUS_6|COD_IBGE_7|UF|FONTE_IBGE|ANOS_FONTE_IBGE|NATUREZA_REFERENCIA|METODO_CORRESPONDENCIA
+];
+
+LET vP3ContractCount = NoOfRows('P3_GATE_CONTRACTS');
+LET vP3MaxContract = $(vP3ContractCount) - 1;
+LET vP3ValidatedFields = 0;
+
+IF $(vP3ContractCount) <> 10 THEN
+    TRACE [EXTRACAO][FINAL] Unexpected QVD contract count=$(vP3ContractCount);
+    EXIT SCRIPT;
+ENDIF
+
+FOR vP3ContractIdx = 0 TO $(vP3MaxContract)
+    LET vP3QvdName = Peek('qvd_name', $(vP3ContractIdx), 'P3_GATE_CONTRACTS');
+    LET vP3ExpectedRows = Peek('expected_rows', $(vP3ContractIdx), 'P3_GATE_CONTRACTS');
+    LET vP3RequiredFields = Peek('required_fields', $(vP3ContractIdx), 'P3_GATE_CONTRACTS');
+
+    LET vP3ActualRows = Alt(QvdNoOfRecords('QVD\$(vP3QvdName).qvd'), -1);
+    LET vP3TotalFields = Alt(QvdNoOfFields('QVD\$(vP3QvdName).qvd'), -1);
+
+    IF $(vP3ActualRows) <> $(vP3ExpectedRows) OR $(vP3TotalFields) <= 0 THEN
+        TRACE [EXTRACAO][FINAL] QVD count/schema unreadable or mismatch. QVD=$(vP3QvdName) Rows=$(vP3ActualRows) Expected=$(vP3ExpectedRows) Fields=$(vP3TotalFields);
+        EXIT SCRIPT;
+    ENDIF
+
+    LET vP3RequiredCount = SubStringCount('$(vP3RequiredFields)', '|') + 1;
+    FOR vP3FieldIndex = 1 TO $(vP3RequiredCount)
+        LET vP3Need = SubField('$(vP3RequiredFields)', '|', $(vP3FieldIndex));
+        LET vP3Found = 0;
+
+        FOR vP3PhysicalField = 1 TO $(vP3TotalFields)
+            LET vP3FieldName = QvdFieldName('QVD\$(vP3QvdName).qvd', $(vP3PhysicalField));
+            IF '$(vP3FieldName)' = '$(vP3Need)' THEN
+                LET vP3Found = 1;
+            ENDIF
+        NEXT vP3PhysicalField
+
+        IF $(vP3Found) <> 1 THEN
+            TRACE [EXTRACAO][FINAL] T08 missing required field: $(vP3QvdName).$(vP3Need);
+            EXIT SCRIPT;
+        ENDIF
+
+        LET vP3ValidatedFields = $(vP3ValidatedFields) + 1;
+    NEXT vP3FieldIndex
+
+    TRACE [EXTRACAO][FINAL] QVD_CONTRACT_PASS $(vP3QvdName) records=$(vP3ActualRows) required_fields=$(vP3RequiredCount);
+NEXT vP3ContractIdx
+
+DROP TABLE P3_GATE_CONTRACTS;
+
+// T07: each health QVD must have EXACTLY all 36 competencies 201701–201912.
+// Original staging also checked per-row competence against its source filename.
+LET vP3T07Families = 0;
+FOR EACH vP3HealthName IN 'SRC_SIH_RD', 'SRC_CNES_LT', 'SRC_CNES_ST'
+    P3_GATE_MONTHS:
+    LOAD DISTINCT
+        Text(_META_SOURCE_COMPETENCE) AS P3_GATE_COMPETENCE
+    FROM [QVD\$(vP3HealthName).qvd] (qvd);
+
+    IF ScriptErrorCount > $(vP3ErrorsBefore) THEN
+        TRACE [EXTRACAO][FINAL] T07 cannot load competence list. QVD=$(vP3HealthName);
+        EXIT SCRIPT;
+    ENDIF
+
+    P3_GATE_MONTH_CHECK:
+    LOAD
+        Count(DISTINCT P3_GATE_COMPETENCE) AS month_count,
+        Sum(If(Match(P3_GATE_COMPETENCE, '201701', '201702', '201703', '201704', '201705', '201706', '201707', '201708', '201709', '201710', '201711', '201712', '201801', '201802', '201803', '201804', '201805', '201806', '201807', '201808', '201809', '201810', '201811', '201812', '201901', '201902', '201903', '201904', '201905', '201906', '201907', '201908', '201909', '201910', '201911', '201912') = 0, 1, 0)) AS invalid_months
+    RESIDENT P3_GATE_MONTHS;
+
+    LET vP3MonthsFound = Peek('month_count', 0, 'P3_GATE_MONTH_CHECK');
+    LET vP3InvalidMonths = Peek('invalid_months', 0, 'P3_GATE_MONTH_CHECK');
+    DROP TABLE P3_GATE_MONTH_CHECK;
+    DROP TABLE P3_GATE_MONTHS;
+
+    IF $(vP3MonthsFound) <> 36 OR $(vP3InvalidMonths) <> 0 THEN
+        TRACE [EXTRACAO][FINAL] T07 competence coverage mismatch. QVD=$(vP3HealthName) Months=$(vP3MonthsFound) Invalid=$(vP3InvalidMonths);
+        EXIT SCRIPT;
+    ENDIF
+
+    LET vP3T07Families = $(vP3T07Families) + 1;
+    TRACE [EXTRACAO][FINAL] T07_PASS $(vP3HealthName) competencies=36;
+NEXT vP3HealthName
+
+// Reconcile cross-source reference controls already approved in C1/C2/C3/C4/C5.
+// Keep historical leito classification unapproved; source code remains unchanged.
+IF $(vP3T07Families) <> 3 OR $(vP3ValidatedFields) <= 0 OR $(vCaraterUnmatchedRows) <> 0 OR $(vMotivoUnmatchedRows) <> 0 OR $(vCID10UnmatchedRows) <> 0 OR $(vSIGTAPUnmatchedRD) <> 0 OR $(vC4LTUnmatched) <> 0 OR $(vC4LTPairs) <> 57 OR $(vC5RDResExternal) <> 5202 OR $(vC52BridgeRows) <> 223 OR $(vC52BridgeBad) <> 0 OR $(vC5STUnmatched) <> 0 OR $(vC5LTUnmatched) <> 0 OR $(vC5RDAttUnmatched) <> 0 OR $(vC5RDResPBUnmatched) <> 0 THEN
+    TRACE [EXTRACAO][FINAL] Cross-reference reconciliation failed. Check C1-C5 prior checkpoints;
+    EXIT SCRIPT;
+ENDIF
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][FINAL] Script errors found after reconciliation. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+// Final marker is valid ONLY with an external runner that deletes old marker
+// before reload and independently checks new timestamp and QVD hashes.
+P3_EXTRACTION_SUCCESS:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'EXTRACAO' AS stage,
+    'PASS_FINAL_RECONCILED' AS status,
+    'PHASE_III_V1_2017_2019' AS pipeline_version,
+    10 AS qvd_count,
+    $(vP3ValidatedFields) AS required_fields_verified,
+    $(vP3T07Families) AS t07_families,
+    36 AS t07_competences_per_family,
+    'PASS' AS t08_required_fields,
+    $(vRDRows) AS rd_rows,
+    $(vLTRows) AS lt_rows,
+    $(vSTRows) AS st_rows,
+    $(vIBGERows) AS ibge_rows,
+    $(vCaraterRows) AS carater_reference_rows,
+    $(vMotivoRows) AS motivo_reference_rows,
+    $(vCID10Rows) AS cid10_reference_rows,
+    $(vSIGTAPRows) AS sigtap_reference_rows,
+    $(vC4ReferenceRows) AS cnes_leito_snapshot_reference_rows,
+    $(vC52BridgeRows) AS municipal_pb_derived_reference_rows,
+    $(vC5RDResExternal) AS rd_residence_external_rows,
+    '201909_SNAPSHOT_ONLY' AS leito_reference_scope,
+    'NOT_APPROVED' AS t29_historical_validity,
+    'NOT_A_STANDALONE_OFFICIAL_BRIDGE' AS municipality_reference_nature,
+    'BOUNDARY5_NULL_NOT_RETROFILL' AS establishment_historical_name_policy,
+    'NOT_STARTED' AS dimensional_transformation
+AUTOGENERATE 1;
+
+STORE P3_EXTRACTION_SUCCESS
+INTO [QVD\_SUCCESS_EXTRACAO.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vExtractionErrorsBefore) THEN
+    TRACE [EXTRACAO][FINAL] SUCCESS marker STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P3_EXTRACTION_SUCCESS;
+
+TRACE [EXTRACAO][FINAL] SUCCESS_MARKER_WRITTEN status=PASS_FINAL_RECONCILED QVDs=10 T07=3x36 T08_required_fields=$(vP3ValidatedFields);
+TRACE [EXTRACAO][FINAL] T29 historical validity NOT_APPROVED. Dimensional transformation NOT_STARTED.

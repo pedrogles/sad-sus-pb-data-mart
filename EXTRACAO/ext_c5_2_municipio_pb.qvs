@@ -12,7 +12,7 @@ LET vC52ErrorsBefore = ScriptErrorCount;
 
 // Gate de dependencia do preflight executado neste reload.
 IF $(vC5IBGERows) <> 669 OR $(vC5Distinct7) <> 223 OR $(vC5Distinct6) <> 223 OR $(vC5STRows) <> 220390 OR $(vC5STDistinct) <> 223 OR $(vC5STUnmatched) <> 0 OR $(vC5LTRows) <> 35518 OR $(vC5LTUnmatched) <> 0 OR $(vC5RDRows) <> 566672 OR $(vC5RDAttUnmatched) <> 0 OR $(vC5RDResPBUnmatched) <> 0 OR $(vC5RDResExternal) <> 5202 THEN
-    TRACE [EXTRACAO][C5.2] Preflight dependency failed; no reference generated;
+    TRACE [EXTRACAO][C5.2] PREFLIGHT_DEPENDENCY_FAILED NO_REFERENCE_GENERATED;
     EXIT SCRIPT;
 ENDIF
 
