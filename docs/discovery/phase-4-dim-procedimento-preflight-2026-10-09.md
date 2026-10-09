@@ -303,3 +303,20 @@ if ($LASTEXITCODE -ne 0) { throw "Auditoria textual exige investigacao" }
 ```
 
 **Próxima decisão após receber o log:** avaliar a diversidade de amostras, caracteres anômalos e a compatibilidade UTF-8, determinar se `cp1252` pode ser aprovado **apenas para os textos do corpus histórico auditado**, sem inferir validade normativa retroativa, e em seguida planejar **staging descritivo competência-aware** no QlikView. Antes disso: `DIM_PROCEDIMENTO=NOT_STARTED`; `PHASE_IV=IN_PROGRESS`.
+
+## Resultado da auditoria textual de 36 competências — 09/10/2026
+
+**FATO VERIFICADO — PowerShell enviado pelo responsável**, após `git pull --ff-only` na branch até `faab01c`:
+
+- Novo `tools/audit_sigtap_hierarchy_descriptions.py` foi executado em modo **READ-ONLY** e, antes das descrições, repetiu o gate SHA da fonte: `MANIFEST_SHA256=362301077a9823eca5e05362825b31471e0604bc4a9e3d308107252308f09ff5`, `COMPETENCES_VERIFIED=36`, `FILES_VERIFIED=216`, `PROCEDURES_RECONCILED=165203`, `UNMATCHED_ALL_LEVELS=0`, `FILES_TOTAL_BYTES=1863390`, `VERDICT=PASS_LOCAL_216_HIERARCHY_FILES_SHA_RECONCILED`.
+- Leu **16.247 descrições** dos arquivos hierárquicos nas 36 competências: `tb_grupo` **288 registros / 8 descrições distintas**; `tb_sub_grupo` **2.124 / 62**; `tb_forma_organizacao` **13.835 / 382**.
+- Linhas contendo ao menos um byte >=128: grupo **252**, subgrupo **1477**, forma **8008** (total **9737**). Para todas essas linhas, tentativa de decodificação **UTF-8 estrita falhou** (UTF8 strict compatible=0; invalid=252/1477/8008).
+- **Zero** falhas de decodificação `cp1252` estrita nos três níveis; **zero** campos vazios ou em branco; **zero** caracteres de controle Unicode; **zero** suspeitas pelo detector de *mojibake*. `TEXT_ISSUES_TOTAL=0`; `OUTPUT_FILES_WRITTEN=0`; `VERDICT=PASS_CP1252_TEXT_SANITY_CANDIDATE_ONLY`.
+- Amostras legíveis de texto de fonte (preservar grafia original, inclusive `orgãos` e `sangüíneos`, sem correção automática): `Ações de promoção e prevenção em saúde`, `Procedimentos clínicos`, `Transplantes de orgãos, tecidos e células`, `Diagnóstico em laboratório clínico`, `Educação em saúde`, `Exames radiológicos de vasos sangüíneos e linfáticos`.
+- Chaves com **mais de uma descrição no período**: `tb_grupo=0`, `tb_sub_grupo=3`, `tb_forma_organizacao=3`. **Não são seis anomalias comprovadas**: podem ser alterações oficiais de denominação, atualização retrospectiva ou variação gráfica. Verificar quais códigos, meses e textos mudaram antes de aceitar os nomes como atributos competência-aware.
+- Saída preserva `DESCRIPTION_ENCODING_APPROVAL=NOT_APPROVED`, `T29_HISTORICAL=NOT_APPROVED` e `QVD_GENERATED=False`.
+
+**Conclusão delimitada:** integridade e sanidade da interpretação textual **PASS como candidata**. Como nenhuma linha com acentuação sobrevive à decodificação UTF-8 estrita, `UTF-8` não é compatível com a representação geral desses TXT, mas isto **não identifica univocamente `cp1252` versus `ISO-8859-1`**: inspecionar a presença de bytes `0x80–0x9F` nos textos antes de afirmar distinção. Além disso, nomes divergentes entre competências não devem ser harmonizados automaticamente. `IV-PROCEDIMENTO=TEXT_SANITY_CP1252_CANDIDATE_PASS` e descrição oficial/contrato de versão ainda precisam de fechamento.
+
+**Próximo gate:** inspeção independente read-only dos bytes da faixa `0x80–0x9F`, listagem de códigos e transições mensais das **3 chaves de subgrupo + 3 chaves de forma**. Prosseguir com staging ou QVD somente depois de revisar a evidência; manter `T29_HISTORICAL=NOT_APPROVED`.
+
