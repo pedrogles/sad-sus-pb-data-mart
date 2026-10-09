@@ -136,3 +136,23 @@ Para gerar log no QlikView Desktop, abrir `TRANSFORMACAO/TRANSF.qvw` e habilitar
 3. Apagar **apenas** `_CHECKPOINT_DIM_TEMPO.csv`, anotar hora, recarregar `TRANSF.qvw` e verificar `QLIK_EXIT=0`.
 4. Conferir as quatro datas novas e checar que o intervalo em dias, inclusivo, corresponde a 4.383 registros do cabecalho QVD. Investigar datas extremas sem truncar registros da origem.
 5. Localizar log contemporaneo e verificar final normal; reconfirmar QVD/marcador parcial. Se algo divergente, manter PR #74 Draft e classificar `IV-TEMPO=FAIL_CLOSED` ate diagnostico.
+
+## 8. Terceiro reload local — arquivo de checkpoint ausente (08/10/2026 22:40:12)
+
+**FATO VERIFICADO — saida de console apresentada pelo responsavel:**
+- `git pull --ff-only` sincronizou `feat/phase-4-dim-tempo` de `ac923fd` para `75a8e3f`, trazendo os quatro campos de data no checkpoint.
+- Antes do reload, o operador removeu apenas `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_TEMPO.csv` com `-ErrorAction SilentlyContinue`.
+- `Qv.exe /r TRANSFORMACAO/TRANSF.qvw` devolveu `QLIK_EXIT=0`.
+- `Import-Csv TRANSFORMACAO/QVD/_CHECKPOINT_DIM_TEMPO.csv` retornou **FileNotFoundException**. Os `ParseExact` subsequentes falharam por falta do objeto `$r`. O `DIAS_CALCULADOS=-739895` impresso com variaveis nulas/inexistentes **nao e um indicador valido**.
+- O trecho de log das 22:40:12 mostra `P4_DIM_TEMPO_CHECKPOINT` com **15 campos**, `1 lines fetched`, `STORE P4_DIM_TEMPO_CHECKPOINT INTO [QVD\\_CHECKPOINT_DIM_TEMPO.csv]`, mensagem `DIM_TEMPO_QVD_STORED_AND_PARTIAL_CHECKPOINT_WRITTEN` e `Execution finished`.
+- No log, `vP4ObservedMinDay=39448`, `vP4ObservedMaxDay=43830`, tambem limites do calendario. **43830 - 39448 + 1 = 4383 dias**. Pela origem serial de datas QlikView, esses extremos correspondem a **2008-01-01 e 2019-12-31**, sujeito a confirmacao independente a partir do QVD.
+
+**Interpretação cautelosa:** o trecho do log comprova **execucao do comando STORE**, mas **nao comprova persistencia do CSV no diretorio examinado**. Possibilidades a investigar: resolucao do caminho relativo, gravacao em outro local, falha de escrita nao propagada, ou outra causa de I/O. Nao assumir causa sem inventario de arquivos. O QVD gerado nesta terceira execucao tampouco teve timestamp/hash novamente conferidos.
+
+**Veredito atualizado:** `IV-TEMPO=BLOCKED_CHECKPOINT_PATH_OR_WRITE_DIAGNOSTIC`; `PR_74=DRAFT`; `PHASE_IV=IN_PROGRESS`. O **PASS parcial do primeiro reload** e a auditoria do QVD de 22:17 permanecem historicamente registrados, mas **o reload mais recente nao passou no critério de arquivo checkpoint encontrado**.
+
+**Proximo diagnostico estritamente read-only:**
+1. Procurar `_CHECKPOINT_DIM_TEMPO.csv` sob a raiz do repositório, inclusive outras pastas `QVD`; listar os arquivos e timestamps de `TRANSFORMACAO/QVD` e do diretório de execução efetivo.
+2. Conferir `LastWriteTime` e SHA-256 de `TRANSFORMACAO/QVD/DIM_TEMPO.qvd` apos o reload recente.
+3. Inspecionar todo o log contemporâneo para `Error`, `Failed`, `Cannot`, `Access`, `STORE`, `ScriptError`, alem do fechamento normal.
+4. Somente apos localizar a causa corrigir caminho/gravacao, se necessario. Nao apagar QVDs da extração, nem alterar fatos, chaves ou modelo acadêmico.
