@@ -157,3 +157,26 @@ Na raiz do repositório (branch `feat/phase-4-dim-procedimento`), após `git pul
 **HIPÓTESE DE RELACIONAMENTO A TESTAR:** em `CO_PROCEDIMENTO` (10 posições; fonte física SIGTAP C3.3a), prefixos de 2, 4 e 6 dígitos identificam, respectivamente, grupo, subgrupo e forma. Tal regra **não está provada neste log**. Validar por lookup *na mesma competência*, com chaves inequívocas (`AAAAMM|GG`, `AAAAMM|GGSS`, `AAAAMM|GGSSFF`), unicidade na tabela de destino, cobertura de todos os procedimentos da amostra e consistência pai-filho. Não assumir que a contagem de grupos/subgrupos/formas prova a ligação aos procedimentos.
 
 **DECISÃO PENDENTE:** aprovar ou rejeitar a interpretação `cp1252` para os **três nomes descritivos** depois da inspeção textual diversificada; validar todas as 36 competências e só então criar dimensões/QVDs. `IV-PROCEDIMENTO=SAMPLE_STRUCTURE_PASS_JOIN_PILOT_PENDING`; `T27=PASS_ANTERIOR_SEM_RETESTE`; `PHASE_IV=IN_PROGRESS`.
+
+## Gate relacional amostral SIGTAP — código preparado, execução local pendente
+
+**Implementação preparada (NÃO EXECUTADA):** `tools/validate_sigtap_hierarchy_relational_pilot.py`. Não muda os scripts existentes de extração ou transformação, não grava QVD/CSV e não cria a dimensão.
+
+O script verifica novamente a proveniência do inventário (SHA C3.2, 348 membros), recupera os mesmos **4 ZIPs de referência em arquivos temporários**, confere tamanho, SHA-256 e CRC, e relê os 6 membros oficiais de hierarquia por pacote. Para os 4 meses, confere ainda os SHA-256 dos 3 layouts já observados (grupo/subgrupo/forma), decodifica suas chaves como ASCII e confere `DT_COMPETENCIA` contra o mês do pacote, chaves únicas e descrições não vazias. A conversão `cp1252` de descrições serve apenas à visualização amostral e continua como hipótese.
+
+Em paralelo, lê `BASE/REFERENCIAS/SIGTAP/PROCEDIMENTO/YYYYMM/tb_procedimento.txt` **já presente localmente no histórico C3.3b.1**; antes de processar, compara SHA-256 de dado/layout e quantidade de linhas com `sigtap_procedure_history_manifest.json` e verifica `CO_PROCEDIMENTO` ASCII de 10 dígitos, competência do próprio registro e unicidade. Total esperado da amostra segundo C3.3a: 4542 + 4587 + 4609 + 4624 = **18.362** pares procedimento×competência.
+
+**Hipótese específica em teste** (não é regra aprovada): `CO_PROCEDIMENTO[:2]` deve corresponder a `CO_GRUPO`, `[:4]` a `CO_GRUPO + CO_SUB_GRUPO`, `[:6]` a `CO_GRUPO + CO_SUB_GRUPO + CO_FORMA_ORGANIZACAO`. A correspondência sempre é feita **dentro do mesmo mês**, também conferindo a integridade subgrupo→grupo e forma→subgrupo/grupo.
+
+O piloto emite contadores `UNMATCHED_PROCEDURE_GROUP`, `UNMATCHED_PROCEDURE_SUBGROUP`, `UNMATCHED_PROCEDURE_FORM` e `PARENT_MISSING`, além de amostras de exceções (sem exclusão de procedimentos). Saída `PASS_4_MONTH_HIERARCHY_RELATIONAL_PILOT_ONLY` exige **18.362 procedimentos observados e 0 unmatched / órfãos**, sem implicar cobertura de 36 competências ou aprovação de encoding.
+
+### Executar no Windows (sem QlikView; sem saída persistente)
+
+```powershell
+git pull --ff-only
+.\.venv\Scripts\python.exe .\tools\validate_sigtap_hierarchy_relational_pilot.py
+```
+
+**Não iniciar download em massa dos 36 pacotes ainda.** Se houver exceções, conferir os códigos reais, layout e competência antes de alterar a hipótese; não corrigir inventando joins. Se o piloto passar, preparar gate read-only abrangendo os 36 meses e perfis de descrição, e somente depois planejar aquisição/staging dos atributos hierárquicos e a `DIM_PROCEDIMENTO`.
+
+**Estado:** `IV-PROCEDIMENTO=SAMPLE_STRUCTURE_PASS_RELATIONAL_PILOT_CODE_READY_QV_NOT_STARTED`; `T27=PREVIOUS_PASS`; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
