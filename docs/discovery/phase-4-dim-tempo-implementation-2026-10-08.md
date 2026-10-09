@@ -192,3 +192,21 @@ O extremo de 2008 é **dado real observado na origem serial do QlikView**, mas a
 Analisar os 36 CSVs SIH/RD que alimentaram `SRC_SIH_RD.qvd`, no padrão **`BASE/CONVERTIDA/RD/RDPB*.csv`** (contrato confirmado em `EXTRACAO/ext_main.qvs`), em modo somente leitura. Reconciliar `566672` linhas e produzir **somente agregados**, sem expor `N_AIH` ou identificadores individuais: frequência por ano de `DT_INTER` anterior a 2017, frequência do dia `2008-01-01` nos campos `DT_INTER`/`DT_SAIDA`, distribuição por `IDENT`, competência de processamento e eventuais datas de saída discordantes. Não alterar origem, staging, script, chaves nem intervalos por suposição.
 
 **Estado operativo:** `DIM_TEMPO_GATE=PASS_LOCAL`; `PRE_2017_DATE_PROVENANCE=PENDING_READ_ONLY_AUDIT`; `PR_74=DRAFT`.
+
+## 11. Auditoria read-only dos 36 CSVs RD — proveniência do limite de 2008
+
+**FATO VERIFICADO — saida Python local apresentada pelo responsavel:**
+
+- Leitura somente leitura de `BASE/CONVERTIDA/RD/RDPB*.csv`, exatamente **36 arquivos**, total **566.672 linhas**, igual ao staging reconciliado. Resultado `AUDITORIA_READ_ONLY_CONCLUIDA`.
+- Datas `DT_INTER`: minimo `2008-01-01`, maximo `2019-12-31`; **10.112 registros** com `DT_INTER < 2017-01-01`.
+- Datas `DT_SAIDA`: minimo `2016-08-11`, maximo `2019-12-31`; **7.540 registros** com `DT_SAIDA < 2017-01-01`.
+- **0 registros** com `DT_SAIDA < DT_INTER`. As contagens anteriores a 2017 são **por campo**, nao conjuntos mutuamente exclusivos nem contagem de pacientes.
+- Exatamente **70 linhas com `DT_INTER=2008-01-01`**, distribuidas nas 27 competencias consecutivas `201701..201903`, todas com `IDENT='5'`. A auditoria nao reportou ocorrencia de `DT_SAIDA=2008-01-01`; todas as saidas minimas estao em 2016 ou depois. A contagem 70 refere-se a **registros administrativos**, nao individuos/internacoes unicas.
+- Entre as datas antigas mais frequentes, o resultado apontou diversas datas de dezembro/2016 para ambos os papeis, compatíveis com datas reais distintas da competencia de processamento.
+- O Boundary 3 ja confirma `IDENT=5` como **continuidade administrativa, nao nova internacao**, e `N_AIH` nao e chave primaria; o projeto **nao** pode converter automaticamente as 70 linhas em novas internacoes.
+
+**HIPOTESE DE MODELAGEM / interpretacao permitida:** a continuidade administrativa `IDENT=5` e uma explicacao **compativel** com datas de admissao bem anteriores à competencia de processamento, inclusive 2008; entretanto, esta auditoria nao demonstra quantos pacientes distintos, episodios clinicos ou duracoes efetivas estão envolvidos, nem prova autenticidade clinica individual da admissao em 2008.
+
+**DECISAO OPERACIONAL PARA O CHECKPOINT, SEM ALTERAR O MODELO ACADEMICO:** manter o calendario diario `2008-01-01..2019-12-31` (4.383 dias) e os valores originais; o recorte analitico `2017-2019` sera definido por competencia da respectiva fato, nao por corte arbitrario de `DT_INTER`/`DT_SAIDA`. Nao excluir `IDENT=5`, nao antecipar fatos, nao supor 70 novas internacoes e nao alterar a chave da dimensao. Preservar a ressalva clinica sobre a origem exata do dia `2008-01-01`.
+
+**Veredito consolidado:** `IV-TEMPO=PASS_LOCAL_QV_CSV_QVD_RECONCILED` e `PRE_2017_RD_DATE_QA=DOCUMENTED_CONTINUITY_CONSISTENT`. Nao resta bloqueio demonstrado **na construcao tecnica da DIM_TEMPO**. A verificacao clinica individual nao faz parte do gate da dimensao. O PR #74 permanece em **Draft / ainda nao integrado**, aguardando revisao e autorizacao explicita de merge. Fase IV continua **IN PROGRESS** (7 dimensoes pendentes); `T29_HISTORICAL=NOT_APPROVED`.
