@@ -54,10 +54,20 @@ def inspect_inventory() -> dict[tuple[str, str], dict[str, str]]:
     }):
         raise RuntimeError("Inventario C3.2: contagem de membros incorreta")
     result = {}
+    expected_names = {
+        level + suffix
+        for level in LEVEL_FILES
+        for suffix in (".txt", "_layout.txt")
+    }
     for row in rows:
         key = (row["competence"], row["basename"].lower())
+        # O inventario pode ter nomes repetidos de OUTROS arquivos em
+        # diretorios diferentes. Exigir unicidade somente para os 6 membros
+        # exatos que serao de fato utilizados.
+        if key[1] not in expected_names:
+            continue
         if key in result:
-            raise RuntimeError(f"Basename duplicado: {key}")
+            raise RuntimeError(f"Membro de hierarquia duplicado: {key}")
         result[key] = row
     for month in SAMPLE_COMPETENCES:
         for level in LEVEL_FILES:
