@@ -480,3 +480,20 @@ O Portal CNES **exibe realmente** `LFCES002_201301_65.ZIP` em **Downloads → Ar
 - **C4.2c.4d = OFFICIAL_DOMAIN_ZIP_LINK_AND_DISPLAYED_UPDATE_IDENTIFIED / CONTENT_UNVERIFIED**.
 - **A2_SK_CONTRACT = DECISION_PENDING** e **T29_HISTORICAL = NOT_APPROVED** permanecem inalterados.
 - **NEXT DECISION GATE:** antes de qualquer download, obter aprovação específica para a inspeção mínima **somente** de `SCNES_DOMINIOS.ZIP` (se tecnicamente disponível), com tamanho/hash, lista de entradas, formato, versões e comparação do domínio com os 57 pares LT da PB. Inspeção física, por si, não aprova vigência mensal. Se o arquivo não trouxer metadados históricos, comparar com referência datada e manter lacuna explícita. Não antecipar instalação SCNES, aquisição dos 36 ZIPs, revisão de `Hash128`/Boundary 7, geração de `DIM_TIPO_LEITO` ou fatos.
+
+## C4.2c.4e — Tentativa de aquisição mínima autorizada de SCNES_DOMINIOS.ZIP (09/10/2026)
+
+**Autorização:** o responsável aprovou explicitamente a aquisição e inspeção mínima exclusivamente de `SCNES_DOMINIOS.ZIP` a partir do link oficial `https://cnes.datasus.gov.br/EstatisticasServlet?path=SCNES_DOMINIOS.ZIP`. Não foi autorizada instalação de aplicativo, aquisição em massa, mudança dimensional ou reinterpretação de `T29`.
+
+### Resultado físico do acesso
+
+1. Consulta ao URL oficial usando o navegador de pesquisa: respondeu com erro do **conversor de páginas**, informando literalmente `Unsupported content-type: application/zip` (HTTP 400 do leitor); isto **não** é evidência de erro HTTP 400 do próprio portal nem informa o tamanho/integridade do arquivo.
+2. Tentativa de `curl -I` no container: falha local `Could not resolve host: cnes.datasus.gov.br` (restrição de resolução DNS do ambiente).
+3. Tentativa de aquisição por ferramenta de download no mesmo ambiente: `download failed`; nenhum arquivo ZIP utilizável foi produzido.
+4. Não há hash físico SHA-256, comprimento, lista de entradas, dados de `NFCES001/TB_LEITO` ou `NFCES028/TB_ATRIBUTO` efetivamente inspecionados.
+
+**VEREDITO DESTA AQUISIÇÃO:** `ACCESS_BLOCKED_IN_EXECUTION_ENVIRONMENT` (não concluir indisponibilidade do arquivo no servidor). **C4.2c.4c visual permanece PASS_METADATA_INVENTORY_ONLY**, **C4.2c.4d identifica URL/data exibida mas não o conteúdo**, **A2=DECISION_PENDING**, **T29_HISTORICAL=NOT_APPROVED**.
+
+### Menor próximo passo, sem ampliar a autorização
+
+O responsável pode baixar **somente esse ZIP** pelo link oficial no navegador local e anexá-lo a este chat. No ambiente com acesso aos bytes, fazer inventário de entradas sem executar instaladores/macros; calcular SHA-256/tamanho; identificar formato e versões das tabelas de domínio; confrontar os pares `TP_LEITO+CODLEITO` com os **57 pares observados**; documentar explicitamente qualquer ausência de comprovação normativa mensal 2017–2019. Não transferir o ZIP ao Git nem assumir que a data exibida `18/10/2019` é competência normativa da estrutura interna. Não iniciar implementação sem o gate A2 separado.
