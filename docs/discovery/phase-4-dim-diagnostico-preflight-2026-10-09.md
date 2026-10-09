@@ -170,3 +170,16 @@ Somente após analisar as linhas reais de log: revisar diff do PR, abrir PR de i
 **Resultado da revisão de escopo:** PASS estático; mudanças restritas à quinta dimensão, seus testes físicos e documentação. A execução QlikView 12 e a auditoria física do QVD/checkpoint passaram **localmente** conforme seções anteriores. **Não atribuir aprovação de CI**, não alegar que o corpo binário do QVD foi reprocessado independentemente, nem afirmar log integral examinado.
 
 **DECISÃO PENDENTE:** promover o PR #78 de Draft para `Ready for review` após revisão final e **obter autorização explícita separada** para qualquer squash merge. A `main` continua **4/8 dimensões integradas** até o merge efetivo. Sem fatos, Link Table ou painel.
+
+## PR #78 — promovido para Ready for review (09/10/2026)
+
+**FATO VERIFICADO NO GITHUB:** o responsável solicitou prosseguimento após a criação do PR em Draft. Foi executada a promoção do [PR #78](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/78) de `Draft` para **`Ready for review`**; a resposta do GitHub confirmou `state=open`, `draft=false`, `merged=false`, `mergeable=true`. Referência do `head` no instante da promoção: `6af1b9134b31a671e71494c619020af09b047722`. Nenhum merge foi solicitado ou executado.
+
+**Revisão estática e escopo:**
+
+- Comparação com `main`: `behind_by=0`, **sete arquivos** estritamente relacionados ao include QlikView `DIM_DIAGNOSTICO`, sua chamada em `transf_main.qvs`, scripts Python de preflight/auditoria e documentação; nenhum fato, Link Table, painel, nova extração ou mudança nos capítulos acadêmicos.
+- O include contém `Hash128('CID10', _P4D_CODE)`, valida 14.230 linhas/códigos/SK únicas e 2.042/12.188 comprimentos, preserva `Text(RTrim(Text(DIAG_PRINC)))` do T28 e exige `566672 RD / 0 unmatched`. `REF_CID10.qvd` permanece origem de consulta, sem `STORE` que o substitua.
+- Relatório de log QlikView **local** de 09/10/2026 às 10:04:55 e auditoria física read-only já documentados como PASS; nenhuma decodificação independente do corpo binário do QVD. A busca no GitHub por **status checks e workflow runs do commit `6af1b913...` retornou listas vazias**; isso **não** constitui CI PASS. Consulta anterior não mostrou revisões nem threads registradas no PR.
+- Limitações de fonte e modelagem intactas: `201912` é **superset descritivo sem validade mensal dos CID**, `T29_HISTORICAL=NOT_APPROVED`, somente diagnóstico principal; sem fatos, Link Table ou painel.
+
+**DECISÃO PENDENTE:** obter autorização específica do responsável **antes do squash merge** do PR #78. Até a confirmação de merge, a `main` mantém **4/8 dimensões integradas**; a quinta está validada **localmente** e submetida a revisão, não integrada. Não antecipar desenvolvimento de fatos ou alterar a primeira entrega acadêmica.
