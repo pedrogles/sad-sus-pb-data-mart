@@ -236,3 +236,8 @@ $(Must_Include=transf_dim_estabelecimento.qvs);
 // Fonte: CSV enriquecido de 10 campos auditado por Python (nao altera REF_SIGTAP.qvd).
 // Exige T27 566672 RD/0 unmatched; T29 historico permanece NOT_APPROVED.
 $(Must_Include=transf_dim_procedimento.qvs);
+
+// FASE IV — quinto checkpoint: CID-10 descritiva, diagnostico principal.
+// Referencia SIGTAP 201912 e estatico/superset, sem validade mensal.
+// T28 usa Text(RTrim(Text(DIAG_PRINC))) para preservar o codigo Qlik.
+$(Must_Include=transf_dim_diagnostico.qvs);
