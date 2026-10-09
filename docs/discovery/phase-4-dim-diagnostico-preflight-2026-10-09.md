@@ -112,3 +112,34 @@ O script comparou SHA de `tb_cid.txt` e layout com manifestos C2.4/C2.7, **14.23
 4. Enviar **log do QlikView e saída do auditor**. O veredito `PASS_LOCAL_DIM_DIAGNOSTICO_QVD_HEADER_CHECKPOINT_RECONCILED` é **esperado, não observado**; sem ele, não criar PR de integração, não atualizar `main` e não avançar fatos/Link Table.
 
 **Estado:** `IV-DIAGNOSTICO=CID10_PREFLIGHT_PASS_QV_CODE_READY_NOT_RUN`; **4/8 dimensões integradas na `main`**, `T29_HISTORICAL=NOT_APPROVED`; fatos, Link Table e PAINEL `NOT_STARTED`. Preservar a referência CID `201912` **como superset descritivo**, sem inferir sua validade normativa histórica mensal.
+
+## IV-DIAGNOSTICO — auditoria física de QVD/checkpoint PASS local, reload log pendente (09/10/2026)
+
+**FATO VERIFICADO — duas execuções locais PowerShell fornecidas pelo responsável:**
+
+1. Após `git pull --ff-only` até `777d352`, a **primeira execução** de `tools/audit_dim_diagnostico_qvd.py` falhou com `RuntimeError: Dimensao/checkpoint ainda nao existe: TRANSFORMACAO\QVD\DIM_DIAGNOSTICO.qvd`. Isso demonstra apenas que o arquivo físico não existia naquele momento; **não** indica falha da fonte CID-10 nem da qualidade de dados.
+2. Na execução **posterior**, `Test-Path .\TRANSFORMACAO\QVD\DIM_DIAGNOSTICO.qvd` e `Test-Path .\TRANSFORMACAO\QVD\_CHECKPOINT_DIM_DIAGNOSTICO.csv` retornaram `True`. A nova auditoria concluiu com:
+   - `CID_REFERENCE_ROWS=14230`; `CID_DISTINCT_CODES=14230`; distribuição `CID_CODE_LENGTH_3=2042` e `CID_CODE_LENGTH_4=12188`; SHA fonte `da541adc1efbdb4ac04c555cf1e008967fd053fb6368ff443fb10a476757025f`;
+   - `REF_CID10_QVD_ROWS=14230`, `REF_CID10_QVD_FIELDS=7`, `SRC_SIH_RD_QVD_ROWS=566672`, `CHECKPOINT_C2_8D=PASS_PARTIAL_0_UNMATCHED`;
+   - `RD_FILES=36`, `RD_ROWS=566672`, `RD_RAW_DISTINCT=5480`, `RD_NORM_DISTINCT=5480`, `TRAILING_SPACE_ROWS=60423`, `RD_MATCHED=566672`, `RD_UNMATCHED=0`;
+   - `DIM_DIAGNOSTICO_QVD_SHA256=5d5912c12023c33ad85f93070e7d1ccf55e0d333686d8625c9804a76c06ef1d8`, `DIM_DIAGNOSTICO_QVD_BYTES=1314463`;
+   - `DIM_DIAGNOSTICO_CHECKPOINT_SHA256=e608153559e07282ceb2dc914f636c06c565f8d3d7df8fe2472e5f1340485a94`;
+   - `DIM_ROWS=14230`, `DIM_FIELDS=5`, `DIM_UNIQUE_SK_CHECKPOINT=14230`, `RD_DISTINCT_NORMALIZED=5480`, `RD_UNMATCHED=0`;
+   - `CID_REFERENCE_COMPETENCE=201912`, `CID_POLICY=STATIC_DESCRIPTIVE_SUPERSET_NOT_MONTHLY_VALIDITY`, `T29_HISTORICAL=NOT_APPROVED`, `FACTS_AND_LINK_TABLE=NOT_STARTED`;
+   - **`VERDICT=PASS_LOCAL_DIM_DIAGNOSTICO_QVD_HEADER_CHECKPOINT_RECONCILED`**, com limite `LIMIT=QVD_BINARY_BODY_NOT_INDEPENDENTLY_DECODED`.
+3. O auditor reexecuta os controles de arquivos originais e os 36 RD locais, confronta os hashes e metadados físicos do QVD e os contadores apresentados no checkpoint. **O QVD existe localmente e teve cabeçalho/checkpoint reconciliados.** A auditoria não decodifica cada registro do corpo binário e os números de SK únicas são valores do checkpoint produzidos pelo QlikView.
+4. **Ainda não foi fornecido o log real do novo reload do `TRANSFORMACAO/TRANSF.qvw`**, com traces IV-DIAGNOSTICO de fonte, T28 e STORE, nem comprovado seu encerramento normal. A existência do QVD e o PASS do auditor não substituem essa evidência. Não promover PR ou declarar a quinta dimensão integrada antes do log.
+
+**Estado atual:** `IV-DIAGNOSTICO=LOCAL_QVD_HEADER_CHECKPOINT_PASS_RELOAD_LOG_PENDING`; `DIM_DIAGNOSTICO.qvd=LOCAL_MATERIALIZED_AUDITED_HEADER`; **`MAIN_INTEGRATED_DIMENSIONS=4/8`**; `PHASE_IV=IN_PROGRESS`, `T29_HISTORICAL=NOT_APPROVED`.
+
+### Gate final de validação QlikView 12
+
+Localizar o log mais recente `TRANSF.qvw*.log` com execução correspondente à materialização acima e exigir, na **mesma execução**:
+
+- `[TRANSFORMACAO][IV-DIAGNOSTICO] SOURCE Rows=14230 Fields=4 Keys=14230 Len3=2042 Len4=12188 Invalid=0`;
+- `[TRANSFORMACAO][IV-DIAGNOSTICO] COVER RD=566672 Distinct=5480 UNMATCHED=0 Invalid=0`;
+- `[TRANSFORMACAO][IV-DIAGNOSTICO] DIM_DIAGNOSTICO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN`;
+- encerramento normal da execução, sem `FAIL` efetivamente emitido ou erro de script; distinguir guardas `ScriptErrorCount` impressas no script do erro ocorrido;
+- tempos do log compatíveis com QVD/checkpoint físicos; nenhuma implementação de fatos, Link Table ou marcador global.
+
+Somente após analisar as linhas reais de log: revisar diff do PR, abrir PR de integração sem merge automático, e preservar a `main` em 4/8 dimensões até merge autorizado. O rótulo CID da competência 201912 permanece **superset descritivo**, não atestado de vigência histórica mensal.
