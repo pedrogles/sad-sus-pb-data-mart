@@ -162,3 +162,11 @@ Somente após analisar as linhas reais de log: revisar diff do PR, abrir PR de i
 
 **Próximo gate:** revisão de diff contra `main`, abrir PR de revisão **sem auto-merge** e obter aprovação específica antes de integração. Preservar `Text(RTrim(Text(DIAG_PRINC)))` e referência CID 201912 somente como superset descritivo, sem alegação de vigência normativa mensal. `T29_HISTORICAL=NOT_APPROVED`; fatos, Link Table, PAINEL e marcador global permanecem não iniciados.
 
+
+## Revisão de integração — PR #78 criado em Draft (09/10/2026)
+
+**FATO VERIFICADO NO GITHUB:** PR **[#78](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/78)**, `feat/phase-4-dim-diagnostico` → `main`, estado `open`, **`draft=true`**, **`merged=false`**, `mergeable=true` após atualização de metadados; `behind_by=0`. São **sete arquivos** no diff: `AGENTS.md`, `TRANSFORMACAO/transf_dim_diagnostico.qvs`, `TRANSFORMACAO/transf_main.qvs`, este relatório, `docs/project/current-state.md`, `tools/preflight_dim_diagnostico_cid10.py` e `tools/audit_dim_diagnostico_qvd.py`. Não houve alteração em fatos, Link Table, painel, extração, arquivos de dados, Capítulos 1–2 ou QVDs versionados.
+
+**Resultado da revisão de escopo:** PASS estático; mudanças restritas à quinta dimensão, seus testes físicos e documentação. A execução QlikView 12 e a auditoria física do QVD/checkpoint passaram **localmente** conforme seções anteriores. **Não atribuir aprovação de CI**, não alegar que o corpo binário do QVD foi reprocessado independentemente, nem afirmar log integral examinado.
+
+**DECISÃO PENDENTE:** promover o PR #78 de Draft para `Ready for review` após revisão final e **obter autorização explícita separada** para qualquer squash merge. A `main` continua **4/8 dimensões integradas** até o merge efetivo. Sem fatos, Link Table ou painel.
