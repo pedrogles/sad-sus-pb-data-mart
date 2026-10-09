@@ -231,3 +231,8 @@ $(Must_Include=transf_dim_municipio.qvs);
 // FASE IV — terceiro checkpoint: versoes historicas CNES por competencia.
 // Depende de Tempo e Municipio; exige T16 sem usar snapshot posterior.
 $(Must_Include=transf_dim_estabelecimento.qvs);
+
+// FASE IV — quarto checkpoint: DIM_PROCEDIMENTO por SIGTAP+competencia.
+// Fonte: CSV enriquecido de 10 campos auditado por Python (nao altera REF_SIGTAP.qvd).
+// Exige T27 566672 RD/0 unmatched; T29 historico permanece NOT_APPROVED.
+$(Must_Include=transf_dim_procedimento.qvs);

@@ -1,0 +1,224 @@
+// FASE IV — DIM_PROCEDIMENTO, competencia-aware SIGTAP (201701–201912).
+// INPUT: CSV UTF-8 de 10 campos materializado e auditado em IV-PROCEDIMENTO.
+// Grão: exatamente 1 linha por CO_PROCEDIMENTO (10 ASCII) + competencia (YYYYMM).
+// Hash128 aprovado em Boundary 7; 3 niveis de nomes da MESMA competencia.
+// T29_HISTORICAL=NOT_APPROVED, em especial o pacote retrospectivo de 201808.
+// Sem fatos, Link Table, PAINEL, marcador final ou regravar REF_SIGTAP.qvd.
+LET vP4PErrorsBefore = ScriptErrorCount;
+TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] START;
+
+IF $(vP4EDimensionRows) <> 220390 OR $(vP4ESelfMissing) <> 0 OR $(vP4ERDUnmatched) <> 0 OR $(vP4ELTUnmatched) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL previous DIM_ESTABELECIMENTO checkpoint;
+    EXIT SCRIPT;
+ENDIF
+
+// O estagio CSV foi materializado em Python por competencia e auditado
+// independentemente contra CSV C3.4a e os 216 TXT/manifesto originais.
+// Nao converter para QVD de extracao neste checkpoint parcial.
+P4P_SOURCE:
+LOAD
+    Text(SIGTAP_COMPETENCIA) AS _P4P_CMPT,
+    Text(SIGTAP_CO_PROCEDIMENTO) AS _P4P_CODE,
+    Text(SIGTAP_NO_PROCEDIMENTO) AS _P4P_NAME,
+    Text(SIGTAP_COMPETENCIA_CODIGO) AS _P4P_KEY,
+    Text(SIGTAP_CO_GRUPO) AS _P4P_GROUP,
+    Text(SIGTAP_NO_GRUPO) AS _P4P_GROUP_NAME,
+    Text(SIGTAP_CO_SUB_GRUPO) AS _P4P_SUB,
+    Text(SIGTAP_NO_SUB_GRUPO) AS _P4P_SUB_NAME,
+    Text(SIGTAP_CO_FORMA_ORGANIZACAO) AS _P4P_FORM,
+    Text(SIGTAP_NO_FORMA_ORGANIZACAO) AS _P4P_FORM_NAME
+FROM [..\BASE\REFERENCIAS\sigtap_procedimento_hierarquia_staging_candidate.csv]
+(txt, utf8, embedded labels, delimiter is ';', msq);
+
+IF ScriptErrorCount > $(vP4PErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL reading 10-field enriched SIGTAP staging;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4PSourceRows = NoOfRows('P4P_SOURCE');
+LET vP4PSourceFields = NoOfFields('P4P_SOURCE');
+
+P4P_SOURCE_PROFILE:
+LOAD
+    Count(DISTINCT _P4P_KEY) AS _P4P_KEYS,
+    Count(DISTINCT _P4P_CMPT) AS _P4P_MONTHS,
+    Sum(If(
+        IsNull(_P4P_CMPT) OR Len(_P4P_CMPT) <> 6
+        OR Len(KeepChar(_P4P_CMPT, '0123456789')) <> 6
+        OR _P4P_CMPT < '201701' OR _P4P_CMPT > '201912'
+        OR Match(Right(_P4P_CMPT, 2),
+            '01','02','03','04','05','06','07','08','09','10','11','12') = 0
+        OR IsNull(_P4P_CODE) OR Len(_P4P_CODE) <> 10
+        OR Len(KeepChar(_P4P_CODE, '0123456789')) <> 10
+        OR _P4P_KEY <> (_P4P_CMPT & '|' & _P4P_CODE)
+        OR Len(_P4P_KEY) <> 17
+        OR _P4P_GROUP <> Left(_P4P_CODE, 2)
+        OR _P4P_SUB <> Mid(_P4P_CODE, 3, 2)
+        OR _P4P_FORM <> Mid(_P4P_CODE, 5, 2)
+        OR IsNull(_P4P_NAME) OR Len(Trim(_P4P_NAME)) = 0
+        OR IsNull(_P4P_GROUP_NAME) OR Len(Trim(_P4P_GROUP_NAME)) = 0
+        OR IsNull(_P4P_SUB_NAME) OR Len(Trim(_P4P_SUB_NAME)) = 0
+        OR IsNull(_P4P_FORM_NAME) OR Len(Trim(_P4P_FORM_NAME)) = 0,
+        1, 0
+    )) AS _P4P_INVALID
+RESIDENT P4P_SOURCE;
+
+IF ScriptErrorCount > $(vP4PErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL source profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4PKeys = Peek('_P4P_KEYS', 0, 'P4P_SOURCE_PROFILE');
+LET vP4PMonths = Peek('_P4P_MONTHS', 0, 'P4P_SOURCE_PROFILE');
+LET vP4PInvalid = Peek('_P4P_INVALID', 0, 'P4P_SOURCE_PROFILE');
+DROP TABLE P4P_SOURCE_PROFILE;
+
+TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] SOURCE Rows=$(vP4PSourceRows) Fields=$(vP4PSourceFields) Keys=$(vP4PKeys) Months=$(vP4PMonths) Invalid=$(vP4PInvalid);
+
+IF $(vP4PSourceRows) <> 165203 OR $(vP4PSourceFields) <> 10 OR $(vP4PKeys) <> 165203 OR $(vP4PMonths) <> 36 OR $(vP4PInvalid) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL source integrity;
+    EXIT SCRIPT;
+ENDIF
+
+// O unico campo fisico descritivo do procedimento aprovado eh
+// NO_PROCEDIMENTO. Nao inventar descricao detalhada separada.
+DIM_PROCEDIMENTO:
+NOCONCATENATE LOAD
+    Hash128('PROC', _P4P_CODE, _P4P_CMPT) AS [%SK_PROCEDIMENTO],
+    Text(_P4P_CODE) AS COD_PROCEDIMENTO,
+    Text(_P4P_CMPT) AS COMPETENCIA_REFERENCIA,
+    Text(_P4P_NAME) AS NOME_PROCEDIMENTO,
+    Null() AS DESCRICAO_OFICIAL,
+    'SEM_CAMPO_DE_DESCRICAO_DETALHADA_VALIDADO' AS DESCRICAO_OFICIAL_STATUS,
+    Text(_P4P_GROUP) AS CO_GRUPO,
+    Text(_P4P_GROUP_NAME) AS NO_GRUPO,
+    Text(_P4P_SUB) AS CO_SUB_GRUPO,
+    Text(_P4P_SUB_NAME) AS NO_SUB_GRUPO,
+    Text(_P4P_FORM) AS CO_FORMA_ORGANIZACAO,
+    Text(_P4P_FORM_NAME) AS NO_FORMA_ORGANIZACAO
+RESIDENT P4P_SOURCE;
+
+IF ScriptErrorCount > $(vP4PErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL building dimension;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4PDimRows = NoOfRows('DIM_PROCEDIMENTO');
+LET vP4PDimFields = NoOfFields('DIM_PROCEDIMENTO');
+
+P4P_DIM_PROFILE:
+LOAD
+    Count(DISTINCT [%SK_PROCEDIMENTO]) AS _P4P_SK_UNIQUE,
+    Count(DISTINCT COMPETENCIA_REFERENCIA & '|' & COD_PROCEDIMENTO) AS _P4P_VERSIONS,
+    Count(DISTINCT COMPETENCIA_REFERENCIA) AS _P4P_CMPTS,
+    Sum(If(
+        IsNull([%SK_PROCEDIMENTO]) OR Len(Trim(Text([%SK_PROCEDIMENTO]))) = 0
+        OR IsNull(COD_PROCEDIMENTO) OR Len(COD_PROCEDIMENTO) <> 10
+        OR IsNull(COMPETENCIA_REFERENCIA) OR Len(COMPETENCIA_REFERENCIA) <> 6
+        OR IsNull(NOME_PROCEDIMENTO) OR Len(Trim(NOME_PROCEDIMENTO)) = 0
+        OR IsNull(NO_GRUPO) OR Len(Trim(NO_GRUPO)) = 0
+        OR IsNull(NO_SUB_GRUPO) OR Len(Trim(NO_SUB_GRUPO)) = 0
+        OR IsNull(NO_FORMA_ORGANIZACAO) OR Len(Trim(NO_FORMA_ORGANIZACAO)) = 0
+        OR DESCRICAO_OFICIAL_STATUS <> 'SEM_CAMPO_DE_DESCRICAO_DETALHADA_VALIDADO',
+        1, 0
+    )) AS _P4P_DIM_BAD
+RESIDENT DIM_PROCEDIMENTO;
+
+IF ScriptErrorCount > $(vP4PErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL dimension profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4PUniqueSK = Peek('_P4P_SK_UNIQUE', 0, 'P4P_DIM_PROFILE');
+LET vP4PVersions = Peek('_P4P_VERSIONS', 0, 'P4P_DIM_PROFILE');
+LET vP4PDimMonths = Peek('_P4P_CMPTS', 0, 'P4P_DIM_PROFILE');
+LET vP4PDimBad = Peek('_P4P_DIM_BAD', 0, 'P4P_DIM_PROFILE');
+DROP TABLE P4P_DIM_PROFILE;
+
+IF $(vP4PDimRows) <> 165203 OR $(vP4PDimFields) <> 12 OR $(vP4PUniqueSK) <> 165203 OR $(vP4PVersions) <> 165203 OR $(vP4PDimMonths) <> 36 OR $(vP4PDimBad) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL dimension uniqueness or fields;
+    EXIT SCRIPT;
+ENDIF
+
+// T27: correspondencia de PROC_REA RD no SIGTAP da MESMA competencia.
+// RD nao e fato neste script. Nenhum registro factual e descartado.
+P4P_REF_MAP:
+MAPPING LOAD _P4P_KEY, 1
+RESIDENT P4P_SOURCE;
+
+P4P_RD_COVER:
+NOCONCATENATE LOAD
+    If(ApplyMap('P4P_REF_MAP',
+        Text(_META_SOURCE_COMPETENCE) & '|' & Text(PROC_REA), 0) = 1,
+        0, 1) AS _P4P_RD_MISSING
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4PErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL RD coverage load;
+    EXIT SCRIPT;
+ENDIF
+
+P4P_RD_PROFILE:
+LOAD
+    Count(*) AS _P4P_RD_ROWS,
+    Sum(_P4P_RD_MISSING) AS _P4P_RD_UNMATCHED
+RESIDENT P4P_RD_COVER;
+
+IF ScriptErrorCount > $(vP4PErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL RD coverage profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4PRDRows = Peek('_P4P_RD_ROWS', 0, 'P4P_RD_PROFILE');
+LET vP4PRDUnmatched = Peek('_P4P_RD_UNMATCHED', 0, 'P4P_RD_PROFILE');
+DROP TABLE P4P_RD_PROFILE;
+DROP TABLE P4P_RD_COVER;
+DROP TABLE P4P_SOURCE;
+
+TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] COVER RD=$(vP4PRDRows) UNMATCHED=$(vP4PRDUnmatched);
+
+IF $(vP4PRDRows) <> 566672 OR $(vP4PRDUnmatched) <> 0 OR ScriptErrorCount > $(vP4PErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL T27 historical RD match;
+    EXIT SCRIPT;
+ENDIF
+
+// Apenas checkpoint parcial. Nenhum _SUCCESS_TRANSFORMACAO.csv.
+STORE DIM_PROCEDIMENTO INTO [QVD\DIM_PROCEDIMENTO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4PErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL DIM_PROCEDIMENTO QVD STORE;
+    EXIT SCRIPT;
+ENDIF
+
+P4P_DIM_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'TRANSFORMACAO_DIM_PROCEDIMENTO' AS stage,
+    'PASS_PARTIAL_DIM_PROCEDIMENTO_ONLY' AS status,
+    $(vP4PDimRows) AS dimension_rows,
+    $(vP4PDimFields) AS dimension_fields,
+    $(vP4PMonths) AS distinct_competences,
+    $(vP4PUniqueSK) AS unique_surrogate_keys,
+    $(vP4PVersions) AS unique_procedure_month_versions,
+    $(vP4PDimBad) AS invalid_dimension_rows,
+    $(vP4PRDRows) AS rd_rows,
+    $(vP4PRDUnmatched) AS rd_procedure_unmatched,
+    'CSV_10_FIELDS_36_MONTHS_PYTHON_SHA_AND_ROW_RECONCILED' AS hierarchy_source_policy,
+    'OPERATIONAL_CP1252_EQUIVALENT_ISO_8859_1_ON_CORPUS' AS description_encoding_policy,
+    'NULL_NO_DETAILED_DESCRIPTION_SOURCE' AS detailed_description_policy,
+    'RETROSPECTIVE_ZIP_V2102261143_FOR_201808' AS provenance_caveat,
+    'NOT_APPROVED' AS t29_historical,
+    'NOT_STARTED' AS facts_and_link_table
+AUTOGENERATE 1;
+
+STORE P4P_DIM_CHECKPOINT INTO [QVD\_CHECKPOINT_DIM_PROCEDIMENTO.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vP4PErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] FAIL partial checkpoint STORE;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4P_DIM_CHECKPOINT;
+TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] DIM_PROCEDIMENTO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN;
+TRACE [TRANSFORMACAO][IV-PROCEDIMENTO] PHASE_IV_PARTIAL_ONLY T29_HISTORICAL_NOT_APPROVED;
