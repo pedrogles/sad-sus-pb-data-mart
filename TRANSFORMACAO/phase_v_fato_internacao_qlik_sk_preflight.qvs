@@ -1,0 +1,83 @@
+// SAD SUS PB — FASE V — FATO_INTERNACAO / SK CANDIDATE PREFLIGHT
+// Somente leitura. Executar em documento QVW NOVO e ISOLADO,
+// salvo em TRANSFORMACAO/V5_RD_SK_PREFLIGHT.qvw.
+// NAO adicionar ao transf_main.qvs, EXT.qvw ou PAINEL.qvw.
+// Nao faz STORE, INTO, JOIN, CONCATENATE, cria fatos ou altera QVDs.
+// Evidencia de entrada: CSVs RD 2017-2019 preflight Python PASS,
+// 566672 hash SHA-256 distintos para arquivo + 17 campos de staging.
+// Esta etapa testa unicidade Qlik Hash128 nos VALORES DO QVD,
+// nao testa sozinha estabilidade diante de alteracoes de dados de origem.
+
+SET ErrorMode=0;
+LET vV5SkErrorBefore = ScriptErrorCount;
+TRACE [V5-RD-SK] START READ_ONLY STAGING QVD PROJECTION;
+
+V5_RD_SK_PROBE:
+NOCONCATENATE LOAD
+    Hash128(
+        'RD',
+        Text(_META_SOURCE_FILE),
+        Text(ANO_CMPT),
+        Text(MES_CMPT),
+        Text(N_AIH),
+        Text(IDENT),
+        Text(MUNIC_RES),
+        Text(MUNIC_MOV),
+        Text(CNES),
+        Text(PROC_SOLIC),
+        Text(PROC_REA),
+        Text(DIAG_PRINC),
+        Text(CAR_INT),
+        Text(COBRANCA),
+        Text(DT_INTER),
+        Text(DT_SAIDA),
+        Text(DIAS_PERM),
+        Text(VAL_TOT),
+        Text(MORTE)
+    ) AS _V5_SK_CANDIDATE,
+    Text(IDENT) AS _V5_IDENT,
+    Text(_META_SOURCE_COMPETENCE) AS _V5_CMPT,
+    Text(_META_SOURCE_FILE) AS _V5_SOURCE_FILE
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vV5SkErrorBefore) THEN
+    TRACE [V5-RD-SK] FAIL STAGING_QVD_LOAD;
+    EXIT SCRIPT;
+ENDIF
+
+V5_RD_SK_PROFILE:
+NOCONCATENATE LOAD
+    Count(*) AS _V5_ROWS,
+    Count(DISTINCT _V5_SK_CANDIDATE) AS _V5_DISTINCT_SK,
+    Sum(If(IsNull(_V5_SK_CANDIDATE) OR Len(Trim(Text(_V5_SK_CANDIDATE)))=0, 1, 0)) AS _V5_NULL_SK,
+    Sum(If(_V5_IDENT='5', 1, 0)) AS _V5_IDENT5,
+    Sum(If(_V5_IDENT='1', 1, 0)) AS _V5_IDENT1,
+    Count(DISTINCT _V5_CMPT) AS _V5_MONTHS,
+    Count(DISTINCT _V5_SOURCE_FILE) AS _V5_FILES
+RESIDENT V5_RD_SK_PROBE;
+
+IF ScriptErrorCount > $(vV5SkErrorBefore) THEN
+    TRACE [V5-RD-SK] FAIL AGGREGATION;
+    EXIT SCRIPT;
+ENDIF
+
+LET vV5Rows = Peek('_V5_ROWS',0,'V5_RD_SK_PROFILE');
+LET vV5DistinctSk = Peek('_V5_DISTINCT_SK',0,'V5_RD_SK_PROFILE');
+LET vV5NullSk = Peek('_V5_NULL_SK',0,'V5_RD_SK_PROFILE');
+LET vV5Ident5 = Peek('_V5_IDENT5',0,'V5_RD_SK_PROFILE');
+LET vV5Ident1 = Peek('_V5_IDENT1',0,'V5_RD_SK_PROFILE');
+LET vV5Months = Peek('_V5_MONTHS',0,'V5_RD_SK_PROFILE');
+LET vV5Files = Peek('_V5_FILES',0,'V5_RD_SK_PROFILE');
+
+TRACE [V5-RD-SK] ROWS=$(vV5Rows) DISTINCT_SK=$(vV5DistinctSk) NULL_SK=$(vV5NullSk) IDENT5=$(vV5Ident5) IDENT1=$(vV5Ident1) MONTHS=$(vV5Months) SOURCE_FILES=$(vV5Files);
+
+IF $(vV5Rows) <> 566672 OR $(vV5DistinctSk) <> 566672 OR $(vV5NullSk) <> 0 OR $(vV5Ident5) <> 11583 OR $(vV5Ident1) <> 555089 OR $(vV5Months) <> 36 OR $(vV5Files) <> 36 THEN
+    TRACE [V5-RD-SK] VERDICT=BLOCKED_QV_HASH128_STAGING_KEY_UNIQUENESS;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE V5_RD_SK_PROFILE;
+DROP TABLE V5_RD_SK_PROBE;
+
+TRACE [V5-RD-SK] VERDICT=PASS_QV_HASH128_STAGING_PROJECTION_UNIQUE_CANDIDATE_ONLY;
+TRACE [V5-RD-SK] FACT_QVD_GENERATED=False OUTPUT_DATA_FILES_WRITTEN=0 KEY_APPROVAL_PENDING=True;
