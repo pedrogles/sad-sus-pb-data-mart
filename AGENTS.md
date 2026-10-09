@@ -131,7 +131,9 @@ Documentos de evidência:
 - `docs/discovery/phase-3-normative-references-implementation-2026-10-07.md`;
 - `docs/discovery/phase-3-cid10-reference-implementation-2026-10-07.md`;
 - `docs/discovery/phase-3-sigtap-proc-rea-implementation-2026-10-08.md`;
-- `docs/discovery/phase-3-cnes-lt-bed-code-implementation-2026-10-08.md`.
+- `docs/discovery/phase-3-cnes-lt-bed-code-implementation-2026-10-08.md`;
+- `docs/discovery/phase-3-municipal-crosswalk-materialization-2026-10-08.md`;
+- `docs/discovery/phase-3-final-extraction-gate-2026-10-08.md`.
 
 ## QlikView
 
@@ -189,7 +191,8 @@ Antes de adicionar datasets ao Git:
 - **Referências:** T27 SIGTAP e T28 CID-10 PASS. T29 **PASS apenas de cobertura do snapshot setembro/2019**; associação por competência/vigência histórica integral não validada.
 - **Checkpoint III-C5.1 municipal:** QlikView 12 PASS local em 08/10/2026: 223 códigos IBGE7 e 223 prefixos6 únicos, zero unmatched nos municípios PB das fontes, 5.202 RD com residência fora da PB separados; o código oficial completo vem dos XLS IBGE. Isso valida o **candidato PB**, sem materializar ponte. Detalhes: `docs/discovery/phase-3-municipal-crosswalk-preflight-2026-10-08.md`.
 - **III-C5.2 municipal (PASS LOCAL em 08/10/2026):** referência **derivada pelo projeto** com 223 pares PB DATASUS6↔IBGE7 validada em QlikView 12 e auditoria Python SHA-256, veredito `PASS_LOCAL_REFERENCE_AUDIT`. `REF_MUNICIPIO_PB_DERIVADA.qvd` e CSV locais, SHA dos três XLS IBGE registrado no manifesto local. Não rotular como equivalência oficial externa publicada; preservar 5.202 RD não-PB sem população PB. Documento: `docs/discovery/phase-3-municipal-crosswalk-materialization-2026-10-08.md`.
-- **Decisões pendentes relevantes:** resolução explicitamente limitada de lacunas históricas de estabelecimentos, reconciliação de QVDs/checkpoints e gate de fechamento da Fase III; validade normativa histórica de tipos/leitos (não comprovada e não impeditiva das análises quantitativas independentes). Materialização da ponte PB **já aprovada e com PASS local**; não reabrir o gate sem regressão demonstrada. A utilização apenas descritiva e datada do snapshot de set/2019 **já está aprovada**.
+- **III-FINAL (código preparado, reload local pendente):** `EXTRACAO/ext_phase3_final_gate.qvs` reconcilia 10 QVDs, 107 campos obrigatórios T08, e T07 (36 competências em RD/LT/ST); `tools/run_phase3_extraction.py` invalida marcador antigo, executa QlikView 12 e exige novo `_SUCCESS_EXTRACAO.csv`, QVDs frescos e SHA-256. A Fase III **NÃO está PASS** até execução/revisão. Documento: `docs/discovery/phase-3-final-extraction-gate-2026-10-08.md`.
+- **Próximos gates:** validar III-FINAL localmente, aprovar reconciliação, só então iniciar Fase IV. Boundary 5 já aprovou `NULL` para nomes históricos sem fonte em 201701–201705 sem backfill (T16 somente Fase IV). T29 validade histórica de tipos de leito continua **NÃO APROVADA**, com legenda set/2019 descritiva datada.
 - **Não alterar** fontes brutas, relatórios acadêmicos encerrados, arquitetura QlikView 12 ou modelo dimensional sem análise explícita e aprovação.
 
 A cronologia anterior do projeto permanece em `docs/project/current-state-chronology-2026-10-08.md` para auditoria, e o histórico Git conserva as versões anteriores de `AGENTS.md`. Não carregar essa cronologia por padrão.
