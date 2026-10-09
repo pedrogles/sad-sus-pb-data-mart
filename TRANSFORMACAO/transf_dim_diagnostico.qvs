@@ -1,0 +1,211 @@
+// FASE IV — quinto checkpoint isolado: DIM_DIAGNOSTICO / CID-10.
+// Fase III-C2/T28: referencia SIGTAP 201912 como superset DESCRITIVO.
+// Codigo CID-10 e texto; chave = Hash128('CID10', codigo normalizado).
+// Nenhuma validade normativa mensal e inferida. Diagnostico principal apenas.
+// Fatos, Link Table, painel e marcador global de transformacao NAO criados.
+LET vP4DErrorsBefore = ScriptErrorCount;
+TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] START;
+
+// Mantem os gates ja aprovados, nao altera as quatro dimensoes anteriores.
+IF $(vP4PDimRows) <> 165203 OR $(vP4PUniqueSK) <> 165203 OR $(vP4PRDRows) <> 566672 OR $(vP4PRDUnmatched) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL previous DIM_PROCEDIMENTO checkpoint;
+    EXIT SCRIPT;
+ENDIF
+
+P4D_CID_SOURCE:
+LOAD
+    Text(CID10_CODIGO) AS _P4D_CODE,
+    Text(CID10_DESCRICAO) AS _P4D_DESCRIPTION,
+    Text(CID10_COMPETENCIA_REFERENCIA) AS _P4D_REF_COMPETENCE,
+    Text(CID10_FONTE_ARQUIVO) AS _P4D_SOURCE_FILE
+FROM [..\EXTRACAO\QVD\REF_CID10.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4DErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL REF_CID10 QVD read;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4DSourceRows = NoOfRows('P4D_CID_SOURCE');
+LET vP4DSourceFields = NoOfFields('P4D_CID_SOURCE');
+
+P4D_SOURCE_PROFILE:
+LOAD
+    Count(DISTINCT _P4D_CODE) AS _P4D_UNIQUE_CODES,
+    Sum(If(Len(_P4D_CODE) = 3, 1, 0)) AS _P4D_LEN3,
+    Sum(If(Len(_P4D_CODE) = 4, 1, 0)) AS _P4D_LEN4,
+    Sum(If(
+        IsNull(_P4D_CODE)
+        OR (Len(_P4D_CODE) <> 3 AND Len(_P4D_CODE) <> 4)
+        OR Len(KeepChar(_P4D_CODE, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')) <> Len(_P4D_CODE)
+        OR Upper(_P4D_CODE) <> _P4D_CODE
+        OR IsNull(_P4D_DESCRIPTION) OR Len(Trim(_P4D_DESCRIPTION)) = 0
+        OR _P4D_REF_COMPETENCE <> '201912'
+        OR _P4D_SOURCE_FILE <> 'tb_cid.txt',
+        1, 0
+    )) AS _P4D_BAD
+RESIDENT P4D_CID_SOURCE;
+
+IF ScriptErrorCount > $(vP4DErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL reference profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4DUniqueCodes = Peek('_P4D_UNIQUE_CODES', 0, 'P4D_SOURCE_PROFILE');
+LET vP4DLen3 = Peek('_P4D_LEN3', 0, 'P4D_SOURCE_PROFILE');
+LET vP4DLen4 = Peek('_P4D_LEN4', 0, 'P4D_SOURCE_PROFILE');
+LET vP4DSourceInvalid = Peek('_P4D_BAD', 0, 'P4D_SOURCE_PROFILE');
+DROP TABLE P4D_SOURCE_PROFILE;
+
+TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] SOURCE Rows=$(vP4DSourceRows) Fields=$(vP4DSourceFields) Keys=$(vP4DUniqueCodes) Len3=$(vP4DLen3) Len4=$(vP4DLen4) Invalid=$(vP4DSourceInvalid);
+
+IF $(vP4DSourceRows) <> 14230 OR $(vP4DSourceFields) <> 4 OR $(vP4DUniqueCodes) <> 14230 OR $(vP4DLen3) <> 2042 OR $(vP4DLen4) <> 12188 OR $(vP4DSourceInvalid) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL source integrity;
+    EXIT SCRIPT;
+ENDIF
+
+// Nomes fisicos especificos da dimensao: impedir associacoes involuntarias
+// com COMPETENCIA_REFERENCIA e DESCRICAO_OFICIAL da DIM_PROCEDIMENTO.
+DIM_DIAGNOSTICO:
+NOCONCATENATE LOAD
+    Hash128('CID10', _P4D_CODE) AS [%SK_DIAGNOSTICO],
+    Text(_P4D_CODE) AS COD_DIAGNOSTICO,
+    Text(_P4D_DESCRIPTION) AS DESCRICAO_OFICIAL_DIAGNOSTICO,
+    Text(_P4D_REF_COMPETENCE) AS CID10_REFERENCIA_COMPETENCIA,
+    Text(_P4D_SOURCE_FILE) AS CID10_FONTE_ARQUIVO
+RESIDENT P4D_CID_SOURCE;
+
+IF ScriptErrorCount > $(vP4DErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL dimension LOAD;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4DDimensionRows = NoOfRows('DIM_DIAGNOSTICO');
+LET vP4DDimensionFields = NoOfFields('DIM_DIAGNOSTICO');
+
+P4D_DIM_PROFILE:
+LOAD
+    Count(DISTINCT [%SK_DIAGNOSTICO]) AS _P4D_UNIQUE_SK,
+    Count(DISTINCT COD_DIAGNOSTICO) AS _P4D_UNIQUE_CODES,
+    Sum(If(
+        IsNull([%SK_DIAGNOSTICO]) OR Len(Trim(Text([%SK_DIAGNOSTICO]))) = 0
+        OR IsNull(COD_DIAGNOSTICO)
+        OR (Len(COD_DIAGNOSTICO) <> 3 AND Len(COD_DIAGNOSTICO) <> 4)
+        OR IsNull(DESCRICAO_OFICIAL_DIAGNOSTICO)
+        OR Len(Trim(DESCRICAO_OFICIAL_DIAGNOSTICO)) = 0
+        OR CID10_REFERENCIA_COMPETENCIA <> '201912'
+        OR CID10_FONTE_ARQUIVO <> 'tb_cid.txt',
+        1, 0
+    )) AS _P4D_BAD
+RESIDENT DIM_DIAGNOSTICO;
+
+IF ScriptErrorCount > $(vP4DErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL dimension profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4DUniqueSK = Peek('_P4D_UNIQUE_SK', 0, 'P4D_DIM_PROFILE');
+LET vP4DDimUniqueCodes = Peek('_P4D_UNIQUE_CODES', 0, 'P4D_DIM_PROFILE');
+LET vP4DDimInvalid = Peek('_P4D_BAD', 0, 'P4D_DIM_PROFILE');
+DROP TABLE P4D_DIM_PROFILE;
+
+IF $(vP4DDimensionRows) <> 14230 OR $(vP4DDimensionFields) <> 5 OR $(vP4DUniqueSK) <> 14230 OR $(vP4DDimUniqueCodes) <> 14230 OR $(vP4DDimInvalid) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL dimension keys or schema;
+    EXIT SCRIPT;
+ENDIF
+
+// T28 — exclusivamente o diagnostico principal DIAG_PRINC.
+// A ordem de Text(RTrim(Text())) eh obrigatoria: C2.8d comprovou dual
+// textual R042 vs representacao R42 se a expressao for simplificada.
+P4D_CID_CODE_MAP:
+MAPPING LOAD _P4D_CODE, 1
+RESIDENT P4D_CID_SOURCE;
+
+P4D_RD_COVER:
+NOCONCATENATE LOAD
+    Text(RTrim(Text(DIAG_PRINC))) AS _P4D_RD_CID,
+    If(ApplyMap('P4D_CID_CODE_MAP', Text(RTrim(Text(DIAG_PRINC))), 0) = 1,
+        0, 1) AS _P4D_RD_UNMATCHED
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4DErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL RD coverage LOAD;
+    EXIT SCRIPT;
+ENDIF
+
+P4D_RD_PROFILE:
+LOAD
+    Count(*) AS _P4D_RD_ROWS,
+    Count(DISTINCT _P4D_RD_CID) AS _P4D_RD_DISTINCT,
+    Sum(_P4D_RD_UNMATCHED) AS _P4D_RD_UNMATCHED,
+    Sum(If(
+        IsNull(_P4D_RD_CID)
+        OR (Len(_P4D_RD_CID) <> 3 AND Len(_P4D_RD_CID) <> 4)
+        OR Len(KeepChar(_P4D_RD_CID, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')) <> Len(_P4D_RD_CID),
+        1, 0
+    )) AS _P4D_RD_INVALID
+RESIDENT P4D_RD_COVER;
+
+IF ScriptErrorCount > $(vP4DErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL RD coverage profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4DRDRows = Peek('_P4D_RD_ROWS', 0, 'P4D_RD_PROFILE');
+LET vP4DRDDistinct = Peek('_P4D_RD_DISTINCT', 0, 'P4D_RD_PROFILE');
+LET vP4DRDUnmatched = Peek('_P4D_RD_UNMATCHED', 0, 'P4D_RD_PROFILE');
+LET vP4DRDInvalid = Peek('_P4D_RD_INVALID', 0, 'P4D_RD_PROFILE');
+DROP TABLE P4D_RD_PROFILE;
+DROP TABLE P4D_RD_COVER;
+DROP TABLE P4D_CID_SOURCE;
+
+TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] COVER RD=$(vP4DRDRows) Distinct=$(vP4DRDDistinct) UNMATCHED=$(vP4DRDUnmatched) Invalid=$(vP4DRDInvalid);
+
+IF $(vP4DRDRows) <> 566672 OR $(vP4DRDDistinct) <> 5480 OR $(vP4DRDUnmatched) <> 0 OR $(vP4DRDInvalid) <> 0 OR ScriptErrorCount > $(vP4DErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL T28 RD coverage;
+    EXIT SCRIPT;
+ENDIF
+
+// Persistir apenas dimensao e checkpoint PARCIAIS apos todos os gates.
+STORE DIM_DIAGNOSTICO INTO [QVD\DIM_DIAGNOSTICO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4DErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL dimension STORE;
+    EXIT SCRIPT;
+ENDIF
+
+P4D_DIM_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'TRANSFORMACAO_DIM_DIAGNOSTICO' AS stage,
+    'PASS_PARTIAL_DIM_DIAGNOSTICO_ONLY' AS status,
+    $(vP4DSourceRows) AS reference_rows,
+    $(vP4DSourceFields) AS reference_fields,
+    $(vP4DDimensionRows) AS dimension_rows,
+    $(vP4DDimensionFields) AS dimension_fields,
+    $(vP4DUniqueCodes) AS distinct_codes,
+    $(vP4DUniqueSK) AS unique_surrogate_keys,
+    $(vP4DDimInvalid) AS invalid_dimension_rows,
+    $(vP4DLen3) AS code_length_3,
+    $(vP4DLen4) AS code_length_4,
+    $(vP4DRDRows) AS rd_rows,
+    $(vP4DRDDistinct) AS rd_distinct_normalized_codes,
+    $(vP4DRDUnmatched) AS rd_unmatched,
+    $(vP4DRDInvalid) AS rd_invalid,
+    '201912' AS reference_competence,
+    'ASCII_TRAILING_SPACE_REMOVAL_ONLY' AS normalization_policy,
+    'STATIC_DESCRIPTIVE_SUPERSET_NO_MONTHLY_VALIDITY' AS reference_policy,
+    'NOT_APPROVED' AS t29_historical,
+    'NOT_STARTED' AS facts_and_link_table
+AUTOGENERATE 1;
+
+STORE P4D_DIM_CHECKPOINT INTO [QVD\_CHECKPOINT_DIM_DIAGNOSTICO.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vP4DErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] FAIL checkpoint STORE;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4D_DIM_CHECKPOINT;
+TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] DIM_DIAGNOSTICO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN;
+TRACE [TRANSFORMACAO][IV-DIAGNOSTICO] PHASE_IV_PARTIAL_ONLY T29_HISTORICAL_NOT_APPROVED;
