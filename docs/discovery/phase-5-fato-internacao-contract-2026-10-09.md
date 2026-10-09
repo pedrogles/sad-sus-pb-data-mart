@@ -34,9 +34,9 @@ Este documento não modifica o modelo acadêmico nem reabre os Capítulos 1 e 2.
 | `VALOR_TOTAL` | `VAL_TOT` | preservar valor numérico por linha, sem juntar ou somar campos homônimos de outras fatos | total geral e anual conforme fonte; interpretar decimal/escala no QlikView antes de comparar |
 | `INDICADOR_OBITO` | `MORTE` | preservar indicador 0/1 do registro | contagem de linhas `MORTE=1` por ano/total igual ao preflight; **não assumir número de pacientes distintos** |
 
-**DECISÃO PENDENTE:** executar o novo preflight independente para produzir os totais reais e confirmar a leitura numérica `DIAS_PERM`/`VAL_TOT` por QlikView 12. Nenhum total desses três campos foi inventado aqui. Contagens 566.672/555.089 e domínio `MORTE={0,1}` já foram validados no ciclo anterior, mas o gate integral das medidas continua aberto. `VAL_TOT` e `DIAS_PERM` já são carregados como valores numéricos no staging, porém o pipeline pode ter representação distinta da string Decimal da fonte: detectar e reconciliar explicitamente.
+**FATO VERIFICADO pelo preflight da fonte (execução local relatada em 09/10/2026):** os totais reais por ano e agregado foram obtidos com `Decimal` nos CSVs. **DECISÃO PENDENTE:** confirmar as cinco medidas no QVD staging por reload independente no QlikView 12; `VAL_TOT`/`DIAS_PERM` são lidos numericamente no staging, mas diferenças de tipo, escala ou parsing ainda precisam ser descartadas. Não inferir PASS do Qlik pelo PASS da fonte.
 
-**Ferramenta adicionada ao repositório:** `tools/preflight_fato_internacao_medidas.py` — percorre 36 CSVs, compara competências/ano/IDENT/linhas/repetição de N_AIH/residência externa, calcula dias e valores com `decimal.Decimal`, soma flags de morte, apresenta totais anuais e gerais; **não escreve arquivo**. Ainda **NÃO EXECUTADA** no conjunto real nesta branch. Não contém novos campos nem muda as regras acadêmicas.
+**Ferramenta adicionada ao repositório:** `tools/preflight_fato_internacao_medidas.py` — percorre 36 CSVs, compara competências/ano/IDENT/linhas/repetição de N_AIH/residência externa, calcula dias e valores com `decimal.Decimal`, soma flags de morte, apresenta totais anuais e gerais; **não escreve arquivo**. **EXECUTADA no Windows** no conjunto integral real em 09/10/2026, com `VERDICT=PASS_RD_MEASURES_SOURCE_ONLY_QLIK_RECONCILIATION_PENDING`. Não contém novos campos nem muda as regras acadêmicas.
 
 ## 4. Associações previstas — chaves e semânticas
 
@@ -75,12 +75,36 @@ Assim, a sequência segura é: (1) medir e reconciliar a fonte RD; (2) testar fi
 
 ## 6. Gates objetivos antes da implementação factual
 
-- [ ] Executar `tools/preflight_fato_internacao_medidas.py` no Windows e registrar os totais anuais e gerais de `DIAS_PERM`, `VAL_TOT` e mortes, com SHA dos arquivos de origem/manifesto quando pertinente.
-- [ ] Validar no QlikView 12 (documento isolado) as cinco medidas contra a fonte, com atenção a zeros, casas decimais e eventuais diferenças de arredondamento.
+- [x] Executar `tools/preflight_fato_internacao_medidas.py` no Windows e registrar os totais anuais e gerais de `DIAS_PERM`, `VAL_TOT` e mortes. **PASS sobre os 36 CSVs**, com saída informada pelo responsável; SHA individual dos arquivos não foi emitido por este preflight e deve permanecer associado aos manifestos existentes.
+- [ ] Validar no QlikView 12 (documento isolado) as cinco medidas contra a fonte, com atenção a zeros, casas decimais e eventuais diferenças de arredondamento. QVS versionado: `TRANSFORMACAO/phase_v_fato_internacao_qlik_measures_preflight.qvs`; executor: `tools/validar_fato_internacao_medidas_qlik.ps1`. **A versão Qlik ainda não foi executada**.
 - [ ] Testar **566.672 linhas** preservadas, 36 competências, **566.672 SK técnicas únicas**, `IDENT5=11583`, `QTD_INTERNACAO=555089`, `QTD_REGISTRO_AIH=566672`, **0 órfãos** em cada dimensão obrigatória, 5.202 residências externas preservadas.
 - [ ] Garantir `Hash128('ANO', numeric_year)` idêntico às versões de `DIM_TEMPO`; data (competência, internação e saída) e procedimentos devem usar tipos/normalização da mesma dimensão.
 - [ ] Projetar `%LINK_KEY` de modo compatível com as três fatos e sem `$Syn` ou loops; testes T17/T18 dependem do contrato compartilhado e da Fase VI.
 - [ ] Não salvar QVD factual, marcador global de transformação, Link Table ou objetos de painel antes de resolver os gates aplicáveis.
 - [ ] `T29_HISTORICAL=NOT_APPROVED` preservado; a ausência de nomes CNES históricos não elimina leitos nem dispensa ressalva visível futura (1.965/2.021 **pares-mês** sem rótulo histórico comprovado, não percentual de leitos).
 
-**Veredito desta Discovery:** `FATO_INTERNACAO_CONTRACT=DOCUMENTED_PENDING_PHYSICAL_MEASURES_AND_LINK_KEY_GATES`, `FACT_QVD=NOT_STARTED`.
+**Veredito desta Discovery após o Python PASS:** `FATO_INTERNACAO_MEASURES_SOURCE=PASS`, `FATO_INTERNACAO_MEASURES_QV=NOT_EXECUTED`, `FATO_INTERNACAO_CONTRACT=DOCUMENTED_PENDING_PHYSICAL_QV_AND_LINK_KEY_GATES`, `FACT_QVD=NOT_STARTED`.
+
+## 7. Evidência física — medidas SIH/RD (Python READ-ONLY, 09/10/2026)
+
+O responsável executou na branch do PR #83:
+
+```powershell
+.\.venv\Scripts\python.exe tools\preflight_fato_internacao_medidas.py --root .
+```
+
+O script concluiu com `VERDICT=PASS_RD_MEASURES_SOURCE_ONLY_QLIK_RECONCILIATION_PENDING`, **36 arquivos / 36 competências / 566.672 registros** e `OUTPUT_FILES_WRITTEN=0`. Houve apenas `SyntaxWarning` no docstring devido a barras invertidas no exemplo PowerShell; corrigido em `tools/preflight_fato_internacao_medidas.py` com docstring raw nesta branch. O aviso não afetou as medidas.
+
+| Ano | Registros AIH | Internações contadas | `IDENT=5` | `MORTE=1` | Dias de permanência | Valor total (R$) |
+|---|---:|---:|---:|---:|---:|---:|
+| 2017 | 187.726 | 183.532 | 4.194 | 8.626 | 1.039.396 | 208.882.120,74 |
+| 2018 | 187.293 | 183.311 | 3.982 | 8.649 | 1.038.921 | 218.267.536,76 |
+| 2019 | 191.653 | 188.246 | 3.407 | 9.336 | 1.055.261 | 232.234.991,55 |
+| **Total** | **566.672** | **555.089** | **11.583** | **26.611** | **3.133.578** | **659.384.649,05** |
+
+- `RD_RESIDENCE_EXTERNAL_ROWS=5202`; `N_AIH_MONTHLY_EXTRA_ROWS=880`.
+- `QVD_BINARY_BODY_INSPECTED=False` e `QLIK_MEASURES_TEST_EXECUTED=False` na execução Python.
+- `DIAS_PERMANENCIA` e `VALOR_TOTAL` somados em escala original com `decimal.Decimal` nos CSVs; representam controles, **não totais de QVD transformado**.
+- `INDICADOR_OBITO_TOTAL=26611` é a soma das flags administrativas `MORTE=1`, **não quantidade de pessoas únicas**.
+- `tools/validar_fato_internacao_medidas_qlik.ps1` cria/reabre apenas o QVW isolado `TRANSFORMACAO/V5_RD_MEASURE_PREFLIGHT.qvw` para executar o QVS versionado; o QVS valida contagens anuais e totais, somando valores em **centavos inteiros** (`65938464905`) para minimizar diferenças de apresentação decimal. Sem `STORE`, `JOIN`, fato nem QVD gerado; o COM runner foi somente preparado e **não recebeu execução no Windows** até esta revisão.
+- Após PASS do Qlik, avançar à validação física das SKs dimensionais, papéis temporais/municipais e ao contrato conjunto da `%LINK_KEY`; **não gerar FATO_INTERNACAO** por inferência deste PASS de fonte.
