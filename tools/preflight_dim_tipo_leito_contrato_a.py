@@ -5,7 +5,8 @@ Usa os 36 CSVs CNES/LT reais (COMPETEN) e a referência 201909 apenas
 como identificador de pares, sem carregar descrições retrospectivas.
 Valida grão candidato TP_LEITO + CODLEITO + COMPETEN e a unicidade
 proposta ao fato CNES + COMPETEN + CODLEITO. NÃO gera dimensão, SK
-Hash128, arquivo, QVD, label histórico, alteração do Boundary 7 ou T29.
+Hash128, arquivo, QVD, label histórico ou aprovação T29. O contrato A2
+foi aprovado depois do A1; esta rotina só mede chaves naturais.
 """
 from __future__ import annotations
 
@@ -181,8 +182,8 @@ def main() -> int:
     print("REFERENCE_201909_LABEL_ELIGIBLE_NATURAL_KEYS=" + str(labels_supported))
     print("HISTORICAL_LABEL_UNVERIFIED_NATURAL_KEYS=" + str(labels_unknown))
     print("LEGEND_201909_USED_AS_HISTORICAL_LABEL_JOIN=False")
-    print("CANDIDATE_KEY_IS_NOT_AN_APPROVED_HASH128_IMPLEMENTATION=True")
-    print("COMPETENCIA_REFERENCIA_SEMANTICS=DECISION_PENDING")
+    print("HASH128_IMPLEMENTATION_EXECUTED=False")
+    print("COMPETENCIA_REFERENCIA_SEMANTICS=APPROVED_OBSERVED_COMPETEN_FOR_TIPO_LEITO_ONLY")
     print("T29_HISTORICAL=NOT_APPROVED")
     print("FACT_AND_DIM_QVD_GENERATED=False")
     print("VERDICT=PASS_OPTION_A_TEMPORAL_GRAIN_PREFLIGHT_ONLY")
