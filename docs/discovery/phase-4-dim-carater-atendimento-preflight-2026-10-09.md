@@ -50,3 +50,41 @@ Caso todos os critérios sejam atendidos, esperar `REFERENCE_ROWS=6`, `REFERENCE
 **DECISÃO PENDENTE:** fechamento do contrato físico e da grafia de descrição com base na referência aprovada e nos dados físicos observados. Não editar Capítulos 1 e 2, mudar normalização previamente aprovada, construir fatos/Link Table/PAINEL ou emitir marcador global de transformação. `T29_HISTORICAL=NOT_APPROVED` permanece válido para leitos, sem relação com este preflight.
 
 **Estado da `main`: 5/8 dimensões integradas.**
+
+## Gate IV-CAR — preflight físico PASS (09/10/2026)
+
+**FATO VERIFICADO — execução PowerShell do responsável** na branch `feat/phase-4-dim-carater-atendimento`, após `git fetch origin`, `git switch` e `git pull --ff-only`:
+
+```text
+MODE=IV_DIM_CARATER_READ_ONLY_PREFLIGHT
+OUTPUT_FILES_WRITTEN=0
+QVD_GENERATED=False
+REFERENCE_ROWS=6
+REFERENCE_DISTINCT_CODES=6
+REFERENCE_CODES=01,02,03,04,05,06
+REFERENCE_SHA256=3e40a9b2a4d0e1e65df8a9000f55af6fd24880468c12faaa24384f4722330ea8
+REFERENCE_LABELS=EXACT_MATCH_TO_APPROVED_NORMATIVE_MATERIALIZER
+REFERENCE_QVD_ROWS=6
+REFERENCE_QVD_FIELDS=6
+RD_QVD_ROWS=566672
+CHECKPOINT_C1=PASS_PARTIAL_ZERO_UNMATCHED
+RD_FILES=36
+RD_MONTHS=36
+RD_ROWS=566672
+RD_RAW_DISTINCT=4
+RD_NORMALIZED_DISTINCT=4
+RD_RAW_VALUES=[('01', 80167), ('02', 470512), ('05', 1670), ('06', 14323)]
+RD_NORMALIZED_COUNTS=[('01', 80167), ('02', 470512), ('05', 1670), ('06', 14323)]
+RD_YEAR_COUNTS=[('2017', 187726), ('2018', 187293), ('2019', 191653)]
+RD_UNMATCHED=0
+SK_RULE_CANDIDATE=Hash128_CAR_AND_NORMALIZED_CODE
+SOURCE_DOMAIN_POLICY=FULL_OFFICIAL_01_TO_06
+VERDICT=PASS_CARATER_6_CODE_REFERENCE_AND_RD_PREFLIGHT_ONLY
+```
+
+Os 36 CSVs SIH/RD físicos têm `CAR_INT` **textual com exatamente dois dígitos nos valores observados**; não houve mudança pela normalização permitida. O conjunto observado foi somente `01`, `02`, `05`, `06`; **`03` e `04` têm zero registros no recorte e permanecem no domínio oficial da dimensão**. Os resultados somam 566.672 RD de 2017–2019 e 0 sem referência. O SHA do CSV oficial materializado bate com o manifesto C1. Os cabeçalhos QVD da extração e o checkpoint C1 foram inspecionados. Nenhum artefato foi criado ou alterado.
+
+**Veredito:** `IV-CARATER_ATENDIMENTO=PREFLIGHT_PHYSICAL_PASS`, aprova implementação isolada QlikView 12 sobre a **referência normativa C1 completa**, sem derivar descrição do código RD. `SK=Hash128('CAR', codigo textual de dois dígitos)`, granularidade um código (seis registros), e cobertura RD completa são critérios já respaldados pelo projeto. A discrepância de maiúsculas/minúsculas das descrições 05/06 continua como ressalva textual: **conservar o texto literal de `CARATER_DESCRICAO` do QVD III-C1**, rastreado à Portaria SAS/MS 719/2007, sem reescrever o relatório acadêmico. Isso não implica validar editorialmente diferenças de caixa com a portaria.
+
+**Próximo gate:** criar include QlikView **somente da DIM_CARATER_ATENDIMENTO** após a quinta dimensão, exigir seis SK/códigos únicos, descrições não vazias, 0 invalidos, 566672/0 RD unmatched (contagens por código `01=80167`, `02=470512`, `03=0`, `04=0`, `05=1670`, `06=14323`), persistir **apenas** `TRANSFORMACAO/QVD/DIM_CARATER_ATENDIMENTO.qvd` e checkpoint parcial. Depois executar Reload real no QlikView 12 e auditor Python read-only. Nenhum fato, Link Table, painel ou sucesso global até concluir Fase IV.
+
