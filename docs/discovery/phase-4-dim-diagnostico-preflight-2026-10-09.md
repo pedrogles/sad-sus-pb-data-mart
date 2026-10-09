@@ -143,3 +143,22 @@ Localizar o log mais recente `TRANSF.qvw*.log` com execução correspondente à 
 - tempos do log compatíveis com QVD/checkpoint físicos; nenhuma implementação de fatos, Link Table ou marcador global.
 
 Somente após analisar as linhas reais de log: revisar diff do PR, abrir PR de integração sem merge automático, e preservar a `main` em 4/8 dimensões até merge autorizado. O rótulo CID da competência 201912 permanece **superset descritivo**, não atestado de vigência histórica mensal.
+
+## IV-DIAGNOSTICO — execução QlikView 12 concluída, evidência de log confirmada (09/10/2026)
+
+**FATO VERIFICADO — PowerShell fornecido pelo responsável após `git pull --ff-only` para `afa6486`:**
+
+- Último log encontrado: `TRANSFORMACAO/TRANSF.qvw.2026_10_09_10_04_43.log`; a execução registrou o quinto checkpoint e **`Execução concluída.` às 10:04:55** de 09/10/2026.
+- No mesmo log, linhas 908–909, `[TRANSFORMACAO][IV-DIAGNOSTICO] START`; linhas 951–952: **`SOURCE Rows=14230 Fields=4 Keys=14230 Len3=2042 Len4=12188 Invalid=0`**.
+- Linhas 1033–1034: **`COVER RD=566672 Distinct=5480 UNMATCHED=0 Invalid=0`**.
+- Linhas 1072–1073: **`DIM_DIAGNOSTICO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN`** e linhas 1075–1076 preservam `PHASE_IV_PARTIAL_ONLY T29_HISTORICAL_NOT_APPROVED`.
+- O trecho final contém `P4D_DIM_CHECKPOINT` com valores expandidos: 14230 referência/dimensão/códigos/SK únicas, 4 campos de referência, 5 campos dimensionais, 0 inválidos, códigos de comprimento 3/4: 2042/12188, 566672 RD, 5480 códigos distintos normalizados, 0 unmatched, origem `201912` e política `STATIC_DESCRIPTIVE_SUPERSET_NO_MONTHLY_VALIDITY`, `T29=NOT_APPROVED`, `facts_and_link_table=NOT_STARTED`. Mostra `STORE P4D_DIM_CHECKPOINT` e `1 registros lidos`.
+- O QVD `TRANSFORMACAO/QVD/DIM_DIAGNOSTICO.qvd` e o checkpoint `_CHECKPOINT_DIM_DIAGNOSTICO.csv` possuem `LastWriteTime=09/10/2026 10:04:55`, mesmo instante dos traces de STORE; tamanhos **1.314.463** e **594** bytes.
+- Busca de `Script Error` e `Unknown statement` na amostra de `Select-String` fornecida não retornou falha. Linhas `IF ScriptErrorCount > 0 THEN` do trecho final são guardas impressas no log e **não** uma mensagem de erro executado.
+- Evidência prévia **física e independente de cabeçalho/checkpoint** já apresentada: `VERDICT=PASS_LOCAL_DIM_DIAGNOSTICO_QVD_HEADER_CHECKPOINT_RECONCILED`, QVD SHA-256 **`5d5912c12023c33ad85f93070e7d1ccf55e0d333686d8625c9804a76c06ef1d8`**, checkpoint SHA-256 **`e608153559e07282ceb2dc914f636c06c565f8d3d7df8fe2472e5f1340485a94`**. O conteúdo binário de cada linha de QVD **não** foi decodificado por auditor externo; log do Qlik e auditoria física do CID-10/CSV sustentam o controle de conteúdo.
+- **Limite do material disponível:** usuário compartilhou **trechos selecionados e últimas 40 linhas** do log, não a cópia integral. Os trechos observados suportam SOURCE, COVER, STORE, checkpoint e término normal da mesma execução; não se deve afirmar inspeção do arquivo integral nem execução automatizada de testes GitHub/CI.
+
+**Veredito do checkpoint local:** `IV-DIAGNOSTICO=PASS_LOCAL_QLIK_RELOAD_AND_QVD_CHECKPOINT_RECONCILED`. A quinta dimensão tem implementação QlikView e QVD local **aprovados para revisão de integração**, porém **a `main` ainda mantém 4/8 dimensões integradas**; não alterar contagem até o PR merged.
+
+**Próximo gate:** revisão de diff contra `main`, abrir PR de revisão **sem auto-merge** e obter aprovação específica antes de integração. Preservar `Text(RTrim(Text(DIAG_PRINC)))` e referência CID 201912 somente como superset descritivo, sem alegação de vigência normativa mensal. `T29_HISTORICAL=NOT_APPROVED`; fatos, Link Table, PAINEL e marcador global permanecem não iniciados.
+
