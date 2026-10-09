@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fase V — controle READ-ONLY de medidas candidatas da FATO_INTERNACAO.
+r"""Fase V — controle READ-ONLY de medidas candidatas da FATO_INTERNACAO.
 
 Executar na raiz do projeto:
   .\.venv\Scripts\python.exe tools\preflight_fato_internacao_medidas.py --root .
