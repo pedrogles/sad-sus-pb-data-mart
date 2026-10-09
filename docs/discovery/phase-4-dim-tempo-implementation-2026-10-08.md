@@ -2,7 +2,7 @@
 
 **Data:** 08/10/2026 (UTC-03)  
 **Branch:** `feat/phase-4-dim-tempo`  
-**Status:** **QLIKVIEW RELOAD + CHECKPOINT PARCIAL PASS (SAIDA LOCAL DO USUARIO) / AUDITORIA INDEPENDENTE DO QVD E LOG PENDENTE**. Nao declarar aceite fisico integral nem merge ate conferencia.
+**Status:** **RELOAD + CHECKPOINT + CABECALHO QVD PASS LOCAL; EXTREMOS DE DATAS E LOG PENDENTES**. Nao declarar aceite integral nem merge ate conferencia da nova execucao.
 
 ## 1. Precondicoes comprovadas documentalmente
 
@@ -75,7 +75,7 @@ Se `QLIK_EXIT` for diferente de zero, marcador ausente ou campos/contagens diver
 - Prosseguir, apos gate fisico de IV-TEMPO, para `DIM_MUNICIPIO`, preservando 5.202 RD de residencia externa sem atribuir populacao PB.
 - Manter sem mudancas `T29_HISTORICAL=NOT_APPROVED`, legendas CNES exclusivamente 201909 e nomes historicos de estabelecimento nao comprovados como NULL.
 
-## 5. Veredito
+## 5. Veredito inicial (antes dos testes locais)
 
 **CHECKPOINT IV-TEMPO: CODE READY / LOCAL QLIKVIEW VALIDATION REQUIRED.** Nao ha evidencia nesta execucao remota de que `TRANSF.qvw` tenha rodado no Windows/QlikView 12. A primeira entrega academica permanece fechada e nao foi alterada.
 
@@ -104,3 +104,35 @@ generated_at;stage;status;calendar_day_rows;months_2017_2019;years_2017_2019;rd_
 4. Confirmar que `_SUCCESS_TRANSFORMACAO.csv` nao foi gerado e que QVDs da extracao nao foram alterados.
 
 **Veredito vigente:** `IV-TEMPO=PASS_LOCAL_RELOAD_AND_CHECKPOINT_ONLY`, `DIM_TEMPO_QVD_AUDIT=PENDING`, `PR_74=DRAFT`, `PHASE_IV=IN_PROGRESS`. Nenhuma evidencia remota autoriza declarar Fase IV completa.
+
+## 7. Segunda auditoria local — QVD fisico e ausencia do marcador final
+
+**FATO VERIFICADO — saida PowerShell apresentada pelo responsavel, 08/10/2026:**
+
+| Evidencia | Resultado |
+|---|---|
+| `TRANSFORMACAO/QVD/DIM_TEMPO.qvd` | Existe; tamanho **269.347 bytes** |
+| `LastWriteTime` | **08/10/2026 22:17:20**, alinhado ao checkpoint |
+| SHA-256 QVD | `2D26A5D789A6484D3DBFE82DAED6F917496E224A8B1821C7DA2A6302B90D8885` |
+| Cabecalho QVD `NoOfRecords` | **4.383** |
+| Cabecalho QVD `Fields` | **9 de 9 campos esperados**, na ordem: `%SK_TEMPO_DATA`, `%SK_TEMPO_COMPETENCIA`, `%SK_TEMPO_ANO`, `TEMPO_DATA`, `TEMPO_DATA_YYYYMMDD`, `TEMPO_COMPETENCIA`, `TEMPO_ANO`, `TEMPO_MES`, `TEMPO_DIA` |
+| `_SUCCESS_TRANSFORMACAO.csv` | **NAO EXISTE**, coerente com checkpoint parcial |
+| Busca por `TRANSFORMACAO/TRANSF.qvw*.log` | **NENHUM ARQUIVO ENCONTRADO** no diretorio consultado |
+
+**Classificacao da evidencia:** `IV-TEMPO=PASS_LOCAL_RELOAD_CHECKPOINT_QVD_HEADER`. A inspecao do cabecalho demonstra cardinalidade e schema fisico, mas nao substitui a auditoria de todos os valores dos registros. A ausencia do log na busca feita **nao** implica automaticamente que o reload falhou; pode nao ter sido habilitada a opcao de log no documento QVW, ou o log estar em outro local. Nao inferir configuracao sem inspecao.
+
+**Nao verificado:** min/max real das datas RD/calendario, ausencia de erros no log, ausencia de alteracao em QVDs de staging. A Fase IV inteira permanece **IN PROGRESS**; PR #74 em Draft.
+
+### Pequeno ajuste de observabilidade versionado apos esta evidencia
+
+`TRANSFORMACAO/transf_main.qvs` agora acrescenta **quatro colunas ao CSV parcial**: `rd_min_date`, `rd_max_date`, `calendar_min_date`, `calendar_max_date`, derivadas de variaveis que ja existiam no script. **O QVD e suas nove colunas permanecem inalterados pelo ajuste de codigo.** Como o ajuste ocorreu **apos o primeiro reload**, necessita **novo reload local** para ser validado. Nao atribuir ao checkpoint anterior esses campos.
+
+Para gerar log no QlikView Desktop, abrir `TRANSFORMACAO/TRANSF.qvw` e habilitar **Settings > Document Properties > General > Generate Logfile**, preferencialmente junto de **Timestamp in Logfile Name**; salvar o QVW local. Fonte oficial: https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Document_Properties_General.htm.
+
+### Proximo gate
+
+1. `git pull --ff-only` na branch `feat/phase-4-dim-tempo`.
+2. Habilitar log no documento QVW local e salvar (o QVW nao e versionado).
+3. Apagar **apenas** `_CHECKPOINT_DIM_TEMPO.csv`, anotar hora, recarregar `TRANSF.qvw` e verificar `QLIK_EXIT=0`.
+4. Conferir as quatro datas novas e checar que o intervalo em dias, inclusivo, corresponde a 4.383 registros do cabecalho QVD. Investigar datas extremas sem truncar registros da origem.
+5. Localizar log contemporaneo e verificar final normal; reconfirmar QVD/marcador parcial. Se algo divergente, manter PR #74 Draft e classificar `IV-TEMPO=FAIL_CLOSED` ate diagnostico.
