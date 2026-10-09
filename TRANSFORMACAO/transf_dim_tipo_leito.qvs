@@ -1,0 +1,289 @@
+// FASE IV — oitava dimensao: DIM_TIPO_LEITO (gate isolado).
+// A2 APROVADO: Hash128('LEITO', TP_LEITO_normalizado, CODLEITO, COMPETEN observado).
+// COMPETENCIA_REFERENCIA usada na SK = COMPETEN do LT; NAO a competencia da legenda.
+// NT 32/2019: DESCRICOES APENAS em 201909; demais competencias = NULL.
+// 1965/2021 pares-mes (97,2%) sem descricao mensal historicamente comprovada.
+// Fonte: docs/discovery/boundary-7-implementation-plan.md (adendos A2 e painel).
+// Sem fatos, Link Table, PAINEL ou marcador global. T29_HISTORICAL NOT_APPROVED.
+LET vP4LErrorsBefore = ScriptErrorCount;
+TRACE [TRANSFORMACAO][IV-LEITO] START;
+
+IF $(vP4MDimRows) <> 28 OR $(vP4MUniqueSK) <> 28 OR $(vP4MRDRows) <> 566672 OR $(vP4MRDUnmatched) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL prior DIM_MOTIVO checkpoint;
+    EXIT SCRIPT;
+ENDIF
+
+// Os campos sao os campos QVD reais aprovados na EXTRACAO da Fase III.
+// As colunas temporarias possuem aliases exclusivos, sem join implicito.
+P4L_LT_SOURCE:
+NOCONCATENATE LOAD
+    Text(CNES) AS _P4L_CNES,
+    Text(TP_LEITO) AS _P4L_TYPE_RAW,
+    Left(Text(TP_LEITO),1) AS _P4L_TYPE,
+    Text(CODLEITO) AS _P4L_BED,
+    Text(COMPETEN) AS _P4L_COMP,
+    Text(_META_SOURCE_COMPETENCE) AS _P4L_META_COMP
+FROM [..\EXTRACAO\QVD\SRC_CNES_LT.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4LErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL LT QVD load;
+    EXIT SCRIPT;
+ENDIF
+
+P4L_LT_PROFILE:
+LOAD
+    Count(*) AS _P4L_ROWS,
+    Count(DISTINCT _P4L_COMP) AS _P4L_MONTHS,
+    Count(DISTINCT _P4L_TYPE & '|' & _P4L_BED) AS _P4L_PAIRS,
+    Count(DISTINCT _P4L_TYPE & '|' & _P4L_BED & '|' & _P4L_COMP) AS _P4L_PAIR_MONTHS,
+    Count(DISTINCT _P4L_CNES & '|' & _P4L_COMP & '|' & _P4L_BED) AS _P4L_FACT_KEYS,
+    Sum(If(
+        IsNull(_P4L_CNES) OR Len(Trim(_P4L_CNES)) = 0
+        OR IsNull(_P4L_TYPE_RAW) OR Len(_P4L_TYPE_RAW) <> 2
+        OR Match(_P4L_TYPE, '1','2','3','4','5','6','7') = 0
+        OR Right(_P4L_TYPE_RAW,1) <> ' '
+        OR IsNull(_P4L_BED) OR Len(_P4L_BED) <> 2
+        OR Len(KeepChar(_P4L_BED,'0123456789')) <> 2
+        OR IsNull(_P4L_COMP) OR Len(_P4L_COMP) <> 6
+        OR Len(KeepChar(_P4L_COMP,'0123456789')) <> 6
+        OR _P4L_COMP < '201701' OR _P4L_COMP > '201912'
+        OR _P4L_COMP <> _P4L_META_COMP,
+        1,0
+    )) AS _P4L_INVALID,
+    Sum(If(_P4L_TYPE='3' AND _P4L_BED='66',1,0)) AS _P4L_3_66,
+    Sum(If(_P4L_TYPE='7' AND _P4L_BED='70',1,0)) AS _P4L_7_70
+RESIDENT P4L_LT_SOURCE;
+
+LET vP4LLTRows = Peek('_P4L_ROWS',0,'P4L_LT_PROFILE');
+LET vP4LMonths = Peek('_P4L_MONTHS',0,'P4L_LT_PROFILE');
+LET vP4LPairs = Peek('_P4L_PAIRS',0,'P4L_LT_PROFILE');
+LET vP4LPairMonths = Peek('_P4L_PAIR_MONTHS',0,'P4L_LT_PROFILE');
+LET vP4LFactKeys = Peek('_P4L_FACT_KEYS',0,'P4L_LT_PROFILE');
+LET vP4LInvalid = Peek('_P4L_INVALID',0,'P4L_LT_PROFILE');
+LET vP4L3_66 = Peek('_P4L_3_66',0,'P4L_LT_PROFILE');
+LET vP4L7_70 = Peek('_P4L_7_70',0,'P4L_LT_PROFILE');
+DROP TABLE P4L_LT_PROFILE;
+
+IF $(vP4LLTRows) <> 35518 OR $(vP4LMonths) <> 36 OR $(vP4LPairs) <> 57 OR $(vP4LPairMonths) <> 2021 OR $(vP4LFactKeys) <> 35518 OR $(vP4LInvalid) <> 0 OR $(vP4L3_66) <> 1480 OR $(vP4L7_70) <> 5 THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL LT source/grain profile;
+    EXIT SCRIPT;
+ENDIF
+
+// A referencia contem 65 pares normativos do retrato 201909, SEM validade historica.
+P4L_REF_SOURCE:
+NOCONCATENATE LOAD
+    Text(REF_LEITO_TP_LEITO) AS _P4L_REF_TYPE,
+    Text(REF_LEITO_CODLEITO) AS _P4L_REF_BED,
+    Text(REF_LEITO_TIPO_CNES) AS _P4L_REF_TYPE_NAME,
+    Text(REF_LEITO_NOME_CNES) AS _P4L_REF_BED_NAME,
+    Text(REF_LEITO_COMPETENCIA_REFERENCIA) AS _P4L_REF_COMP,
+    Text(REF_LEITO_VIGENCIA_HISTORICA_VERIFICADA) AS _P4L_REF_HISTORICAL,
+    Text(REF_LEITO_FONTE_DOCUMENTO) AS _P4L_REF_DOC
+FROM [..\EXTRACAO\QVD\REF_TIPO_LEITO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4LErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL dated reference QVD load;
+    EXIT SCRIPT;
+ENDIF
+
+P4L_REF_PROFILE:
+LOAD
+    Count(*) AS _P4L_REF_ROWS,
+    Count(DISTINCT _P4L_REF_TYPE & '|' & _P4L_REF_BED) AS _P4L_REF_PAIRS,
+    Sum(If(
+        Match(_P4L_REF_TYPE,'1','2','3','4','5','6','7')=0
+        OR Len(_P4L_REF_BED)<>2
+        OR Len(KeepChar(_P4L_REF_BED,'0123456789'))<>2
+        OR IsNull(_P4L_REF_BED_NAME) OR Len(Trim(_P4L_REF_BED_NAME))=0
+        OR IsNull(_P4L_REF_TYPE_NAME) OR Len(Trim(_P4L_REF_TYPE_NAME))=0
+        OR _P4L_REF_COMP <> '201909'
+        OR _P4L_REF_HISTORICAL <> 'NAO'
+        OR _P4L_REF_DOC <> 'NT_32_2019_ANEXO_TABELA_LEITOS_SET_2019',
+        1,0
+    )) AS _P4L_REF_INVALID
+RESIDENT P4L_REF_SOURCE;
+
+LET vP4LRefRows = Peek('_P4L_REF_ROWS',0,'P4L_REF_PROFILE');
+LET vP4LRefPairs = Peek('_P4L_REF_PAIRS',0,'P4L_REF_PROFILE');
+LET vP4LRefInvalid = Peek('_P4L_REF_INVALID',0,'P4L_REF_PROFILE');
+DROP TABLE P4L_REF_PROFILE;
+
+IF $(vP4LRefRows) <> 65 OR $(vP4LRefPairs) <> 65 OR $(vP4LRefInvalid) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL 201909 reference integrity;
+    EXIT SCRIPT;
+ENDIF
+
+P4L_REF_PAIR_MAP:
+MAPPING LOAD
+    _P4L_REF_TYPE & '|' & _P4L_REF_BED,
+    1
+RESIDENT P4L_REF_SOURCE;
+
+P4L_REF_TYPE_NAME_MAP:
+MAPPING LOAD
+    _P4L_REF_TYPE & '|' & _P4L_REF_BED,
+    _P4L_REF_TYPE_NAME
+RESIDENT P4L_REF_SOURCE;
+
+P4L_REF_BED_NAME_MAP:
+MAPPING LOAD
+    _P4L_REF_TYPE & '|' & _P4L_REF_BED,
+    _P4L_REF_BED_NAME
+RESIDENT P4L_REF_SOURCE;
+
+// Grão dimensional: deduplicar APENAS por tipo+leito+competencia observada.
+// Tipo bruto preservado; como A1 confirmou ausencia de colisao de formatos,
+// a contagem distinta tambem valida essa invariancia fisica.
+P4L_DIM_NATURAL:
+NOCONCATENATE LOAD DISTINCT
+    _P4L_TYPE_RAW,
+    _P4L_TYPE,
+    _P4L_BED,
+    _P4L_COMP
+RESIDENT P4L_LT_SOURCE;
+
+LET vP4LNaturalRows = NoOfRows('P4L_DIM_NATURAL');
+IF $(vP4LNaturalRows) <> 2021 THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL natural monthly grain or raw-type collision;
+    EXIT SCRIPT;
+ENDIF
+
+// A referencia 201909 so pode fornecer nomes para o proprio mes observado.
+// NULL permanece NULL; nunca usar 'Outros' ou nome de outro mes como substituto.
+DIM_TIPO_LEITO:
+NOCONCATENATE LOAD
+    Hash128('LEITO', _P4L_TYPE, _P4L_BED, _P4L_COMP) AS [%SK_TIPO_LEITO],
+    Text(_P4L_TYPE) AS COD_TIPO_LEITO,
+    Text(_P4L_TYPE_RAW) AS TP_LEITO_BRUTO,
+    Text(_P4L_BED) AS COD_LEITO,
+    Text(_P4L_COMP) AS COMPETENCIA_OBSERVACAO_LEITO,
+    If(_P4L_COMP='201909',
+        ApplyMap('P4L_REF_TYPE_NAME_MAP',_P4L_TYPE & '|' & _P4L_BED,Null()),
+        Null()
+    ) AS DESCRICAO_TIPO_LEITO,
+    If(_P4L_COMP='201909',
+        ApplyMap('P4L_REF_BED_NAME_MAP',_P4L_TYPE & '|' & _P4L_BED,Null()),
+        Null()
+    ) AS DESCRICAO_ESPECIALIDADE_LEITO,
+    If(_P4L_COMP='201909','201909',Null()) AS COMPETENCIA_LEGENDA_LEITO,
+    If(_P4L_COMP='201909','LEGENDA_DATADA_201909','SEM_DESCRICAO_HISTORICA_COMPROVADA') AS STATUS_DESCRICAO_LEITO,
+    If(_P4L_COMP='201909',1,0) AS LEITO_TEM_LEGENDA_DATADA
+RESIDENT P4L_DIM_NATURAL;
+
+IF ScriptErrorCount > $(vP4LErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL dimension materialization;
+    EXIT SCRIPT;
+ENDIF
+
+P4L_DIM_PROFILE:
+LOAD
+    Count(*) AS _P4L_DIM_ROWS,
+    Count(DISTINCT [%SK_TIPO_LEITO]) AS _P4L_DIM_UNIQUE_SK,
+    Count(DISTINCT COD_TIPO_LEITO & '|' & COD_LEITO & '|' & COMPETENCIA_OBSERVACAO_LEITO) AS _P4L_DIM_PAIRM,
+    Sum(If(COMPETENCIA_OBSERVACAO_LEITO='201909',1,0)) AS _P4L_DIM_CURRENT,
+    Sum(If(STATUS_DESCRICAO_LEITO='SEM_DESCRICAO_HISTORICA_COMPROVADA',1,0)) AS _P4L_DIM_NO_DESC,
+    Sum(If(
+        IsNull([%SK_TIPO_LEITO]) OR Len(Text([%SK_TIPO_LEITO]))=0
+        OR Len(COD_TIPO_LEITO)<>1 OR Len(COD_LEITO)<>2
+        OR Len(TP_LEITO_BRUTO)<>2 OR Right(TP_LEITO_BRUTO,1)<>' '
+        OR Left(TP_LEITO_BRUTO,1)<>COD_TIPO_LEITO
+        OR If(COMPETENCIA_OBSERVACAO_LEITO='201909',
+            IsNull(DESCRICAO_TIPO_LEITO) OR IsNull(DESCRICAO_ESPECIALIDADE_LEITO)
+            OR Len(Trim(DESCRICAO_TIPO_LEITO))=0 OR Len(Trim(DESCRICAO_ESPECIALIDADE_LEITO))=0
+            OR COMPETENCIA_LEGENDA_LEITO<>'201909' OR LEITO_TEM_LEGENDA_DATADA<>1,
+            NOT IsNull(DESCRICAO_TIPO_LEITO) OR NOT IsNull(DESCRICAO_ESPECIALIDADE_LEITO)
+            OR NOT IsNull(COMPETENCIA_LEGENDA_LEITO) OR LEITO_TEM_LEGENDA_DATADA<>0
+        ), 1,0
+    )) AS _P4L_DIM_BAD
+RESIDENT DIM_TIPO_LEITO;
+
+LET vP4LDimRows = Peek('_P4L_DIM_ROWS',0,'P4L_DIM_PROFILE');
+LET vP4LDimSK = Peek('_P4L_DIM_UNIQUE_SK',0,'P4L_DIM_PROFILE');
+LET vP4LDimPairMonths = Peek('_P4L_DIM_PAIRM',0,'P4L_DIM_PROFILE');
+LET vP4LCurrentNames = Peek('_P4L_DIM_CURRENT',0,'P4L_DIM_PROFILE');
+LET vP4LUnknownNames = Peek('_P4L_DIM_NO_DESC',0,'P4L_DIM_PROFILE');
+LET vP4LDimBad = Peek('_P4L_DIM_BAD',0,'P4L_DIM_PROFILE');
+DROP TABLE P4L_DIM_PROFILE;
+
+IF $(vP4LDimRows)<>2021 OR $(vP4LDimSK)<>2021 OR $(vP4LDimPairMonths)<>2021 OR $(vP4LCurrentNames)<>56 OR $(vP4LUnknownNames)<>1965 OR $(vP4LDimBad)<>0 THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL SK/description policy;
+    EXIT SCRIPT;
+ENDIF
+
+P4L_SK_MAP:
+MAPPING LOAD
+    COD_TIPO_LEITO & '|' & COD_LEITO & '|' & COMPETENCIA_OBSERVACAO_LEITO,
+    [%SK_TIPO_LEITO]
+RESIDENT DIM_TIPO_LEITO;
+
+P4L_LT_COVER:
+NOCONCATENATE LOAD
+    _P4L_CNES AS _P4L_VERIFY_CNES,
+    _P4L_COMP AS _P4L_VERIFY_COMP,
+    _P4L_BED AS _P4L_VERIFY_BED,
+    _P4L_TYPE AS _P4L_VERIFY_TYPE,
+    ApplyMap('P4L_SK_MAP',_P4L_TYPE & '|' & _P4L_BED & '|' & _P4L_COMP,Null()) AS _P4L_VERIFY_SK
+RESIDENT P4L_LT_SOURCE;
+
+P4L_LT_COVER_PROFILE:
+LOAD
+    Count(*) AS _P4L_VERIFY_ROWS,
+    Count(DISTINCT _P4L_VERIFY_CNES & '|' & _P4L_VERIFY_COMP & '|' & _P4L_VERIFY_BED) AS _P4L_VERIFY_FACT_KEYS,
+    Sum(If(IsNull(_P4L_VERIFY_SK) OR Len(Text(_P4L_VERIFY_SK))=0,1,0)) AS _P4L_VERIFY_UNMATCHED
+RESIDENT P4L_LT_COVER;
+
+LET vP4LVerifyRows = Peek('_P4L_VERIFY_ROWS',0,'P4L_LT_COVER_PROFILE');
+LET vP4LVerifyFacts = Peek('_P4L_VERIFY_FACT_KEYS',0,'P4L_LT_COVER_PROFILE');
+LET vP4LVerifyUnmatched = Peek('_P4L_VERIFY_UNMATCHED',0,'P4L_LT_COVER_PROFILE');
+DROP TABLE P4L_LT_COVER_PROFILE;
+
+IF $(vP4LVerifyRows)<>35518 OR $(vP4LVerifyFacts)<>35518 OR $(vP4LVerifyUnmatched)<>0 OR ScriptErrorCount > $(vP4LErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL LT to dimension SK coverage;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4L_LT_COVER;
+DROP TABLE P4L_DIM_NATURAL;
+DROP TABLE P4L_LT_SOURCE;
+DROP TABLE P4L_REF_SOURCE;
+
+// Nao emitir _SUCCESS_TRANSFORMACAO: demais processos factuais NAO iniciados.
+STORE DIM_TIPO_LEITO INTO [QVD\DIM_TIPO_LEITO.qvd] (qvd);
+IF ScriptErrorCount > $(vP4LErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL dimension STORE;
+    EXIT SCRIPT;
+ENDIF
+
+P4L_DIM_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'TRANSFORMACAO_DIM_TIPO_LEITO' AS stage,
+    'PASS_PARTIAL_DIM_TIPO_LEITO_ONLY' AS status,
+    $(vP4LDimRows) AS dimension_rows,
+    $(vP4LDimSK) AS unique_surrogate_keys,
+    $(vP4LMonths) AS distinct_competences,
+    $(vP4LPairs) AS distinct_source_pairs,
+    $(vP4LPairMonths) AS distinct_source_pairs_month,
+    $(vP4LVerifyRows) AS lt_rows,
+    $(vP4LVerifyUnmatched) AS lt_unmatched,
+    $(vP4LCurrentNames) AS dated_201909_descriptions,
+    $(vP4LUnknownNames) AS historical_descriptions_unverified,
+    'PAIR_MONTH_NOT_BED_COUNT' AS no_description_denominator,
+    '201909_ONLY' AS descriptive_legend_competence,
+    'NULL_NO_HISTORICAL_LABEL_BACKFILL' AS descriptive_policy,
+    'NOT_APPROVED' AS t29_historical,
+    'NOT_STARTED' AS facts_and_link_table
+AUTOGENERATE 1;
+
+STORE P4L_DIM_CHECKPOINT INTO [QVD\_CHECKPOINT_DIM_TIPO_LEITO.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vP4LErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-LEITO] FAIL checkpoint STORE;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4L_DIM_CHECKPOINT;
+TRACE [TRANSFORMACAO][IV-LEITO] PARTIAL_ONLY DIM_ROWS=$(vP4LDimRows) SK=$(vP4LDimSK) LT=$(vP4LVerifyRows) UNMATCHED=$(vP4LVerifyUnmatched);
+TRACE [TRANSFORMACAO][IV-LEITO] LABELS_201909=$(vP4LCurrentNames) UNVERIFIED_PAIR_MONTHS=$(vP4LUnknownNames) DENOMINATOR=2021;
+TRACE [TRANSFORMACAO][IV-LEITO] QVD_AND_PARTIAL_CHECKPOINT_WRITTEN T29_HISTORICAL_NOT_APPROVED;
