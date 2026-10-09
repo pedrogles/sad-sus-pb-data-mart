@@ -152,3 +152,11 @@ Os 36 CSVs SIH/RD físicos têm `CAR_INT` **textual com exatamente dois dígitos
 **Resultado:** `IV-CARATER_ATENDIMENTO=LOCAL_QLIK_RELOAD_QVD_CHECKPOINT_PASS_REVIEW_PENDING`. A sexta dimensão tem **PASS local** de carga QlikView e auditoria QVD/checkpoint; está **apta a revisão/PR**, não integrada à `main` sem merge. `MAIN_INTEGRATED_DIMENSIONS=5/8`.
 
 **Próximo gate:** revisar diff `main` vs branch `feat/phase-4-dim-carater-atendimento`, abrir PR de revisão **sem merge**, e obter autorização específica antes do squash. Não criar tabelas fato, Link Table ou painel nem revisar capítulos acadêmicos fechados. `T29_HISTORICAL=NOT_APPROVED` permanece.
+
+## Revisão de integração — PR #79 aberto em Draft (09/10/2026)
+
+**FATO VERIFICADO NO GITHUB:** [PR #79](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/79), `feat/phase-4-dim-carater-atendimento` → `main`, **`state=open`, `draft=true`, `merged=false`**, `mergeable=true` na consulta posterior à criação (na resposta inicial de criação o valor transitório era `false`). Branch `behind_by=0`; diff limitado a **7 arquivos**: `AGENTS.md`, `TRANSFORMACAO/transf_dim_carater_atendimento.qvs`, `TRANSFORMACAO/transf_main.qvs`, esta documentação, `docs/project/current-state.md`, `tools/audit_dim_carater_atendimento_qvd.py` e `tools/preflight_dim_carater_atendimento.py`. `fetch_pr_patch` confirmou os mesmos 7 arquivos.
+
+**Revisão estática de escopo:** PASS — nenhuma alteração em extração, QVDs versionados, modelo acadêmico encerrado, fatos, Link Table ou painel. Checkpoints locais QlikView 12 e auditor físico QVD/CSV foram recebidos e documentados; o log foi fornecido em trechos e a auditoria independente **não decodifica o corpo binário do QVD**. Não há justificativa para afirmar CI automatizado PASS.
+
+**DECISÃO PENDENTE:** promover o PR #79 a `Ready for review` após revisão final e, em decisão **separada**, autorizar eventual squash merge; **nenhum merge automático**. A `main` ainda possui **5/8 dimensões integradas**. `T29_HISTORICAL=NOT_APPROVED` e `FACTS_AND_LINK_TABLE=NOT_STARTED` permanecem.
