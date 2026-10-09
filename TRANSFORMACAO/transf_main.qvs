@@ -241,3 +241,8 @@ $(Must_Include=transf_dim_procedimento.qvs);
 // Referencia SIGTAP 201912 e estatico/superset, sem validade mensal.
 // T28 usa Text(RTrim(Text(DIAG_PRINC))) para preservar o codigo Qlik.
 $(Must_Include=transf_dim_diagnostico.qvs);
+
+// FASE IV — sexto checkpoint: dominio normativo completo de carater SIH/SIA.
+// Seis codigos 01–06, 03/04 sem RD neste recorte; preflight C1/RD PASS.
+// QVD e checkpoint exclusivos da dimensao, nao aprova fatos/Link Table.
+$(Must_Include=transf_dim_carater_atendimento.qvs);
