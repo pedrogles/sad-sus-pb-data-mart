@@ -1,7 +1,7 @@
 # Fase III — Gate final de reconciliação de extração (T07/T08 e QVDs)
 
 **Data:** 08/10/2026  
-**Estado:** `SCRIPT_READY / RELOAD_LOCAL_NOT_YET_VALIDATED`  
+**Estado atual:** `III_FINAL=PASS_LOCAL_QV_AND_SHA_RECONCILIATION` em 08/10/2026 21:46:48 (UTC-03). As seções 3–10 preservam as condições preliminares e a investigação das tentativas anteriores.  
 **Branch:** `feat/phase-3-final-extraction-gate`  
 **Ferramenta:** QlikView 12 e Python 3 (biblioteca padrão).
 
@@ -233,3 +233,38 @@ A coleta de log integral é preferível se houver erros distribuídos ao longo d
 **Novo gate local necessário:** em branch `feat/phase-3-final-extraction-gate` limpa e atualizada, rodar `tools/run_phase3_extraction.py` uma vez com logging Qlik ativo. **Só declarar sucesso** mediante `VERDICT=PASS_LOCAL_QV_AND_SHA_RECONCILIATION`, emissão fresca de `_SUCCESS_EXTRACAO.csv`, e log novo sem `Unknown statement`/`Syntax Error`. Caso contrário, manter `PHASE_III=IN_PROGRESS` e inspecionar novo log.
 
 **Estado:** `III_FINAL=ROOT_CAUSE_IDENTIFIED_TRACE_DELIMITERS`, `FIX_COMMITTED_TEST_PENDING`, `PR_73=DRAFT`, `T29_HISTORICAL=NOT_APPROVED`.
+
+
+## 11. Gate final executado com sucesso — 08/10/2026 21:46 (UTC-03)
+
+**FATO VERIFICADO — saída integral dos comandos PowerShell enviada pelo responsável do projeto, após checkout da branch com correções das mensagens `TRACE`:**
+
+```text
+RELOAD_STARTED_UTC=2026-10-09T00:46:25.476166+00:00
+OLD_SUCCESS_MARKER=INVALIDATED
+QLIK_RELOAD_STAGE=EXTRACAO_ONLY
+QVD_COUNT=10 FRESH_QVD_FILES=10
+T07=PASS_3_FAMILIES_36_MONTHS
+T08=PASS_107_REQUIRED_FIELDS
+RD=566672 LT=35518 ST=220390 IBGE=669
+PB_MUNICIPAL_REFERENCE=223 RD_EXTERNAL_RESIDENCES=5202
+T29_HISTORICAL=NOT_APPROVED
+TRANSFORMATION=NOT_STARTED
+SUCCESS_MARKER_SHA256=f4a8304e41236802be030061698e77fc32ed5eee2bcc8cdbc28b70bf32cd600f
+MANIFEST=BASE/REFERENCIAS/phase3_extraction_final_manifest.json
+VERDICT=PASS_LOCAL_QV_AND_SHA_RECONCILIATION
+RUNNER_EXIT=0
+```
+
+O QlikView 12 gerou o arquivo local `EXTRACAO/QVD/_SUCCESS_EXTRACAO.csv` com cabeçalho físico de 25 campos e registro único:
+
+```text
+generated_at;stage;status;pipeline_version;qvd_count;required_fields_verified;t07_families;t07_competences_per_family;t08_required_fields;rd_rows;lt_rows;st_rows;ibge_rows;carater_reference_rows;motivo_reference_rows;cid10_reference_rows;sigtap_reference_rows;cnes_leito_snapshot_reference_rows;municipal_pb_derived_reference_rows;rd_residence_external_rows;leito_reference_scope;t29_historical_validity;municipality_reference_nature;establishment_historical_name_policy;dimensional_transformation
+08/10/2026 21:46:48;EXTRACAO;PASS_FINAL_RECONCILED;PHASE_III_V1_2017_2019;10;107;3;36;PASS;566672;35518;220390;669;6;28;14230;165203;65;223;5202;201909_SNAPSHOT_ONLY;NOT_APPROVED;NOT_A_STANDALONE_OFFICIAL_BRIDGE;BOUNDARY5_NULL_NOT_RETROFILL;NOT_STARTED
+```
+
+**Confirmação de log contemporâneo:** `EXTRACAO/EXT.qvw.2026_10_08_21_46_26.log`, após o início do runner, termina com `SUCCESS_MARKER_WRITTEN status=PASS_FINAL_RECONCILED QVDs=10 T07=3x36 T08_required_fields=107` seguido de `Execution finished.`. A busca `Select-String -SimpleMatch -Pattern "Error: Unknown statement", "Syntax Error"` não retornou ocorrências na saída enviada.
+
+**Conclusão comprovada pelos artefatos e saída operacional local:** os 10 QVDs foram regenerados neste reload, 107/107 campos obrigatórios T08 atendidos, T07 PASS para SIH/RD, CNES/LT e CNES/ST (36 competências cada), e reconciliação C1–C5 sem bloqueios. O runner confirmou os arquivos frescos e produziu manifesto SHA-256 local em `BASE/REFERENCIAS/phase3_extraction_final_manifest.json`, que **não é versionado**. Nenhum binário QVD nem o manifesto completo foram inspecionados independentemente pelo agente remoto; esta prova apoia-se na saída real da execução local.
+
+**Gate:** `PHASE_III=PASS_EXTRACTION_RECONCILED`, condicionado apenas à integração versionada do PR #73 para refletir oficialmente na `main`. A Fase IV pode ser preparada **após o merge**, mas nenhuma dimensão, fato, Link Table ou painel foi implementado nesta etapa. **Limites obrigatórios:** `T29_HISTORICAL=NOT_APPROVED`, legenda CNES de `201909` sem aplicação retroativa, nomes de estabelecimentos sem fonte podem permanecer NULL conforme Boundary 5, códigos municipais PB derivados dos três XLS IBGE e 5.202 RD com residência externa preservados sem população PB. Não reabrir a modelagem dos Capítulos 1–2.
