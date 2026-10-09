@@ -1,0 +1,317 @@
+// IV-MUNICIPIO — uma dimensao fisica conformada por COD_DATASUS_6.
+// Executar apos IV-TEMPO no mesmo reload do TRANSF.qvw.
+// Fonte IBGE7 apenas para 223 municipios PB, ponte DERIVADA aprovada em III-C5.2.
+// Residentes externos: preservar os COD_DATASUS_6 originais e SK, mas sem
+// imputar IBGE7, nome ou UF sem referencia nacional validada.
+// Nao construir fatos, Link Table, aliases de painel nem marcador final.
+
+LET vP4MErrorsBefore = ScriptErrorCount;
+TRACE [TRANSFORMACAO][IV-MUNICIPIO] START;
+
+LET vP4MTempoRows = NoOfRows('DIM_TEMPO');
+
+IF $(vP4MTempoRows) <> $(vP4CalendarRows) OR $(vP4CoveredMonths) <> 36 OR $(vP4CoveredYears) <> 3 THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL missing previous DIM_TEMPO gate;
+    EXIT SCRIPT;
+ENDIF
+
+// A referência PB foi gerada de IBGE7 oficial, 223 pares verificados no C5.2.
+// Nenhum digito IBGE7 e inferido a partir dos seis digitos DATASUS.
+P4M_PB_BRIDGE:
+LOAD
+    Trim(Text(COD_DATASUS_6)) AS _P4M_CODE6,
+    Trim(Text(COD_IBGE_7)) AS _P4M_IBGE7,
+    Trim(Text(UF)) AS _P4M_UF,
+    Trim(Text(NATUREZA_REFERENCIA)) AS _P4M_REF_NATURE
+FROM [..\EXTRACAO\QVD\REF_MUNICIPIO_PB_DERIVADA.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL reading derived PB reference;
+    EXIT SCRIPT;
+ENDIF
+
+P4M_PB_BRIDGE_CHECK:
+LOAD
+    Count(*) AS _P4M_BRIDGE_ROWS,
+    Count(DISTINCT _P4M_CODE6) AS _P4M_BRIDGE_UNIQUE6,
+    Count(DISTINCT _P4M_IBGE7) AS _P4M_BRIDGE_UNIQUE7,
+    Sum(If(
+        Len(_P4M_CODE6) <> 6
+        OR Len(KeepChar(_P4M_CODE6, '0123456789')) <> 6
+        OR Len(_P4M_IBGE7) <> 7
+        OR Len(KeepChar(_P4M_IBGE7, '0123456789')) <> 7
+        OR Left(_P4M_IBGE7, 6) <> _P4M_CODE6
+        OR Left(_P4M_IBGE7, 2) <> '25'
+        OR _P4M_UF <> 'PB'
+        OR _P4M_REF_NATURE <> 'DERIVADA_PROJETO_DADOS_OFICIAIS_IBGE', 1, 0
+    )) AS _P4M_BRIDGE_BAD
+RESIDENT P4M_PB_BRIDGE;
+
+LET vP4MBridgeRows = Peek('_P4M_BRIDGE_ROWS', 0, 'P4M_PB_BRIDGE_CHECK');
+LET vP4MBridgeUnique6 = Peek('_P4M_BRIDGE_UNIQUE6', 0, 'P4M_PB_BRIDGE_CHECK');
+LET vP4MBridgeUnique7 = Peek('_P4M_BRIDGE_UNIQUE7', 0, 'P4M_PB_BRIDGE_CHECK');
+LET vP4MBridgeBad = Peek('_P4M_BRIDGE_BAD', 0, 'P4M_PB_BRIDGE_CHECK');
+DROP TABLE P4M_PB_BRIDGE_CHECK;
+
+IF $(vP4MBridgeRows) <> 223 OR $(vP4MBridgeUnique6) <> 223 OR $(vP4MBridgeUnique7) <> 223 OR $(vP4MBridgeBad) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL reference 223-to-223 integrity;
+    EXIT SCRIPT;
+ENDIF
+
+// Nomes vêm EXCLUSIVAMENTE do XLS IBGE de 2019 no staging real.
+// Trata-se de um rotulo DESCRITIVO DATADO, nao de historico 2017/2018.
+P4M_IBGE_2019:
+LOAD
+    Trim(Text(COD_IBGE_7)) AS _P4M_IBGE7_2019,
+    Trim(Text(NOME_MUNICIPIO)) AS _P4M_NAME_2019
+FROM [..\EXTRACAO\QVD\SRC_IBGE_POPULACAO.qvd] (qvd)
+WHERE Trim(Text(ANO_REFERENCIA)) = '2019';
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL IBGE 2019 names load;
+    EXIT SCRIPT;
+ENDIF
+
+P4M_IBGE_2019_CHECK:
+LOAD
+    Count(*) AS _P4M_IBGE_NAME_ROWS,
+    Count(DISTINCT _P4M_IBGE7_2019) AS _P4M_IBGE_NAME_UNIQUE,
+    Sum(If(
+        Len(_P4M_IBGE7_2019) <> 7
+        OR Left(_P4M_IBGE7_2019, 2) <> '25'
+        OR Len(_P4M_NAME_2019) = 0, 1, 0
+    )) AS _P4M_IBGE_NAME_BAD
+RESIDENT P4M_IBGE_2019;
+
+LET vP4MNameRows = Peek('_P4M_IBGE_NAME_ROWS', 0, 'P4M_IBGE_2019_CHECK');
+LET vP4MNameUnique = Peek('_P4M_IBGE_NAME_UNIQUE', 0, 'P4M_IBGE_2019_CHECK');
+LET vP4MNameBad = Peek('_P4M_IBGE_NAME_BAD', 0, 'P4M_IBGE_2019_CHECK');
+DROP TABLE P4M_IBGE_2019_CHECK;
+
+IF $(vP4MNameRows) <> 223 OR $(vP4MNameUnique) <> 223 OR $(vP4MNameBad) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL 2019 name coverage and uniqueness;
+    EXIT SCRIPT;
+ENDIF
+
+MAP_P4M_IBGE_NAME_2019:
+MAPPING LOAD _P4M_IBGE7_2019, _P4M_NAME_2019
+RESIDENT P4M_IBGE_2019;
+
+// Rejeitar também qualquer par PB cuja descricao IBGE 2019 nao exista.
+P4M_PB_NAME_COVERAGE:
+LOAD
+    Sum(If(
+        ApplyMap('MAP_P4M_IBGE_NAME_2019', _P4M_IBGE7, '#NO_NAME#') = '#NO_NAME#',
+        1, 0
+    )) AS _P4M_PB_NAME_MISSING
+RESIDENT P4M_PB_BRIDGE;
+
+LET vP4MNameMissing = Peek('_P4M_PB_NAME_MISSING', 0, 'P4M_PB_NAME_COVERAGE');
+DROP TABLE P4M_PB_NAME_COVERAGE;
+
+IF $(vP4MNameMissing) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL PB name 2019 coverage;
+    EXIT SCRIPT;
+ENDIF
+
+// Validar TODOS os registros de residencia fora PB; gate III-C5
+// contava 5202, mas nao verificava formato individual dos codigos externos.
+P4M_EXT_RESIDENT_ROWS:
+LOAD
+    Trim(Text(MUNIC_RES)) AS _P4M_EXT_CODE6
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd)
+WHERE Left(Trim(Text(MUNIC_RES)), 2) <> '25';
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL RD residence load;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4MExternalRows = NoOfRows('P4M_EXT_RESIDENT_ROWS');
+
+P4M_EXT_PROFILE:
+LOAD
+    Count(DISTINCT _P4M_EXT_CODE6) AS _P4M_EXT_CODES,
+    Sum(If(
+        Len(_P4M_EXT_CODE6) <> 6
+        OR Len(KeepChar(_P4M_EXT_CODE6, '0123456789')) <> 6
+        OR Left(_P4M_EXT_CODE6, 2) = '25', 1, 0
+    )) AS _P4M_EXT_INVALID
+RESIDENT P4M_EXT_RESIDENT_ROWS;
+
+LET vP4MExternalCodes = Peek('_P4M_EXT_CODES', 0, 'P4M_EXT_PROFILE');
+LET vP4MExternalInvalid = Peek('_P4M_EXT_INVALID', 0, 'P4M_EXT_PROFILE');
+DROP TABLE P4M_EXT_PROFILE;
+
+IF $(vP4MExternalRows) <> 5202 OR $(vP4MExternalCodes) < 1 OR $(vP4MExternalInvalid) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL external residence domain. Rows=$(vP4MExternalRows) Codes=$(vP4MExternalCodes) Invalid=$(vP4MExternalInvalid);
+    EXIT SCRIPT;
+ENDIF
+
+P4M_EXT_UNIQUE_CODES:
+NOCONCATENATE LOAD DISTINCT _P4M_EXT_CODE6
+RESIDENT P4M_EXT_RESIDENT_ROWS;
+
+DROP TABLE P4M_EXT_RESIDENT_ROWS;
+
+IF NoOfRows('P4M_EXT_UNIQUE_CODES') <> $(vP4MExternalCodes) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL distinct external municipality codes;
+    EXIT SCRIPT;
+ENDIF
+
+// Um unico QVD para todos os municipios presentes nos processos.
+// Nome PB 2019 nao pode ser interpretado como nome historico por mes.
+DIM_MUNICIPIO:
+NOCONCATENATE LOAD
+    Hash128('MUN', _P4M_CODE6) AS [%SK_MUNICIPIO],
+    Text(_P4M_CODE6) AS COD_DATASUS_6,
+    Text(_P4M_IBGE7) AS COD_IBGE_7,
+    ApplyMap('MAP_P4M_IBGE_NAME_2019', _P4M_IBGE7, Null()) AS NOME_MUNICIPIO,
+    Text(_P4M_UF) AS UF,
+    'PB_COM_REFERENCIA_IBGE' AS MUNICIPIO_COBERTURA,
+    2019 AS NOME_MUNICIPIO_ANO_REFERENCIA,
+    Text(_P4M_REF_NATURE) AS MUNICIPIO_NATUREZA_REFERENCIA
+RESIDENT P4M_PB_BRIDGE;
+
+CONCATENATE (DIM_MUNICIPIO)
+LOAD
+    Hash128('MUN', _P4M_EXT_CODE6) AS [%SK_MUNICIPIO],
+    Text(_P4M_EXT_CODE6) AS COD_DATASUS_6,
+    Null() AS COD_IBGE_7,
+    Null() AS NOME_MUNICIPIO,
+    Null() AS UF,
+    'RESIDENCIA_EXTERNA_SEM_REFERENCIA_IBGE' AS MUNICIPIO_COBERTURA,
+    Null() AS NOME_MUNICIPIO_ANO_REFERENCIA,
+    'SEM_REFERENCIA_NACIONAL_VALIDADA' AS MUNICIPIO_NATUREZA_REFERENCIA
+RESIDENT P4M_EXT_UNIQUE_CODES;
+
+DROP TABLE P4M_PB_BRIDGE;
+DROP TABLE P4M_IBGE_2019;
+DROP TABLE P4M_EXT_UNIQUE_CODES;
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL constructing dimension;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4MMunicipalityRows = NoOfRows('DIM_MUNICIPIO');
+
+P4M_DIM_PROFILE:
+LOAD
+    Count(*) AS _P4M_DIM_ROWS,
+    Count(DISTINCT COD_DATASUS_6) AS _P4M_DIM_UNIQUE6,
+    Count(DISTINCT [%SK_MUNICIPIO]) AS _P4M_DIM_UNIQUE_SK,
+    Sum(If(MUNICIPIO_COBERTURA = 'PB_COM_REFERENCIA_IBGE', 1, 0)) AS _P4M_DIM_PB_ROWS,
+    Sum(If(MUNICIPIO_COBERTURA = 'RESIDENCIA_EXTERNA_SEM_REFERENCIA_IBGE', 1, 0)) AS _P4M_DIM_EXTERNAL_ROWS,
+    Sum(If(
+        Len(COD_DATASUS_6) <> 6
+        OR Len(KeepChar(COD_DATASUS_6,'0123456789')) <> 6
+        OR Len(Trim(Text([%SK_MUNICIPIO]))) = 0
+        OR (MUNICIPIO_COBERTURA = 'PB_COM_REFERENCIA_IBGE' AND
+            (Len(COD_IBGE_7) <> 7 OR Len(NOME_MUNICIPIO) = 0 OR UF <> 'PB'))
+        OR (MUNICIPIO_COBERTURA = 'RESIDENCIA_EXTERNA_SEM_REFERENCIA_IBGE' AND
+            (NOT IsNull(COD_IBGE_7) OR NOT IsNull(NOME_MUNICIPIO) OR NOT IsNull(UF))), 1, 0
+    )) AS _P4M_DIM_INVALID
+RESIDENT DIM_MUNICIPIO;
+
+LET vP4MUniqueSK = Peek('_P4M_DIM_UNIQUE_SK', 0, 'P4M_DIM_PROFILE');
+LET vP4MUnique6 = Peek('_P4M_DIM_UNIQUE6', 0, 'P4M_DIM_PROFILE');
+LET vP4MPBRows = Peek('_P4M_DIM_PB_ROWS', 0, 'P4M_DIM_PROFILE');
+LET vP4MExtDimRows = Peek('_P4M_DIM_EXTERNAL_ROWS', 0, 'P4M_DIM_PROFILE');
+LET vP4MInvalid = Peek('_P4M_DIM_INVALID', 0, 'P4M_DIM_PROFILE');
+DROP TABLE P4M_DIM_PROFILE;
+
+IF $(vP4MMunicipalityRows) <> 223 + $(vP4MExternalCodes) OR $(vP4MUnique6) <> $(vP4MMunicipalityRows) OR $(vP4MUniqueSK) <> $(vP4MMunicipalityRows) OR $(vP4MPBRows) <> 223 OR $(vP4MExtDimRows) <> $(vP4MExternalCodes) OR $(vP4MInvalid) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL dimension uniqueness/completeness;
+    EXIT SCRIPT;
+ENDIF
+
+MAP_P4M_DIM_CODE:
+MAPPING LOAD COD_DATASUS_6, COD_DATASUS_6
+RESIDENT DIM_MUNICIPIO;
+
+// A associacao dos fatos fica para Fase V, mas cobertura de dominio
+// pode e deve ser validada antes de gravar a dimensao.
+P4M_RD_DOMAIN:
+LOAD
+    Count(*) AS _P4M_RD_ROWS,
+    Sum(If(ApplyMap('MAP_P4M_DIM_CODE', Trim(Text(MUNIC_RES)), '#MISSING#') = '#MISSING#', 1, 0)) AS _P4M_RES_MISSING,
+    Sum(If(ApplyMap('MAP_P4M_DIM_CODE', Trim(Text(MUNIC_MOV)), '#MISSING#') = '#MISSING#', 1, 0)) AS _P4M_MOV_MISSING,
+    Sum(If(Left(Trim(Text(MUNIC_RES)), 2) <> '25', 1, 0)) AS _P4M_RES_EXTERNAL
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+P4M_ST_DOMAIN:
+LOAD
+    Count(*) AS _P4M_ST_ROWS,
+    Sum(If(ApplyMap('MAP_P4M_DIM_CODE', Trim(Text(CODUFMUN)), '#MISSING#') = '#MISSING#', 1, 0)) AS _P4M_ST_MISSING
+FROM [..\EXTRACAO\QVD\SRC_CNES_ST.qvd] (qvd);
+
+P4M_LT_DOMAIN:
+LOAD
+    Count(*) AS _P4M_LT_ROWS,
+    Sum(If(ApplyMap('MAP_P4M_DIM_CODE', Trim(Text(CODUFMUN)), '#MISSING#') = '#MISSING#', 1, 0)) AS _P4M_LT_MISSING
+FROM [..\EXTRACAO\QVD\SRC_CNES_LT.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL verifying source code domains;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4MRD = Peek('_P4M_RD_ROWS', 0, 'P4M_RD_DOMAIN');
+LET vP4MResMissing = Peek('_P4M_RES_MISSING', 0, 'P4M_RD_DOMAIN');
+LET vP4MMovMissing = Peek('_P4M_MOV_MISSING', 0, 'P4M_RD_DOMAIN');
+LET vP4MResExt = Peek('_P4M_RES_EXTERNAL', 0, 'P4M_RD_DOMAIN');
+LET vP4MST = Peek('_P4M_ST_ROWS', 0, 'P4M_ST_DOMAIN');
+LET vP4MSTMissing = Peek('_P4M_ST_MISSING', 0, 'P4M_ST_DOMAIN');
+LET vP4MLT = Peek('_P4M_LT_ROWS', 0, 'P4M_LT_DOMAIN');
+LET vP4MLTMissing = Peek('_P4M_LT_MISSING', 0, 'P4M_LT_DOMAIN');
+
+DROP TABLE P4M_RD_DOMAIN;
+DROP TABLE P4M_ST_DOMAIN;
+DROP TABLE P4M_LT_DOMAIN;
+
+IF $(vP4MRD) <> 566672 OR $(vP4MST) <> 220390 OR $(vP4MLT) <> 35518 OR $(vP4MResExt) <> 5202 OR $(vP4MResMissing) <> 0 OR $(vP4MMovMissing) <> 0 OR $(vP4MSTMissing) <> 0 OR $(vP4MLTMissing) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL RD/ST/LT domain coverage;
+    EXIT SCRIPT;
+ENDIF
+
+STORE DIM_MUNICIPIO INTO [QVD\DIM_MUNICIPIO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL writing DIM_MUNICIPIO QVD;
+    EXIT SCRIPT;
+ENDIF
+
+P4M_DIM_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'TRANSFORMACAO_DIM_MUNICIPIO' AS stage,
+    'PASS_PARTIAL_DIM_MUNICIPIO_ONLY' AS status,
+    $(vP4MMunicipalityRows) AS dimension_rows,
+    $(vP4MPBRows) AS municipalities_pb,
+    $(vP4MExtDimRows) AS external_distinct_codes,
+    $(vP4MExternalRows) AS external_rd_rows,
+    $(vP4MUniqueSK) AS unique_surrogate_keys,
+    $(vP4MInvalid) AS invalid_dimension_rows,
+    $(vP4MNameMissing) AS unmatched_ibge_2019_names,
+    $(vP4MResMissing) AS rd_residence_unmatched,
+    $(vP4MMovMissing) AS rd_attendance_unmatched,
+    $(vP4MSTMissing) AS st_unmatched,
+    $(vP4MLTMissing) AS lt_unmatched,
+    '2019' AS pb_name_reference_year,
+    'PB_ONLY_DERIVED_IBGE7_NO_EXTERNAL_IBGE_INFERENCE' AS source_limit,
+    'NOT_APPROVED' AS t29_historical,
+    'NOT_STARTED' AS facts_and_link_table
+AUTOGENERATE 1;
+
+STORE P4M_DIM_CHECKPOINT INTO [QVD\_CHECKPOINT_DIM_MUNICIPIO.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL writing partial checkpoint;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4M_DIM_CHECKPOINT;
+TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIM_MUNICIPIO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN;
+TRACE [TRANSFORMACAO][IV-MUNICIPIO] PHASE_IV_PARTIAL_ONLY;
