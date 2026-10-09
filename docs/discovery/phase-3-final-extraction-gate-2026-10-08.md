@@ -160,3 +160,32 @@ git pull --ff-only origin feat/phase-3-final-extraction-gate
 ```
 
 **Estado:** `III_FINAL=FAIL_CLOSED`, causa ainda **não provada**. PR #73 **Draft, sem merge**, Fase III `IN_PROGRESS`, `T29_HISTORICAL=NOT_APPROVED`. Não corrigir esquema nem campos esperados por suposição.
+
+
+## 8. Diagnóstico físico QVD read-only — 10/10 contratos compatíveis
+
+**FATO VERIFICADO — execução local do usuário na branch atualizada `feat/phase-3-final-extraction-gate`:** `.\\.venv\\Scripts\\python.exe tools\\diagnose_phase3_qvd_headers.py` retornou **exit code 0**, seguido por:
+
+```text
+QVD=SRC_SIH_RD HEADER_OK rows=566672 physical_fields=21 required_fields=21
+QVD=SRC_CNES_LT HEADER_OK rows=35518 physical_fields=12 required_fields=12
+QVD=SRC_CNES_ST HEADER_OK rows=220390 physical_fields=14 required_fields=14
+QVD=SRC_IBGE_POPULACAO HEADER_OK rows=669 physical_fields=11 required_fields=11
+QVD=REF_CARATER_ATENDIMENTO HEADER_OK rows=6 physical_fields=6 required_fields=6
+QVD=REF_MOTIVO_SAIDA HEADER_OK rows=28 physical_fields=9 required_fields=9
+QVD=REF_CID10 HEADER_OK rows=14230 physical_fields=7 required_fields=7
+QVD=REF_SIGTAP HEADER_OK rows=165203 physical_fields=7 required_fields=7
+QVD=REF_TIPO_LEITO HEADER_OK rows=65 physical_fields=13 required_fields=13
+QVD=REF_MUNICIPIO_PB_DERIVADA HEADER_OK rows=223 physical_fields=7 required_fields=7
+HEADER_CONTRACTS=10 PROBLEM_QVDS=0 FIELDS_IN_MATCHING_QVDS=107
+VERDICT=QVD_HEADERS_MATCH_EXPECTATIONS_ONLY
+DIAGNOSTIC_EXIT=0
+```
+
+**Interpretação limitada:** os **dez QVDs existentes** possuem os **107 campos exigidos T08** e as quantidades físicas contratadas. Essa evidência exclui **divergências detectáveis nos cabeçalhos XML QVD** como explicação suficiente, mas **NÃO comprova o gate de execução QlikView**, `T07=PASS` ou `T08=PASS` no script, nem esclarece o exit code 3 de `Qv.exe`. Não mudar contratos para contornar erro não demonstrado.
+
+**Fundamentação complementar oficial:** QlikView `QvdFieldName(filename,fieldno)` tem índice **começando em 1**, consistente com o laço do gate: <https://help.qlik.com/en-US/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Scripting/FileFunctions/QvdFieldName.htm>. A sintaxe continua dependente de teste no QlikView 12 local.
+
+**Próximo diagnóstico obrigatório:** verificar nas propriedades do **mesmo arquivo `EXTRACAO/EXT.qvw`** as opções `Generate Logfile` e `Timestamp in Logfile Name`, habilitar e **salvar o QVW**, fechar QlikView Desktop. Documentação Qlik: <https://community.qlik.com/t5/Official-Support-Articles/How-To-Enable-QlikView-Document-Reload-Log/ta-p/1710459>. Somente então executar **uma vez** via `tools/run_phase3_extraction.py` e buscar o **novo** `EXT.qvw*.log` cujo `LastWriteTime` seja posterior ao reload. Inspecionar primeiro `Erro:` e `[EXTRACAO][FINAL]`, não reutilizar o log antigo das 12:44. Sem registro novo, investigar por que o QVW não está persistindo a opção de logging, sem alterar scripts/dados.
+
+**Estado:** `III-FINAL=FAIL_CLOSED_2X`; `QVD_HEADER_CONTRACT=PASS_READ_ONLY`; `PHASE_III=IN_PROGRESS`; `PR_73=DRAFT`; `T29_HISTORICAL=NOT_APPROVED`.
