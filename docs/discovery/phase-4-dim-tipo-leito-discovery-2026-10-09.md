@@ -565,3 +565,36 @@ Comparação de códigos contra `docs/discovery/cnes-nt32-2019-codigos-leito.csv
 **Próxima atividade permitida:** pré-gate de **planejamento/implementação isolada** de `DIM_TIPO_LEITO` no QlikView 12, após conferir os nomes reais dos campos no staging e as aliases associativas do Qlik (evitar accidental synthetic keys). Nenhuma mudança em fatos/Link Table/PAINEL faz parte desta autorização de decisão A2. O código, QVD e checkpoint da oitava dimensão continuam **não produzidos**.
 
 **Critérios mínimos a demonstrar posteriormente:** `2.021` chaves dimensionais de Hash128 únicas (sem colisões), nenhuma representação de tipo fora do normalizador auditado, `35.518/35.518` vínculos unívocos com LT, `0` unmatched e `0` multiplicações de linhas, `56` pares-mês `201909` com descrição datada validada, `1.965` sem descrições históricas indevidamente imputadas, e regressões `3/66=1.480`, `7/70=5`. Diferenciar **validação dos códigos** de **aprovação de validade histórica**. Sem redefinir T29; sem promover a `main` por mera aprovação documental.
+
+## Fase IV — DIM_TIPO_LEITO — implementação isolada preparada; aviso obrigatório em análises (09/10/2026)
+
+**DECISÃO DE APRESENTAÇÃO APROVADA:** além da preservação do contrato A2, o responsável exige que a ressalva de **1.965/2.021 (97,2%) pares tipo+leito+competência sem descrição histórica comprovada** seja **explicitamente apresentada nos gráficos de leitos e nas análises escritas**. O denominador é **combinações distintas código×competência**, não leitos físicos, quantidade `QT_EXIST`/`QT_SUS`, estabelecimentos ou 35.518 linhas LT. A regra canônica, texto completo/curto, comportamento sob filtros e critério de aceite de capturas/exportações foram registrados no adendo de apresentação de `docs/discovery/boundary-7-implementation-plan.md`. Fatos e PAINEL ainda não foram criados, portanto o aviso **ainda não está renderizado em nenhum gráfico**.
+
+**Implementação de código preparada exclusivamente para DIM_TIPO_LEITO (não executada nesta sessão):**
+
+- `TRANSFORMACAO/transf_dim_tipo_leito.qvs` (novo), carregado **após** `transf_dim_motivo_saida_permanencia.qvs` via `$(Must_Include=transf_dim_tipo_leito.qvs);` em `TRANSFORMACAO/transf_main.qvs`.
+- Fontes: `SRC_CNES_LT.qvd` e `REF_TIPO_LEITO.qvd` de staging; **não** altera a EXTRAÇÃO nem usa diretamente o ZIP de domínio. A referência NT32 é aplicada por par **somente em `COMPETEN=201909`**. Nos outros meses mantém `NULL` real para `DESCRICAO_TIPO_LEITO`, `DESCRICAO_ESPECIALIDADE_LEITO` e `COMPETENCIA_LEGENDA_LEITO`.
+- Dimensão candidata preserva `TP_LEITO_BRUTO` com trailing space, `COD_TIPO_LEITO` normalizado por remoção do único espaço ASCII final observado, `COD_LEITO` textual de 2 dígitos, `COMPETENCIA_OBSERVACAO_LEITO`, Hash128 temporal `%SK_TIPO_LEITO`, nomes (possivelmente `NULL`), `STATUS_DESCRICAO_LEITO` e `LEITO_TEM_LEGENDA_DATADA` para apoiar apresentação responsável. `STATUS_DESCRICAO_LEITO` e o flag **marcam cobertura de legenda, não validade normativa T29**.
+- Gate de script exige 2.021 chaves temporais/2.021 SK distintas, 35.518/35.518 linhas LT com SK aplicável (nenhum unmatched), 36 meses, 57 pares globais, 56 nomes contemporâneos, 1.965 pares-mês com `NULL` descritivo, ocorrência do par `3/66` em 1.480 linhas, par `7/70` em cinco linhas e nenhuma duplicata em `CNES+COMPETEN+CODLEITO`.
+- Somente após todos os controles, o script pode gerar `TRANSFORMACAO/QVD/DIM_TIPO_LEITO.qvd` e `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_TIPO_LEITO.csv` **parciais**. Não cria `_SUCCESS_TRANSFORMACAO.csv`, FATO, Link Table, PAINEL ou QVDs de outras dimensões.
+- `tools/audit_dim_tipo_leito_qvd.py` (novo, read-only): após o reload QlikView 12, reexecuta A1, verifica **apenas header XML** do novo QVD (2.021 registros, 10 campos) e checkpoint, SHA-256, frescor do arquivo, 56/1.965 e limites. **Não decodifica conteúdo binário QVD**. A inspeção independente de nomes/códigos por registro ainda dependerá do QlikView e/ou outro mecanismo aprovado.
+
+**Teste estático de código executado na sessão:** `PASS_STATIC_SOURCE_CONTRACT_ONLY`. Inclui verificação de nomes reais de campos em `ext_main.qvs` e `ext_c4_cnes_leitos.qvs`, inclusão uma única vez e ao fim da sequência, mapeamento descritivo restrito a `201909`, política `NULL`, controles numéricos, ausência de `STORE FATO`/marcador global e contrato do aviso visual. **NÃO HOUVE RELOAD QlikView 12, execução local do novo auditor, emissão de QVD ou prova física de Hash128 nesta sessão.**
+
+### Gate local obrigatório — ainda não realizado
+
+1. Atualizar a branch no Windows (árvore local limpa/sem sobrescrever mudanças locais); executar no diretório raiz:
+   ```powershell
+   git fetch origin
+   git switch feat/phase-4-dim-tipo-leito-discovery
+   git pull --ff-only
+   .\.venv\Scripts\python.exe .\tools\preflight_dim_tipo_leito_contrato_a.py
+   ```
+2. Abrir `TRANSFORMACAO/TRANSF.qvw` no **QlikView 12** e executar reload explícito; guardar o log correspondente. Procurar `[TRANSFORMACAO][IV-LEITO]` com `START`, `PARTIAL_ONLY`, `QVD_AND_PARTIAL_CHECKPOINT_WRITTEN`, ausência de `FAIL`, `Unknown statement` e `Syntax Error`. `TRACE` dentro do script pode aparecer no log como linha de código: conferir **execução real** e finalização, não apenas ocorrência textual.
+3. Verificar que `DIM_TIPO_LEITO.qvd` e `_CHECKPOINT_DIM_TIPO_LEITO.csv` são **novos/frescos** (sem aceitar resíduos de execuções antigas) e rodar:
+   ```powershell
+   .\.venv\Scripts\python.exe .\tools\audit_dim_tipo_leito_qvd.py
+   ```
+4. Trazer log QlikView (ou trechos com horário inequívoco), checkpoint e saída completa do auditor para revisão independente. **Não abrir PR/merge nem iniciar fatos/PAINEL com base apenas no teste estático**. Regressão em outras sete dimensões ou qualquer desvio numérico resulta em `REVIEW_REQUIRED`.
+
+**STATUS:** `A2_CONTRACT=APPROVED`; `IV_TIPO_LEITO=CODE_READY_QV12_NOT_RUN`; `PRESENTATION_CNES_HISTORICAL_CAVEAT=REQUIRED_NOT_RENDERED`; `T29_HISTORICAL=NOT_APPROVED`; `MAIN_DIMENSIONS=7/8`; `FACTS_LINK_TABLE_PANEL=NOT_STARTED`.
