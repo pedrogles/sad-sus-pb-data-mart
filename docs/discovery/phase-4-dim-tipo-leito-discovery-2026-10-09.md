@@ -441,3 +441,42 @@ O Portal CNES **exibe realmente** `LFCES002_201301_65.ZIP` em **Downloads → Ar
 - **ESCALONAMENTO:** se a enumeração encontrar um candidato **cuja descrição pública afirme conter domínio de leitos**, propor posteriormente uma única aquisição técnica controlada (bytes, hash, lista interna e contrato do arquivo) **somente com autorização específica**. Não instalar executáveis por padrão; priorizar documento/layout/listagem acessível sem execução.
 
 **ESTADO:** `C4.2c.4a=PASS_LOCAL`, `C4.2c.4b=METADATA_ONLY_PARTIAL_CHANNELS_IDENTIFIED_BINARY_NOT_ENUMERATED`, `C4.2c.4c=LOCAL_BROWSER_ENUMERATION_PENDING`, `A2=CONTRACT_DECISION_PENDING`, `T29_HISTORICAL=NOT_APPROVED`, `main=7/8`. Nenhum `DIM_TIPO_LEITO.qvd`, fato, Link Table ou painel gerado.
+
+## C4.2c.4c–d — Reconciliação do inventário visual e metadados da documentação CNES (09/10/2026)
+
+**Escopo:** correção exclusivamente documental, baseada nas capturas do portal CNES com JavaScript disponibilizadas pelo responsável em 09/10/2026. Nenhum ZIP, executável ou conjunto de dados foi baixado/inspecionado; nenhuma dimensão, QVD, fato, Link Table, script de modelagem ou capítulo acadêmico foi alterado. Este adendo **complementa** o retrato metadata-only anterior (§ C4.2c.4b); afirmações antigas sobre listas não enumeráveis descreviam apenas o HTML estático e **não representam mais um bloqueio para a enumeração visual**.
+
+### Evidência 1 — listas de aplicativos SCNES anteriores
+
+- Duas capturas do portal oficial `https://cnes.datasus.gov.br/pages/downloads/aplicativos.jsp` mostram as listas expandidas de versões completas e atualizações anteriores.
+- Nomes visíveis relevantes: `SCNES4020-COMPLETA.ZIP`, `SCNES4020-ATUALIZACAO.ZIP`, `SCNES4030-COMPLETA.ZIP`, `SCNES4030-ATUALIZACAO.ZIP`, `SCNES4150-COMPLETA.ZIP` e `SCNES4150-ATUALIZACAO.ZIP`.
+- Os informes oficiais anteriormente registrados continuam sendo **marcos de menção/disponibilização de software**, não evidência de competência de processamento, conteúdo de `TB_LEITO` nem início de vigência normativa.
+
+### Evidência 2 — ZIPs de base CNES por competência
+
+- Captura da lista expandida em `https://cnes.datasus.gov.br/pages/downloads/arquivosBaseDados.jsp`, nome de arquivo de evidência fornecido: `screencapture-cnes-datasus-gov-br-pages-downloads-arquivosBaseDados-jsp-2026-10-09-13_20_55.pdf`.
+- **FATO VISUAL VERIFICADO:** os 36 itens de `201701` a `201912` aparecem em sequência, sob padrão `BASE_DE_DADOS_CNES_AAAAMM.ZIP` (por exemplo `BASE_DE_DADOS_CNES_201701.ZIP`, `BASE_DE_DADOS_CNES_201706.ZIP`, `BASE_DE_DADOS_CNES_201903.ZIP`, `BASE_DE_DADOS_CNES_201909.ZIP`, `BASE_DE_DADOS_CNES_201912.ZIP`). Não foram observadas lacunas **na lista**, sem concluir que os 36 arquivos estejam íntegros ou possam ser efetivamente baixados.
+- **DIVERGÊNCIA DOCUMENTAL A RECONCILIAR:** a Wiki CNES consultada na rodada anterior descreve disponibilização de bases por competência **a partir de 06/2017**, mas o seletor observado atualmente também lista `201701–201705`. A listagem contemporânea não demonstra se a Wiki está desatualizada, se os arquivos antigos foram acrescentados posteriormente ou se seus links são funcionais. Não reescrever o histórico da Wiki por inferência.
+
+### Evidência 3 — arquivo oficial da seção Tabelas de Domínio
+
+- **FATO VISUAL VERIFICADO:** na captura fornecida da página oficial `https://cnes.datasus.gov.br/pages/downloads/documentacao.jsp`, a linha **Tabelas de Domínio** apresenta **`18/10/2019` na coluna `ÚLTIMA ATUALIZAÇÃO`**. A linha **Dicionário de Dados do SCNES** apresenta **`26/06/2026`** (não confundir com edição normativa histórica).
+- **URL literal fornecida pelo responsável a partir do item de download:** `https://cnes.datasus.gov.br/EstatisticasServlet?path=SCNES_DOMINIOS.ZIP`; nome do arquivo indicado pela URL: `SCNES_DOMINIOS.ZIP`. Este é um **link de download identificado**, mas não houve acesso aos bytes do ZIP, verificação HTTP do binário, SHA-256, tamanho, inspeção de entradas internas ou obtenção de versões anteriores.
+- O HTML estático do portal conserva o placeholder `{{scnesTabelasDominio.dtAtualizacao}}`; a data acima deriva **da captura do navegador com JavaScript**, e não de uma data extraída do HTML estático.
+- **NÃO VERIFICADO:** se o ZIP contém `NFCES001/TB_LEITO` e `NFCES028/TB_ATRIBUTO`, quais pares `TP_LEITO+CODLEITO` contém, qual versão de cada tabela, ou quaisquer datas de aplicabilidade 2017–2019. **18/10/2019 é a data exibida de atualização do download, não uma competência normativa da legenda ou prova de validade retroativa.** Nem sequer prova preservação da versão 2019 para download hoje.
+
+### Inventário mínimo corrigido
+
+| Fonte | Nome/identificador | Temporalidade observada | URL oficial | Conteúdo interno | Potencial para T29 | Limitação |
+|---|---|---|---|---|---|---|
+| SCNES aplicativos | `SCNES4020`, `SCNES4030`, `SCNES4150` (completo/atualização) | Releases informados na documentação histórica, não competências LT | [Aplicativos](https://cnes.datasus.gov.br/pages/downloads/aplicativos.jsp) | Não inspecionado | Indeterminado | Identidade da versão do software não equivale à vigência do domínio |
+| CNES bases mensais | `BASE_DE_DADOS_CNES_AAAAMM.ZIP` | Itens exibidos `201701–201912` (36/36) | [Base de dados](https://cnes.datasus.gov.br/pages/downloads/arquivosBaseDados.jsp) | Não inspecionado | Indeterminado | Links individuais, disponibilidade efetiva e presença de `TB_LEITO` não demonstrados |
+| CNES documentação | `SCNES_DOMINIOS.ZIP` | Atualização exibida `18/10/2019` | [Link do item de domínio](https://cnes.datasus.gov.br/EstatisticasServlet?path=SCNES_DOMINIOS.ZIP) | Não inspecionado | **Alto como candidato a inspeção**, não como prova | Estrutura, tamanho, SHA, versões internas e vigência desconhecidos |
+| CNES documentação | Dicionário de Dados do SCNES | Atualização exibida `26/06/2026` | [Documentação](https://cnes.datasus.gov.br/pages/downloads/documentacao.jsp) | Esquema conhecido de inspeções anteriores, arquivo atual não baixado | Médio, como documentação de layout | Não implica histórico de registros ou validade mensal |
+
+### Gate e limites
+
+- **C4.2c.4c = PASS_METADATA_INVENTORY_ONLY** para a **enumeração visual** das listas; não é PASS de disponibilidade física dos ZIPs.
+- **C4.2c.4d = OFFICIAL_DOMAIN_ZIP_LINK_AND_DISPLAYED_UPDATE_IDENTIFIED / CONTENT_UNVERIFIED**.
+- **A2_SK_CONTRACT = DECISION_PENDING** e **T29_HISTORICAL = NOT_APPROVED** permanecem inalterados.
+- **NEXT DECISION GATE:** antes de qualquer download, obter aprovação específica para a inspeção mínima **somente** de `SCNES_DOMINIOS.ZIP` (se tecnicamente disponível), com tamanho/hash, lista de entradas, formato, versões e comparação do domínio com os 57 pares LT da PB. Inspeção física, por si, não aprova vigência mensal. Se o arquivo não trouxer metadados históricos, comparar com referência datada e manter lacuna explícita. Não antecipar instalação SCNES, aquisição dos 36 ZIPs, revisão de `Hash128`/Boundary 7, geração de `DIM_TIPO_LEITO` ou fatos.
