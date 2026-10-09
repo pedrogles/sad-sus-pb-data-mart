@@ -77,3 +77,58 @@ print("PREFLIGHT_HEADERS_READ_ONLY_CONCLUIDO")
 **Decisão de execução compatível com Boundaries 5 e 7:** `DIM_ESTABELECIMENTO` seguirá com uma versão mensal por `CNES × COMPETENCIA`, chave `Hash128('ESTAB', CNES, COMPETENCIA)` e atributos históricos obtidos apenas do próprio snapshot. Na ausência de fonte comprovada de nomes para a mesma competência, `NOME_FANTASIA` e `RAZAO_SOCIAL` ficarão `NULL` (nenhum forward fill/backfill). Isso **não** autoriza usar nome de 2019 para dados de 2017; uma futura referência nominal exigirá validação própria por competência.
 
 **Gate seguinte, ainda não atestado:** materializar `DIM_ESTABELECIMENTO.qvd` a partir de `SRC_CNES_ST.qvd`, cobrindo o staging validado (**220.390 registros, 6.822 CNES distintos e 36 competências, sem duplicidades CNES×competência**) e executando controles `T16` contra versão histórica futura. A prova dos totais no QlikView local e a leitura do cabeçalho QVD ainda serão exigidas. `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
+
+## Implementação de checkpoint IV-ESTABELECIMENTO — CODE READY, GATE LOCAL PENDENTE
+
+**Após o preflight**, implementou-se `TRANSFORMACAO/transf_dim_estabelecimento.qvs` (include versionável) e chamada ao final de `TRANSFORMACAO/transf_main.qvs`, **após** os checkpoints de `DIM_TEMPO` e `DIM_MUNICIPIO`. Nenhuma modificação em `EXTRACAO`, dados de staging, 3 fatos, Link Table ou modelo acadêmico.
+
+### Saída física planejada
+
+`TRANSFORMACAO/QVD/DIM_ESTABELECIMENTO.qvd`, com 14 campos:
+1. `%SK_ESTABELECIMENTO`: `Hash128('ESTAB', CNES, COMPETENCIA)` dos valores mensais do próprio ST;
+2. `CNES` e `COMPETENCIA` (código mensal `AAAAMM`);
+3. atributos ST da mesma linha/competência: `CODUFMUN`, `COD_CEP`, `CNPJ_MAN`, `VINC_SUS`, `TPGESTAO`, `TP_UNID`, `NATUREZA`, `NAT_JUR`;
+4. `NOME_FANTASIA` e `RAZAO_SOCIAL`: ambos **`NULL`**, pois nenhuma coluna de nomes foi observada em todos os 36 ST; `NOME_HISTORICO_STATUS='SEM_NOME_HISTORICO_ST_VALIDADO'` como metadado explícito de lacuna, não dado clínico/cadastral.
+
+`TRANSFORMACAO/QVD/_CHECKPOINT_DIM_ESTABELECIMENTO.csv` com **19 campos** e status `PASS_PARTIAL_DIM_ESTABELECIMENTO_ONLY` somente depois de todas as verificações passarem.
+
+### Gates fail-closed do novo script
+
+- Pré-condição: IV-MUNICIPIO carregado e íntegro.
+- Leitura somente do `SRC_CNES_ST.qvd` de staging aprovado.
+- Staging: **220.390** versões de `CNES × COMPETEN`, **6.822** CNES distintos, **36** competências; códigos não vazios/não alfanuméricos, competência AAAAMM 201701–201912 e `_META_SOURCE_COMPETENCE` fiel ao campo. Duplicidade da combinação CNES×mês → **falha**.
+- QVD esperado com **220.390 linhas, 14 campos, 220.390 SK distintas e versões distintas**, 0 inválidas e 0 nomes sem fonte preenchidos.
+- Para contornar potencial comparação numérica/textual dual observada em IV-MUNICIPIO, somente o mapa de cobertura **interno** usa chave prefixada `E|CNES|AAAAMM`, valor constante `1`. Primeiro self-check de todas as 220.390 versões, depois testes de cobertura exata com **566.672 RD** e **35.518 LT** na respectiva competência, com **0 unmatched**. Um registro de competência posterior não satisfaz o teste da competência antiga (**T16**).
+- A SK física **não** incorpora o prefixo de mapa, preservando o contrato `Hash128('ESTAB', CNES, COMPETENCIA)`. Nenhuma agregação de atributos através dos meses e nenhum nome retroativo.
+- Na falha, `EXIT SCRIPT` antes do `STORE`; **não** gerar `_SUCCESS_TRANSFORMACAO.csv`.
+
+**Aviso:** são validações **implementadas em código, não verificadas localmente**. Os 220.390/6.822/36/566.672/35.518 são expectativas de origem do staging já aprovado; os atributos físicos e a contagem 14/19 só serão fatos após a execução Qlik e auditoria dos artefatos.
+
+### Próxima execução no Windows — QlikView 12
+
+Na raiz do repo, após `git fetch origin` e atualização da branch, com QlikView fechado:
+
+```powershell
+$inicio = Get-Date
+$exe = "$env:ProgramFiles\QlikView\Qv.exe"
+$qvw = (Resolve-Path .\TRANSFORMACAO\TRANSF.qvw).Path
+
+Remove-Item .\TRANSFORMACAO\QVD\_CHECKPOINT_DIM_ESTABELECIMENTO.csv -ErrorAction SilentlyContinue
+
+$p = Start-Process -FilePath $exe -ArgumentList @('/r', ('"' + $qvw + '"')) -WorkingDirectory (Split-Path $qvw -Parent) -PassThru -Wait
+"QLIK_EXIT=$($p.ExitCode)"
+
+$log = Get-ChildItem .\TRANSFORMACAO -Filter 'TRANSF.qvw*.log' -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if (-not $log -or $log.LastWriteTime -lt $inicio) { throw "Log contemporaneo ausente" }
+
+Select-String -Path $log.FullName -Pattern '\[IV-ESTABELECIMENTO\]|FAIL|Execution finished'
+Get-Content $log.FullName -Tail 50
+
+$cp = '.\TRANSFORMACAO\QVD\_CHECKPOINT_DIM_ESTABELECIMENTO.csv'
+if (Test-Path $cp) { Import-Csv $cp -Delimiter ';' | Format-List } else { 'CHECKPOINT_ESTABELECIMENTO_AUSENTE' }
+Get-Item .\TRANSFORMACAO\QVD\DIM_ESTABELECIMENTO.qvd -ErrorAction SilentlyContinue | Select-Object Name,Length,LastWriteTime
+```
+
+**Critério de aceite:** log novo, `SELF_CHECK Rows=220390 Missing=0`, `COVER RD=566672 RD_UNMATCHED=0 LT=35518 LT_UNMATCHED=0`, checkpoint novo `PASS_PARTIAL_DIM_ESTABELECIMENTO_ONLY` com 220390×14, e QVD físico lido posteriormente (cabeçalho, 14 campos, hash e timestamp). **Não aprovar pelo `QLIK_EXIT=0` isolado.**
+
+**Estado:** `IV-TEMPO=MERGED_PASS`; `IV-MUNICIPIO=MERGED_PASS`; `IV-ESTABELECIMENTO=CODE_READY_QV_LOCAL_PENDING`; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
