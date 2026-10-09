@@ -2,7 +2,7 @@
 
 **Data:** 08/10/2026 (UTC-03)  
 **Branch:** `feat/phase-4-dim-tempo`  
-**Status:** **CODIGO VERSIONADO / TESTE FISICO LOCAL PENDENTE**. Nao declarar PASS antes do reload e da auditoria QVD.
+**Status:** **QLIKVIEW RELOAD + CHECKPOINT PARCIAL PASS (SAIDA LOCAL DO USUARIO) / AUDITORIA INDEPENDENTE DO QVD E LOG PENDENTE**. Nao declarar aceite fisico integral nem merge ate conferencia.
 
 ## 1. Precondicoes comprovadas documentalmente
 
@@ -78,3 +78,29 @@ Se `QLIK_EXIT` for diferente de zero, marcador ausente ou campos/contagens diver
 ## 5. Veredito
 
 **CHECKPOINT IV-TEMPO: CODE READY / LOCAL QLIKVIEW VALIDATION REQUIRED.** Nao ha evidencia nesta execucao remota de que `TRANSF.qvw` tenha rodado no Windows/QlikView 12. A primeira entrega academica permanece fechada e nao foi alterada.
+
+## 6. Primeira execucao local IV-TEMPO — Qlik reload + checkpoint PASS (08/10/2026 22:17:20 UTC-03)
+
+**FATO VERIFICADO — saida PowerShell apresentada pelo responsavel:**
+
+- `git fetch origin` atualizou a branch remota `feat/phase-4-dim-tempo`, e `git switch --track origin/feat/phase-4-dim-tempo` criou o tracking local com sucesso.
+- O marcador parcial anterior foi removido antes da execucao.
+- `Qv.exe /r .../TRANSFORMACAO/TRANSF.qvw` retornou `QLIK_EXIT=0`.
+- O novo checkpoint foi lido em PowerShell com o conteudo:
+
+```csv
+generated_at;stage;status;calendar_day_rows;months_2017_2019;years_2017_2019;rd_inter_rows;rd_total_date_rows;invalid_date_rows;t29_historical;facts_and_link_table
+08/10/2026 22:17:20;TRANSFORMACAO_DIM_TEMPO;PASS_PARTIAL_DIM_TEMPO_ONLY;4383;36;3;566672;1133344;0;NOT_APPROVED;NOT_STARTED
+```
+
+**Interpretacao:** o script QlikView 12 concluiu e o checkpoint parcial da dimensao retornou os controles esperados: 36 competencias (2017–2019), 3 anos, 566.672 datas de admissao, 1.133.344 datas totais, zero invalidas; T29 historico continua NOT_APPROVED e fatos/Link Table nao iniciados. `IV-TEMPO=PASS_LOCAL_RELOAD_AND_CHECKPOINT_ONLY`.
+
+**Atencao ao dominio de datas:** 4.383 dias excedem os 1.095 dias do recorte de competencias 2017–2019. O script expande os limites de calendario para abranger `DT_INTER` e `DT_SAIDA` reais; o valor pode ser legitimo, mas **as datas extremas observadas ainda nao foram fornecidas**. Nao tratar a contagem estendida como erro nem assumir suas causas sem inspecao.
+
+**Evidencias adicionais ainda necessarias antes de merge:**
+1. `Get-Item` e SHA-256 de `TRANSFORMACAO/QVD/DIM_TEMPO.qvd`, com LastWriteTime contemporaneo ao reload e `QvdNoOfRecords`/cabecalho reconciliando 4383 linhas.
+2. Log contemporaneo de `TRANSF.qvw`, com final normal, sem `Unknown statement`, `Syntax Error` ou erros ocultos.
+3. Confirmar min/max reais do calendario ou de `DT_INTER`/`DT_SAIDA`, para explicar os 4.383 dias, preservando historico sem truncamento.
+4. Confirmar que `_SUCCESS_TRANSFORMACAO.csv` nao foi gerado e que QVDs da extracao nao foram alterados.
+
+**Veredito vigente:** `IV-TEMPO=PASS_LOCAL_RELOAD_AND_CHECKPOINT_ONLY`, `DIM_TEMPO_QVD_AUDIT=PENDING`, `PR_74=DRAFT`, `PHASE_IV=IN_PROGRESS`. Nenhuma evidencia remota autoriza declarar Fase IV completa.
