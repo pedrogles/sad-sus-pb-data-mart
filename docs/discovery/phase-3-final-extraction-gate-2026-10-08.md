@@ -131,3 +131,32 @@ Esse `Comando desconhecido` pertence ao **script antigo antes de C4/C5**, cujo `
 **PENDÊNCIA:** localizar ou produzir log da execução de 21:18, sem alterar os contratos. Primeiro observar `LastWriteTime` dos QVDs/checkpoints posteriores à tentativa e confirmar em QlikView Desktop `Configurações → Propriedades do Documento → Geral → Gerar Arquivo Log` e `Timestamp no nome do arquivo de log`. A [orientação de suporte oficial Qlik](https://community.qlik.com/t5/Official-Support-Articles/How-To-Enable-QlikView-Document-Reload-Log/ta-p/1710459) indica que logs de reload do QlikView Desktop são gerados junto do `.qvw` quando essa opção está habilitada. Se necessário, executar **nova tentativa controlada somente após ativar logging e garantir o arquivo salvo**, usando o runner existente. **Nenhuma alteração no gate Qlik nem merge até obter o primeiro erro real.**
 
 **Estado preservado:** `III_FINAL=FAIL_CLOSED_UNDIAGNOSED`; `PHASE_III=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
+
+
+## 7. Segunda tentativa e QVDs da primeira tentativa — 08/10/2026
+
+**FATO VERIFICADO — saída PowerShell local adicional do usuário:**
+
+1. A seleção por `LastWriteTime >= 08/10/2026 21:17:48` no diretório `EXTRACAO/QVD` mostrou todos os QVDs principais atualizados na **primeira tentativa** `21:18:48`–`21:19:08`. O último artefato identificado foi `_CHECKPOINT_EXTRACAO_C5_2_MUNICIPIO_PB.csv` às **21:19:08**, acompanhado de `REF_MUNICIPIO_PB_DERIVADA.qvd`, `REF_MUNICIPIO_PB_DERIVADA.csv` e `_CHECKPOINT_EXTRACAO_MUNICIPAL_PREFLIGHT.csv`. Isso indica que a execução progrediu **até C5.2**, sem evidência de conclusão do include final.
+2. Nova execução do runner:
+
+```text
+RELOAD_STARTED_UTC=2026-10-09T00:27:45.387985+00:00
+OLD_SUCCESS_MARKER=INVALIDATED
+QLIK_RELOAD_STAGE=EXTRACAO_ONLY
+VERDICT=FAIL_CLOSED ERROR=QlikView retornou codigo de erro 3
+PHASE_III=IN_PROGRESS
+RUNNER_EXIT=3
+```
+
+3. Depois dessa segunda tentativa, o log mais recente listado continua `EXT.qvw.2026_10_08_12_44_07.log` (`LastWriteTime 08/10/2026 12:44:24`). Portanto, não há **log contemporâneo** ao reload atual na seleção enviada; a mensagem `Comando desconhecido` do log antigo não demonstra a falha de III-FINAL.
+
+**Diagnóstico controlado adicionado (sem reload):** `tools/diagnose_phase3_qvd_headers.py` lê **somente os cabeçalhos XML** dos 10 QVDs e os contratos já versionados em `EXTRACAO/ext_phase3_final_gate.qvs`, reportando contagens, campos exigidos T08 ausentes e ausência/corrupção de QVD. Não altera nem cria arquivos. **Se passar, não equivale à prova de sucesso T07/T08**; o log Qlik ainda será necessário. Requer nova evidência de execução local:
+
+```powershell
+git pull --ff-only origin feat/phase-3-final-extraction-gate
+.\.venv\Scripts\python.exe tools\diagnose_phase3_qvd_headers.py
+"DIAGNOSTIC_EXIT=$LASTEXITCODE"
+```
+
+**Estado:** `III_FINAL=FAIL_CLOSED`, causa ainda **não provada**. PR #73 **Draft, sem merge**, Fase III `IN_PROGRESS`, `T29_HISTORICAL=NOT_APPROVED`. Não corrigir esquema nem campos esperados por suposição.
