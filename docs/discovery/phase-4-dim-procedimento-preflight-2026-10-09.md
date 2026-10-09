@@ -424,7 +424,7 @@ O script já versionado `tools/materialize_sigtap_hierarchy_staging_candidate.py
 Adicionado **`tools/audit_sigtap_hierarchy_staging_candidate.py`** (CODE READY, NÃO EXECUTADO) para, sem escrita:
 - auditar novamente SHA-256 e manifesto dos **216** membros de hierarquia;
 - exigir SHA-256 do CSV original de 4 campos, manifesto e contagens III-C3.4a, SHA-256 e schema do **novo CSV de 10 campos** e coerência de seu manifesto;
-- comparar **cada uma das 165203 linhas** de ambos os CSVs, incluindo **preservação byte a byte após decodificação CSV de texto dos quatro campos anteriores**, ordem e chave composta; conferir por competência a existência/valor exato dos nomes oficiais dos três níveis a partir dos 216 arquivos originais;
+- comparar **cada uma das 165203 linhas** de ambos os CSVs, incluindo **igualdade textual exata dos quatro campos anteriores após leitura CSV UTF-8**, ordem e chave composta (não é comparação binária dos arquivos CSV); conferir por competência a existência/valor exato dos nomes oficiais dos três níveis a partir dos 216 arquivos originais;
 - exigir cobertura 36/36, códigos ASCII de dez dígitos, SK operacional textual `AAAAMM|XXXXXXXXXX`, 165203 chaves únicas e 0 unmatched;
 - preservar `201808_source_version_caveat=TabelaUnificada_201808_v2102261143.zip`, `T29_HISTORICAL=NOT_APPROVED`, sem QVD ou fatos.
 
