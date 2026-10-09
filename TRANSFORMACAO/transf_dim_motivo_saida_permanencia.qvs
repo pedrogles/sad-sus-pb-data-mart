@@ -1,0 +1,294 @@
+// FASE IV — setimo checkpoint ISOLADO: DIM_MOTIVO_SAIDA_PERMANENCIA.
+// Fonte normativa C1 corrigida 28 codigos (Portarias 719/2007 e 384/2010).
+// Codigo RD COBRANCA de dois digitos sem ponto; normativo com ponto.
+// 24 => 2.4; 32 e 67 permanecem na dimensao sem RD neste recorte.
+// Nao infere vigencia normativa mensal; sem fatos, Link Table ou painel.
+LET vP4MErrorsBefore = ScriptErrorCount;
+TRACE [TRANSFORMACAO][IV-MOTIVO] START;
+
+// Exigir nao regressao do checkpoint anterior.
+IF $(vP4CDimRows) <> 6 OR $(vP4CUniqueSK) <> 6 OR $(vP4CRDRows) <> 566672 OR $(vP4CRDUnmatched) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL previous DIM_CARATER_ATENDIMENTO checkpoint;
+    EXIT SCRIPT;
+ENDIF
+
+P4M_REF_SOURCE:
+NOCONCATENATE LOAD
+    Text(Right('00' & KeepChar(Text(COBRANCA), '0123456789'), 2)) AS _P4M_CODE,
+    Text(COBRANCA) AS _P4M_ORIGINAL_CODE,
+    Text(MOTIVO_CODIGO_NORMATIVO) AS _P4M_NORMATIVE_CODE,
+    Text(MOTIVO_DESCRICAO) AS _P4M_DESCRIPTION,
+    Text(MOTIVO_GRUPO) AS _P4M_CATEGORY,
+    Text(MOTIVO_FONTE_OFICIAL_BASE) AS _P4M_SOURCE_BASE,
+    Text(MOTIVO_FONTE_OFICIAL_ATUALIZACAO) AS _P4M_SOURCE_UPDATE
+FROM [..\EXTRACAO\QVD\REF_MOTIVO_SAIDA.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL REF_MOTIVO_SAIDA QVD read;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4MSourceRows = NoOfRows('P4M_REF_SOURCE');
+LET vP4MSourceFields = NoOfFields('P4M_REF_SOURCE');
+
+P4M_REF_PROFILE:
+LOAD
+    Count(DISTINCT _P4M_CODE) AS _P4M_DISTINCT_CODES,
+    Count(DISTINCT _P4M_NORMATIVE_CODE) AS _P4M_DISTINCT_NORMATIVE,
+    Count(DISTINCT _P4M_CATEGORY) AS _P4M_DISTINCT_GROUPS,
+    Sum(If(
+        IsNull(_P4M_CODE)
+        OR Len(_P4M_CODE) <> 2
+        OR Match(
+            _P4M_CODE,
+            '11','12','14','15','16','18','19',
+            '21','22','23','24','25','26','27','28',
+            '31','32','41','42','43','51',
+            '61','62','63','64','65','66','67'
+        ) = 0
+        OR IsNull(_P4M_ORIGINAL_CODE)
+        OR Len(Trim(_P4M_ORIGINAL_CODE)) <> 2
+        OR Len(KeepChar(_P4M_ORIGINAL_CODE,'0123456789')) <> Len(Trim(_P4M_ORIGINAL_CODE))
+        OR IsNull(_P4M_NORMATIVE_CODE)
+        OR _P4M_NORMATIVE_CODE <> Left(_P4M_CODE,1) & '.' & Right(_P4M_CODE,1)
+        OR IsNull(_P4M_DESCRIPTION) OR Len(Trim(_P4M_DESCRIPTION)) = 0
+        OR IsNull(_P4M_CATEGORY) OR Len(Trim(_P4M_CATEGORY)) = 0
+        OR IsNull(_P4M_SOURCE_BASE) OR Len(Trim(_P4M_SOURCE_BASE)) = 0
+        OR IsNull(_P4M_SOURCE_UPDATE) OR Len(Trim(_P4M_SOURCE_UPDATE)) = 0,
+        1, 0
+    )) AS _P4M_INVALID,
+    Sum(If(_P4M_CODE='24' AND _P4M_NORMATIVE_CODE='2.4',1,0)) AS _P4M_24_MAPPING,
+    Sum(If(_P4M_CODE='32',1,0)) AS _P4M_32,
+    Sum(If(_P4M_CODE='67',1,0)) AS _P4M_67,
+    Sum(If(Match(_P4M_CODE,'13','17')>0,1,0)) AS _P4M_REVOKED
+RESIDENT P4M_REF_SOURCE;
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL reference profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4MSourceUnique = Peek('_P4M_DISTINCT_CODES',0,'P4M_REF_PROFILE');
+LET vP4MSourceNormUnique = Peek('_P4M_DISTINCT_NORMATIVE',0,'P4M_REF_PROFILE');
+LET vP4MSourceGroups = Peek('_P4M_DISTINCT_GROUPS',0,'P4M_REF_PROFILE');
+LET vP4MSourceInvalid = Peek('_P4M_INVALID',0,'P4M_REF_PROFILE');
+LET vP4MCode24Map = Peek('_P4M_24_MAPPING',0,'P4M_REF_PROFILE');
+LET vP4MRef32 = Peek('_P4M_32',0,'P4M_REF_PROFILE');
+LET vP4MRef67 = Peek('_P4M_67',0,'P4M_REF_PROFILE');
+LET vP4MRefRevoked = Peek('_P4M_REVOKED',0,'P4M_REF_PROFILE');
+DROP TABLE P4M_REF_PROFILE;
+
+TRACE [TRANSFORMACAO][IV-MOTIVO] SOURCE Rows=$(vP4MSourceRows) Fields=$(vP4MSourceFields) Codes=$(vP4MSourceUnique) NormCodes=$(vP4MSourceNormUnique) Groups=$(vP4MSourceGroups) Invalid=$(vP4MSourceInvalid) Map24=$(vP4MCode24Map);
+
+IF $(vP4MSourceRows) <> 28 OR $(vP4MSourceFields) <> 7 OR $(vP4MSourceUnique) <> 28 OR $(vP4MSourceNormUnique) <> 28 OR $(vP4MSourceGroups) <> 6 OR $(vP4MSourceInvalid) <> 0 OR $(vP4MCode24Map) <> 1 OR $(vP4MRef32) <> 1 OR $(vP4MRef67) <> 1 OR $(vP4MRefRevoked) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL official 28-code reference integrity;
+    EXIT SCRIPT;
+ENDIF
+
+// Alias fisicos exclusivos da dimensao evitam associacao acidental.
+// SK conforme Boundary 7: %SK_MOTIVO_SAIDA=Hash128('MOT', COBRANCA).
+DIM_MOTIVO_SAIDA_PERMANENCIA:
+NOCONCATENATE LOAD
+    Hash128('MOT', _P4M_CODE) AS [%SK_MOTIVO_SAIDA],
+    Text(_P4M_CODE) AS COD_MOTIVO_SAIDA_FONTE,
+    Text(_P4M_NORMATIVE_CODE) AS COD_MOTIVO_SAIDA_NORMATIVO,
+    Text(_P4M_DESCRIPTION) AS DESCRICAO_OFICIAL_MOTIVO_SAIDA,
+    Text(_P4M_CATEGORY) AS CATEGORIA_ENCERRAMENTO,
+    Text(_P4M_SOURCE_BASE) AS MOTIVO_FONTE_OFICIAL_BASE,
+    Text(_P4M_SOURCE_UPDATE) AS MOTIVO_FONTE_OFICIAL_ATUALIZACAO
+RESIDENT P4M_REF_SOURCE;
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL dimension load;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4MDimRows = NoOfRows('DIM_MOTIVO_SAIDA_PERMANENCIA');
+LET vP4MDimFields = NoOfFields('DIM_MOTIVO_SAIDA_PERMANENCIA');
+
+P4M_DIM_PROFILE:
+LOAD
+    Count(DISTINCT [%SK_MOTIVO_SAIDA]) AS _P4M_UNIQUE_SK,
+    Count(DISTINCT COD_MOTIVO_SAIDA_FONTE) AS _P4M_UNIQUE_CODES,
+    Count(DISTINCT COD_MOTIVO_SAIDA_NORMATIVO) AS _P4M_UNIQUE_NORMATIVE,
+    Sum(If(
+        IsNull([%SK_MOTIVO_SAIDA])
+        OR Len(Trim(Text([%SK_MOTIVO_SAIDA]))) = 0
+        OR IsNull(COD_MOTIVO_SAIDA_FONTE) OR Len(COD_MOTIVO_SAIDA_FONTE) <> 2
+        OR IsNull(COD_MOTIVO_SAIDA_NORMATIVO)
+        OR COD_MOTIVO_SAIDA_NORMATIVO <> Left(COD_MOTIVO_SAIDA_FONTE,1) & '.' & Right(COD_MOTIVO_SAIDA_FONTE,1)
+        OR IsNull(DESCRICAO_OFICIAL_MOTIVO_SAIDA) OR Len(Trim(DESCRICAO_OFICIAL_MOTIVO_SAIDA)) = 0
+        OR IsNull(CATEGORIA_ENCERRAMENTO) OR Len(Trim(CATEGORIA_ENCERRAMENTO)) = 0
+        OR IsNull(MOTIVO_FONTE_OFICIAL_BASE) OR Len(Trim(MOTIVO_FONTE_OFICIAL_BASE)) = 0
+        OR IsNull(MOTIVO_FONTE_OFICIAL_ATUALIZACAO) OR Len(Trim(MOTIVO_FONTE_OFICIAL_ATUALIZACAO)) = 0,
+        1, 0
+    )) AS _P4M_INVALID
+RESIDENT DIM_MOTIVO_SAIDA_PERMANENCIA;
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL dimension profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4MUniqueSK = Peek('_P4M_UNIQUE_SK',0,'P4M_DIM_PROFILE');
+LET vP4MDimUniqueCodes = Peek('_P4M_UNIQUE_CODES',0,'P4M_DIM_PROFILE');
+LET vP4MDimUniqueNorm = Peek('_P4M_UNIQUE_NORMATIVE',0,'P4M_DIM_PROFILE');
+LET vP4MDimInvalid = Peek('_P4M_INVALID',0,'P4M_DIM_PROFILE');
+DROP TABLE P4M_DIM_PROFILE;
+
+IF $(vP4MDimRows) <> 28 OR $(vP4MDimFields) <> 7 OR $(vP4MUniqueSK) <> 28 OR $(vP4MDimUniqueCodes) <> 28 OR $(vP4MDimUniqueNorm) <> 28 OR $(vP4MDimInvalid) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL DIM_MOTIVO SK/schema;
+    EXIT SCRIPT;
+ENDIF
+
+P4M_CODE_MAP:
+MAPPING LOAD _P4M_CODE, 1 RESIDENT P4M_REF_SOURCE;
+
+// Frequencias de COBRANCA observadas independentemente no preflight Python
+// dos 36 CSV SIH/RD em 09/10/2026. Somente 26 codigos aparecem; 32/67 = 0.
+P4M_EXPECTED_RD_FREQUENCY:
+MAPPING LOAD Text(code), expected INLINE [
+code,expected
+11,14134
+12,333271
+14,10447
+15,6699
+16,2870
+18,1101
+19,45
+21,11901
+22,13209
+23,3369
+24,6
+25,279
+26,1751
+27,1860
+28,311
+31,13066
+41,22596
+42,576
+43,3408
+51,1585
+61,120725
+62,2130
+63,234
+64,1068
+65,11
+66,20
+];
+
+P4M_RD_COVER:
+NOCONCATENATE LOAD
+    Text(Right('00' & KeepChar(Text(COBRANCA), '0123456789'), 2)) AS _P4M_RD_CODE,
+    If(ApplyMap('P4M_CODE_MAP', Text(Right('00' & KeepChar(Text(COBRANCA), '0123456789'),2)), 0) = 1,0,1) AS _P4M_UNMATCHED,
+    If(
+        IsNull(COBRANCA)
+        OR Len(Trim(Text(COBRANCA))) <> 2
+        OR Len(KeepChar(Text(COBRANCA),'0123456789')) <> Len(Trim(Text(COBRANCA))),
+        1,0
+    ) AS _P4M_INVALID
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL RD QVD read;
+    EXIT SCRIPT;
+ENDIF
+
+P4M_RD_PROFILE:
+LOAD
+    Count(*) AS _P4M_ROWS,
+    Count(DISTINCT _P4M_RD_CODE) AS _P4M_DISTINCT,
+    Sum(_P4M_UNMATCHED) AS _P4M_UNMATCHED,
+    Sum(_P4M_INVALID) AS _P4M_INVALID,
+    Sum(If(_P4M_RD_CODE='24',1,0)) AS _P4M_CODE24_ROWS
+RESIDENT P4M_RD_COVER;
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL RD profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4MRDRows = Peek('_P4M_ROWS',0,'P4M_RD_PROFILE');
+LET vP4MRDDistinct = Peek('_P4M_DISTINCT',0,'P4M_RD_PROFILE');
+LET vP4MRDUnmatched = Peek('_P4M_UNMATCHED',0,'P4M_RD_PROFILE');
+LET vP4MRDInvalid = Peek('_P4M_INVALID',0,'P4M_RD_PROFILE');
+LET vP4MRD24 = Peek('_P4M_CODE24_ROWS',0,'P4M_RD_PROFILE');
+DROP TABLE P4M_RD_PROFILE;
+
+P4M_RD_FREQUENCY:
+LOAD
+    _P4M_RD_CODE AS _P4M_FREQ_CODE,
+    Count(*) AS _P4M_FREQ_ROWS
+RESIDENT P4M_RD_COVER
+GROUP BY _P4M_RD_CODE;
+
+P4M_RD_FREQUENCY_DIFF:
+LOAD
+    Count(*) AS _P4M_FREQUENCY_GROUPS,
+    Sum(If(ApplyMap('P4M_EXPECTED_RD_FREQUENCY', Text(_P4M_FREQ_CODE), -1) <> _P4M_FREQ_ROWS, 1, 0)) AS _P4M_FREQ_DIFFS
+RESIDENT P4M_RD_FREQUENCY;
+
+LET vP4MFreqGroups = Peek('_P4M_FREQUENCY_GROUPS',0,'P4M_RD_FREQUENCY_DIFF');
+LET vP4MFreqDiffs = Peek('_P4M_FREQ_DIFFS',0,'P4M_RD_FREQUENCY_DIFF');
+
+DROP TABLE P4M_RD_FREQUENCY_DIFF;
+DROP TABLE P4M_RD_FREQUENCY;
+DROP TABLE P4M_RD_COVER;
+DROP TABLE P4M_REF_SOURCE;
+
+TRACE [TRANSFORMACAO][IV-MOTIVO] COVER RD=$(vP4MRDRows) Distinct=$(vP4MRDDistinct) UNMATCHED=$(vP4MRDUnmatched) Invalid=$(vP4MRDInvalid) Code24=$(vP4MRD24);
+TRACE [TRANSFORMACAO][IV-MOTIVO] DISTRIBUTION Groups=$(vP4MFreqGroups) Mismatches=$(vP4MFreqDiffs) Absent32_67=True;
+
+IF $(vP4MRDRows) <> 566672 OR $(vP4MRDDistinct) <> 26 OR $(vP4MRDUnmatched) <> 0 OR $(vP4MRDInvalid) <> 0 OR $(vP4MRD24) <> 6 OR $(vP4MFreqGroups) <> 26 OR $(vP4MFreqDiffs) <> 0 OR ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL RD coverage/distribution;
+    EXIT SCRIPT;
+ENDIF
+
+// Nao materializar artefatos se os gates de fonte, SK ou RD falharem.
+STORE DIM_MOTIVO_SAIDA_PERMANENCIA INTO [QVD\DIM_MOTIVO_SAIDA_PERMANENCIA.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL dimension STORE;
+    EXIT SCRIPT;
+ENDIF
+
+P4M_DIM_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'TRANSFORMACAO_DIM_MOTIVO_SAIDA_PERMANENCIA' AS stage,
+    'PASS_PARTIAL_DIM_MOTIVO_SAIDA_ONLY' AS status,
+    $(vP4MSourceRows) AS reference_rows,
+    $(vP4MSourceFields) AS reference_fields,
+    $(vP4MSourceUnique) AS reference_distinct_codes,
+    $(vP4MSourceNormUnique) AS reference_distinct_normative,
+    $(vP4MSourceGroups) AS reference_distinct_groups,
+    $(vP4MCode24Map) AS reference_mapping_24,
+    $(vP4MDimRows) AS dimension_rows,
+    $(vP4MDimFields) AS dimension_fields,
+    $(vP4MUniqueSK) AS unique_surrogate_keys,
+    $(vP4MDimInvalid) AS invalid_dimension_rows,
+    $(vP4MRDRows) AS rd_rows,
+    $(vP4MRDDistinct) AS rd_distinct_codes,
+    $(vP4MRDUnmatched) AS rd_unmatched,
+    $(vP4MRDInvalid) AS rd_invalid,
+    $(vP4MRD24) AS rd_code_24_rows,
+    $(vP4MFreqGroups) AS rd_frequency_groups,
+    $(vP4MFreqDiffs) AS rd_frequency_mismatches,
+    'FULL_NORMATIVE_28_C1' AS domain_policy,
+    'COBRANCA_2_DIGIT_NORMATIVE_DOTTED' AS code_policy,
+    'NO_MONTHLY_CODE_VALIDITY_ESTABLISHED' AS historical_individual_validity,
+    'NOT_APPROVED' AS t29_historical,
+    'NOT_STARTED' AS facts_and_link_table
+AUTOGENERATE 1;
+
+STORE P4M_DIM_CHECKPOINT INTO [QVD\_CHECKPOINT_DIM_MOTIVO_SAIDA_PERMANENCIA.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MOTIVO] FAIL checkpoint STORE;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4M_DIM_CHECKPOINT;
+TRACE [TRANSFORMACAO][IV-MOTIVO] DIM_MOTIVO_SAIDA_PERMANENCIA_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN;
+TRACE [TRANSFORMACAO][IV-MOTIVO] PHASE_IV_PARTIAL_ONLY T29_HISTORICAL_NOT_APPROVED;

@@ -246,3 +246,9 @@ $(Must_Include=transf_dim_diagnostico.qvs);
 // Seis codigos 01–06, 03/04 sem RD neste recorte; preflight C1/RD PASS.
 // QVD e checkpoint exclusivos da dimensao, nao aprova fatos/Link Table.
 $(Must_Include=transf_dim_carater_atendimento.qvs);
+
+// FASE IV — setimo checkpoint: motivo de saida/permanencia SIH/RD.
+// Codigo fonte COBRANCA sem ponto; codigo normativo pontuado de C1.
+// Preflight 28 referencias/26 codigos RD/566672 registros/0 unmatched PASS.
+// QVD/checkpoint PARCIAIS, sem tabela fato, Link Table ou sucesso global.
+$(Must_Include=transf_dim_motivo_saida_permanencia.qvs);
