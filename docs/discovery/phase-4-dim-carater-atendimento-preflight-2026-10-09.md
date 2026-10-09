@@ -88,3 +88,30 @@ Os 36 CSVs SIH/RD físicos têm `CAR_INT` **textual com exatamente dois dígitos
 
 **Próximo gate:** criar include QlikView **somente da DIM_CARATER_ATENDIMENTO** após a quinta dimensão, exigir seis SK/códigos únicos, descrições não vazias, 0 invalidos, 566672/0 RD unmatched (contagens por código `01=80167`, `02=470512`, `03=0`, `04=0`, `05=1670`, `06=14323`), persistir **apenas** `TRANSFORMACAO/QVD/DIM_CARATER_ATENDIMENTO.qvd` e checkpoint parcial. Depois executar Reload real no QlikView 12 e auditor Python read-only. Nenhum fato, Link Table, painel ou sucesso global até concluir Fase IV.
 
+
+## Sexto checkpoint — implementação QlikView e auditor de QVD preparados (não executados)
+
+**FATO VERIFICADO NO REPOSITÓRIO — código versionado:**
+
+- `TRANSFORMACAO/transf_dim_carater_atendimento.qvs` é incluído por `TRANSFORMACAO/transf_main.qvs` **depois** de `transf_dim_diagnostico.qvs`, mantendo as cinco dimensões anteriores e exigindo valores do último gate Qlik de diagnóstico (`vP4DDimensionRows=14230`, `vP4DUniqueSK=14230`, `vP4DRDRows=566672`, `vP4DRDUnmatched=0`). **A inclusão ainda não foi executada localmente em Reload.**
+- O include lê **somente** `EXTRACAO/QVD/REF_CARATER_ATENDIMENTO.qvd`, referindo os campos físicos `CAR_INT`, `CARATER_DESCRICAO`, `CARATER_FONTE_OFICIAL` comprovados na extração C1. Exige **6 linhas/6 códigos únicos**, contendo exatamente um dos códigos `01`–`06` de cada; verifica descrição e URL de fonte não vazias. Não reescreve a capitalização dos rótulos do QVD.
+- `DIM_CARATER_ATENDIMENTO` **proposta** com **4 campos físicos**: `%SK_CARATER_ATENDIMENTO` = `Hash128('CAR', código normalizado)`, `COD_CARATER_ATENDIMENTO` (dois caracteres), `DESCRICAO_OFICIAL_CARATER_ATENDIMENTO` (do QVD, grafia literal C1), `CARATER_ATENDIMENTO_FONTE_OFICIAL`. O quarto é metadado de proveniência, sem modificar os três atributos acadêmicos aprovados. Os nomes são exclusivos e evitam associações não intencionais com outras dimensões.
+- Cobertura `CAR_INT` em `EXTRACAO/QVD/SRC_SIH_RD.qvd` usa a **mesma expressão de normalização C1** (`Right('00' & KeepChar(Text(CAR_INT),'0123456789'),2)` com `Text()` para o resultado), mais validação de formato de chave. Exige `RD=566672`, **4 códigos efetivos**, `0 unmatched`, `0 inválidos` e distribuição conferida com os 36 CSVs físicos: `01=80167`, `02=470512`, `03=0`, `04=0`, `05=1670`, `06=14323`.
+- Somente depois de todos os gates escreve `TRANSFORMACAO/QVD/DIM_CARATER_ATENDIMENTO.qvd` e `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_CARATER_ATENDIMENTO.csv`, este com `status=PASS_PARTIAL_DIM_CARATER_ATENDIMENTO_ONLY`. Sem alteração em `EXTRACAO`, nas outras dimensões, em fatos, Link Table, painel ou marcador global de sucesso.
+- Auditor físico read-only `tools/audit_dim_carater_atendimento_qvd.py` criado: reexecuta o preflight (CSV + manifesto SHA, labels C1, 36 RD e cabeçalhos QVD anteriores), verifica **cabeçalho XML** do novo QVD (6 linhas e 4 campos na ordem esperada), checkpoint parcial, contagens e distribuição por código, SHA-256 do QVD/checkpoint e frescor. **Não decodifica registros binários**; dependerá do log real Qlik para avaliar os joins e as SK geradas.
+
+**Gate de execução local — pendente:**
+
+1. Estando na branch `feat/phase-4-dim-carater-atendimento`, `git pull --ff-only` e conferir que `TRANSFORMACAO/transf_dim_carater_atendimento.qvs` foi atualizado.
+2. Abrir `TRANSFORMACAO/TRANSF.qvw` no **QlikView 12** e executar **Reload**. Exigir na mesma execução:
+   ```text
+   [TRANSFORMACAO][IV-CARATER] SOURCE Rows=6 Fields=4 Codes=6 Invalid=0
+   [TRANSFORMACAO][IV-CARATER] COVER RD=566672 Distinct=4 UNMATCHED=0 Invalid=0
+   [TRANSFORMACAO][IV-CARATER] COUNTS 01=80167 02=470512 03=0 04=0 05=1670 06=14323
+   [TRANSFORMACAO][IV-CARATER] DIM_CARATER_ATENDIMENTO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN
+   ```
+   E confirmar `Execução concluída.` sem FAIL real ou erros no log, com timestamp compatível com QVD/checkpoint produzidos.
+3. Só depois rodar `tools/audit_dim_carater_atendimento_qvd.py`, que deve retornar (se dados físicos baterem) `VERDICT=PASS_LOCAL_DIM_CARATER_QVD_HEADER_CHECKPOINT_RECONCILED`. **Esse PASS é esperado, NÃO observado ainda.**
+4. Enviar **o log QlikView e a saída do auditor**, sem assumir aprovação da transformação a partir do preflight somente. Nenhum PR/merge sem esses gates.
+
+**Estado:** `IV-CARATER_ATENDIMENTO=PHYSICAL_PREFLIGHT_PASS_QLIK_SCRIPT_AUDITOR_READY_NOT_RUN`, `MAIN_INTEGRATED_DIMENSIONS=5/8`, `T29_HISTORICAL=NOT_APPROVED`, `FACTS_AND_LINK_TABLE=NOT_STARTED`. As descrições 05/06 são preservadas literalmente conforme C1, e diferenças gráficas do documento acadêmico fechado continuam registradas.
