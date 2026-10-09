@@ -302,3 +302,83 @@ if ($LASTEXITCODE -ne 0) { throw "Falha na triagem histórica LT" }
 ```
 
 **Estado após esta rodada:** `C4.2c.4=OFFICIAL_SOURCE_CHANNELS_AND_NORMATIVE_CHANGE_IDENTIFIED / 2017_2019_FULL_DOMAIN_UNVERIFIED`; `C4.2c.4a=LOCAL_READ_ONLY_CODE_TRIAGE_NOT_RUN`; `A1_TEMPORAL_GRAIN_PREFLIGHT=PASS_LOCAL`; `A2_MODEL_CONTRACT_DECISION=PENDING`; `T29_HISTORICAL=NOT_APPROVED`; `main=7/8`. Sem aprovação da 8ª dimensão, sem mudança de Boundary 7, sem QVD nem dados baixados.
+
+## C4.2c.4a — triagem dos códigos da Portaria 298/2019 PASS local (09/10/2026)
+
+**FATO VERIFICADO — execução PowerShell entregue pelo responsável** após `git pull --ff-only` na branch `feat/phase-4-dim-tipo-leito-discovery`, rodando `tools/triage_cnes_lt_portaria_298_2019.py`:
+
+```text
+MODE=C4_T29_HISTORICAL_CHANGE_ACT_298_READ_ONLY_TRIAGE
+OUTPUT_FILES_WRITTEN=0
+LT_FILES=36
+LT_ROWS=35518
+LT_PAIRS=57
+ACT_298_TRANSITIONS=77_TO_94;74_TO_95
+ACT_298_EFFECTIVE_MONTH=NOT_ESTABLISHED
+PROFILED_298_CODES=74,77,94,95
+CODE_74_OBSERVED_ROWS=208
+CODE_74_OBSERVED_RAW_TYPES=[('3', 208)]
+CODE_77_OBSERVED_ROWS=158
+CODE_77_OBSERVED_RAW_TYPES=[('3', 158)]
+CODE_94_OBSERVED_ROWS=0
+CODE_94_OBSERVED_RAW_TYPES=[]
+CODE_94_OBSERVED_MONTHS=[]
+CODE_95_OBSERVED_ROWS=220
+CODE_95_OBSERVED_RAW_TYPES=[('3', 220)]
+CODE_66_OBSERVED_ROWS=1480
+CODE_66_OBSERVED_RAW_TYPES=[('3', 1480)]
+CODE_70_OBSERVED_ROWS=5
+CODE_70_OBSERVED_RAW_TYPES=[('7', 5)]
+PB_PAIR_3_66_ROWS=1480
+PB_PAIR_7_70_ROWS=5
+CODE_PRESENCE_IS_NOT_LEGAL_EFFECTIVE_VALIDITY=True
+NO_CODE_RECLASSIFICATION_PERFORMED=True
+NO_NORMATIVE_HISTORICAL_LABELS_ASSIGNED=True
+NO_QVD_OR_DIM_CREATED=True
+T29_HISTORICAL=NOT_APPROVED
+VERDICT=PASS_OBSERVED_LT_CODE_CHANGE_TRIAGE_ONLY
+```
+
+**As distribuições integrais por mês foram apresentadas no terminal e não foram persistidas como artefato adicional.** Síntese comprovada do perfil físico CNES/LT PB:
+
+| `CODLEITO` | `TP_LEITO` fonte | Linhas LT observadas | Competências observadas | Interpretação estrita |
+|---|---:|---:|---|---|
+| `74` | `"3 "` | 208 | **36/36**, `201701–201912` | Há registros do código depois da publicação da Portaria 298/2019 |
+| `77` | `"3 "` | 158 | **36/36**, `201701–201912` | Há registros do código depois da publicação da Portaria 298/2019 |
+| `94` | — | 0 | **0/36** | Código não observado nos LT da PB; não se conclui inexistência nacional ou normativa |
+| `95` | `"3 "` | 220 | **36/36**, `201701–201912` | **Código 95 observado já em `201701`, antes da Portaria 298/2019 e mesmo antes da Portaria 895/2017** |
+| `66` | `"3 "` | 1.480 | **36/36** | Manter par de origem `3/66`; indicador CNESNet `2/66` continua divergente |
+| `70` | `"7 "` | 5 | `201801–201805` | Presença PB pontual, não prova introdução/retirada normativa nacional |
+
+**Nota metodológica:** as contagens são de **linhas administrativas da base LT**, **não valores de `QT_EXIST`/`QT_SUS`, nem número de leitos físicos**. Presença/ausência de `CODLEITO` não certifica vigência, elegibilidade, qualidade normativa da classificação, efetivação de migração nem total da capacidade instalada.
+
+### Contraprova à interpretação simplificada "os códigos novos nasceram em 2019"
+
+O `CODLEITO=95` já aparece em **cada uma das 36 competências físicas**, incluindo `201701`. Portanto, **a Portaria 298/2019 não pode ser interpretada como evidência suficiente de que o código numérico 95 nasceu em 2019**, tampouco de que todos os estabelecimentos tiveram seus registros `74` convertidos em `95` naquele ano. Os códigos `74` e `77` também continuam presentes em `201912`. Não inferir que isso prove descumprimento, atraso operacional específico ou erro nos LT: pode envolver regras de transição e/ou de classificação cujo calendário e aplicabilidade ainda não estão fechados.
+
+### Novos atos oficiais confrontados após o PASS do perfil
+
+1. **[Portaria GM/MS nº 895/2017, de 31/03/2017](https://bvsms.saude.gov.br/bvs/saudelegis/gm/2017/prt0895_26_04_2017.html)**, com matriz de consolidação [GM/MS nº 3/2017](https://bvsms.saude.gov.br/bvs/saudelegis/gm/2017/MatrizesConsolidacao/comum/237884.html): **já em 2017** estabelece a reorganização de habilitações UTI tipo I em UCI Adulto/Pediátrica e prevê exclusão/substituição dos tipos de leitos correspondentes no SCNES, atribuindo a operacionalização ao DATASUS. **CUIDADO:** códigos de *habilitação* `26.96`/`26.98` não são intercambiáveis com `CODLEITO=74`/`77`; o ato de 2017 não comprova, por si só, criação/codificação operacional de `94`/`95` ou sua tabela histórica.
+2. **[Portaria SAS/MS nº 298/2019, de 01/03/2019](https://bvs.saude.gov.br/bvs/saudelegis/sas/2019/prt0298_06_03_2019.html)**: art. 2º dispõe explicitamente da migração `77 → 94` e `74 → 95`; art. 3º e 4º modificam regras de contabilização/habilitações; art. 8º condiciona os efeitos à disponibilização das versões dos sistemas do DATASUS. **Nenhuma competência mensal efetiva foi provada apenas pelo texto.**
+3. **[Portaria SAES/MS nº 3.511/2025, de 24/11/2025](https://bvs.saude.gov.br/bvs/saudelegis/Saes/2025/prt3511_05_12_2025.html)** — **fora do período estudado**, consultada somente como alerta contra inferência temporal falsa: art. 2º §1º trata expressamente da exclusão de `74` e `77` considerando prazo de reclassificação da Portaria SAES/MS `1.202/2023`, e art. 9º revoga formalmente a Portaria 298/2019. A mudança normativa **não deve ser interpretada como exclusão operacional universal já concluída em 2019**. **Não aplicar uma norma de 2025 retroativamente a dados 2017–2019**.
+
+**Conclusão causal provisória, não decisão normativa definitiva:** a regra de reclassificação começou a ser discutida/regulamentada antes da Portaria 298/2019 e passou por diferentes atos de operacionalização e vigência. A ocorrência `95` antes de 2019, a persistência `74`/`77` depois e a exclusão tratada novamente em 2025 **demonstram que uma simples fronteira `201903` não é defensável**. Não se sabe quais versões efetivamente introduziram, ativaram ou alteraram cada par e qual documento rege a descrição em cada uma das 36 competências.
+
+**DECISÃO SOBRE GATE C4.2c.4a:** `PASS_OBSERVED_LT_CODE_CHANGE_TRIAGE_ONLY`, sem alteração de `A2`/Boundary 7 e **`T29_HISTORICAL=NOT_APPROVED`**. A triagem valida apenas os códigos efetivamente armazenados nos LT da PB.
+
+### Próximo gate C4.2c.4b — inventário de VERSIONAMENTO SCNES, sem aquisição em massa
+
+**Prioridade mais alta:** identificar **um artefato oficial histórico verificável** contendo `NFCES001/TB_LEITO` ou referência equivalente com `TP_LEITO,CODLEITO,descrição`, mais metadados de **versão/data de disponibilização**. Verificar separadamente se o formato e o pacote guardam validade de cada par e se houve mudanças aplicáveis à PB.
+
+**Amostra inicial de descoberta (metadados e links reais, sem descarregar bases):**
+
+- marco **201701**: anterior à Portaria 895/2017; verificar existência de versão SCNES e caminho alternativo porque download de base pública só foi documentado a partir 201706;
+- marco **201703–201706**: Portaria 895/2017 e primeiras bases públicas por competência; identificar versão do **sistema**, não confundi-la com mês de dados;
+- marco **201903**: Portaria 298/2019, mas art. 8º impede usar março como data efetiva;
+- marcos **201909** e **201912**: catálogo Nota Técnica 32/2019 e encerramento do recorte, com códigos `74`, `77`, `95` ainda observados.
+
+**Para cada evidência encontrada registrar:** URL oficial real, data, versão literal do aplicativo/RTS ou do arquivo, extensão/formato, SHA se bytes obtidos, indicação efetiva do conteúdo `TB_LEITO` (sem adivinhar pelo nome), se contém pares tipo+código+descrição e competência/eficácia normativa, e **limitação de comparabilidade entre versões**. **Não baixar instaladores históricos extensos sem autorização adicional nem inferir tabela `NFCES001` dentro do pacote apenas pela descrição da página.**
+
+**Critério de encerramento desta Discovery restrita:** (a) descobrir versão(s) normativas suficientes para modelar descrições com intervalos comprováveis; **ou** (b) registrar que as rotas documentadas não forneceram evidência histórica no escopo, apresentando ao responsável a alternativa A incompleta ou a postergação da oitava dimensão. Não exigir busca indefinida para concluir que **não há prova encontrada**, o que não significa afirmar que as referências históricas não existem.
+
+**Estado:** `C4.2c.4a=PASS_LOCAL_OBSERVED_LT_CODES`, `C4.2c.4b=SCNES_VERSIONED_DOMAIN_INVENTORY_PENDING`, `T29_HISTORICAL=NOT_APPROVED`, `A2=CONTRACT_DECISION_PENDING`, `main=7/8`.
