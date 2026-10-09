@@ -226,30 +226,29 @@ IF $(vP4MMunicipalityRows) <> 223 + $(vP4MExternalCodes) OR $(vP4MUnique6) <> $(
     EXIT SCRIPT;
 ENDIF
 
-MAP_P4M_DIM_CODE:
-MAPPING LOAD COD_DATASUS_6, COD_DATASUS_6
-RESIDENT DIM_MUNICIPIO;
+// Checar dominio no campo COD_DATASUS_6 ja carregado e unico.
+// Exists retorna verdadeiro apenas para valor previamente carregado.
 
 // A associacao dos fatos fica para Fase V, mas cobertura de dominio
 // pode e deve ser validada antes de gravar a dimensao.
 P4M_RD_DOMAIN:
 LOAD
     Count(*) AS _P4M_RD_ROWS,
-    Sum(If(ApplyMap('MAP_P4M_DIM_CODE', Trim(Text(MUNIC_RES)), '#MISSING#') = '#MISSING#', 1, 0)) AS _P4M_RES_MISSING,
-    Sum(If(ApplyMap('MAP_P4M_DIM_CODE', Trim(Text(MUNIC_MOV)), '#MISSING#') = '#MISSING#', 1, 0)) AS _P4M_MOV_MISSING,
+    Sum(If(Not Exists(COD_DATASUS_6, Trim(Text(MUNIC_RES))), 1, 0)) AS _P4M_RES_MISSING,
+    Sum(If(Not Exists(COD_DATASUS_6, Trim(Text(MUNIC_MOV))), 1, 0)) AS _P4M_MOV_MISSING,
     Sum(If(Left(Trim(Text(MUNIC_RES)), 2) <> '25', 1, 0)) AS _P4M_RES_EXTERNAL
 FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
 
 P4M_ST_DOMAIN:
 LOAD
     Count(*) AS _P4M_ST_ROWS,
-    Sum(If(ApplyMap('MAP_P4M_DIM_CODE', Trim(Text(CODUFMUN)), '#MISSING#') = '#MISSING#', 1, 0)) AS _P4M_ST_MISSING
+    Sum(If(Not Exists(COD_DATASUS_6, Trim(Text(CODUFMUN))), 1, 0)) AS _P4M_ST_MISSING
 FROM [..\EXTRACAO\QVD\SRC_CNES_ST.qvd] (qvd);
 
 P4M_LT_DOMAIN:
 LOAD
     Count(*) AS _P4M_LT_ROWS,
-    Sum(If(ApplyMap('MAP_P4M_DIM_CODE', Trim(Text(CODUFMUN)), '#MISSING#') = '#MISSING#', 1, 0)) AS _P4M_LT_MISSING
+    Sum(If(Not Exists(COD_DATASUS_6, Trim(Text(CODUFMUN))), 1, 0)) AS _P4M_LT_MISSING
 FROM [..\EXTRACAO\QVD\SRC_CNES_LT.qvd] (qvd);
 
 IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
