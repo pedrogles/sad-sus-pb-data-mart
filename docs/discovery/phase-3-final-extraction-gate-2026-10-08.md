@@ -90,3 +90,27 @@ VERDICT=PASS_LOCAL_QV_AND_SHA_RECONCILIATION
 Se todos os gates físicos passarem, revisar o PR de extração e registrar `PHASE_III=PASS_EXTRACTION_RECONCILED`, **não** `T29_HISTORICAL=PASS`. A limitação histórica dos rótulos CNES, a lacuna de nomes e a referência municipal derivada seguem documentadas; as dimensões e fatos pertencem a etapas posteriores, conforme Boundary 7.
 
 A primeira entrega acadêmica (Capítulos 1 e 2, impressa em 13/10/2026) permanece **FECHADA — PRONTA PARA IMPRESSÃO** e não é alterada por este checkpoint.
+
+
+## 5. Primeira tentativa real — FAIL_CLOSED (09/10/2026 UTC)
+
+**FATO VERIFICADO — saída PowerShell fornecida pelo usuário:**
+
+- `git fetch origin`, validação de árvore limpa e `git switch --track origin/feat/phase-3-final-extraction-gate` concluídos;
+- comando executado: `.\\.venv\\Scripts\\python.exe tools\\run_phase3_extraction.py --qlikview-exe "$env:ProgramFiles\\QlikView\\Qv.exe"`;
+- saída:
+
+```text
+RELOAD_STARTED_UTC=2026-10-09T00:18:48.368773+00:00
+OLD_SUCCESS_MARKER=INVALIDATED
+QLIK_RELOAD_STAGE=EXTRACAO_ONLY
+VERDICT=FAIL_CLOSED ERROR=QlikView retornou codigo de erro 3
+PHASE_III=IN_PROGRESS
+```
+
+- o PowerShell interrompeu a sequência no teste de `$LASTEXITCODE`. Não houve checkpoint `_SUCCESS_EXTRACAO.csv` enviado nem auditoria SHA final.
+- código `3` acima corresponde ao **exit code do processo `Qv.exe` retornado a `subprocess.run()`**, não ao número do erro interno `ScriptError` do script Qlik; o motivo interno não é inferível apenas por esse valor.
+
+**STATUS:** `III_FINAL=FAIL_CLOSED_UNDIAGNOSED`, `PHASE_III=IN_PROGRESS`, `T29_HISTORICAL=NOT_APPROVED`. O executor remove marcador final/manifesto no erro, preserva QVDs e checkpoints parciais para diagnóstico; a execução fracassada pode ter regravado QVDs antes de abortar, portanto a data física precisa ser verificada ao revisar evidências. PR #73 deve permanecer em **Draft/sem merge** até identificar a causa, corrigir apenas o que for comprovado e testar novamente.
+
+**Próxima prova requerida — READ-ONLY:** procurar log mais recente de `EXT.qvw` ou `qv.log` no diretório `EXTRACAO`, conferir `LastWriteTime` contra 08/10/2026 ~21:18 horário de João Pessoa e inspecionar final + primeiro erro. Se logs não existirem, habilitar `Configurações > Propriedades do Documento > Geral > Gerar Arquivo Log` no QlikView 12 e executar novamente **somente após** habilitar registro; não alterar scripts/dados por hipótese. Documentação Qlik: <https://help.qlik.com/pt-BR/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Document_Properties_General.htm>.
