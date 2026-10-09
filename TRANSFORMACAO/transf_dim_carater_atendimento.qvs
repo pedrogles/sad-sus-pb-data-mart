@@ -1,0 +1,236 @@
+// FASE IV — sexto checkpoint ISOLADO: DIM_CARATER_ATENDIMENTO (SIH/SIA).
+// Dominio normativo completo 01..06 validado na Fase III-C1 e preflight Python.
+// 03/04 sem ocorrencia SIH/RD neste recorte, mas devem constar na dimensao.
+// Descricoes literais da referencia C1: nao reescrever maiusculas/minusculas.
+// Nenhuma tabela fato, Link Table, painel ou marcador global de transformacao.
+LET vP4CErrorsBefore = ScriptErrorCount;
+TRACE [TRANSFORMACAO][IV-CARATER] START;
+
+// Nao regredir o quinto checkpoint ja aprovado.
+IF $(vP4DDimensionRows) <> 14230 OR $(vP4DUniqueSK) <> 14230 OR $(vP4DRDRows) <> 566672 OR $(vP4DRDUnmatched) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL previous DIM_DIAGNOSTICO checkpoint;
+    EXIT SCRIPT;
+ENDIF
+
+P4C_REF_SOURCE:
+NOCONCATENATE LOAD
+    Text(Right('00' & KeepChar(Text(CAR_INT), '0123456789'), 2)) AS _P4C_CODE,
+    Text(CAR_INT) AS _P4C_ORIGINAL_CODE,
+    Text(CARATER_DESCRICAO) AS _P4C_DESCRIPTION,
+    Text(CARATER_FONTE_OFICIAL) AS _P4C_OFFICIAL_SOURCE
+FROM [..\EXTRACAO\QVD\REF_CARATER_ATENDIMENTO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4CErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL REF_CARATER_ATENDIMENTO QVD read;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4CSourceRows = NoOfRows('P4C_REF_SOURCE');
+LET vP4CSourceFields = NoOfFields('P4C_REF_SOURCE');
+
+P4C_REF_PROFILE:
+LOAD
+    Count(DISTINCT _P4C_CODE) AS _P4C_DISTINCT_CODES,
+    Sum(If(
+        IsNull(_P4C_CODE) OR Len(_P4C_CODE) <> 2
+        OR Match(_P4C_CODE, '01', '02', '03', '04', '05', '06') = 0
+        OR IsNull(_P4C_ORIGINAL_CODE)
+        OR Len(KeepChar(_P4C_ORIGINAL_CODE, '0123456789')) = 0
+        OR Len(KeepChar(_P4C_ORIGINAL_CODE, '0123456789')) > 2
+        OR Len(KeepChar(_P4C_ORIGINAL_CODE, '0123456789')) <> Len(Trim(_P4C_ORIGINAL_CODE))
+        OR IsNull(_P4C_DESCRIPTION) OR Len(Trim(_P4C_DESCRIPTION)) = 0
+        OR IsNull(_P4C_OFFICIAL_SOURCE) OR Len(Trim(_P4C_OFFICIAL_SOURCE)) = 0,
+        1, 0
+    )) AS _P4C_INVALID,
+    Sum(If(_P4C_CODE='01',1,0)) AS _P4C_01,
+    Sum(If(_P4C_CODE='02',1,0)) AS _P4C_02,
+    Sum(If(_P4C_CODE='03',1,0)) AS _P4C_03,
+    Sum(If(_P4C_CODE='04',1,0)) AS _P4C_04,
+    Sum(If(_P4C_CODE='05',1,0)) AS _P4C_05,
+    Sum(If(_P4C_CODE='06',1,0)) AS _P4C_06
+RESIDENT P4C_REF_SOURCE;
+
+IF ScriptErrorCount > $(vP4CErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL reference profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4CSourceUnique = Peek('_P4C_DISTINCT_CODES',0,'P4C_REF_PROFILE');
+LET vP4CSourceInvalid = Peek('_P4C_INVALID',0,'P4C_REF_PROFILE');
+LET vP4CRef01 = Peek('_P4C_01',0,'P4C_REF_PROFILE');
+LET vP4CRef02 = Peek('_P4C_02',0,'P4C_REF_PROFILE');
+LET vP4CRef03 = Peek('_P4C_03',0,'P4C_REF_PROFILE');
+LET vP4CRef04 = Peek('_P4C_04',0,'P4C_REF_PROFILE');
+LET vP4CRef05 = Peek('_P4C_05',0,'P4C_REF_PROFILE');
+LET vP4CRef06 = Peek('_P4C_06',0,'P4C_REF_PROFILE');
+DROP TABLE P4C_REF_PROFILE;
+
+TRACE [TRANSFORMACAO][IV-CARATER] SOURCE Rows=$(vP4CSourceRows) Fields=$(vP4CSourceFields) Codes=$(vP4CSourceUnique) Invalid=$(vP4CSourceInvalid);
+
+IF $(vP4CSourceRows) <> 6 OR $(vP4CSourceFields) <> 4 OR $(vP4CSourceUnique) <> 6 OR $(vP4CSourceInvalid) <> 0 OR $(vP4CRef01) <> 1 OR $(vP4CRef02) <> 1 OR $(vP4CRef03) <> 1 OR $(vP4CRef04) <> 1 OR $(vP4CRef05) <> 1 OR $(vP4CRef06) <> 1 THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL official six-code domain;
+    EXIT SCRIPT;
+ENDIF
+
+// Nomes exclusivos de atributos: sem ligacoes associativas artificiais.
+// SK definida no Boundary 7: Hash128('CAR', CAR_INT normalizado).
+DIM_CARATER_ATENDIMENTO:
+NOCONCATENATE LOAD
+    Hash128('CAR', _P4C_CODE) AS [%SK_CARATER_ATENDIMENTO],
+    Text(_P4C_CODE) AS COD_CARATER_ATENDIMENTO,
+    Text(_P4C_DESCRIPTION) AS DESCRICAO_OFICIAL_CARATER_ATENDIMENTO,
+    Text(_P4C_OFFICIAL_SOURCE) AS CARATER_ATENDIMENTO_FONTE_OFICIAL
+RESIDENT P4C_REF_SOURCE;
+
+IF ScriptErrorCount > $(vP4CErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL dimension load;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4CDimRows = NoOfRows('DIM_CARATER_ATENDIMENTO');
+LET vP4CDimFields = NoOfFields('DIM_CARATER_ATENDIMENTO');
+
+P4C_DIM_PROFILE:
+LOAD
+    Count(DISTINCT [%SK_CARATER_ATENDIMENTO]) AS _P4C_UNIQUE_SK,
+    Count(DISTINCT COD_CARATER_ATENDIMENTO) AS _P4C_UNIQUE_CODES,
+    Sum(If(
+        IsNull([%SK_CARATER_ATENDIMENTO])
+        OR Len(Trim(Text([%SK_CARATER_ATENDIMENTO]))) = 0
+        OR IsNull(COD_CARATER_ATENDIMENTO)
+        OR Len(COD_CARATER_ATENDIMENTO) <> 2
+        OR Match(COD_CARATER_ATENDIMENTO,'01','02','03','04','05','06') = 0
+        OR IsNull(DESCRICAO_OFICIAL_CARATER_ATENDIMENTO)
+        OR Len(Trim(DESCRICAO_OFICIAL_CARATER_ATENDIMENTO)) = 0
+        OR IsNull(CARATER_ATENDIMENTO_FONTE_OFICIAL)
+        OR Len(Trim(CARATER_ATENDIMENTO_FONTE_OFICIAL)) = 0,
+        1, 0
+    )) AS _P4C_BAD
+RESIDENT DIM_CARATER_ATENDIMENTO;
+
+IF ScriptErrorCount > $(vP4CErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL dimension profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4CUniqueSK = Peek('_P4C_UNIQUE_SK',0,'P4C_DIM_PROFILE');
+LET vP4CDimUniqueCodes = Peek('_P4C_UNIQUE_CODES',0,'P4C_DIM_PROFILE');
+LET vP4CDimInvalid = Peek('_P4C_BAD',0,'P4C_DIM_PROFILE');
+DROP TABLE P4C_DIM_PROFILE;
+
+IF $(vP4CDimRows) <> 6 OR $(vP4CDimFields) <> 4 OR $(vP4CUniqueSK) <> 6 OR $(vP4CDimUniqueCodes) <> 6 OR $(vP4CDimInvalid) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL dimension SK/schema integrity;
+    EXIT SCRIPT;
+ENDIF
+
+// Cobertura RD: mesma normalizacao ja aprovada no ext_main.qvs, C1.
+// CSVs de origem foram validados linha a linha, com 4 codigos efetivos.
+P4C_REF_MAP:
+MAPPING LOAD _P4C_CODE, 1 RESIDENT P4C_REF_SOURCE;
+
+P4C_RD_COVER:
+NOCONCATENATE LOAD
+    Text(Right('00' & KeepChar(Text(CAR_INT),'0123456789'),2)) AS _P4C_RD_KEY,
+    If(ApplyMap('P4C_REF_MAP',Text(Right('00' & KeepChar(Text(CAR_INT),'0123456789'),2)),0)=1,0,1) AS _P4C_UNMATCHED,
+    If(
+        IsNull(CAR_INT)
+        OR Len(Trim(Text(CAR_INT))) < 1
+        OR Len(Trim(Text(CAR_INT))) > 2
+        OR Len(KeepChar(Text(CAR_INT),'0123456789')) <> Len(Trim(Text(CAR_INT))),
+        1,0
+    ) AS _P4C_INVALID
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4CErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL RD QVD read;
+    EXIT SCRIPT;
+ENDIF
+
+P4C_RD_PROFILE:
+LOAD
+    Count(*) AS _P4C_RD_ROWS,
+    Count(DISTINCT _P4C_RD_KEY) AS _P4C_RD_DISTINCT,
+    Sum(_P4C_UNMATCHED) AS _P4C_RD_UNMATCHED,
+    Sum(_P4C_INVALID) AS _P4C_RD_INVALID,
+    Sum(If(_P4C_RD_KEY='01',1,0)) AS _P4C_RD_01,
+    Sum(If(_P4C_RD_KEY='02',1,0)) AS _P4C_RD_02,
+    Sum(If(_P4C_RD_KEY='03',1,0)) AS _P4C_RD_03,
+    Sum(If(_P4C_RD_KEY='04',1,0)) AS _P4C_RD_04,
+    Sum(If(_P4C_RD_KEY='05',1,0)) AS _P4C_RD_05,
+    Sum(If(_P4C_RD_KEY='06',1,0)) AS _P4C_RD_06
+RESIDENT P4C_RD_COVER;
+
+IF ScriptErrorCount > $(vP4CErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL RD coverage profile;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4CRDRows = Peek('_P4C_RD_ROWS',0,'P4C_RD_PROFILE');
+LET vP4CRDDistinct = Peek('_P4C_RD_DISTINCT',0,'P4C_RD_PROFILE');
+LET vP4CRDUnmatched = Peek('_P4C_RD_UNMATCHED',0,'P4C_RD_PROFILE');
+LET vP4CRDInvalid = Peek('_P4C_RD_INVALID',0,'P4C_RD_PROFILE');
+LET vP4CRD01 = Peek('_P4C_RD_01',0,'P4C_RD_PROFILE');
+LET vP4CRD02 = Peek('_P4C_RD_02',0,'P4C_RD_PROFILE');
+LET vP4CRD03 = Peek('_P4C_RD_03',0,'P4C_RD_PROFILE');
+LET vP4CRD04 = Peek('_P4C_RD_04',0,'P4C_RD_PROFILE');
+LET vP4CRD05 = Peek('_P4C_RD_05',0,'P4C_RD_PROFILE');
+LET vP4CRD06 = Peek('_P4C_RD_06',0,'P4C_RD_PROFILE');
+DROP TABLE P4C_RD_PROFILE;
+DROP TABLE P4C_RD_COVER;
+DROP TABLE P4C_REF_SOURCE;
+
+TRACE [TRANSFORMACAO][IV-CARATER] COVER RD=$(vP4CRDRows) Distinct=$(vP4CRDDistinct) UNMATCHED=$(vP4CRDUnmatched) Invalid=$(vP4CRDInvalid);
+TRACE [TRANSFORMACAO][IV-CARATER] COUNTS 01=$(vP4CRD01) 02=$(vP4CRD02) 03=$(vP4CRD03) 04=$(vP4CRD04) 05=$(vP4CRD05) 06=$(vP4CRD06);
+
+IF $(vP4CRDRows) <> 566672 OR $(vP4CRDDistinct) <> 4 OR $(vP4CRDUnmatched) <> 0 OR $(vP4CRDInvalid) <> 0 OR $(vP4CRD01) <> 80167 OR $(vP4CRD02) <> 470512 OR $(vP4CRD03) <> 0 OR $(vP4CRD04) <> 0 OR $(vP4CRD05) <> 1670 OR $(vP4CRD06) <> 14323 OR ScriptErrorCount > $(vP4CErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL RD coverage/distribution;
+    EXIT SCRIPT;
+ENDIF
+
+// Apenas depois dos gates, gravar QVD de DIM e checkpoint PARCIAIS.
+STORE DIM_CARATER_ATENDIMENTO INTO [QVD\DIM_CARATER_ATENDIMENTO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4CErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL dimension STORE;
+    EXIT SCRIPT;
+ENDIF
+
+P4C_DIM_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'TRANSFORMACAO_DIM_CARATER_ATENDIMENTO' AS stage,
+    'PASS_PARTIAL_DIM_CARATER_ATENDIMENTO_ONLY' AS status,
+    $(vP4CSourceRows) AS reference_rows,
+    $(vP4CSourceFields) AS reference_fields,
+    $(vP4CDimRows) AS dimension_rows,
+    $(vP4CDimFields) AS dimension_fields,
+    $(vP4CSourceUnique) AS reference_distinct_codes,
+    $(vP4CUniqueSK) AS unique_surrogate_keys,
+    $(vP4CDimInvalid) AS invalid_dimension_rows,
+    $(vP4CRDRows) AS rd_rows,
+    $(vP4CRDDistinct) AS rd_distinct_codes,
+    $(vP4CRDUnmatched) AS rd_unmatched,
+    $(vP4CRDInvalid) AS rd_invalid,
+    $(vP4CRD01) AS rd_01,
+    $(vP4CRD02) AS rd_02,
+    $(vP4CRD03) AS rd_03,
+    $(vP4CRD04) AS rd_04,
+    $(vP4CRD05) AS rd_05,
+    $(vP4CRD06) AS rd_06,
+    'COMPLETE_01_TO_06' AS domain_policy,
+    'EXACT_SOURCE_C1_LABELS' AS label_policy,
+    'NOT_APPROVED' AS t29_historical,
+    'NOT_STARTED' AS facts_and_link_table
+AUTOGENERATE 1;
+
+STORE P4C_DIM_CHECKPOINT INTO [QVD\_CHECKPOINT_DIM_CARATER_ATENDIMENTO.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vP4CErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-CARATER] FAIL checkpoint STORE;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4C_DIM_CHECKPOINT;
+TRACE [TRANSFORMACAO][IV-CARATER] DIM_CARATER_ATENDIMENTO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN;
+TRACE [TRANSFORMACAO][IV-CARATER] PHASE_IV_PARTIAL_ONLY T29_HISTORICAL_NOT_APPROVED;
