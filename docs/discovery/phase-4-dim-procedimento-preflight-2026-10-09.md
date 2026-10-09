@@ -239,3 +239,27 @@ git pull --ff-only
 
 **Próximo gate:** reavaliar o script já existente de materialização (`tools/materialize_sigtap_hierarchy_history.py`) e usar a variante com consentimento explícito de escrita SOMENTE para preservar os 216 membros originais em `BASE/REFERENCIAS/SIGTAP/PROCEDIMENTO/YYYYMM` e manifesto local, sem sobrescrever divergências. Após confirmação física dos hashes dos 216 membros persistidos, auditar o encoding dos nomes descritivos e preparar atualização controlada do staging de referência SIGTAP/QlikView, mantendo `T27=PASS_ANTERIOR`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IV=IN_PROGRESS`. Não gerar `DIM_PROCEDIMENTO.qvd` antes da prova dos textos.
 
+
+## Decisão operacional após o PASS 36× — materialização controlada autorizável
+
+**Revisão estática do script após receber o PASS de 36 competências:**
+
+- A opção de gravação foi tornada **explicitamente opt-in**: `tools/materialize_sigtap_hierarchy_history.py` agora exige um dos parâmetros mutuamente exclusivos `--validate-only` ou **`--materialize`**. Sem parâmetro a execução falha sem baixar nem gravar.
+- Na opção `--materialize`, **todas as 36 competências/165.203 procedimentos/216 arquivos** são baixados em ZIPs temporários e validados contra C3.3b.1, inclusive CRC/sha/tamanho, layouts e relacionamentos, **antes de qualquer write persistente**. O script também pré-verifica cada destino local contra o hash esperado, recusando sobrescrever conteúdo divergente, e verifica o manifesto existente antes de qualquer escrita.
+- Só grava o original de 3 tabelas + 3 layouts por mês em `BASE/REFERENCIAS/SIGTAP/PROCEDIMENTO/YYYYMM` e o manifesto `BASE/REFERENCIAS/sigtap_hierarchy_history_manifest.json` (local/ignorado pelo Git). Não altera `tb_procedimento`, `EXTRACAO/QVD`, `TRANSFORMACAO/QVD`, fatos, Link Table ou modelos acadêmicos.
+- Criado `tools/audit_sigtap_hierarchy_history.py`, auditor **independente e somente leitura**: verifica schema do manifesto, 36 meses, 165203 procedimento×mês, 216 nomes/paths únicos, tamanho e **SHA-256 de cada arquivo em disco**, e retorna `VERDICT=PASS_LOCAL_216_HIERARCHY_FILES_SHA_RECONCILED` apenas com todos os gates.
+- **Limite conhecido:** erro de sistema de arquivos durante a escrita pode deixar subconjunto dos 216 membros sem manifesto; nesse caso registrar os artefatos presentes e reexecutar após correção, sem apagar ou sobrescrever fontes divergentes. Não declarar PASS sem manifesto e audit read-only posterior.
+- Auditoria descritiva de `cp1252`, vigência T29 e transformação QlikView seguem **pendentes**. O pacote histórico de `201808` com sufixo `v2102261143` foi preservado como evidência de versão retrospectiva, não prova de vigência normativa publicada em 2018.
+
+### Próximo comando local — materialização autorizada após validação 36×
+
+Na branch `feat/phase-4-dim-procedimento`, com working tree limpo, aplicar `git pull --ff-only` e depois:
+
+```powershell
+.\.venv\Scripts\python.exe .\tools\materialize_sigtap_hierarchy_history.py --materialize
+if ($LASTEXITCODE -ne 0) { throw "Materializacao hierarquica falhou" }
+.\.venv\Scripts\python.exe .\tools\audit_sigtap_hierarchy_history.py
+if ($LASTEXITCODE -ne 0) { throw "Auditoria SHA hierarquica falhou" }
+```
+
+**Status até receber essa saída:** `IV-PROCEDIMENTO=FULL_36_RELATIONAL_VALIDATION_ONLY_PASS_MATERIALIZATION_PENDING`; `DIM_PROCEDIMENTO_QVD=NOT_STARTED`; `T27=PASS_ANTERIOR`; `T29=NOT_APPROVED`; `PHASE_IV=IN_PROGRESS`.
