@@ -526,3 +526,14 @@ Após receber o log real, revisar o conjunto do PR e somente então classificar 
 **Veredito do checkpoint:** `IV-PROCEDIMENTO=PASS_LOCAL_QLIK_RELOAD_AND_QVD_CHECKPOINT_RECONCILED`; quarto checkpoint **validado localmente**. Não declarar `PHASE_IV=PASS_FINAL` nem quarta dimensão **integrada na main** antes do merge do PR. A `main` contém **3/8 dimensões integradas**, com esta quarta pronta para revisão. Preservar fonte SIGTAP de 201808 como versão retrospectiva `v2102261143`, charset `cp1252` operacional indistinguível de ISO-8859-1 nos bytes inspecionados, `DESCRICAO_OFICIAL=NULL` sem campo detalhado oficial validado, e `T29_HISTORICAL=NOT_APPROVED`.
 
 **Próximo gate:** revisar alterações entre `main` e `feat/phase-4-dim-procedimento`, abrir PR de revisão sem auto-merge e decidir sua integração somente com aprovação explícita. Após merge, restarão quatro dimensões ainda não integradas: `DIM_DIAGNOSTICO`, `DIM_CARATER_ATENDIMENTO`, `DIM_MOTIVO_SAIDA_PERMANENCIA` e `DIM_TIPO_LEITO`.
+
+## Revisão de integração — PR #77 em Ready for review (09/10/2026)
+
+**FATO VERIFICADO (GitHub e logs locais previamente fornecidos):**
+
+- PR **[#77](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/77)**, `feat/phase-4-dim-procedimento` → `main`, foi promovido de `Draft` para **Ready for review**, está **OPEN / NOT MERGED**.
+- Comparação inicial: branch `behind_by=0`, 14 arquivos modificados/adicionados, exclusivamente `AGENTS.md`, documentação, `tools/*.py` e `TRANSFORMACAO/transf_main.qvs`/`transf_dim_procedimento.qvs`. **Nenhuma** implementação de fatos/Link Table/PAINEL, nem alteração em `EXTRACAO/ext_main.qvs` ou QVDs versionados.
+- Revisão do código: `Hash128('PROC', procedimento, competência)`, unicidade de 165203 SK, 36 competências, origem SIGTAP enriquecida 10 campos e T27 RD 566672/0 unmatched têm controles fail-closed no include; o Qlik emitiu traces de PASS e encerrou normalmente no log de 09/10/2026. Checkpoint é **parcial** e fonte 201808/charset/T29 permanecem qualificadas. Teste local do QlikView e auditoria Python foram apresentados; **nenhuma execução GitHub Actions/commit status automatizada nem aprovação formal de outro reviewer foi registrada na consulta**.
+- Limite da revisão: o log do QlikView foi fornecido como **excertos do log real**, e o auditor Python não decodifica o corpo binário QVD independentemente. Não descrever esse material como suíte CI ou auditoria binária integral.
+
+**DECISÃO PENDENTE:** aprovar explicitamente o **squash merge do PR #77** após a revisão; não iniciar merge automaticamente por aprovação técnica de fonte nem incrementar as dimensões da `main` antes de confirmar a integração. Estado: `IV-PROCEDIMENTO=READY_FOR_REVIEW_QV_PASS_LOCAL_MERGE_PENDING`, `PHASE_IV=IN_PROGRESS`, `MAIN_INTEGRATED_DIMENSIONS=3/8`; `T29_HISTORICAL=NOT_APPROVED`.
