@@ -404,3 +404,41 @@ if ($LASTEXITCODE -ne 0) { throw "Preflight do candidato SIGTAP falhou" }
 **Esperado se passar:** `COMPETENCES=36`, `REFERENCE_ROWS=165203`, `DISTINCT_CODE_MONTH_KEYS=165203`, `FIELDS=10`, `UNMATCHED_GROUP=0 UNMATCHED_SUBGROUP=0 UNMATCHED_FORM=0`, `OUTPUT_FILES_WRITTEN=0`, `QLIK_QVD=NOT_GENERATED`.
 
 **Estado:** `IV-PROCEDIMENTO=HISTORICAL_LABEL_DIFF_REVIEW_PASS_STAGING_CANDIDATE_CODE_READY_NOT_EXECUTED`; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
+
+## CSV hierárquico de 10 campos — `--validate-only` PASS local (09/10/2026)
+
+**FATO VERIFICADO — console PowerShell fornecido pelo responsável:**
+
+- Branch `feat/phase-4-dim-procedimento` atualizada por `git pull --ff-only` até `c93fed5`. `tools/materialize_sigtap_hierarchy_staging_candidate.py --validate-only` foi executado com sucesso; não acionou o `throw` posterior.
+- A auditoria anterior de 216 arquivos foi reexecutada no início: `MANIFEST_SHA256=362301077a9823eca5e05362825b31471e0604bc4a9e3d308107252308f09ff5`, `COMPETENCES_VERIFIED=36`, `FILES_VERIFIED=216`, `PROCEDURES_RECONCILED=165203`, `UNMATCHED_ALL_LEVELS=0`, `VERDICT=PASS_LOCAL_216_HIERARCHY_FILES_SHA_RECONCILED`.
+- Candidato enriquecido: `MODE=SIGTAP_HIERARCHY_STAGING_CANDIDATE`, `COMPETENCES=36`, `REFERENCE_ROWS=165203`, `DISTINCT_CODE_MONTH_KEYS=165203`, `FIELDS=10`, `UNMATCHED_GROUP=0 UNMATCHED_SUBGROUP=0 UNMATCHED_FORM=0`.
+- SHA-256 do CSV original III-C3.4a: **`75237997a26bea243b101af1bd19e04e3f4905fb237ac9d227db860cbd14b482`**, reconciliado pelo script; SHA-256 do manifesto hierárquico: **`362301077a9823eca5e05362825b31471e0604bc4a9e3d308107252308f09ff5`**.
+- `DESCRIPTION_DECODE=CP1252_OPERATIONAL_CANDIDATE_EQUIVALENT_ISO_8859_1`, `T29_HISTORICAL=NOT_APPROVED`, `QLIK_QVD=NOT_GENERATED`, `OUTPUT_FILES_WRITTEN=0`, `VERDICT=PASS_36_MONTH_HIERARCHY_STAGING_CANDIDATE_VALIDATE_ONLY`.
+
+**Interpretação:** a proposta de enriquecimento de **165.203 linhas/10 campos** passou os joins `competência + CO_PROCEDIMENTO` com grupo, subgrupo e forma para **todas as 36 competências**, sem excluir códigos ou reescrever o staging da Fase III. Isto **não** constitui inspeção independente do futuro CSV persistido; foi o teste do próprio construtor em modo read-only. Não declarar arquivo enriquecido existente antes de executar a materialização.
+
+### Gate seguinte — materialização CSV candidato + auditoria física independente
+
+O script já versionado `tools/materialize_sigtap_hierarchy_staging_candidate.py` exige `--materialize` explícito, constrói arquivo temporário UTF-8 e só grava novo CSV local após checar todos os 165203 pares, unicidade, reconciliação por mês e 0 unmatched. Recusa substituir saída já existente; **não escreve QVD**.
+
+Adicionado **`tools/audit_sigtap_hierarchy_staging_candidate.py`** (CODE READY, NÃO EXECUTADO) para, sem escrita:
+- auditar novamente SHA-256 e manifesto dos **216** membros de hierarquia;
+- exigir SHA-256 do CSV original de 4 campos, manifesto e contagens III-C3.4a, SHA-256 e schema do **novo CSV de 10 campos** e coerência de seu manifesto;
+- comparar **cada uma das 165203 linhas** de ambos os CSVs, incluindo **preservação byte a byte após decodificação CSV de texto dos quatro campos anteriores**, ordem e chave composta; conferir por competência a existência/valor exato dos nomes oficiais dos três níveis a partir dos 216 arquivos originais;
+- exigir cobertura 36/36, códigos ASCII de dez dígitos, SK operacional textual `AAAAMM|XXXXXXXXXX`, 165203 chaves únicas e 0 unmatched;
+- preservar `201808_source_version_caveat=TabelaUnificada_201808_v2102261143.zip`, `T29_HISTORICAL=NOT_APPROVED`, sem QVD ou fatos.
+
+A descrição `cp1252` continua interpretação **operacional** indistinguível de `ISO-8859-1` nos bytes do corpus. O enriquecimento mantém grafia original por competência, inclusive os cinco nomes anômalos de `201808`; **não aprova** seu uso como versão normativamente vigente em agosto de 2018.
+
+**Comandos para execução local sob supervisão:**
+
+```powershell
+git pull --ff-only
+if ($LASTEXITCODE -ne 0) { throw "Falha no git pull" }
+.\.venv\Scripts\python.exe .\tools\materialize_sigtap_hierarchy_staging_candidate.py --materialize
+if ($LASTEXITCODE -ne 0) { throw "Falha na materializacao do CSV SIGTAP hierarquico" }
+.\.venv\Scripts\python.exe .\tools\audit_sigtap_hierarchy_staging_candidate.py
+if ($LASTEXITCODE -ne 0) { throw "Falha na auditoria independente do CSV SIGTAP" }
+```
+
+**Gates esperados, ainda NÃO observados:** `PASS_36_MONTH_HIERARCHY_STAGING_CANDIDATE_MATERIALIZED` e `PASS_LOCAL_SIGTAP_HIERARCHY_STAGING_CSV_SHA_AND_ROW_RECONCILED`. Não ligar `EXTRACAO/ext_main.qvs`, `TRANSFORMACAO/transf_main.qvs`, materializar `DIM_PROCEDIMENTO.qvd` nem construir fatos/Link Table antes de receber o resultado real e revisar contrato dimensional. Estado: `IV-PROCEDIMENTO=STAGING_10_FIELD_VALIDATE_ONLY_PASS_MATERIALIZATION_PENDING`; Fase IV = 3/8 dimensões integradas.
