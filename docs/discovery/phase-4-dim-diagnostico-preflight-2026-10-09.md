@@ -22,6 +22,7 @@ Script versionado: **`tools/preflight_dim_diagnostico_cid10.py`**, na branch `fe
 ### Comando de execução inicial — Windows, raiz do repositório
 
 ```powershell
+git fetch origin
 git switch feat/phase-4-dim-diagnostico
 git pull --ff-only
 .\.venv\Scripts\python.exe .\tools\preflight_dim_diagnostico_cid10.py
