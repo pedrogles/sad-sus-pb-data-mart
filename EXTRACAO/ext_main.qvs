@@ -1335,3 +1335,7 @@ $(Must_Include=ext_c5_municipal_preflight.qvs);
 // III-C5.2: apenas depois do C5.1 PASS, materializar referencia PB derivada.
 // Sem DIM_MUNICIPIO, fato, Link Table, deducao de digito ou residents externos.
 $(Must_Include=ext_c5_2_municipio_pb.qvs);
+
+// Gate final fase III: T07 (36 meses), T08 (campos), dez QVDs e referencias.
+// _SUCCESS_EXTRACAO.csv gerado apenas apos PASS; runner remove marcador antigo.
+$(Must_Include=ext_phase3_final_gate.qvs);
