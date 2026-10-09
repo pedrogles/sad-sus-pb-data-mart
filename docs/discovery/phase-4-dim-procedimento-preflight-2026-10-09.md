@@ -139,3 +139,21 @@ Na raiz do repositório (branch `feat/phase-4-dim-procedimento`), após `git pul
 **Esperado somente se a fonte corresponder à hipótese de layout:** `INVENTORY_SHA_MATCH=True`, `MEMBERS_INSPECTED=24`, `INTEGRITY_ERRORS=0`, `VERDICT=PASS_SAMPLE_STRUCTURE_ONLY`, `RELATIONAL_JOINS_AND_ENCODING=NOT_APPROVED`. Se erro de layout, chave ou ZIP, interromper e inspecionar a mensagem real sem tentar completar/renomear campos.
 
 **DECISÃO PENDENTE após o teste:** definir a identificação da relação `procedimento → grupo → subgrupo → forma de organização` por competência, a partir dos nomes/posições reais observados nas tabelas e nos layouts. Só então expandir a validação às 36 competências e preparar transformação QlikView `DIM_PROCEDIMENTO`. `IV-PROCEDIMENTO=SAMPLE_PHYSICAL_LAYOUT_GATE_PENDING`; `T27=PASS`; `PHASE_IV=IN_PROGRESS`.
+
+## Boundary — inspeção física controlada de 4 competências (PASS da ESTRUTURA)
+
+**FATO VERIFICADO — log local enviado em 09/10/2026** (`git pull --ff-only` até `f6f218c` e execução de `tools/inspect_sigtap_hierarchy_sample.py`):
+
+- `INVENTORY_SHA_MATCH=True`, `INVENTORY_MEMBERS=348`, `SAMPLE_COMPETENCES=201701,201801,201901,201912`.
+- Apenas os 4 ZIPs amostrais foram recuperados temporariamente, com SHA-256/tamanho concordantes com C3.2 e CRC validado pelo script; `PERSISTENT_OUTPUTS=NONE`, `FULL_36_PACKAGES_DOWNLOADED=False`.
+- `MEMBERS_INSPECTED=24`, `INTEGRITY_ERRORS=0`, `VERDICT=PASS_SAMPLE_STRUCTURE_ONLY`, `RELATIONAL_JOINS_AND_ENCODING=NOT_APPROVED`; `T27_HISTORICAL_GATE=PREVIOUS_PASS_NOT_RETESTED`.
+- Layouts idênticos nas 4 competências para cada tabela: `LAYOUT_SIGNATURES=1` para `tb_grupo`, `tb_sub_grupo`, `tb_forma_organizacao`, nenhum comprimento incorreto ou campo `CO_*` vazio.
+- **Grupo**: 8 linhas/mês, 108 bytes, campos `CO_GRUPO` (1–2), `NO_GRUPO` (3–102), `DT_COMPETENCIA` (103–108).
+- **Subgrupo**: 59 linhas/mês, 110 bytes, campos `CO_GRUPO` (1–2), `CO_SUB_GRUPO` (3–4), `NO_SUB_GRUPO` (5–104), `DT_COMPETENCIA` (105–110).
+- **Forma de organização**: 382/384/385/386 linhas em 201701/201801/201901/201912, 112 bytes, campos `CO_GRUPO` (1–2), `CO_SUB_GRUPO` (3–4), `CO_FORMA_ORGANIZACAO` (5–6), `NO_FORMA_ORGANIZACAO` (7–106), `DT_COMPETENCIA` (107–112).
+- Exemplos `cp1252` legíveis na amostra incluem `Ações de promoção e prevenção em saúde`, `Consultas / Atendimentos / Acompanhamentos`, `Educação em saúde`; são **prévias**, não uma aprovação de encoding integral.
+- SHA-256 dos 3 layouts observados no log, iguais nas quatro competências: grupo `3bf6a61194eedbb404b091ba966e6f6c97fe0c88b78c59b9a867177289e16c07`; subgrupo `3eb16c6563481e9823a8dd1fda30ab1fc0f185d2d91ecfa6a2274eeac5179965`; forma `87e03373d59641ed3814bf81cb315532aa6edb50a30ee2412f2906cbded63ae5`.
+
+**HIPÓTESE DE RELACIONAMENTO A TESTAR:** em `CO_PROCEDIMENTO` (10 posições; fonte física SIGTAP C3.3a), prefixos de 2, 4 e 6 dígitos identificam, respectivamente, grupo, subgrupo e forma. Tal regra **não está provada neste log**. Validar por lookup *na mesma competência*, com chaves inequívocas (`AAAAMM|GG`, `AAAAMM|GGSS`, `AAAAMM|GGSSFF`), unicidade na tabela de destino, cobertura de todos os procedimentos da amostra e consistência pai-filho. Não assumir que a contagem de grupos/subgrupos/formas prova a ligação aos procedimentos.
+
+**DECISÃO PENDENTE:** aprovar ou rejeitar a interpretação `cp1252` para os **três nomes descritivos** depois da inspeção textual diversificada; validar todas as 36 competências e só então criar dimensões/QVDs. `IV-PROCEDIMENTO=SAMPLE_STRUCTURE_PASS_JOIN_PILOT_PENDING`; `T27=PASS_ANTERIOR_SEM_RETESTE`; `PHASE_IV=IN_PROGRESS`.
