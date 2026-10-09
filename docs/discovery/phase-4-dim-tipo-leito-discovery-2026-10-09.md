@@ -497,3 +497,50 @@ O Portal CNES **exibe realmente** `LFCES002_201301_65.ZIP` em **Downloads → Ar
 ### Menor próximo passo, sem ampliar a autorização
 
 O responsável pode baixar **somente esse ZIP** pelo link oficial no navegador local e anexá-lo a este chat. No ambiente com acesso aos bytes, fazer inventário de entradas sem executar instaladores/macros; calcular SHA-256/tamanho; identificar formato e versões das tabelas de domínio; confrontar os pares `TP_LEITO+CODLEITO` com os **57 pares observados**; documentar explicitamente qualquer ausência de comprovação normativa mensal 2017–2019. Não transferir o ZIP ao Git nem assumir que a data exibida `18/10/2019` é competência normativa da estrutura interna. Não iniciar implementação sem o gate A2 separado.
+
+## C4.2c.4e — inspeção física concluída do ZIP de domínios (09/10/2026)
+
+**Evidência superveniente ao bloqueio ambiental anterior:** o responsável anexou `SCNES_DOMINIOS.ZIP` obtido pelo navegador a partir da URL já inventariada (`https://cnes.datasus.gov.br/EstatisticasServlet?path=SCNES_DOMINIOS.ZIP`). A inspeção foi **READ-ONLY**, sem execução de binários/macros, instalação, download em massa, alteração dos dados ou versionamento do ZIP. O estado anterior `ACCESS_BLOCKED_IN_EXECUTION_ENVIRONMENT` registra somente a tentativa anterior e **foi superado para este artefato por anexo do responsável**.
+
+### Integridade e estrutura realmente inspecionadas
+
+| Item | Resultado físico |
+|---|---|
+| ZIP anexado | `SCNES_DOMINIOS.ZIP`, 1.030.982 bytes |
+| SHA-256 ZIP | `a3232cc737e3e9b44fb2ef80d44cfd0c30d549b22e15ec8b0888c3dc6644b3b0` |
+| Teste CRC ZIP | PASS, 1 entrada, não criptografada |
+| Membro único | `SCNES_DOMINIOS.XLS`, 1.339.918 bytes |
+| SHA-256 do membro | `ae3f678f1f2307d759412c735f79bf1ace5a91410261f4050dc6e86c671c2af4` |
+| Formato real do membro | Office Open XML (`PK` e partes `xl/worksheets/*.xml`), **apesar** da extensão `.XLS` |
+| Estrutura interna | 67 entradas no pacote OOXML, 56 abas, CRC interno PASS |
+| Metadados do documento | `docProps/core.xml`: criação `2019-10-15T20:05:02Z`; modificação `2019-10-15T20:06:58Z`. Não são datas de vigência normativa |
+| Macros/links externos | Nenhum componente `vbaProject` ou `externalLinks` identificado por nome no pacote |
+
+### Abas e conteúdo relevante à DIM_TIPO_LEITO
+
+- **`LEITOS`, `A1:B67`: 66 linhas de domínio, 66 códigos distintos**; apenas colunas `LEITO` e `DESCRIÇÃO`. Exemplo adicional: **`64 = UNIDADE INTERMEDIARIA`**.
+- **`TIPOS DE LEITOS`, `A1:B8`: 7 linhas, códigos `1..7`**, apenas `TIPO DE LEITO` e `DESCRIÇÃO`. Rótulos encontrados: `1 CIRURGICO`, `2 CLINICO`, `3 COMPLEMENTAR`, `4 OBSTETRICOS`, `5 PEDIATRICOS`, `6 OUTRAS ESPECIALIDADES`, `7 HOSPITAL DIA`.
+- **Ausência estrutural nas duas abas:** não há `TP_LEITO` ou chave associativa leito→tipo no mesmo registro; não há competência de referência, início/fim de vigência ou status do código. Também não há tabela literal `NFCES001/TB_LEITO` ou `NFCES028/TB_ATRIBUTO` identificada por nome neste pacote. As duas abas são **domínios descritivos**, não prova física de equivalência integral às tabelas do dicionário SCNES.
+
+### Confronto com fonte de verdade do projeto
+
+Comparação de códigos contra `docs/discovery/cnes-nt32-2019-codigos-leito.csv` da própria branch (`65` registros e `65` códigos únicos, referência `201909`):
+
+| Checagem | Resultado |
+|---|---|
+| Códigos do CSV canônico presentes no ZIP | **65/65** |
+| Códigos ausentes | **0** |
+| Código extra no ZIP | **`64`** (`UNIDADE INTERMEDIARIA`) |
+| Códigos distintos de tipos na aba `TIPOS DE LEITOS` | **7/7** |
+| Pareamento `TP_LEITO+CODLEITO` atestado fisicamente pelo ZIP | **NÃO** |
+| Vigência histórica 201701–201912 atestada | **NÃO** |
+
+**Limites críticos:** o gate anterior que comparou **57/57 pares da PB** à Nota Técnica 32/2019 é independente; nesta execução não foram reabertos os **35.518 registros LT** nem realizado JOIN por par. Não confundir `65/65 códigos` com `57/57 pares`. Pelo menos o rótulo literal do código `08` difere entre referências: no ZIP `NEFROLOGIAUROLOGIA`; no CSV da NT32/2019 `NEFROLOGIA/UROLOGIA`; **não harmonizar automaticamente**. Código `64` extra não demonstra inclusão normativa nem presença no LT PB. A data da planilha em outubro/2019 e a atualização exibida no portal em 18/10/2019 não comprovam vigência em janeiro/2017 nem continuidade até dezembro/2019.
+
+### Veredito e gate seguinte
+
+**`C4.2c.4e=PASS_PHYSICAL_DOMAIN_CODE_INVENTORY_ONLY`** — aquisição mínima autorizada e inspeção de conteúdo concluídas. **Não** aprova domínio temporal ou relacionamento leito→tipo.
+
+**`T29_HISTORICAL=NOT_APPROVED`**, **`A2_SK_CONTRACT=DECISION_PENDING`**, **`DIM_TIPO_LEITO_QVD_GENERATED=False`**, **`MAIN=7/8`** e fatos/Link Table/PAINEL NOT_STARTED.
+
+**Recomendação:** encerrar esta tentativa de aquisição e decidir separadamente **A2 (contrato dimensional conservador)**, especificando competência observada versus competência/versão da fonte descritiva, comportamento `NULL` para descrição histórica não comprovada e o significado vigente de `COMPETENCIA_REFERENCIA` antes de alterar a SK do Boundary 7. Manter bloqueio da oitava dimensão até aprovação; não é necessário buscar indefinidamente versões sem novos indícios. O ZIP e XLS não foram adicionados ao GitHub.
