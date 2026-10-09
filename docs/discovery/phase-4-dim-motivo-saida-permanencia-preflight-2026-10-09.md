@@ -135,3 +135,22 @@ VERDICT=PASS_MOTIVO_28_CODE_REFERENCE_AND_RD_PREFLIGHT_ONLY
 **Estado correto:** `IV-MOTIVO_SAIDA_PERMANENCIA=LOCAL_QVD_HEADER_CHECKPOINT_PASS_RELOAD_LOG_PENDING`; `MAIN_INTEGRATED_DIMENSIONS=6/8`; `T29_HISTORICAL=NOT_APPROVED`; fatos/Link Table/painéis `NOT_STARTED`. **Não abrir PR/realizar merge nem afirmar 7/8 até validação do log e decisão posterior.**
 
 **Próximo gate:** localizar o arquivo `TRANSFORMACAO/TRANSF.qvw*.log` da execução que gerou o QVD; conferir **na mesma execução** `SOURCE Rows=28 Fields=7 Codes=28 NormCodes=28 Groups=6 Invalid=0 Map24=1`, `COVER RD=566672 Distinct=26 UNMATCHED=0 Invalid=0 Code24=6`, `DISTRIBUTION Groups=26 Mismatches=0 Absent32_67=True`, `DIM_MOTIVO_SAIDA_PERMANENCIA_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN`, encerramento normal e timestamps compatíveis. As linhas impressas de `IF ScriptErrorCount > ... THEN` são guardas de script e não evidenciam falha por si só.
+
+## Gate QlikView 12 — reload local PASS confirmado (09/10/2026)
+
+**FATO VERIFICADO — trecho real de log e horários dos arquivos fornecidos pelo responsável:**
+
+- Log: `TRANSFORMACAO/TRANSF.qvw.2026_10_09_11_30_27.log`, **104.872 bytes**, com `LastWriteTime=09/10/2026 11:30:40`. O arquivo foi lido por `Select-String` e pelas últimas 35 linhas; **o conteúdo integral não foi fornecido**.
+- Linhas 1278–1279: `[TRANSFORMACAO][IV-MOTIVO] START`.
+- Linhas 1343–1344, às **11:30:39**: `SOURCE Rows=28 Fields=7 Codes=28 NormCodes=28 Groups=6 Invalid=0 Map24=1`.
+- Linhas 1483–1484, às **11:30:40**: `COVER RD=566672 Distinct=26 UNMATCHED=0 Invalid=0 Code24=6`.
+- Linhas 1486–1487: `DISTRIBUTION Groups=26 Mismatches=0 Absent32_67=True`. A string `Absent32_67=True` é um **TRACE literal** do include, enquanto a prova física da ausência dos códigos `32` e `67` é o preflight dos 36 CSVs SIH/RD.
+- Linhas 1529–1530: `DIM_MOTIVO_SAIDA_PERMANENCIA_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN`. Linhas 1532–1533 mantêm `PHASE_IV_PARTIAL_ONLY T29_HISTORICAL_NOT_APPROVED`. Linha 1535: **`Execução concluída.` às 11:30:40**.
+- O final do log mostra os campos calculados do checkpoint parcial: 28 códigos, 28 normativos, 6 grupos, equivalência `24→2.4`, 28 linhas dimensionais, 7 campos, **28 SK únicas declaradas**, RD 566672/26 códigos/0 unmatched/0 inválidos, 6 RD com `24`, 26 frequências e 0 divergências. O Qlik registrou uma linha de checkpoint, seu `STORE`, e terminou normalmente.
+- QVD `TRANSFORMACAO/QVD/DIM_MOTIVO_SAIDA_PERMANENCIA.qvd`: **7062 bytes**, `LastWriteTime=09/10/2026 11:30:40`. Checkpoint `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_MOTIVO_SAIDA_PERMANENCIA.csv`: **705 bytes**, mesmo horário. Arquivos contemporâneos ao `STORE` e encerramento dessa execução.
+- **Auditoria física Python local previamente PASS:** `VERDICT=PASS_LOCAL_DIM_MOTIVO_QVD_HEADER_CHECKPOINT_RECONCILED`, QVD SHA-256 `7306b75e1c29005d1ea50d16e4f67db330360fbcb46bb711ab3b0aee82c25e57`, checkpoint SHA-256 `69d22d1a982d58ef2d3d85aa92f0861052c932dc68a557487c26b6775ae0d30c`, referência C1 SHA `dea572f8b04acd06ea214711ac1c56d5f494e2fa7e0713883881c65fa850bdac`.
+- Na busca por `Error: Unknown statement` e `Syntax Error` nenhuma ocorrência foi exibida. Linhas `IF ScriptErrorCount > 0 THEN` impressas no log são guardas do script, **não mensagens de erro ocorrido**. O relatório registra apenas excertos e a cauda, não certifica inspeção integral nem execução de CI.
+
+**Conclusão do gate:** `IV-MOTIVO_SAIDA_PERMANENCIA=LOCAL_QLIK_RELOAD_AND_QVD_CHECKPOINT_PASS_REVIEW_NEXT`. Os controles SOURCE/COVER/DISTRIBUTION/STORE e `Execução concluída.` foram observados **na mesma execução**, junto a arquivos locais com horário compatível e auditoria física aprovada. A validação do auditor cobre cabeçalho QVD, hashes e valores do checkpoint, **não** a decodificação independente de cada registro binário. A equivalência e cobertura normativa estática **não** comprovam vigência histórica mensal individual de cada código.
+
+**Próximo gate:** revisar diff do PR contra `main` e abrir **Draft PR**, sem squash merge automático. A `main` permanece com **6 de 8 dimensões integradas** até eventual merge explícito. `T29_HISTORICAL=NOT_APPROVED`; fatos/Link Table/painéis `NOT_STARTED`. Os registros acima supersedem o status cronológico `RELOAD_LOG_PENDING` das seções anteriores.
