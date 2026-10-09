@@ -39,3 +39,40 @@ Esperado **SE** os dados permanecerem idênticos: `CID_REFERENCE_ROWS=14230`, `C
 - Não iniciar fatos, Link Table, painel nem marcador global de sucesso da transformação enquanto a Fase IV não estiver concluída.
 
 **Estado deste documento:** `IV-DIAGNOSTICO=PREFLIGHT_CODE_READY_NOT_RUN`, `MAIN_INTEGRATED_DIMENSIONS=4/8`, `PHASE_IV=IN_PROGRESS`.
+
+## Gate IV-DIAGNOSTICO — preflight físico read-only PASS local (09/10/2026)
+
+**FATO VERIFICADO — PowerShell do responsável**, após `git fetch origin`, `git switch feat/phase-4-dim-diagnostico`, `git pull --ff-only` e execução do script da branch:
+
+```text
+MODE=IV_DIM_DIAGNOSTICO_CID10_READ_ONLY_PREFLIGHT
+PERSISTENT_OUTPUTS=NONE
+QVD_CREATED=False
+CID_REFERENCE_ROWS=14230
+CID_DISTINCT_CODES=14230
+CID_CODE_LENGTH_3=2042
+CID_CODE_LENGTH_4=12188
+CID_SOURCE_CSV_SHA256=da541adc1efbdb4ac04c555cf1e008967fd053fb6368ff443fb10a476757025f
+REF_CID10_QVD_ROWS=14230
+REF_CID10_QVD_FIELDS=7
+SRC_SIH_RD_QVD_ROWS=566672
+CHECKPOINT_C2_8D=PASS_PARTIAL_0_UNMATCHED
+RD_FILES=36
+RD_ROWS=566672
+RD_RAW_DISTINCT=5480
+RD_NORM_DISTINCT=5480
+TRAILING_SPACE_ROWS=60423
+RD_MATCHED=566672
+RD_UNMATCHED=0
+REFERENCE_POLICY=STATIC_DESCRIPTIVE_SUPERSET_201912_NO_MONTHLY_VALIDITY
+NORMALIZATION=ASCII_TRAILING_SPACE_REMOVAL_ONLY
+SK_RULE_CANDIDATE=Hash128_CID10_NORMALIZED_CODE
+VERDICT=PASS_CID10_DIM_DIAGNOSTICO_PHYSICAL_PREFLIGHT_ONLY
+```
+
+O script comparou SHA de `tb_cid.txt` e layout com manifestos C2.4/C2.7, **14.230 linhas do CSV físico com as respectivas linhas do arquivo CID original**, esquema e contagens de cabeçalhos QVD de origem e checkpoint C2.8d, e **36 arquivos RD locais, 566.672 linhas**, aplicando apenas `rstrip(' ')`. Constatou zero CID sem match no dicionário estático 201912, preservando os **60.423** valores com padding. Nenhum arquivo foi modificado e não houve criação de QVD.
+
+**VEREDITO:** `IV-DIAGNOSTICO=CID10_PHYSICAL_PREFLIGHT_PASS`; a aquisição/normalização de código e a viabilidade de enriquecimento descritivo da DIM_DIAGNOSTICO estão aprovadas para **implementação QlikView isolada**. Isso **não** valida ainda a QVD dimensional; T28 tem PASS anterior da EXTRAÇÃO, enquanto novos checks da Fase IV precisam de reload real.
+
+**Próximo gate:** preparar `TRANSFORMACAO/transf_dim_diagnostico.qvs` após os quatro includes dimensionais, com `%SK_DIAGNOSTICO=Hash128('CID10', codigo normalizado)` e **uma linha por código CID-10 estático** (14230). Exigir 14230 SK únicas, 2042 categorias de três caracteres + 12188 subcategorias de quatro, origem 201912, descrição presente, RD 566672/0 unmatched aplicando **`Text(RTrim(Text(DIAG_PRINC)))`** conforme a correção comprovada do T28. Validar depois QVD físico/checkpoint de etapa parcial; não afirmar vigência histórica mensal e não criar fatos/Link Table/painel.
+
