@@ -153,3 +153,20 @@ Documentacao de semantica:
 - QlikView `First n` limita numero de registros carregados: https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/ScriptPrefixes/First.htm
 
 **Status:** `IV-MUNICIPIO=FAIL_CLOSED_2_RELOADS`; `ROOT_CAUSE=UNVERIFIED`; `DIAGNOSTIC_TRACE_CODE_READY`; `PR_75=DRAFT`; `PHASE_IV=IN_PROGRESS`. Antes de outra tentativa de mudar regra ou associações, coletar `TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_...` do log do novo reload. Nenhum outro conjunto de dados foi alterado.
+
+## Quarto reload IV-MUNICIPIO — instrumentacao interrompida apos MAPPING LOAD (09/10/2026 00:03)
+
+**FATO VERIFICADO — saida PowerShell do responsavel:**
+- `git pull --ff-only` atualizou a branch até `539c2ae`, contendo 50 linhas de instrumentacao em `transf_dim_municipio.qvs`.
+- `Qv.exe /r` com `Start-Process -Wait` retornou `QLIK_EXIT=0`; log contemporaneo `TRANSF.qvw.2026_10_09_00_03_45.log`.
+- A busca `Select-String DIAG_|FAIL RD/ST/LT|...|Execution finished` retornou apenas `P4M_DIAG_MAP: MAPPING LOAD COD_DATASUS_6, 1 AS _P4M_DIAG_PRESENT`, seguido de `Execution finished`; nenhum dos `TRACE DIAG_...` foi emitido.
+- `_CHECKPOINT_DIM_MUNICIPIO.csv` nao existe; `DIM_MUNICIPIO.qvd` nao teve nova evidencia de gravacao.
+- Esta saida filtrada **nao inclui o erro detalhado** das ultimas linhas do log, portanto nao atribuir um codigo ou mensagem de erro nao observado.
+
+**Causa plausivel da instrumentacao (código inspecionado):** imediatamente apos o mapping, o codigo tentava `LET vP4MDiagDimSelfExists = Exists(COD_DATASUS_6, ...)`. `Exists` e uma funcao de script para avaliacao de registros carregados em `LOAD`, nao uma verificacao confiavel via `LET` de script. Discussao tecnica Qlik de `Exists outside of LOAD`: https://community.qlik.com/t5/QlikView/Using-EXISTS-outside-of-a-LOAD/m-p/153215/highlight/true. Fonte oficial de semantica: https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/InterRecordFunctions/Exists.htm. **Sem log integral, a atribuição especifica do encerramento a essa linha segue HIPOTESE, nao FATO.**
+
+**Correcao versionada (ainda NAO executada):** mover `Exists` e `ApplyMap` dos `LET` para expressoes de `LOAD` de auto-geracao/primeiras cinco linhas de RD/ST; usar `Peek()` nos `LET` apenas para recuperar colunas previamente calculadas. Manter a tabela diagnostica apenas em memoria e descartá-la; **nenhum dado de origem, dimensão, chave, QVD, contagem, gate fail-closed RD/ST/LT ou checkpoint foi alterado**.
+
+**Estado:** `IV-MUNICIPIO=FAIL_CLOSED_DIAG_NOT_COMPLETED`, `PR_75=DRAFT`, `DIAG_CODE_FIXED_LOCAL_TEST_PENDING`, `PHASE_IV=IN_PROGRESS`.
+
+**Proxima acao:** executar novo reload sincronizado e mostrar `Get-Content $log.FullName -Tail 75` em adicao a `Select-String 'DIAG_|FAIL|Execution finished'`. **Nao reexecutar se o Qlik estiver aberto**, nem declarar sucesso apenas por exit 0. Se `TRACE DIAG_` aparecer, usar amostras para isolar eventual falha agregada antes de nova alteracao.
