@@ -229,6 +229,56 @@ ENDIF
 // Checar dominio no campo COD_DATASUS_6 ja carregado e unico.
 // Exists retorna verdadeiro apenas para valor previamente carregado.
 
+// Instrumentacao local temporaria para separar valor de campo, tipo e contexto agregado.
+// Nenhuma tabela ou arquivo diagnostico e armazenado; nao remover o fail-closed.
+P4M_DIAG_MAP:
+MAPPING LOAD
+    COD_DATASUS_6 AS _P4M_DIAG_KEY,
+    1 AS _P4M_DIAG_PRESENT
+RESIDENT DIM_MUNICIPIO;
+
+LET vP4MDiagDimCode = Peek('COD_DATASUS_6', 0, 'DIM_MUNICIPIO');
+LET vP4MDiagDimSelfExists = Exists(COD_DATASUS_6, '$(vP4MDiagDimCode)');
+LET vP4MDiagDimSelfMap = ApplyMap('P4M_DIAG_MAP', '$(vP4MDiagDimCode)', 0);
+
+P4M_DIAG_RD_SAMPLES:
+FIRST 5 LOAD
+    Trim(Text(MUNIC_RES)) AS _P4M_DIAG_RES_CODE,
+    Trim(Text(MUNIC_MOV)) AS _P4M_DIAG_MOV_CODE
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+P4M_DIAG_ST_SAMPLES:
+FIRST 5 LOAD
+    Trim(Text(CODUFMUN)) AS _P4M_DIAG_ST_CODE
+FROM [..\EXTRACAO\QVD\SRC_CNES_ST.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_FAIL loading municipal samples;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4MDiagRDRes = Peek('_P4M_DIAG_RES_CODE', 0, 'P4M_DIAG_RD_SAMPLES');
+LET vP4MDiagRDMov = Peek('_P4M_DIAG_MOV_CODE', 0, 'P4M_DIAG_RD_SAMPLES');
+LET vP4MDiagSTCode = Peek('_P4M_DIAG_ST_CODE', 0, 'P4M_DIAG_ST_SAMPLES');
+LET vP4MDiagRDResMap = ApplyMap('P4M_DIAG_MAP', '$(vP4MDiagRDRes)', 0);
+LET vP4MDiagRDMovMap = ApplyMap('P4M_DIAG_MAP', '$(vP4MDiagRDMov)', 0);
+LET vP4MDiagSTMap = ApplyMap('P4M_DIAG_MAP', '$(vP4MDiagSTCode)', 0);
+LET vP4MDiagRDMovExists = Exists(COD_DATASUS_6, '$(vP4MDiagRDMov)');
+LET vP4MDiagSTExists = Exists(COD_DATASUS_6, '$(vP4MDiagSTCode)');
+
+TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_DIM_CODE=$(vP4MDiagDimCode) SELF_EXISTS=$(vP4MDiagDimSelfExists) SELF_MAP=$(vP4MDiagDimSelfMap);
+TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_RD_RES_CODE=$(vP4MDiagRDRes) MAP=$(vP4MDiagRDResMap);
+TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_RD_MOV_CODE=$(vP4MDiagRDMov) MAP=$(vP4MDiagRDMovMap) EXISTS=$(vP4MDiagRDMovExists);
+TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_ST_CODE=$(vP4MDiagSTCode) MAP=$(vP4MDiagSTMap) EXISTS=$(vP4MDiagSTExists);
+
+IF $(vP4MDiagDimSelfMap) <> 1 THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_SELF_LOOKUP_FAILED stop before coverage;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4M_DIAG_RD_SAMPLES;
+DROP TABLE P4M_DIAG_ST_SAMPLES;
+
 // A associacao dos fatos fica para Fase V, mas cobertura de dominio
 // pode e deve ser validada antes de gravar a dimensao.
 P4M_RD_DOMAIN:
