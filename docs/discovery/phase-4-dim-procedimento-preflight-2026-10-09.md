@@ -320,3 +320,26 @@ if ($LASTEXITCODE -ne 0) { throw "Auditoria textual exige investigacao" }
 
 **Próximo gate:** inspeção independente read-only dos bytes da faixa `0x80–0x9F`, listagem de códigos e transições mensais das **3 chaves de subgrupo + 3 chaves de forma**. Prosseguir com staging ou QVD somente depois de revisar a evidência; manter `T29_HISTORICAL=NOT_APPROVED`.
 
+
+## Gate seguinte — transições de nomes e faixa de bytes 0x80–0x9F (CODE READY)
+
+Criado `tools/profile_sigtap_hierarchy_label_versions.py` na mesma branch (**ainda não executado localmente**). É um complemento à auditoria textual de 16.247 registros já aprovada como candidata e não introduz staging/QVD.
+
+O script:
+
+- Reexecuta `audit_sigtap_hierarchy_history.py` e exige manifesto/216 hashes antes da leitura;
+- Reanalisa todos os três níveis em 36 competências, usando hash/layout, `CO_*`, `DT_COMPETENCIA` e descrição real. Falha em chave duplicada, competência divergente, erro de `cp1252` estrito, tamanho/contagem não conciliados ou texto vazio/de controle;
+- Identifica as **3 chaves de subgrupo** e as **3 de forma de organização** que possuíram mais de um nome no corpus. Exibe o código exato e os nomes conforme a primeira competência observada para cada transição. A multiplicidade histórica não é corrigida ou inferida como erro;
+- Conta todos os bytes de descrições na faixa **0x80 a 0x9F** que diferenciam efetivamente `cp1252` de `ISO-8859-1`. Se não ocorrerem, retorna `CP1252_VS_ISO88591=NOT_DISTINGUISHABLE_WITH_OBSERVED_TEXT_BYTES` — nesse caso `cp1252` pode continuar como escolha **operacional candidata compatível**, mas não deve ser afirmado que se identificou univocamente a codificação. Se ocorrerem, relata bytes exatos e os caracteres correspondentes para inspeção humana.
+- Produz `VERDICT=PASS_SIGTAP_LABEL_VERSION_AND_BYTE_PROFILE_REVIEW_ONLY` somente com integridade reconciliada, **sem escrita de arquivos** e sem aprovar `T29` ou `DESCRIPTION_ENCODING_APPROVAL`.
+
+### Comando local
+
+```powershell
+git pull --ff-only
+if ($LASTEXITCODE -ne 0) { throw "Falha ao atualizar a branch" }
+.\.venv\Scripts\python.exe .\tools\profile_sigtap_hierarchy_label_versions.py
+if ($LASTEXITCODE -ne 0) { throw "Perfil historico de descricoes exige investigacao" }
+```
+
+**Pendente:** interpretar os seis códigos e grafias, distinguir alteração de nome de erro de codificação, decidir a política operacional de `cp1252` limitada ao corpus inspecionado, sem imputaçāo retroativa. Só então habilitar staging competência-aware do SIGTAP com separação do referencial 201808 de versão retrospectiva. `DIM_PROCEDIMENTO.qvd=NOT_STARTED`; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
