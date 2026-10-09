@@ -50,6 +50,18 @@ LOAD
         OR _P4L_COMP <> _P4L_META_COMP,
         1,0
     )) AS _P4L_INVALID,
+    // Diagnostico nao intrusivo: qual parcela do OR marcou as 35518 linhas?
+    // Os resultados sao CONTAGENS, nao alteram fonte, normalizacao ou SK.
+    Sum(If(IsNull(_P4L_CNES) OR Len(Trim(_P4L_CNES))=0,1,0)) AS _P4L_DIAG_CNES,
+    Sum(If(IsNull(_P4L_TYPE_RAW) OR Len(_P4L_TYPE_RAW)<>2,1,0)) AS _P4L_DIAG_RAW_LEN,
+    Sum(If(IsNull(_P4L_TYPE_RAW) OR Right(_P4L_TYPE_RAW,1)<>' ',1,0)) AS _P4L_DIAG_RAW_SPACE,
+    Sum(If(Match(_P4L_TYPE,'1','2','3','4','5','6','7')=0,1,0)) AS _P4L_DIAG_TYPE,
+    Sum(If(IsNull(_P4L_BED) OR Len(_P4L_BED)<>2
+        OR Len(KeepChar(_P4L_BED,'0123456789'))<>2,1,0)) AS _P4L_DIAG_BED,
+    Sum(If(IsNull(_P4L_COMP) OR Len(_P4L_COMP)<>6
+        OR Len(KeepChar(_P4L_COMP,'0123456789'))<>6
+        OR _P4L_COMP<'201701' OR _P4L_COMP>'201912',1,0)) AS _P4L_DIAG_COMP,
+    Sum(If(_P4L_COMP<>_P4L_META_COMP,1,0)) AS _P4L_DIAG_META,
     Sum(If(_P4L_TYPE='3' AND _P4L_BED='66',1,0)) AS _P4L_3_66,
     Sum(If(_P4L_TYPE='7' AND _P4L_BED='70',1,0)) AS _P4L_7_70
 RESIDENT P4L_LT_SOURCE;
@@ -60,9 +72,19 @@ LET vP4LPairs = Peek('_P4L_PAIRS',0,'P4L_LT_PROFILE');
 LET vP4LPairMonths = Peek('_P4L_PAIR_MONTHS',0,'P4L_LT_PROFILE');
 LET vP4LFactKeys = Peek('_P4L_FACT_KEYS',0,'P4L_LT_PROFILE');
 LET vP4LInvalid = Peek('_P4L_INVALID',0,'P4L_LT_PROFILE');
+LET vP4LDiagCNES = Peek('_P4L_DIAG_CNES',0,'P4L_LT_PROFILE');
+LET vP4LDiagRawLen = Peek('_P4L_DIAG_RAW_LEN',0,'P4L_LT_PROFILE');
+LET vP4LDiagRawSpace = Peek('_P4L_DIAG_RAW_SPACE',0,'P4L_LT_PROFILE');
+LET vP4LDiagType = Peek('_P4L_DIAG_TYPE',0,'P4L_LT_PROFILE');
+LET vP4LDiagBed = Peek('_P4L_DIAG_BED',0,'P4L_LT_PROFILE');
+LET vP4LDiagComp = Peek('_P4L_DIAG_COMP',0,'P4L_LT_PROFILE');
+LET vP4LDiagMeta = Peek('_P4L_DIAG_META',0,'P4L_LT_PROFILE');
 LET vP4L3_66 = Peek('_P4L_3_66',0,'P4L_LT_PROFILE');
 LET vP4L7_70 = Peek('_P4L_7_70',0,'P4L_LT_PROFILE');
 DROP TABLE P4L_LT_PROFILE;
+
+// Gate permanece estrito. Nunca remover FAIL apenas para gerar QVD.
+TRACE [TRANSFORMACAO][IV-LEITO][DIAG] InvalidTotal=$(vP4LInvalid) CNES=$(vP4LDiagCNES) RawLen=$(vP4LDiagRawLen) RawTrailingASCII32=$(vP4LDiagRawSpace) Type=$(vP4LDiagType) Bed=$(vP4LDiagBed) Competence=$(vP4LDiagComp) MetaMismatch=$(vP4LDiagMeta);
 
 IF $(vP4LLTRows) <> 35518 OR $(vP4LMonths) <> 36 OR $(vP4LPairs) <> 57 OR $(vP4LPairMonths) <> 2021 OR $(vP4LFactKeys) <> 35518 OR $(vP4LInvalid) <> 0 OR $(vP4L3_66) <> 1480 OR $(vP4L7_70) <> 5 THEN
     TRACE [TRANSFORMACAO][IV-LEITO] FAIL LT source/grain profile;
