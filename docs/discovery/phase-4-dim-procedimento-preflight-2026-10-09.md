@@ -197,3 +197,28 @@ git pull --ff-only
 **Próximo gate:** adquirir de forma limitada e verificável as **seis tabelas/layouts de hierarquia dos 36 pacotes históricos já enumerados**, usando os hashes e contagens do manifesto C3.3b.1 por competência; confrontar cada pacote, layout, unicidade, competência, pais e todos os 165.203 pares procedimento×competência. Persistir somente os seis membros originais por mês e manifesto local depois de todos os 36 passes; não gerar QVD ou alterar referências existentes. Verificar encoding com amostra diversificada separadamente.
 
 **Status:** `IV-PROCEDIMENTO=FOUR_MONTH_RELATIONAL_PILOT_PASS_FULL_36_PENDING`; `T27=PASS_ANTERIOR`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IV=IN_PROGRESS`.
+
+## Boundary — validação histórica SIGTAP de 36 competências, código preparado
+
+**Entrada:** o piloto 4/36 de hierarquia passou com 18.362 procedimentos e zero ausências nos 3 níveis, conforme seção anterior. Esta evidência sustenta expandir a verificação a todo o período `201701–201912`, mas não prova previamente o resultado dos 32 meses não inspecionados.
+
+**Script versionado, AINDA NÃO EXECUTADO:** `tools/materialize_sigtap_hierarchy_history.py`.
+
+- Modo inicial recomendado **`--validate-only`**: baixa temporariamente os 36 ZIPs oficiais já enumerados no inventário C2.3, **somente para inspecionar** 6 membros hierárquicos exatos por pacote (3 dados e 3 layouts); **não grava TXT/CSV/QVD/manifesto**. Os ZIPs temporários são descartados após cada competência.
+- Confere por competência a correspondência exata de nome/tamanho/SHA-256 do ZIP com `sigtap_procedure_history_manifest.json` (C3.3b.1 PASS), CRC do ZIP, ausência de membros homônimos, limite de tamanho por membro, posições/nome dos layouts de grupo, subgrupo e forma contra SHA-256 dos 4 meses já inspecionados. Qualquer drift causa `RuntimeError` e aborta sem escrita.
+- Reutiliza os 36 `tb_procedimento.txt` **já materializados** em `BASE/REFERENCIAS/SIGTAP/PROCEDIMENTO/YYYYMM`, verifica seus hashes de dados/layout com o manifesto anterior, códigos/competência e unicidade. O total da referência histórica deve ser **165.203 pares procedimento×competência**, não 165.203 procedimentos globalmente distintos.
+- Avalia 36× grupo/subgrupo/forma: chaves observadas, `DT_COMPETENCIA` igual ao snapshot, nenhuma chave repetida, descrição não vazia, 0 subgrupos sem grupo, 0 formas sem subgrupo/grupo, e cobertura exata dos 165.203 procedimentos pelos prefixos de 2/4/6 dígitos **no mesmo mês**.
+- Quando o `--validate-only` obtiver `VERDICT=PASS_36_MONTH_RELATIONAL_VALIDATION_ONLY` com `MONTHS_VALIDATED=36`, `MEMBERS_VALIDATED=216`, `PROCEDURES_COVERED=165203`, `UNMATCHED_ALL_LEVELS=0`, apresentar saída para revisão. **Não rodar sem a flag ainda**: a opção sem flag repete os controles e, se todos passarem, grava exclusivamente os 216 arquivos brutos de hierarquia ao lado dos procedimentos já versionados localmente (sem sobrescrever conteúdo divergente), mais manifesto `BASE/REFERENCIAS/sigtap_hierarchy_history_manifest.json`; nunca grava QVD nem texto convertido/descrições derivadas.
+- O manifesto futuro terá estado `PASS` **apenas para integridade física e relações de 36 meses**; `description_encoding=CP1252_CANDIDATE_AWAITING_DESCRIPTIVE_AUDIT`, `t27_retested=false`, `t29_historical=NOT_APPROVED`, `qvd_generated=false`.
+- O uso de `cp1252` nos perfis de descrição é uma interpretação provisória, herdada da leitura candidata dos TXT; **a aprovação textual dos três níveis ainda depende de auditoria de amostras diversificadas e da análise de codificação**, separada da integridade relacional. Não inventar descrições ou relações.
+
+### Comando de próximo gate (Windows, raiz do repo)
+
+```powershell
+git pull --ff-only
+.\.venv\Scripts\python.exe .\tools\materialize_sigtap_hierarchy_history.py --validate-only
+```
+
+**Ponto de decisão:** se houver `RuntimeError` ou `VERDICT` ausente, investigar o mês/arquivo real sem materializar. Se todas as 36 competências passarem, registrar os contadores, hashes relevantes e decidir a materialização controlada. Não iniciar a transformação dimensional/QLIK antes da auditoria da referência hierárquica e do encoding.
+
+**Status:** `IV-PROCEDIMENTO=FOUR_MONTH_RELATIONAL_PASS_FULL_36_VALIDATOR_READY_NOT_RUN`; `DIM_PROCEDIMENTO_QVD=NOT_STARTED`; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
