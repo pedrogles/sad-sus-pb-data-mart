@@ -132,3 +132,23 @@ Get-Item .\TRANSFORMACAO\QVD\DIM_ESTABELECIMENTO.qvd -ErrorAction SilentlyContin
 **Critério de aceite:** log novo, `SELF_CHECK Rows=220390 Missing=0`, `COVER RD=566672 RD_UNMATCHED=0 LT=35518 LT_UNMATCHED=0`, checkpoint novo `PASS_PARTIAL_DIM_ESTABELECIMENTO_ONLY` com 220390×14, e QVD físico lido posteriormente (cabeçalho, 14 campos, hash e timestamp). **Não aprovar pelo `QLIK_EXIT=0` isolado.**
 
 **Estado:** `IV-TEMPO=MERGED_PASS`; `IV-MUNICIPIO=MERGED_PASS`; `IV-ESTABELECIMENTO=CODE_READY_QV_LOCAL_PENDING`; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
+
+## Primeiro reload físico IV-ESTABELECIMENTO — PASS local Qlik/CSV (09/10/2026 00:24:41)
+
+**FATO VERIFICADO — execução PowerShell enviada pelo responsável do projeto:**
+
+- `git status --short` vazio, `git pull --ff-only` atualizou a branch até `ab86c11` com `transf_dim_estabelecimento.qvs` e o include. Processo QlikView fechado antes da execução.
+- `Qv.exe /r` executado com `Start-Process -Wait`: `QLIK_EXIT=0`, log **novo** `TRANSF.qvw.2026_10_09_00_24_32.log`; `Execution finished` às **00:24:41**.
+- O script realmente alcançou `[TRANSFORMACAO][IV-ESTABELECIMENTO] START`, `SELF_CHECK Rows=220390 Missing=0`, `COVER RD=566672 RD_UNMATCHED=0 LT=35518 LT_UNMATCHED=0`, `DIM_ESTABELECIMENTO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN` e `PHASE_IV_PARTIAL_ONLY`.
+- O `_CHECKPOINT_DIM_ESTABELECIMENTO.csv` **novo** (`CHECKPOINT_NOVO=True`) foi lido por `Import-Csv`, com `generated_at=09/10/2026 00:24:41`, `stage=TRANSFORMACAO_DIM_ESTABELECIMENTO` e `status=PASS_PARTIAL_DIM_ESTABELECIMENTO_ONLY`.
+- Campos do checkpoint: `dimension_rows=220390`, `dimension_fields=14`, `distinct_cnes=6822`, `distinct_competences=36`, `unique_versions=220390`, `unique_surrogate_keys=220390`, `invalid_dimension_rows=0`, `self_unmatched=0`, `rd_rows=566672`, `rd_monthly_version_unmatched=0`, `lt_rows=35518`, `lt_monthly_version_unmatched=0`. O log indica **19 campos** do checkpoint e 1 linha.
+- Metadados no CSV: `historical_name_source=ST_2017_2019_HEADERS_WITHOUT_NAME_FIELDS`, `historical_names_policy=NULL_NO_FUTURE_BACKFILL`, `t29_historical=NOT_APPROVED` e `facts_and_link_table=NOT_STARTED`.
+- `TRANSFORMACAO/QVD/DIM_ESTABELECIMENTO.qvd` existe, tamanho **7.580.750 bytes**, `LastWriteTime=09/10/2026 00:24:41`.
+
+**Conclusão limitada:** o QlikView executou e passou no gate T16 de associação exata por `CNES × competência`, inclusive nas 566.672 linhas RD e 35.518 LT; o QVD e o CSV parcial foram gravados na execução correspondente. A cardinalidade 220390, os 14 campos e a unicidade vieram de asserts do script Qlik, **ainda não do cabeçalho QVD lido independentemente**. A política de nomes nulos é verificada no script e corroborada pela ausência de campos nominais nos 36 cabeçalhos; a auditoria XML do QVD não decodifica cada linha binária.
+
+**PENDÊNCIA ANTES DE MERGE DO PR #76:** auditar read-only os 14 nomes de campo e `NoOfRecords=220390` no `QvdTableHeader` real, compará-los ao checkpoint de 19 campos, obter SHA-256 do QVD e do CSV e conferir timestamps. Nenhum novo reload necessário. Manter `PR_76=DRAFT`, `IV-ESTABELECIMENTO=PASS_LOCAL_QV_CHECKPOINT_PHYSICAL_HEADER_HASH_PENDING`, `PHASE_IV=IN_PROGRESS` e `T29_HISTORICAL=NOT_APPROVED`.
+
+### Gate físico (read-only, sem Qlik reload)
+
+Na raiz do repositório local, Python 3 deve analisar `TRANSFORMACAO/QVD/DIM_ESTABELECIMENTO.qvd` até `</QvdTableHeader>`, validar `NoOfRecords=220390`, 14 `FieldName` esperados (`%SK_ESTABELECIMENTO`, `CNES`, `COMPETENCIA`, `CODUFMUN`, `COD_CEP`, `CNPJ_MAN`, `VINC_SUS`, `TPGESTAO`, `TP_UNID`, `NATUREZA`, `NAT_JUR`, `NOME_FANTASIA`, `RAZAO_SOCIAL`, `NOME_HISTORICO_STATUS`), SHA-256, checkpoint de 19 campos/uma linha e todos os controles acima. Não converter `QLIK_EXIT=0` sozinho em PASS físico.
