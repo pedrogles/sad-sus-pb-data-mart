@@ -194,3 +194,20 @@ Documentacao de semantica:
 **Status:** `IV-MUNICIPIO=PREFIXED_LOOKUP_CODE_READY_PHYSICAL_GATE_PENDING`; `PR_75=DRAFT`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IV=IN_PROGRESS`.
 
 **Próximo gate:** recarregar localmente após `git pull --ff-only`, Qlik fechado e `Start-Process -Wait`; exigir `PREFIXED_SELF_CHECK Rows=937 Missing=0` e, depois, checkpoint `PASS_PARTIAL_DIM_MUNICIPIO_ONLY` com `dimension_rows=937`, `municipalities_pb=223`, `external_distinct_codes=714`, `external_rd_rows=5202`, quatro unmatched=0, QVD físico novo e log contemporâneo. Os 937/714 são expectativas do último staging conhecido, não regras universais.
+
+## Sexto reload — IV-MUNICIPIO PASS LOCAL QLIK / CHECKPOINT (09/10/2026 00:10:51)
+
+**FATO VERIFICADO — saida PowerShell do responsavel do projeto:**
+
+- `git pull --ff-only` atualizou a branch para `e5ef19f`; `Qv.exe /r TRANSFORMACAO/TRANSF.qvw` via `Start-Process -Wait` retornou `QLIK_EXIT=0`.
+- Log contemporaneo `TRANSF.qvw.2026_10_09_00_10_46.log` com `[TRANSFORMACAO][IV-MUNICIPIO] PREFIXED_SELF_CHECK Rows=937 Missing=0`, `DIM_MUNICIPIO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN`, e `Execution finished`. Nenhum `FAIL` reportado na pesquisa do log.
+- CSV de checkpoint realmente presente e importado: `generated_at=09/10/2026 00:10:51`, `stage=TRANSFORMACAO_DIM_MUNICIPIO`, `status=PASS_PARTIAL_DIM_MUNICIPIO_ONLY`, **18 campos**, exatamente 1 registro.
+- Campos de resultado: `dimension_rows=937`, `municipalities_pb=223`, `external_distinct_codes=714`, `external_rd_rows=5202`, `unique_surrogate_keys=937`, `invalid_dimension_rows=0`, `unmatched_ibge_2019_names=0`, `rd_residence_unmatched=0`, `rd_attendance_unmatched=0`, `st_unmatched=0`, `lt_unmatched=0`.
+- `pb_name_reference_year=2019`, `source_limit=PB_ONLY_DERIVED_IBGE7_NO_EXTERNAL_IBGE_INFERENCE`, `t29_historical=NOT_APPROVED`, `facts_and_link_table=NOT_STARTED`.
+- `TRANSFORMACAO/QVD/DIM_MUNICIPIO.qvd` existe fisicamente, tamanho **45.750 bytes**, `LastWriteTime=09/10/2026 00:10:51`.
+
+**Conclusao limitada pelo escopo das evidencias:** o checkpoint interno e o artefato QVD novo foram emitidos no QlikView 12 e os controles de cobertura foram reconciliados. O teste do prefixo `M|` resolveu a falha operacional *para o conjunto presente*, mas o motivo preciso do lookup fracassado no formato numerico/dual continua **HIPOTESE**, nao uma conclusao definitiva. Nenhum dado de origem, campo da dimensao, SK academica, fato ou Link Table foi modificado pela chave auxiliar, utilizada exclusivamente no gate temporario.
+
+**Gate ainda pendente antes do aceite final / merge PR #75:** analisar **cabecalho fisico** do QVD (quantidade de registros e 8 nomes de campos), SHA-256 de QVD e CSV e reconciliar os valores importados com a estrutura. A saida do usuario comprova a existencia/tamanho, **mas nao** contem o cabecalho nem o hash, portanto `IV-MUNICIPIO=PASS_LOCAL_QV_CHECKPOINT_PHYSICAL_FILE`, `QVD_HEADER_AND_HASH=PENDING`, `PR_75=DRAFT`, `PHASE_IV=IN_PROGRESS`. Nao declarar PASS FINAL da Fase IV; ainda restam outras seis dimensoes.
+
+**Proximo teste local (read-only, sem reload):** abrir os primeiros bytes do QVD ate `</QvdTableHeader>`, inspecionar `NoOfRecords=937`, listar os 8 `FieldName`, conferir `SHA256` e `LastWriteTime` do QVD e CSV e comparar status e contadores. Se divergencia, bloquear merge e investigar sem apagar artefatos.
