@@ -28,6 +28,12 @@ if (-not $script.Contains('[V5-RD-MEAS] START QVD_STAGING_READ_ONLY') -or
     throw 'QVS versionado nao atende ao contrato isolado, sem STORE/JOIN'
 }
 
+function Test-SameQlikScript([string]$actual, [string]$expected) {
+    # A interface COM pode salvar quebras de linha como CRLF mesmo quando o Git guarda LF.
+    return ($actual.Replace("`r`n", "`n").TrimEnd() -ceq
+            $expected.Replace("`r`n", "`n").TrimEnd())
+}
+
 $sourceShaBefore = (Get-FileHash -LiteralPath $staging -Algorithm SHA256).Hash
 $scriptSha = (Get-FileHash -LiteralPath $qvs -Algorithm SHA256).Hash
 $qv = $null
@@ -37,7 +43,7 @@ try {
     if (Test-Path -LiteralPath $qvw -PathType Leaf) {
         $doc = $qv.OpenDoc($qvw, '', '')
         if ($null -eq $doc) { throw "Nao foi possivel abrir o QVW: $qvw" }
-        if ([string]$doc.GetProperties().Script -cne $script) {
+        if (-not (Test-SameQlikScript ([string]$doc.GetProperties().Script) $script)) {
             throw 'QVW preexistente nao corresponde ao QVS versionado; nao sobrescrever'
         }
         if (-not [bool]$doc.GetProperties().GenerateLogfile) {
@@ -51,7 +57,7 @@ try {
         $p.Script = $script
         $p.GenerateLogfile = $true
         $null = $doc.SetProperties($p)
-        if ([string]$doc.GetProperties().Script -cne $script -or
+        if (-not (Test-SameQlikScript ([string]$doc.GetProperties().Script) $script) -or
             -not [bool]$doc.GetProperties().GenerateLogfile) {
             throw 'QlikView nao confirmou script ou GenerateLogfile'
         }
