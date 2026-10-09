@@ -226,98 +226,110 @@ IF $(vP4MMunicipalityRows) <> 223 + $(vP4MExternalCodes) OR $(vP4MUnique6) <> $(
     EXIT SCRIPT;
 ENDIF
 
-// Checar dominio no campo COD_DATASUS_6 ja carregado e unico.
-// Exists retorna verdadeiro apenas para valor previamente carregado.
-
-// Instrumentacao local temporaria para separar valor de campo, tipo e contexto agregado.
-// Nenhuma tabela ou arquivo diagnostico e armazenado; nao remover o fail-closed.
-P4M_DIAG_MAP:
+// Diagnostico das 00:06: codigos visivelmente iguais (250010) nao casaram
+// nas consultas Exists/ApplyMap originais. Hipotese: comparacao dual texto/numero.
+// Chave de teste interna PREFIXADA para impedir interpretacao numerica.
+// Esta chave NAO e persistida na DIM_MUNICIPIO, SK ou fatos.
+P4M_DOMAIN_TEXT_MAP:
 MAPPING LOAD
-    COD_DATASUS_6 AS _P4M_DIAG_KEY,
-    1 AS _P4M_DIAG_PRESENT
+    'M|' & Trim(Text(COD_DATASUS_6)) AS _P4M_DOMAIN_PREFIXED,
+    1 AS _P4M_DOMAIN_PRESENT
 RESIDENT DIM_MUNICIPIO;
 
-// Exists e ApplyMap precisam ser avaliados dentro de LOAD, nao em LET.
-LET vP4MDiagDimCode = Peek('COD_DATASUS_6', 0, 'DIM_MUNICIPIO');
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL loading prefixed domain map;
+    EXIT SCRIPT;
+ENDIF
 
-P4M_DIAG_SELF:
-LOAD
-    If(Exists(COD_DATASUS_6, '$(vP4MDiagDimCode)'), 1, 0) AS _P4M_DIAG_SELF_EXISTS,
-    ApplyMap('P4M_DIAG_MAP', '$(vP4MDiagDimCode)', 0) AS _P4M_DIAG_SELF_MAP
-AUTOGENERATE 1;
-
-P4M_DIAG_RD_SAMPLES:
-FIRST 5 LOAD
-    Trim(Text(MUNIC_RES)) AS _P4M_DIAG_RES_CODE,
-    Trim(Text(MUNIC_MOV)) AS _P4M_DIAG_MOV_CODE,
-    If(Exists(COD_DATASUS_6, Trim(Text(MUNIC_RES))), 1, 0) AS _P4M_DIAG_RES_EXISTS,
-    If(Exists(COD_DATASUS_6, Trim(Text(MUNIC_MOV))), 1, 0) AS _P4M_DIAG_MOV_EXISTS,
-    ApplyMap('P4M_DIAG_MAP', Trim(Text(MUNIC_RES)), 0) AS _P4M_DIAG_RES_MAP,
-    ApplyMap('P4M_DIAG_MAP', Trim(Text(MUNIC_MOV)), 0) AS _P4M_DIAG_MOV_MAP
-FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
-
-P4M_DIAG_ST_SAMPLES:
-FIRST 5 LOAD
-    Trim(Text(CODUFMUN)) AS _P4M_DIAG_ST_CODE,
-    If(Exists(COD_DATASUS_6, Trim(Text(CODUFMUN))), 1, 0) AS _P4M_DIAG_ST_EXISTS,
-    ApplyMap('P4M_DIAG_MAP', Trim(Text(CODUFMUN)), 0) AS _P4M_DIAG_ST_MAP
-FROM [..\EXTRACAO\QVD\SRC_CNES_ST.qvd] (qvd);
+// Self-check independente: primeiro resolver 937 buscas linha a linha,
+// depois agregar flags. Se o mapa nao reconhecer a propria DIM, nao gravar QVD.
+P4M_MAP_SELF_ROWS:
+NOCONCATENATE LOAD
+    If(ApplyMap('P4M_DOMAIN_TEXT_MAP', 'M|' & Trim(Text(COD_DATASUS_6)), 0) = 1, 0, 1) AS _P4M_SELF_MISSING_FLAG
+RESIDENT DIM_MUNICIPIO;
 
 IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
-    TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_FAIL loading lookup samples;
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL prefixed self-lookup load;
     EXIT SCRIPT;
 ENDIF
 
-LET vP4MDiagDimSelfExists = Peek('_P4M_DIAG_SELF_EXISTS', 0, 'P4M_DIAG_SELF');
-LET vP4MDiagDimSelfMap = Peek('_P4M_DIAG_SELF_MAP', 0, 'P4M_DIAG_SELF');
-LET vP4MDiagRDRes = Peek('_P4M_DIAG_RES_CODE', 0, 'P4M_DIAG_RD_SAMPLES');
-LET vP4MDiagRDMov = Peek('_P4M_DIAG_MOV_CODE', 0, 'P4M_DIAG_RD_SAMPLES');
-LET vP4MDiagSTCode = Peek('_P4M_DIAG_ST_CODE', 0, 'P4M_DIAG_ST_SAMPLES');
-LET vP4MDiagRDResMap = Peek('_P4M_DIAG_RES_MAP', 0, 'P4M_DIAG_RD_SAMPLES');
-LET vP4MDiagRDResExists = Peek('_P4M_DIAG_RES_EXISTS', 0, 'P4M_DIAG_RD_SAMPLES');
-LET vP4MDiagRDMovMap = Peek('_P4M_DIAG_MOV_MAP', 0, 'P4M_DIAG_RD_SAMPLES');
-LET vP4MDiagRDMovExists = Peek('_P4M_DIAG_MOV_EXISTS', 0, 'P4M_DIAG_RD_SAMPLES');
-LET vP4MDiagSTMap = Peek('_P4M_DIAG_ST_MAP', 0, 'P4M_DIAG_ST_SAMPLES');
-LET vP4MDiagSTExists = Peek('_P4M_DIAG_ST_EXISTS', 0, 'P4M_DIAG_ST_SAMPLES');
+P4M_MAP_SELF_CHECK:
+LOAD
+    Count(*) AS _P4M_SELF_ROWS,
+    Sum(_P4M_SELF_MISSING_FLAG) AS _P4M_SELF_MISSING
+RESIDENT P4M_MAP_SELF_ROWS;
 
-TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_DIM_CODE=$(vP4MDiagDimCode) SELF_EXISTS=$(vP4MDiagDimSelfExists) SELF_MAP=$(vP4MDiagDimSelfMap);
-TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_RD_RES_CODE=$(vP4MDiagRDRes) MAP=$(vP4MDiagRDResMap) EXISTS=$(vP4MDiagRDResExists);
-TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_RD_MOV_CODE=$(vP4MDiagRDMov) MAP=$(vP4MDiagRDMovMap) EXISTS=$(vP4MDiagRDMovExists);
-TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_ST_CODE=$(vP4MDiagSTCode) MAP=$(vP4MDiagSTMap) EXISTS=$(vP4MDiagSTExists);
+LET vP4MSelfRows = Peek('_P4M_SELF_ROWS', 0, 'P4M_MAP_SELF_CHECK');
+LET vP4MSelfMissing = Peek('_P4M_SELF_MISSING', 0, 'P4M_MAP_SELF_CHECK');
+DROP TABLE P4M_MAP_SELF_CHECK;
+DROP TABLE P4M_MAP_SELF_ROWS;
 
-IF $(vP4MDiagDimSelfMap) <> 1 OR $(vP4MDiagDimSelfExists) <> 1 THEN
-    TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_SELF_LOOKUP_FAILED stop before coverage;
+TRACE [TRANSFORMACAO][IV-MUNICIPIO] PREFIXED_SELF_CHECK Rows=$(vP4MSelfRows) Missing=$(vP4MSelfMissing);
+
+IF $(vP4MSelfRows) <> $(vP4MMunicipalityRows) OR $(vP4MSelfMissing) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL prefixed map cannot resolve its own dimension;
     EXIT SCRIPT;
 ENDIF
 
-DROP TABLE P4M_DIAG_SELF;
-DROP TABLE P4M_DIAG_RD_SAMPLES;
-DROP TABLE P4M_DIAG_ST_SAMPLES;
+// Avaliar match registro a registro, sem ApplyMap dentro da agregacao.
+// A soma posterior utiliza flags 0/1. Nenhum dado fonte ou SK e alterado.
+P4M_RD_COVER_ROWS:
+NOCONCATENATE LOAD
+    If(ApplyMap('P4M_DOMAIN_TEXT_MAP', 'M|' & Trim(Text(MUNIC_RES)), 0) = 1, 0, 1) AS _P4M_RD_RES_FLAG,
+    If(ApplyMap('P4M_DOMAIN_TEXT_MAP', 'M|' & Trim(Text(MUNIC_MOV)), 0) = 1, 0, 1) AS _P4M_RD_MOV_FLAG,
+    If(Left(Trim(Text(MUNIC_RES)), 2) <> '25', 1, 0) AS _P4M_RD_EXT_FLAG
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
 
-// A associacao dos fatos fica para Fase V, mas cobertura de dominio
-// pode e deve ser validada antes de gravar a dimensao.
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL RD row-level coverage;
+    EXIT SCRIPT;
+ENDIF
+
 P4M_RD_DOMAIN:
 LOAD
     Count(*) AS _P4M_RD_ROWS,
-    Sum(If(Not Exists(COD_DATASUS_6, Trim(Text(MUNIC_RES))), 1, 0)) AS _P4M_RES_MISSING,
-    Sum(If(Not Exists(COD_DATASUS_6, Trim(Text(MUNIC_MOV))), 1, 0)) AS _P4M_MOV_MISSING,
-    Sum(If(Left(Trim(Text(MUNIC_RES)), 2) <> '25', 1, 0)) AS _P4M_RES_EXTERNAL
-FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+    Sum(_P4M_RD_RES_FLAG) AS _P4M_RES_MISSING,
+    Sum(_P4M_RD_MOV_FLAG) AS _P4M_MOV_MISSING,
+    Sum(_P4M_RD_EXT_FLAG) AS _P4M_RES_EXTERNAL
+RESIDENT P4M_RD_COVER_ROWS;
+DROP TABLE P4M_RD_COVER_ROWS;
+
+P4M_ST_COVER_ROWS:
+NOCONCATENATE LOAD
+    If(ApplyMap('P4M_DOMAIN_TEXT_MAP', 'M|' & Trim(Text(CODUFMUN)), 0) = 1, 0, 1) AS _P4M_ST_FLAG
+FROM [..\EXTRACAO\QVD\SRC_CNES_ST.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL ST row-level coverage;
+    EXIT SCRIPT;
+ENDIF
 
 P4M_ST_DOMAIN:
 LOAD
     Count(*) AS _P4M_ST_ROWS,
-    Sum(If(Not Exists(COD_DATASUS_6, Trim(Text(CODUFMUN))), 1, 0)) AS _P4M_ST_MISSING
-FROM [..\EXTRACAO\QVD\SRC_CNES_ST.qvd] (qvd);
+    Sum(_P4M_ST_FLAG) AS _P4M_ST_MISSING
+RESIDENT P4M_ST_COVER_ROWS;
+DROP TABLE P4M_ST_COVER_ROWS;
+
+P4M_LT_COVER_ROWS:
+NOCONCATENATE LOAD
+    If(ApplyMap('P4M_DOMAIN_TEXT_MAP', 'M|' & Trim(Text(CODUFMUN)), 0) = 1, 0, 1) AS _P4M_LT_FLAG
+FROM [..\EXTRACAO\QVD\SRC_CNES_LT.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL LT row-level coverage;
+    EXIT SCRIPT;
+ENDIF
 
 P4M_LT_DOMAIN:
 LOAD
     Count(*) AS _P4M_LT_ROWS,
-    Sum(If(Not Exists(COD_DATASUS_6, Trim(Text(CODUFMUN))), 1, 0)) AS _P4M_LT_MISSING
-FROM [..\EXTRACAO\QVD\SRC_CNES_LT.qvd] (qvd);
+    Sum(_P4M_LT_FLAG) AS _P4M_LT_MISSING
+RESIDENT P4M_LT_COVER_ROWS;
+DROP TABLE P4M_LT_COVER_ROWS;
 
 IF ScriptErrorCount > $(vP4MErrorsBefore) THEN
-    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL verifying source code domains;
+    TRACE [TRANSFORMACAO][IV-MUNICIPIO] FAIL aggregating prefixed domain checks;
     EXIT SCRIPT;
 ENDIF
 
