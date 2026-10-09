@@ -62,3 +62,58 @@ Veredito esperado **somente se os arquivos físicos forem compatíveis**: `VERDI
 Após inspecionar a saída física, decidir **sem editar o modelo acadêmico aprovado** como conciliar a descrição da dimensão com a ausência de fonte histórica por competência. **Não criar include Qlik, QVD dimensional, PR de integração, fatos, Link Table ou painéis antes da decisão apropriada.**
 
 `main = 7/8`; `T29_HISTORICAL=NOT_APPROVED`; `FACTS_AND_LINK_TABLE=NOT_STARTED`.
+
+## Gate IV-TIPO_LEITO — preflight técnico PASS local (09/10/2026)
+
+**FATO VERIFICADO — resultado PowerShell enviado pelo responsável**, executando localmente `tools/preflight_dim_tipo_leito_snapshot_201909.py` depois de `git fetch origin` / `git switch feat/phase-4-dim-tipo-leito-discovery` / `git pull --ff-only`:
+
+```text
+MODE=IV_DIM_TIPO_LEITO_READ_ONLY_TECHNICAL_PREFLIGHT
+OUTPUT_FILES_WRITTEN=0
+DIM_TIPO_LEITO_QVD_GENERATED=False
+SNAPSHOT_201909_SHA256=dddb261e754f2f3bb82a462c94ae8219b84cd77c1fce3204cd6f3867c3d3bd5e
+SNAPSHOT_PAIRS=65
+SNAPSHOT_REFERENCE_COMPETENCE=201909
+SNAPSHOT_HISTORICAL_VALIDITY=NOT_VERIFIED
+LT_STAGING_QVD_ROWS=35518
+SNAPSHOT_QVD_ROWS=65
+SNAPSHOT_QVD_FIELDS=13
+CHECKPOINT_C4_3=PASS_PARTIAL_SNAPSHOT_ONLY
+LT_FILES=36
+LT_COMPETENCES=36
+LT_ROWS=35518
+LT_TYPES_RAW_DISTINCT=7
+LT_PAIRS_OBSERVED=57
+LT_PAIRS_MATCHING_201909_SNAPSHOT=57
+LT_ROWS_MATCHING_201909_SNAPSHOT=35518
+LT_UNMATCHED_SNAPSHOT_PAIRS=0
+LT_RAW_TP_VALUES=['1 ', '2 ', '3 ', '4 ', '5 ', '6 ', '7 ']
+LT_YEAR_ROWS=[('2017', 12254), ('2018', 11616), ('2019', 11648)]
+LT_PB_PAIR_3_66_ROWS=1480
+SOURCE_TP_LEITO_TRAILING_ASCII_SPACE=PRESERVED
+SOURCE_PAIR_COVERAGE_VS_201909_SNAPSHOT=PASS_DESCRIPTIVE_ONLY
+HISTORICAL_LABEL_JOIN_PERFORMED=False
+HISTORICAL_MONTHLY_VALIDITY=NOT_VERIFIED
+T29_HISTORICAL=NOT_APPROVED
+VERDICT=PASS_LT_SNAPSHOT_TECHNICAL_PREFLIGHT_ONLY
+```
+
+**Interpretação dos controles físicos:** o snapshot datado de 201909 mantém 65 pares e SHA de referência conhecida. O QVD de staging CNES/LT mantém cabeçalho com 35.518 linhas; o QVD da legenda contém 65 linhas/13 campos; o checkpoint parcial C4.3 é coerente. Os 36 arquivos LT físicos contêm 35.518 registros (2017=12.254, 2018=11.616, 2019=11.648), com 57 pares observados e sete valores literais `TP_LEITO` com espaço ASCII final. **Todos os pares e registros são cobertos tecnicamente pelos códigos do snapshot 201909**, não pela validade histórica de sua nomenclatura. O par PB `3/66` ocorre **1.480 vezes**; não remapear para `2/66` do indicador agregado divergente. Nenhum QVD da oitava dimensão ou JOIN histórico foi produzido.
+
+**Limite de validade e leitura:** o QVD só foi inspecionado pelo cabeçalho XML; não houve decodificação independente dos 35.518 ou 65 registros binários. O mesmo arquivo de setembro/2019 cobre pares de 2017–2019, mas não prova validade temporal de descrições, grupos ou status. `T29_HISTORICAL=NOT_APPROVED` permanece **inalterado**, e a primeira entrega acadêmica (Capítulos 1–2) continua fechada.
+
+**VEREDITO OPERACIONAL:** `IV-TIPO_LEITO=LOCAL_SNAPSHOT_TECHNICAL_PREFLIGHT_PASS / HISTORICAL_DESCRIPTION_MODEL_DECISION_PENDING`. **Não é PASS de modelagem dimensional**, não cria `DIM_TIPO_LEITO.qvd`, não habilita fatos/Link Table/PAINEL e não aumenta as dimensões integradas, que permanecem **7/8**.
+
+## Avaliação das alternativas para a oitava dimensão — decisão ainda pendente
+
+**Contrato já aprovado e que não deve ser reescrito por conveniência:** a dimensão desnormaliza `TIPO_LEITO → LEITO`, contendo SK, código/descrição do tipo, código/descrição da especialidade. Boundary 7 preserva a SK física **`Hash128('LEITO', TP_LEITO, CODLEITO, COMPETENCIA_REFERENCIA)`**, sensível à competência da referência enquanto não houver prova de invariância. O projeto **aprovou a legenda datada 201909 sem JOIN descritivo retroativo**. Qualquer hipótese abaixo que mude o significado de `COMPETENCIA_REFERENCIA` deve ser submetida a decisão explícita antes de código.
+
+| Alternativa | Potencial benefício | Limite e risco | Estado |
+|---|---|---|---|
+| **A — Distinguir códigos observados por competência, sem atribuir rótulos históricos desconhecidos** | Permite análise quantitativa por `TP_LEITO/CODLEITO` em sua competência real; só exibe descrição quando sustentada por fonte aplicável | Requer fechar o contrato exato de SK/competência de observação versus `COMPETENCIA_REFERENCIA`, política `NULL`/rótulo não validado e tratamento da legenda 201909 isolada; risco de dimensão incompleta para atributos acadêmicos | **HIPÓTESE DE MODELAGEM — NÃO APROVADA** |
+| **B — Aguardar fonte oficial/versionada de domínio por competência** | Permite potencialmente atribuir descrições históricas e validar T29 com evidência temporal | Pode atrasar a oitava dimensão, sem garantia de publicação de 36 versões nem necessidade da disciplina | **PENDENTE DE ESCOLHA** |
+| **C — Copiar a legenda de 201909 para 2017–2019 como rótulo histórico** | Preencheria rapidamente todos os atributos visuais | **Contradiz a decisão aprovada**, induz falsa validade temporal, não possui evidência de vigência; **não permitido** | **REJEITADA PELAS RESTRIÇÕES ATUAIS** |
+
+**Recomendação técnica para decisão do responsável:** avaliar a alternativa **A apenas como hipótese** de viabilização de análise por código/competência, mantendo a legenda de setembro/2019 como referência independente e datada, com **descrições históricas desconhecidas explicitamente ausentes**. Antes de autorizar a implementação, elaborar/validar contrato de SK, grão, relação com o fato e tratamento da competência de referência, sem criar novas entidades arbitrárias. Caso o requisito acadêmico de descrição integral seja obrigatório também para todos os meses, preferir **B** em vez de completar descrições por suposição. Como o mínimo acadêmico de seis dimensões já está atendido por sete dimensões integradas, **não há motivo para forçar a oitava** sem decisão fundamentada.
+
+**DECISÃO PENDENTE:** escolher seguir Discovery da alternativa A ou buscar referência histórica (B). Nenhuma alteração de modelagem aprovada ou implementação QlikView está autorizada por este preflight.
