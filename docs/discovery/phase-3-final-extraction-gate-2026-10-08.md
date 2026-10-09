@@ -210,3 +210,26 @@ Select-String -LiteralPath $log.FullName -Pattern 'Syntax Error','Erro:', 'Error
 ```
 
 A coleta de log integral é preferível se houver erros distribuídos ao longo do processamento. Depois de identificar causa e linha efetivas, corrigir o mínimo necessário no script fonte versionado e reexecutar pelo runner, preservando T29 não aprovado.
+
+
+## 10. Causa-raiz demonstrada e correção mínima — log completo 08/10/2026 21:36:53
+
+**FATO VERIFICADO — inspeção das 12.748 linhas do log completo enviado pelo responsável:** `EXT.qvw.2026_10_08_21_36_53.log` contém **exatamente três** linhas `Error: Unknown statement`, nas posições de arquivo **4199, 4361 e 4364**. O `ScriptErrorList` ao final lista três `Syntax Error`. Esses são os erros acumulados que fizeram a guarda global abortar corretamente a extração.
+
+**Relação direta entre erros e fontes versionadas:**
+
+1. **Log linha 4199 — `EXTRACAO/ext_main.qvs:1330`:** a mensagem `TRACE [EXTRACAO] PARTIAL STAGING: ... a seguir; historico ...` usou **`;` interno**, finalizando o `TRACE` prematuramente. O restante virou comando solto e a próxima mensagem foi associada a `Error: Unknown statement`.
+2. **Log linhas 4361 e 4364 — `EXTRACAO/ext_c5_municipal_preflight.qvs:201`:** a mensagem `TRACE ... C5.1 preflight only; C5.2 may materialize ...; external residence ...` continha **dois `;` internos**. O Qlik interpretou os dois trechos residuais como comandos independentes, produzindo dois erros adicionais.
+3. Como evidência de ausência de divergência de dados no gate, o mesmo log confirmou **dez contratos QVD, 107 campos físicos T08, T07 36/36 para RD/LT/ST**, e todas as condições C1–C5 atendidas, antes do bloqueio global `IF ScriptErrorCount > 0`.
+
+**CORREÇÃO IMPLEMENTADA NA BRANCH DO PR #73 (NÃO VALIDADA AINDA NO WINDOWS):**
+
+- `EXTRACAO/ext_main.qvs`: substituída somente a linha de `TRACE` intermediária por mensagem operacional sem `;` interno e com terminador final `;`.
+- `EXTRACAO/ext_c5_municipal_preflight.qvs`: substituída somente a última mensagem de `TRACE`, sem `;` interno e mantendo os avisos de preflight e residência externa.
+- `EXTRACAO/ext_c5_2_municipio_pb.qvs`: proteção preventiva da mensagem `TRACE` **executada apenas se o preflight falhar**, que também tinha `;` interno; a condição de falha, `EXIT SCRIPT`, dados, campos e saída QVD permanecem inalterados.
+
+**Controles NÃO relaxados:** não remover ou zerar `ScriptErrorCount`; não alterar `LOAD`, `STORE`, `IF` de integridade, 107 campos T08, 3×36 competências T07, contratos municipais ou regra histórica CNES. Não fechar Fase III antecipadamente.
+
+**Novo gate local necessário:** em branch `feat/phase-3-final-extraction-gate` limpa e atualizada, rodar `tools/run_phase3_extraction.py` uma vez com logging Qlik ativo. **Só declarar sucesso** mediante `VERDICT=PASS_LOCAL_QV_AND_SHA_RECONCILIATION`, emissão fresca de `_SUCCESS_EXTRACAO.csv`, e log novo sem `Unknown statement`/`Syntax Error`. Caso contrário, manter `PHASE_III=IN_PROGRESS` e inspecionar novo log.
+
+**Estado:** `III_FINAL=ROOT_CAUSE_IDENTIFIED_TRACE_DELIMITERS`, `FIX_COMMITTED_TEST_PENDING`, `PR_73=DRAFT`, `T29_HISTORICAL=NOT_APPROVED`.
