@@ -634,3 +634,57 @@ O gate interrompeu em `FAIL LT source/grain profile`, **antes** de gerar `DIM_TI
 - Adendo explícito de proveniência no `docs/discovery/boundary-7-implementation-plan.md`. O modelo acadêmico fechado, oito dimensões e A2 **não são reabertos**.
 
 **PRÓXIMO GATE:** `git status --short` (exigir árvore limpa), `git pull --ff-only`, conferir backup QVD existente, **um reload** de `TRANSFORMACAO/TRANSF.qvw` no QlikView 12, coletar as linhas `[IV-LEITO][DIAG]` e a cauda do log recente. Somente **se existir QVD e checkpoint novos**, executar `tools/audit_dim_tipo_leito_qvd.py`. `IV_TIPO_LEITO=QVD_TEXT_VARIANTS_PATCH_READY_NOT_RUN`, `T29_HISTORICAL=NOT_APPROVED`, `MAIN=7/8`, `PRESENTATION_CNES_HISTORICAL_CAVEAT=REQUIRED_NOT_RENDERED` (1.965/2.021 = 97,2% **pares-mês**, não leitos). Não implementar fatos/Link Table/PAINEL nem abrir PR/merge antes de validação completa.
+
+## IV-TIPO_LEITO — gate físico local QlikView 12 + auditor QVD: PASS (09/10/2026, 14:27:14)
+
+**FATO VERIFICADO — evidência do responsável no Windows (execução não reproduzida remotamente nesta sessão):** após `git status --short` vazio e `git pull --ff-only` para o commit `7ae9f7b`, executou novo reload do documento `TRANSFORMACAO/TRANSF.qvw`. Arquivo `TRANSF.qvw.2026_10_09_14_26_59.log`, **125.544 bytes**, `LastWriteTime=09/10/2026 14:27:14`. Na saída informada, linhas executadas 1614 e 1810 indicam:
+
+```text
+[TRANSFORMACAO][IV-LEITO][DIAG] InvalidTotal=0 CNES=0 QVDLenNot2=35518 QVDMissingASCII32=35518 QVDOneDigit=35518 QVDOneDigitPadded=0 Type=0 Bed=0 Competence=0 MetaMismatch=0
+[TRANSFORMACAO][IV-LEITO] QVD_AND_PARTIAL_CHECKPOINT_WRITTEN T29_HISTORICAL_NOT_APPROVED
+```
+
+Os dois `Test-Path` locais após o reload retornaram `True`:
+
+- `TRANSFORMACAO/QVD/DIM_TIPO_LEITO.qvd`;
+- `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_TIPO_LEITO.csv`.
+
+**Conclusão específica sobre formato:** nos **35.518 registros lidos do QVD de staging**, `TP_LEITO` chega como **um único algarismo `1..7`, sem espaço ASCII à direita**; `QVDOneDigit=35.518`, `QVDOneDigitPadded=0`. A validação estrita em `transf_dim_tipo_leito.qvs` considera apenas `N` ou `N ` admissíveis; `InvalidTotal=0` e os demais diagnósticos são zero. O `"N "` físico continua documentado/auditado **nos CSVs de origem** via A1, e `TP_LEITO_TEXTO_STAGING` designa **somente a representação do QVD** (não byte original); sem recomposição artificial do padding.
+
+### Auditoria Python read-only após reload
+
+O responsável executou `tools/audit_dim_tipo_leito_qvd.py`, que **primeiro reexecuta** `preflight_dim_tipo_leito_contrato_a.py` e depois valida QVD/checkpoint. **Os indicadores `HASH128_IMPLEMENTATION_EXECUTED=False` e `FACT_AND_DIM_QVD_GENERATED=False` impressos na seção interna A1 referem-se exclusivamente ao preflight Python read-only, NÃO negam o reload QlikView realizado separadamente.** O veredito final da rotina externa foi:
+
+```text
+MODE=IV_TIPO_LEITO_QVD_HEADER_CHECKPOINT_READ_ONLY_AUDIT
+DIM_QVD_SHA256=c08d2a1d8546dff2a208df0a99591a28be53f6331b9f328b4aafe4abe3719bac
+DIM_QVD_BYTES=68535
+DIM_CHECKPOINT_SHA256=5bb43f481dcc3ad03cc6e2c4d81d9e1aefa398e60375729abe6b7868ab504b7f
+DIM_CHECKPOINT_BYTES=548
+DIM_ROWS=2021
+DIM_FIELDS=10
+DIM_UNIQUE_SK_CHECKPOINT=2021
+LT_ROWS=35518
+LT_UNMATCHED=0
+PAIRS_MONTH_UNVERIFIED=1965
+PAIRS_MONTH_TOTAL=2021
+PAIRS_MONTH_UNVERIFIED_PERCENT=97.2
+DENOMINATOR=PAIRS_MONTH_NOT_NUMBER_OF_BEDS
+T29_HISTORICAL=NOT_APPROVED
+LIMIT=QVD_BINARY_BODY_NOT_INDEPENDENTLY_DECODED
+VERDICT=PASS_LOCAL_DIM_TIPO_LEITO_QVD_HEADER_CHECKPOINT_RECONCILED
+```
+
+**Controles de origem A1 reexecutados:** 36/36 arquivos/competências LT, 35.518 linhas, 57 pares físicos; 2.021 combinações par×competência; zero duplicatas de chave candidata `CNES+COMPETEN+CODLEITO`; `3/66=1.480`, `7/70=5` (201801–201805); 56 pares de 201909 elegíveis a rótulos datados; 1.965 fora do mês sem comprovação nominal; CSV da legenda `201909` SHA-256 `dddb261e754f2f3bb82a462c94ae8219b84cd77c1fce3204cd6f3867c3d3bd5e`.
+
+### Limites metodológicos e de aceite
+
+1. **`IV_TIPO_LEITO=PASS_LOCAL_QV12_LOG_QVD_HEADER_CHECKPOINT_RECONCILED`**: o log apresentado contém o `TRACE` **executado** de escrita bem-sucedida, e a auditoria externa conferiu o QVD (cabeçalho de 2.021 linhas/10 campos), o checkpoint de uma linha e os hashes/tamanhos. **Não houve análise independente completa do corpo binário**, nem leitura de valores individuais da dimensão a partir do QVD por ferramenta externa; **2.021 SK únicas** e `0 unmatched` são valores calculados/registrados pelo script Qlik no checkpoint e coerentes com A1, não recontagem independente dos símbolos QVD.
+2. Não afirmar auditoria integral do log, CI PASS, revisão formal de PR ou merge: foram fornecidos trechos selecionados do log e a saída do auditor. O valor de `Execução concluída` no log integral não foi reexibido nesta rodada, mas o artefato/auditor pós-reload existe e passou.
+3. **`T29_HISTORICAL=NOT_APPROVED`**: cobertura quantitativa e do grão da dimensão não comprovam rótulos normativos em cada uma das 36 competências. Somente 56 pares-mês de `201909` recebem legenda descritiva datada; **1.965/2.021 = 97,2% PARES-MÊS** permanecem sem descrição histórica comprovada e devem manter `NULL` nas colunas descritivas; nunca dizer `97,2% dos leitos`.
+4. **`PRESENTATION_CNES_HISTORICAL_CAVEAT=REQUIRED_NOT_RENDERED`**. Aviso aprovado em `docs/discovery/boundary-7-implementation-plan.md` é obrigatório quando futuros gráficos, análises textuais e capturas/exportações de leitos forem construídos. PAINEL ainda não iniciado.
+5. `A2_CONTRACT=APPROVED_AND_IMPLEMENTED_LOCALLY`; `MAIN_DIMENSIONS=7/8` (oitava só na branch e no ambiente local do responsável), **Fatos/Link Table/PAINEL=NOT_STARTED**, nenhum `_SUCCESS_TRANSFORMACAO.csv` global foi solicitado ou produzido nesta etapa. Scripts, dados brutos, Capítulos 1–2, SK e temporalidade permanecem preservados.
+
+### Próximo boundary — revisão de integração, não merge automático
+
+Realizar revisão read-only do diff da branch contra `main` (inclusões Qlik + auditores + documentação), verificar exclusividade do escopo DIM e possível regressão associativa, identificar evidências ainda não coletadas e então decidir criação de **Draft PR** e promoção após autorização explícita. Não versionar QVD/logs volumosos nem iniciar fatos/Link Table/PAINEL nesta rodada.
