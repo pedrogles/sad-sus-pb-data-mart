@@ -130,3 +130,26 @@ Se a branch ja existir localmente, `git switch feat/phase-4-dim-municipio` e `gi
 ### Proxima execucao local
 
 Na branch `feat/phase-4-dim-municipio` atualizada via `git pull --ff-only`, manter o QlikView fechado antes de `Start-Process -Wait`. Executar `TRANSFORMACAO/TRANSF.qvw` e exigir log novo, `_CHECKPOINT_DIM_MUNICIPIO.csv` novo com `PASS_PARTIAL_DIM_MUNICIPIO_ONLY`, 223 PB, 5.202 RD residentes externos, 714 codigos externos se mantido mesmo staging, `dimension_rows=937`, zero invalidos e zero unmatched, `DIM_MUNICIPIO.qvd` novo. Os 714/937 sao expectativas **reconciliadas na memoria do reload de 23:55**, a revisar se staging alterar. Nunca aprovar so por ExitCode 0.
+
+## Terceiro reload IV-MUNICIPIO — Exists tambem falhou no controle agregado (08/10/2026 23:59)
+
+**FATO VERIFICADO — saida PowerShell fornecida pelo responsavel:**
+- `git pull --ff-only` atualizou a branch para a versao com `Not Exists(COD_DATASUS_6, Trim(Text(...)))` nos quatro testes; `Select-String` confirmou quatro expressoes nas linhas 237–251.
+- `Start-Process ... -Wait` aguardou o reload, `QLIK_EXIT=0` e `LOG_NOVO=True`.
+- O log Qlik de 23:59 confirmou leitura de RD/ST/LT e novo encerramento `FAIL RD/ST/LT domain coverage`. Valores testados: **566.672 RD residencia sem match, 566.672 RD atendimento sem match, 220.390 ST sem match e 35.518 LT sem match**, com os quatro totais das fontes inalterados.
+- Nem `DIM_MUNICIPIO.qvd` nem `_CHECKPOINT_DIM_MUNICIPIO.csv` foram gerados.
+- **Conclusao**: a substituicao de `ApplyMap` por `Exists` **NAO resolveu** o problema. O ultimo reload nao constitui PASS. Nao afirmar incompatibilidade entre os codigos sem teste do valor real e do contexto de avaliacao do Qlik.
+
+**Proximo diagnostico, ainda sem alterar contrato do modelo ou tratar dados originais:** instrumentacao temporaria versionada no mesmo `transf_dim_municipio.qvs`, executada somente depois do teste de integridade 223+714=937 e antes da verificacao final. Ela:
+1. carrega mapa auxiliar `P4M_DIAG_MAP` com `COD_DATASUS_6 → 1`, em vez de codigo → ele proprio;
+2. calcula `Exists` e `ApplyMap` com um codigo da propria DIM;
+3. le apenas os **5 primeiros registros** RD e ST em tabelas temporarias em memoria, compara residencia, atendimento e localizacao com esse mapa, e emite `TRACE DIAG_...`;
+4. elimina amostras temporarias e **mantem inalterado o gate fail-closed** RD/ST/LT e a regra de nao gerar QVD/checkpoint se houver unmatched;
+5. **nao gera arquivo diagnostico nem modifica fontes**; so loga codigos municipais e flags, sem identificadores de pacientes.
+
+Documentacao de semantica:
+- QlikView `Exists(field_name,expr)`: https://help.qlik.com/pt-BR/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/InterRecordFunctions/Exists.htm
+- QlikView `Mapping` exige duas colunas — comparacao e retorno: https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/ScriptPrefixes/Mapping.htm
+- QlikView `First n` limita numero de registros carregados: https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/ScriptPrefixes/First.htm
+
+**Status:** `IV-MUNICIPIO=FAIL_CLOSED_2_RELOADS`; `ROOT_CAUSE=UNVERIFIED`; `DIAGNOSTIC_TRACE_CODE_READY`; `PR_75=DRAFT`; `PHASE_IV=IN_PROGRESS`. Antes de outra tentativa de mudar regra ou associações, coletar `TRACE [TRANSFORMACAO][IV-MUNICIPIO] DIAG_...` do log do novo reload. Nenhum outro conjunto de dados foi alterado.
