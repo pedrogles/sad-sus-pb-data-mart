@@ -76,3 +76,39 @@ O script comparou SHA de `tb_cid.txt` e layout com manifestos C2.4/C2.7, **14.23
 
 **Próximo gate:** preparar `TRANSFORMACAO/transf_dim_diagnostico.qvs` após os quatro includes dimensionais, com `%SK_DIAGNOSTICO=Hash128('CID10', codigo normalizado)` e **uma linha por código CID-10 estático** (14230). Exigir 14230 SK únicas, 2042 categorias de três caracteres + 12188 subcategorias de quatro, origem 201912, descrição presente, RD 566672/0 unmatched aplicando **`Text(RTrim(Text(DIAG_PRINC)))`** conforme a correção comprovada do T28. Validar depois QVD físico/checkpoint de etapa parcial; não afirmar vigência histórica mensal e não criar fatos/Link Table/painel.
 
+
+## IV-DIAGNOSTICO — transformação e auditor de QVD preparados (CODE READY, NÃO EXECUTADO)
+
+**Implementação candidata versionável:**
+
+- `TRANSFORMACAO/transf_dim_diagnostico.qvs` foi acrescentado e incluído em `TRANSFORMACAO/transf_main.qvs` **após** a quarta dimensão `DIM_PROCEDIMENTO`. O include exige que os valores do checkpoint anterior mantenham 165203 versões SIGTAP/165203 SK, 566672 RD e 0 unmatched antes de prosseguir.
+- O script lê `EXTRACAO/QVD/REF_CID10.qvd` com os 4 campos físicos já comprovados no estágio C2.8d: `CID10_CODIGO`, `CID10_DESCRICAO`, `CID10_COMPETENCIA_REFERENCIA`, `CID10_FONTE_ARQUIVO`. A carga restringe o dicionário a **14230 códigos únicos**, distribuição 2042 de 3 caracteres e 12188 de 4, descrição não vazia, competência descritiva fixa `201912`, origem `tb_cid.txt`. Sem QVD novo de extração e sem regravar a referência.
+- **Modelo dimensional proposto de 5 campos físicos:** `%SK_DIAGNOSTICO=Hash128('CID10', COD_DIAGNOSTICO)`, `COD_DIAGNOSTICO`, `DESCRICAO_OFICIAL_DIAGNOSTICO` (conteúdo `NO_CID`/CID10_DESCRICAO oficial), `CID10_REFERENCIA_COMPETENCIA` (`201912`, só proveniência), `CID10_FONTE_ARQUIVO` (`tb_cid.txt`, só proveniência). Os nomes de descrição e competência são **específicos** para impedir associações artificiais com `DIM_PROCEDIMENTO`; os três primeiros são os atributos acadêmicos SK/CID/descrição, complementados por dois metadados de origem.
+- **Grão** 1 linha por código CID-10 normalizado, **sem competência mensal na SK**, conforme Boundary 7 e escolha da fonte estática descritiva (não usar `201912` como validade histórica). Exigir 14230 linhas, 5 campos, 14230 SK distintas, 14230 códigos distintos, 0 inválidos.
+- **T28:** testa as 566672 linhas em `EXTRACAO/QVD/SRC_SIH_RD.qvd`, com `DIAG_PRINC` e expressão **literal `Text(RTrim(Text(DIAG_PRINC)))`** para lookup, preservando os zeros internos/valor textual comprovados na correção III-C2.8d. Exigir 5480 códigos RD distintos, 0 sem correspondência, 0 inválidos. A verificação em Python do CSV convertido de 60423 valores com ASCII U+0020 trailing já passou; não assumir esse número no QVD, em que o Qlik pode representar o valor fisicamente de modo diverso.
+- Persistir **somente depois dos checks**: `TRANSFORMACAO/QVD/DIM_DIAGNOSTICO.qvd` e `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_DIAGNOSTICO.csv` com `PASS_PARTIAL_DIM_DIAGNOSTICO_ONLY`. **Nenhum** sucesso global de transformação, fato, Link Table ou PAINEL.
+
+**Auditor físico versionado**: `tools/audit_dim_diagnostico_qvd.py` (**ainda não executado**), read-only. Ele exige integridade original C2.4/C2.7/T28 novamente (14.230 códigos, 36 RD/566672, 0 unmatched), confirma cabeçalho XML QVD **14230 linhas e 5 campos em ordem**, compara os contadores/políticas do CSV checkpoint parcial, SHA-256 e frescor relativo. **Limitação declarada:** não decodifica independentemente os registros binários do QVD. A prova de conteúdo da dimensão vem da transformação e do log real QlikView combinado com os arquivos CID originais auditados.
+
+### Gate de execução local QlikView 12 — pendente
+
+1. Atualizar a branch:
+   ```powershell
+   git pull --ff-only
+   if ($LASTEXITCODE -ne 0) { throw "Falha ao atualizar o repositorio" }
+   ```
+2. No QlikView 12 abrir `TRANSFORMACAO/TRANSF.qvw` e executar **Reload**. Exigir log fresco com:
+   ```text
+   [TRANSFORMACAO][IV-DIAGNOSTICO] SOURCE Rows=14230 Fields=4 Keys=14230 Len3=2042 Len4=12188 Invalid=0
+   [TRANSFORMACAO][IV-DIAGNOSTICO] COVER RD=566672 Distinct=5480 UNMATCHED=0 Invalid=0
+   [TRANSFORMACAO][IV-DIAGNOSTICO] DIM_DIAGNOSTICO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN
+   ```
+   Também exigir encerramento normal do reload sem FAIL real. O reload executará os quatro includes anteriores, mas não mudará suas regras de negócio.
+3. Somente com o reload bem-sucedido, executar:
+   ```powershell
+   .\.venv\Scripts\python.exe .\tools\audit_dim_diagnostico_qvd.py
+   if ($LASTEXITCODE -ne 0) { throw "Auditoria fisica da DIM_DIAGNOSTICO falhou" }
+   ```
+4. Enviar **log do QlikView e saída do auditor**. O veredito `PASS_LOCAL_DIM_DIAGNOSTICO_QVD_HEADER_CHECKPOINT_RECONCILED` é **esperado, não observado**; sem ele, não criar PR de integração, não atualizar `main` e não avançar fatos/Link Table.
+
+**Estado:** `IV-DIAGNOSTICO=CID10_PREFLIGHT_PASS_QV_CODE_READY_NOT_RUN`; **4/8 dimensões integradas na `main`**, `T29_HISTORICAL=NOT_APPROVED`; fatos, Link Table e PAINEL `NOT_STARTED`. Preservar a referência CID `201912` **como superset descritivo**, sem inferir sua validade normativa histórica mensal.
