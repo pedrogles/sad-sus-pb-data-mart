@@ -170,3 +170,14 @@ Os 36 CSVs SIH/RD físicos têm `CAR_INT` **textual com exatamente dois dígitos
 **Limites:** checks de status e workflows GitHub consultados para o head da promoção retornaram **listas vazias** — **não há CI PASS comprovado**. A auditoria QVD/Python e o reload QlikView passaram **localmente**, com log fornecido em excertos; auditor externo não decodifica corpo binário do QVD. Consultas ao PR não mostraram revisões formais de terceiros nem threads.
 
 **DECISÃO PENDENTE:** autorização **específica** para executar o **squash merge do PR #79**. Não integrar automaticamente. Até merge confirmado, `main` segue **5/8 dimensões integradas**. Próximo checkpoint após integração é `DIM_MOTIVO_SAIDA_PERMANENCIA`, sujeito a Discovery/preflight próprio. `T29_HISTORICAL=NOT_APPROVED`, fatos/Link Table/PAINEL `NOT_STARTED`.
+
+## Integração concluída — PR #79 (09/10/2026)
+
+**FATO VERIFICADO NO GITHUB, com aprovação específica do responsável:** PR [#79](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/79), `feat/phase-4-dim-carater-atendimento` → `main`, **MERGED por squash**. Commit de integração: **`70fa608eb2a6e49c1450268e6706ceaa99177da1`**, merge protegido por `expected_head_sha=63a1bd6930a1b81ce710afd7204881b4ad623604`; a ação GitHub retornou `merged=true`, e posterior `get_pr_info` confirmou PR `closed/merged`.
+
+- Antes do merge, `mergeable=false` apareceu de forma intermitente nas consultas, mas a verificação posterior confirmou **`mergeable=true`**, `behind_by=0`, mesmo `head` e base compatível, antes da execução autorizada. Nenhum merge foi tentado enquanto o estado era falso.
+- QlikView 12 e auditoria física de QVD/checkpoint **PASS LOCAL**, conforme os trechos, hashes e dados registrados acima. O corpo binário QVD não foi decodificado independentemente; o log foi apresentado em trechos; **não** afirmar CI GitHub PASS ou revisão formal de terceiros.
+- Scripts QlikView, auditores Python e documentação da sexta dimensão entraram na `main`; **QVDs e datasets locais não estão versionados**.
+- **Novo estado da Fase IV: `IN_PROGRESS`, 6/8 dimensões integradas à `main`**: `DIM_TEMPO`, `DIM_MUNICIPIO`, `DIM_ESTABELECIMENTO`, `DIM_PROCEDIMENTO`, `DIM_DIAGNOSTICO`, `DIM_CARATER_ATENDIMENTO`.
+- Próximo checkpoint: **`DIM_MOTIVO_SAIDA_PERMANENCIA`** — Discovery READ-ONLY da referência normativa C1 e mapeamento de `COBRANCA` no SIH/RD, incluindo `24` → `2.4` conforme Boundary 7, para preflight físico. Não produzir include antes de validar os dados.
+- `T29_HISTORICAL=NOT_APPROVED`, rótulos C1 preservados, Capítulos 1–2 fechados, fatos/Link Table/PAINEL `NOT_STARTED`. As seções anteriores que mencionam PR Draft/Ready ou 5/8 registram a progressão histórica, não o status presente.
