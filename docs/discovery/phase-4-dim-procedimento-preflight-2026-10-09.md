@@ -101,3 +101,41 @@ print("PREFLIGHT_SIGTAP_INVENTARIO_READ_ONLY_PASS")
 4. Não implementar fatos, Link Table, PAINEL, nem reabrir Capítulos 1–2; `T29_HISTORICAL=NOT_APPROVED`.
 
 **Status:** `IV-PROCEDIMENTO=PRECONDITION_SOURCE_DISCOVERY`; `PHASE_IV=IN_PROGRESS`; `PR=NONE`; `T27=PASS`.
+
+## Resultado do inventário C3.2 — execução local 09/10/2026
+
+**FATO VERIFICADO — PowerShell/Python fornecido pelo responsável:**
+
+- Branch local `feat/phase-4-dim-procedimento` criada por checkout de `origin/feat/phase-4-dim-procedimento`, após `git fetch origin`.
+- `sigtap_procedure_sample_members.csv` presente, SHA-256 **`110e9c22ed79cbab47e5c7726b9d19f9f2fe7117f7519e81d1319fca5583d0ad`** igual ao registrado na Discovery III-C3.2.
+- Inventário tem **348 membros**, exatamente **87 por competência**: `201701`, `201801`, `201901`, `201912`. `PREFLIGHT_SIGTAP_READ_ONLY_PASS` emitido.
+- Os quatro meses contêm os mesmos **seis candidatos diretos** à hierarquia (nomes reais, ainda não layout/conteúdo validado):
+  - `tb_grupo.txt` / `tb_grupo_layout.txt`;
+  - `tb_sub_grupo.txt` / `tb_sub_grupo_layout.txt`;
+  - `tb_forma_organizacao.txt` / `tb_forma_organizacao_layout.txt`.
+- Também existem `tb_procedimento.txt` / `tb_procedimento_layout.txt` e várias relações `rl_procedimento_*`; a lista de nomes **não** prova os campos, cardinalidades nem a regra de associação ao procedimento.
+
+**Interpretação estrita:** preflight de existência e proveniência dos **candidatos** passou, sem nenhum download na execução, sem análise do interior dos seis arquivos e sem confirmar descrições ou chaves. Não afirmar que a hierarquia SIGTAP foi materializada, nem que a `DIM_PROCEDIMENTO` está pronta.
+
+## Próximo Boundary — inspeção física controlada de seis arquivos em quatro ZIPs
+
+**Implementação preparada, AINDA NÃO EXECUTADA no Windows:** `tools/inspect_sigtap_hierarchy_sample.py`.
+
+- Reutiliza `tools/inspect_sigtap_procedure_sample.py` e `tools/materialize_sigtap_procedure_sample.py` (caminho oficial FTP, `read_inventory`, `load_previous_sample`, `find_exact_member`, `receive_zip`).
+- Obtém **apenas os 4 ZIPs anteriores**, cada um em `TemporaryDirectory`; compara SHA-256/tamanho com C3.2 e verifica CRC de ZIP. Eles são baixados novamente apenas porque as cópias da inspeção anterior eram temporárias e foram descartadas. Não baixa 36 pacotes.
+- Inspeciona **somente** os seis membros exatos por competência. Cada membro é validado contra `sigtap_procedure_sample_members.csv` (nome, tamanho, CRC); a inspeção lê o layout real e mostra nomes de campos, posição inicial/final, tipo e primeiras duas linhas de cada tabela.
+- Faz perfil de número de linhas, larguras físicas e preenchimento de campos `CO_*` observados no layout. O texto `cp1252` é **candidato apenas para prévias**; interpretação histórica e relacionamento oficial continuam pendentes.
+- Nenhum CSV/QVD/arquivo derivado persistente é gerado; sem alteração do histórico SIH, do REF_SIGTAP.qvd, da modelagem acadêmica, dos fatos ou do QlikView.
+- `VERDICT=PASS_SAMPLE_STRUCTURE_ONLY` **não** aprova joins, encoding final ou 36 competências; exige revisão das saídas reais.
+
+### Execução do teste físico controlado
+
+Na raiz do repositório (branch `feat/phase-4-dim-procedimento`), após `git pull --ff-only`:
+
+```powershell
+.\.venv\Scripts\python.exe .\tools\inspect_sigtap_hierarchy_sample.py
+```
+
+**Esperado somente se a fonte corresponder à hipótese de layout:** `INVENTORY_SHA_MATCH=True`, `MEMBERS_INSPECTED=24`, `INTEGRITY_ERRORS=0`, `VERDICT=PASS_SAMPLE_STRUCTURE_ONLY`, `RELATIONAL_JOINS_AND_ENCODING=NOT_APPROVED`. Se erro de layout, chave ou ZIP, interromper e inspecionar a mensagem real sem tentar completar/renomear campos.
+
+**DECISÃO PENDENTE após o teste:** definir a identificação da relação `procedimento → grupo → subgrupo → forma de organização` por competência, a partir dos nomes/posições reais observados nas tabelas e nos layouts. Só então expandir a validação às 36 competências e preparar transformação QlikView `DIM_PROCEDIMENTO`. `IV-PROCEDIMENTO=SAMPLE_PHYSICAL_LAYOUT_GATE_PENDING`; `T27=PASS`; `PHASE_IV=IN_PROGRESS`.
