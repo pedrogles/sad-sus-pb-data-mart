@@ -211,3 +211,20 @@ Documentacao de semantica:
 **Gate ainda pendente antes do aceite final / merge PR #75:** analisar **cabecalho fisico** do QVD (quantidade de registros e 8 nomes de campos), SHA-256 de QVD e CSV e reconciliar os valores importados com a estrutura. A saida do usuario comprova a existencia/tamanho, **mas nao** contem o cabecalho nem o hash, portanto `IV-MUNICIPIO=PASS_LOCAL_QV_CHECKPOINT_PHYSICAL_FILE`, `QVD_HEADER_AND_HASH=PENDING`, `PR_75=DRAFT`, `PHASE_IV=IN_PROGRESS`. Nao declarar PASS FINAL da Fase IV; ainda restam outras seis dimensoes.
 
 **Proximo teste local (read-only, sem reload):** abrir os primeiros bytes do QVD ate `</QvdTableHeader>`, inspecionar `NoOfRecords=937`, listar os 8 `FieldName`, conferir `SHA256` e `LastWriteTime` do QVD e CSV e comparar status e contadores. Se divergencia, bloquear merge e investigar sem apagar artefatos.
+
+## Sétimo checkpoint — QVD municipal fisicamente auditado (09/10/2026 00:10:51)
+
+**FATO VERIFICADO — saída PowerShell/Python 3 fornecida pelo responsável do projeto; nenhuma nova transformação:**
+
+- O script Python executado localmente terminou sem erro e imprimiu `VEREDITO=PASS_LOCAL_QVD_HEADER_CHECKPOINT_RECONCILED`.
+- O arquivo `TRANSFORMACAO/QVD/DIM_MUNICIPIO.qvd` possui **45.750 bytes**, timestamp local `2026-10-09 00:10:51.375418`, SHA-256 **`e6e347a1c88f7508ddc26b181342430bec6318bb03818c195a9b4707b8b0b49f`**.
+- Leitura do cabeçalho XML `QvdTableHeader`: **`NoOfRecords=937`**; **8 campos**, sem faltas ou excedentes:
+  `%SK_MUNICIPIO`, `COD_DATASUS_6`, `COD_IBGE_7`, `NOME_MUNICIPIO`, `UF`, `MUNICIPIO_COBERTURA`, `NOME_MUNICIPIO_ANO_REFERENCIA`, `MUNICIPIO_NATUREZA_REFERENCIA`.
+- `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_MUNICIPIO.csv` possui **513 bytes**, timestamp local `2026-10-09 00:10:51.379668`, SHA-256 **`9b8f987ea8b6133d7939e09d0b43a9b859b4b948ec15a3fa9ba4d9bde9074b49`**.
+- O CSV foi lido com `csv.DictReader(delimiter=';')`, exatamente **uma linha e 18 campos**; `status=PASS_PARTIAL_DIM_MUNICIPIO_ONLY`.
+- Assertions concluíram sem divergência: `dimension_rows=937`, `municipalities_pb=223`, `external_distinct_codes=714`, `external_rd_rows=5202`, `unique_surrogate_keys=937`, `invalid_dimension_rows=0`, `unmatched_ibge_2019_names=0`, `rd_residence_unmatched=0`, `rd_attendance_unmatched=0`, `st_unmatched=0`, `lt_unmatched=0`; `t29_historical=NOT_APPROVED`; `facts_and_link_table=NOT_STARTED`.
+- O log anterior contemporâneo `TRANSF.qvw.2026_10_09_00_10_46.log` exibiu `PREFIXED_SELF_CHECK Rows=937 Missing=0`, gravou QVD/CSV e encerrou `Execution finished`. O checkpoint e QVD têm timestamps reconciliados.
+
+**VEREDITO DOCUMENTADO:** `IV-MUNICIPIO=PASS_LOCAL_QVD_HEADER_CHECKPOINT_RECONCILED`; checkpoint técnico IV-MUNICIPIO **concluído**, preservada distinção dos 223 municípios PB e 714 códigos externos distintos observados. O teste do cabeçalho/QVD verifica **metadados físicos, campos e contagem**, não equivale a decodificar independentemente cada linha do bloco de dados binários do QVD; verificações de unicidade e cobertura são as validacões do script QlikView já evidenciadas, não uma segunda leitura independente das 937 linhas. Não converter a hipótese *dual* em causa definitiva sem prova adicional.
+
+**Escopo da conclusão:** `DIM_TEMPO` e `DIM_MUNICIPIO` tecnicamente validadas; **6 dimensões restantes**, fatos e Link Table não iniciados; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`. O PR #75 ainda exige revisão de integração GitHub; não declarar merge ou implantação sem confirmação do GitHub.
