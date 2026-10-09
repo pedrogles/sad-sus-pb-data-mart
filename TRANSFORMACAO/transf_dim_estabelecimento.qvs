@@ -1,0 +1,250 @@
+// IV-ESTABELECIMENTO — versao mensal de CNES/ST.
+// Contrato Boundary 5/7: uma linha por CNES + competencia, sem intervalos SCD2.
+// Names unavailable in ALL 36 ST CSV headers: keep NULL; no future name backfill.
+// The join/map used here is technical coverage only; no facts or LINK_ANALISE.
+LET vP4EErrorsBefore = ScriptErrorCount;
+TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] START;
+
+IF $(vP4MPBRows) <> 223 OR $(vP4MInvalid) <> 0 OR $(vP4MResMissing) <> 0 OR $(vP4MMovMissing) <> 0 OR $(vP4MSTMissing) <> 0 OR $(vP4MLTMissing) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL prior DIM_MUNICIPIO gate;
+    EXIT SCRIPT;
+ENDIF
+
+// Campo real COMPETEN de ST; a meta de competencia da extracao serve
+// exclusivamente para validar a procedencia temporal de cada snapshot.
+P4E_ST_SOURCE:
+LOAD
+    Trim(Text(CNES)) AS _P4E_CNES,
+    Right('000000' & Trim(Text(COMPETEN)), 6) AS _P4E_CMPT,
+    Trim(Text(_META_SOURCE_COMPETENCE)) AS _P4E_META_CMPT,
+    Trim(Text(CODUFMUN)) AS _P4E_CODUFMUN,
+    Trim(Text(COD_CEP)) AS _P4E_COD_CEP,
+    Trim(Text(CNPJ_MAN)) AS _P4E_CNPJ_MAN,
+    Trim(Text(VINC_SUS)) AS _P4E_VINC_SUS,
+    Trim(Text(TPGESTAO)) AS _P4E_TPGESTAO,
+    Trim(Text(TP_UNID)) AS _P4E_TP_UNID,
+    Trim(Text(NATUREZA)) AS _P4E_NATUREZA,
+    Trim(Text(NAT_JUR)) AS _P4E_NAT_JUR
+FROM [..\EXTRACAO\QVD\SRC_CNES_ST.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4EErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL loading CNES ST staging;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4ESourceRows = NoOfRows('P4E_ST_SOURCE');
+
+P4E_ST_SOURCE_PROFILE:
+LOAD
+    Count(*) AS _P4E_ST_ROWS,
+    Count(DISTINCT _P4E_CNES) AS _P4E_ST_CNES_DISTINCT,
+    Count(DISTINCT _P4E_CMPT) AS _P4E_ST_CMPT_DISTINCT,
+    Count(DISTINCT 'E|' & _P4E_CNES & '|' & _P4E_CMPT) AS _P4E_ST_VERSION_DISTINCT,
+    Sum(If(
+        Len(_P4E_CNES) = 0
+        OR Len(KeepChar(_P4E_CNES, '0123456789')) <> Len(_P4E_CNES)
+        OR Len(_P4E_CMPT) <> 6
+        OR Len(KeepChar(_P4E_CMPT, '0123456789')) <> 6
+        OR _P4E_CMPT < '201701' OR _P4E_CMPT > '201912'
+        OR _P4E_META_CMPT <> _P4E_CMPT, 1, 0
+    )) AS _P4E_ST_BAD_VERSIONS
+RESIDENT P4E_ST_SOURCE;
+
+LET vP4ESTRows = Peek('_P4E_ST_ROWS', 0, 'P4E_ST_SOURCE_PROFILE');
+LET vP4ESTCnes = Peek('_P4E_ST_CNES_DISTINCT', 0, 'P4E_ST_SOURCE_PROFILE');
+LET vP4ESTMonths = Peek('_P4E_ST_CMPT_DISTINCT', 0, 'P4E_ST_SOURCE_PROFILE');
+LET vP4ESTVersions = Peek('_P4E_ST_VERSION_DISTINCT', 0, 'P4E_ST_SOURCE_PROFILE');
+LET vP4ESTBad = Peek('_P4E_ST_BAD_VERSIONS', 0, 'P4E_ST_SOURCE_PROFILE');
+DROP TABLE P4E_ST_SOURCE_PROFILE;
+
+IF $(vP4ESourceRows) <> 220390 OR $(vP4ESTRows) <> 220390 OR $(vP4ESTCnes) <> 6822 OR $(vP4ESTMonths) <> 36 OR $(vP4ESTVersions) <> 220390 OR $(vP4ESTBad) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL historical ST source integrity Rows=$(vP4ESTRows) CNES=$(vP4ESTCnes) Months=$(vP4ESTMonths) Versions=$(vP4ESTVersions) Invalid=$(vP4ESTBad);
+    EXIT SCRIPT;
+ENDIF
+
+// Uma unica versao por estabelecimento e competencia. Sem preenchimento
+// de nomes, pois nao existe coluna nominal nos 36 arquivos ST inspecionados.
+DIM_ESTABELECIMENTO:
+NOCONCATENATE LOAD
+    Hash128('ESTAB', _P4E_CNES, _P4E_CMPT) AS [%SK_ESTABELECIMENTO],
+    Text(_P4E_CNES) AS CNES,
+    Text(_P4E_CMPT) AS COMPETENCIA,
+    Text(_P4E_CODUFMUN) AS CODUFMUN,
+    Text(_P4E_COD_CEP) AS COD_CEP,
+    Text(_P4E_CNPJ_MAN) AS CNPJ_MAN,
+    Text(_P4E_VINC_SUS) AS VINC_SUS,
+    Text(_P4E_TPGESTAO) AS TPGESTAO,
+    Text(_P4E_TP_UNID) AS TP_UNID,
+    Text(_P4E_NATUREZA) AS NATUREZA,
+    Text(_P4E_NAT_JUR) AS NAT_JUR,
+    Null() AS NOME_FANTASIA,
+    Null() AS RAZAO_SOCIAL,
+    'SEM_NOME_HISTORICO_ST_VALIDADO' AS NOME_HISTORICO_STATUS
+RESIDENT P4E_ST_SOURCE;
+
+DROP TABLE P4E_ST_SOURCE;
+
+IF ScriptErrorCount > $(vP4EErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL creating historical dimension;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP4EDimensionRows = NoOfRows('DIM_ESTABELECIMENTO');
+LET vP4EDimensionFields = NoOfFields('DIM_ESTABELECIMENTO');
+
+P4E_DIM_PROFILE:
+LOAD
+    Count(*) AS _P4E_DIM_ROWS,
+    Count(DISTINCT CNES) AS _P4E_DIM_CNES,
+    Count(DISTINCT COMPETENCIA) AS _P4E_DIM_MONTHS,
+    Count(DISTINCT [%SK_ESTABELECIMENTO]) AS _P4E_DIM_SK_DISTINCT,
+    Count(DISTINCT 'E|' & CNES & '|' & COMPETENCIA) AS _P4E_DIM_VERSION_DISTINCT,
+    Sum(If(
+        Len(Trim(Text([%SK_ESTABELECIMENTO]))) = 0
+        OR Len(Trim(Text(CNES))) = 0
+        OR Len(COMPETENCIA) <> 6
+        OR NOT IsNull(NOME_FANTASIA)
+        OR NOT IsNull(RAZAO_SOCIAL), 1, 0
+    )) AS _P4E_DIM_BAD
+RESIDENT DIM_ESTABELECIMENTO;
+
+LET vP4EDimRowsCheck = Peek('_P4E_DIM_ROWS', 0, 'P4E_DIM_PROFILE');
+LET vP4EDimCnes = Peek('_P4E_DIM_CNES', 0, 'P4E_DIM_PROFILE');
+LET vP4EDimMonths = Peek('_P4E_DIM_MONTHS', 0, 'P4E_DIM_PROFILE');
+LET vP4EDimSK = Peek('_P4E_DIM_SK_DISTINCT', 0, 'P4E_DIM_PROFILE');
+LET vP4EDimVersion = Peek('_P4E_DIM_VERSION_DISTINCT', 0, 'P4E_DIM_PROFILE');
+LET vP4EDimBad = Peek('_P4E_DIM_BAD', 0, 'P4E_DIM_PROFILE');
+DROP TABLE P4E_DIM_PROFILE;
+
+IF $(vP4EDimensionRows) <> 220390 OR $(vP4EDimensionFields) <> 14 OR $(vP4EDimRowsCheck) <> 220390 OR $(vP4EDimCnes) <> 6822 OR $(vP4EDimMonths) <> 36 OR $(vP4EDimSK) <> 220390 OR $(vP4EDimVersion) <> 220390 OR $(vP4EDimBad) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL dimension schema, names or version uniqueness;
+    EXIT SCRIPT;
+ENDIF
+
+// Chave de cobertura exclusivamente interna e prefixada, para evitar
+// ambiguidade numeric/dual (aprendizado do checkpoint IV-MUNICIPIO).
+P4E_VERSION_MAP:
+MAPPING LOAD
+    'E|' & Trim(Text(CNES)) & '|' & Trim(Text(COMPETENCIA)) AS _P4E_KEY,
+    1 AS _P4E_PRESENT
+RESIDENT DIM_ESTABELECIMENTO;
+
+// Confirmar que o map reconhece todas as versoes da propria dimensao.
+P4E_SELF_COVER:
+NOCONCATENATE LOAD
+    If(ApplyMap('P4E_VERSION_MAP', 'E|' & Trim(Text(CNES)) & '|' & Trim(Text(COMPETENCIA)), 0) = 1, 0, 1) AS _P4E_SELF_BAD
+RESIDENT DIM_ESTABELECIMENTO;
+
+P4E_SELF_PROFILE:
+LOAD Count(*) AS _P4E_SELF_ROWS, Sum(_P4E_SELF_BAD) AS _P4E_SELF_MISSING
+RESIDENT P4E_SELF_COVER;
+
+LET vP4ESelfRows = Peek('_P4E_SELF_ROWS', 0, 'P4E_SELF_PROFILE');
+LET vP4ESelfMissing = Peek('_P4E_SELF_MISSING', 0, 'P4E_SELF_PROFILE');
+DROP TABLE P4E_SELF_PROFILE;
+DROP TABLE P4E_SELF_COVER;
+
+TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] SELF_CHECK Rows=$(vP4ESelfRows) Missing=$(vP4ESelfMissing);
+
+IF ScriptErrorCount > $(vP4EErrorsBefore) OR $(vP4ESelfRows) <> 220390 OR $(vP4ESelfMissing) <> 0 THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL self-check of monthly versions;
+    EXIT SCRIPT;
+ENDIF
+
+// T16: a referencia RD deve localizar EXATAMENTE a mesma competencia,
+// nao um snapshot posterior. Verificacoes sao linhas e depois agregacao.
+P4E_RD_COVER:
+NOCONCATENATE LOAD
+    If(ApplyMap('P4E_VERSION_MAP',
+        'E|' & Trim(Text(CNES)) & '|'
+             & Right('0000' & Trim(Text(ANO_CMPT)), 4)
+             & Right('00' & Trim(Text(MES_CMPT)), 2),
+        0) = 1, 0, 1) AS _P4E_RD_MISSING
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4EErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL loading RD coverage;
+    EXIT SCRIPT;
+ENDIF
+
+P4E_RD_PROFILE:
+LOAD Count(*) AS _P4E_RD_ROWS, Sum(_P4E_RD_MISSING) AS _P4E_RD_UNMATCHED
+RESIDENT P4E_RD_COVER;
+
+LET vP4ERDRows = Peek('_P4E_RD_ROWS', 0, 'P4E_RD_PROFILE');
+LET vP4ERDUnmatched = Peek('_P4E_RD_UNMATCHED', 0, 'P4E_RD_PROFILE');
+DROP TABLE P4E_RD_PROFILE;
+DROP TABLE P4E_RD_COVER;
+
+// Capacidade CNES/LT tambem exige CNES + mesma competencia.
+P4E_LT_COVER:
+NOCONCATENATE LOAD
+    If(ApplyMap('P4E_VERSION_MAP',
+        'E|' & Trim(Text(CNES)) & '|' & Right('000000' & Trim(Text(COMPETEN)), 6),
+        0) = 1, 0, 1) AS _P4E_LT_MISSING
+FROM [..\EXTRACAO\QVD\SRC_CNES_LT.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4EErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL loading LT coverage;
+    EXIT SCRIPT;
+ENDIF
+
+P4E_LT_PROFILE:
+LOAD Count(*) AS _P4E_LT_ROWS, Sum(_P4E_LT_MISSING) AS _P4E_LT_UNMATCHED
+RESIDENT P4E_LT_COVER;
+
+LET vP4ELTRows = Peek('_P4E_LT_ROWS', 0, 'P4E_LT_PROFILE');
+LET vP4ELTUnmatched = Peek('_P4E_LT_UNMATCHED', 0, 'P4E_LT_PROFILE');
+DROP TABLE P4E_LT_PROFILE;
+DROP TABLE P4E_LT_COVER;
+
+TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] COVER RD=$(vP4ERDRows) RD_UNMATCHED=$(vP4ERDUnmatched) LT=$(vP4ELTRows) LT_UNMATCHED=$(vP4ELTUnmatched);
+
+IF $(vP4ERDRows) <> 566672 OR $(vP4ELTRows) <> 35518 OR $(vP4ERDUnmatched) <> 0 OR $(vP4ELTUnmatched) <> 0 OR ScriptErrorCount > $(vP4EErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL T16 temporal coverage;
+    EXIT SCRIPT;
+ENDIF
+
+// Apenas apos T16 e integridade historica aprovados gerar QVD/checkpoint.
+// Nao gerar _SUCCESS_TRANSFORMACAO.csv pois Fase IV permanece incompleta.
+STORE DIM_ESTABELECIMENTO INTO [QVD\DIM_ESTABELECIMENTO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP4EErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL storing dimension QVD;
+    EXIT SCRIPT;
+ENDIF
+
+P4E_DIM_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'TRANSFORMACAO_DIM_ESTABELECIMENTO' AS stage,
+    'PASS_PARTIAL_DIM_ESTABELECIMENTO_ONLY' AS status,
+    $(vP4EDimensionRows) AS dimension_rows,
+    $(vP4EDimensionFields) AS dimension_fields,
+    $(vP4EDimCnes) AS distinct_cnes,
+    $(vP4EDimMonths) AS distinct_competences,
+    $(vP4EDimVersion) AS unique_versions,
+    $(vP4EDimSK) AS unique_surrogate_keys,
+    $(vP4EDimBad) AS invalid_dimension_rows,
+    $(vP4ESelfMissing) AS self_unmatched,
+    $(vP4ERDRows) AS rd_rows,
+    $(vP4ERDUnmatched) AS rd_monthly_version_unmatched,
+    $(vP4ELTRows) AS lt_rows,
+    $(vP4ELTUnmatched) AS lt_monthly_version_unmatched,
+    'ST_2017_2019_HEADERS_WITHOUT_NAME_FIELDS' AS historical_name_source,
+    'NULL_NO_FUTURE_BACKFILL' AS historical_names_policy,
+    'NOT_APPROVED' AS t29_historical,
+    'NOT_STARTED' AS facts_and_link_table
+AUTOGENERATE 1;
+
+STORE P4E_DIM_CHECKPOINT INTO [QVD\_CHECKPOINT_DIM_ESTABELECIMENTO.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vP4EErrorsBefore) THEN
+    TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] FAIL partial checkpoint STORE;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P4E_DIM_CHECKPOINT;
+TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] DIM_ESTABELECIMENTO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN;
+TRACE [TRANSFORMACAO][IV-ESTABELECIMENTO] PHASE_IV_PARTIAL_ONLY;

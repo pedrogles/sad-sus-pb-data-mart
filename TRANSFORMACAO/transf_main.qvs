@@ -227,3 +227,7 @@ TRACE [TRANSFORMACAO][IV-TEMPO] PHASE_IV_PARTIAL_ONLY no facts no link table no 
 // FASE IV — segundo checkpoint: DIM_MUNICIPIO, isolado em include versionavel.
 // Depende da DIM_TEMPO PASS e nao altera o QVD dela nem fontes de staging.
 $(Must_Include=transf_dim_municipio.qvs);
+
+// FASE IV — terceiro checkpoint: versoes historicas CNES por competencia.
+// Depende de Tempo e Municipio; exige T16 sem usar snapshot posterior.
+$(Must_Include=transf_dim_estabelecimento.qvs);
