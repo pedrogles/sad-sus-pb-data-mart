@@ -257,3 +257,48 @@ VERDICT=PASS_OPTION_A_TEMPORAL_GRAIN_PREFLIGHT_ONLY
 **DECISÃO PENDENTE DO RESPONSÁVEL:** ratificar ou rejeitar o princípio do contrato A — distinção explícita de competências, granularidade por par-mês e `NULL` descritivo quando a fonte histórica é insuficiente — **antes** de pedir alteração documentada do Boundary 7 e antes de escrever scripts `transf_dim_tipo_leito.qvs`, QVD/checkpoint, fato, Link Table, painel ou PR de implementação. Se rejeitado, manter alternativa B (obter domínio histórico oficial) como caminho aberto.
 
 **Estado persistente:** `A1=PASS_LOCAL`; `A2=DECISION_PENDING`; `T29_HISTORICAL=NOT_APPROVED`; `main=7/8`. A primeira entrega acadêmica permanece intocada.
+
+## C4.2c.4 — Discovery histórica oficial delimitada, READ-ONLY (09/10/2026)
+
+**OBJETIVO DA RODADA:** após o responsável pedir aprofundamento da Discovery em vez de ratificar o contrato A2, investigar as **fontes normativas históricas** de `TP_LEITO + CODLEITO` para 201701–201912, sem converter código observado em prova de vigência, sem downloads em massa e sem modificar arquitetura.
+
+### Fontes primárias consultadas nesta rodada
+
+1. **RTS — [Terminologias](https://wiki.saude.gov.br/RTS/index.php/Terminologias):** identifica expressamente **Leitos** no grupo Estabelecimento de Saúde. **[RTS — Portal](https://wiki.saude.gov.br/RTS/index.php/RTS_Portal):** distingue **competência RTS** `MM/AAAA` de **versão da terminologia** `MM/AAAA/letra`; a terminologia só recebe nova versão quando há alterações de termos. O portal documenta troca de competências exibidas desde **01/2017**. **[RTS — Download](https://wiki.saude.gov.br/RTS/index.php/Download):** documenta pacotes por competência e suas Notas Técnicas/relatórios, **mas não demonstra que o subdomínio Leitos esteja presente/historicamente completo em cada pacote**. [Consulta de terminologias](https://wiki.saude.gov.br/RTS/index.php/Consultar_terminologias) descreve status/vigência para termos de exemplo, **não comprova essas propriedades para Leitos 2017–2019**.
+2. **RTS — [Documentos](https://wiki.saude.gov.br/RTS/index.php/Documentos):** a documentação informa que alterações das terminologias estão relacionadas a documentos, e descreve a pesquisa de portarias e atos por data/tipo/número/ementa. A tabela ilustrativa das portarias de 2019 **não deve ser interpretada como inventário exaustivo e específico de todas as alterações da terminologia Leitos**; não se obteve catálogo Leitos versionado nesta pesquisa.
+3. **CNES — [download da Base Nacional](https://wiki.saude.gov.br/cnes/index.php/Categoria:Consumo_de_informações_da_Base_Nacional_do_CNES_via_webservice_e_Download_da_Base_de_Dados):** o canal oficial documenta acesso por competência **a partir de 06/2017**. **[Portal CNES](https://wiki.saude.gov.br/cnes/index.php/Portal_CNES)** descreve em `Downloads → Aplicativos` versões **anteriores** do SCNES, completas e atualizações, e `Downloads → Base de Dados` por competência. **[Guia de Instalação SCNES](https://wiki.saude.gov.br/cnes/index.php/Guia_de_Instalação_dos_Sistemas)** diferencia instalação completa (tabelas do sistema) de atualizações que em geral implementam regras de negócio de uma competência. **NÃO foi obtido nenhum arquivo histórico identificável como `NFCES001/TB_LEITO`, nem comprovado que as bases públicas por competência ou instaladores versionados contenham o histórico daquela tabela de domínio.** Também não se encontrou aqui fonte cobrindo 201701–201705.
+4. **PORTARIA SAS/MS nº 298 de 01/03/2019 (DOU 06/03/2019), fonte ministerial:** [BVS/MS](https://bvs.saude.gov.br/bvs/saudelegis/sas/2019/prt0298_06_03_2019.html), com [publicação original no DOU, p. 78](https://pesquisa.in.gov.br/imprensa/servlet/INPDFViewer?captchafield=firstAccess&data=06%2F03%2F2019&jornal=515&pagina=78). O ato prevê **`77 → 94` (UTI Pediátrica Tipo I → UCI Pediátrica)** e **`74 → 95` (UTI Adulto Tipo I → UCI Adulto)**, com exclusão dos códigos anteriores segundo seus termos. Seu **artigo 8º condiciona os efeitos à disponibilização das versões dos sistemas do DATASUS que contemplem as modificações**. Portanto, **a publicação em 06/03/2019 NÃO estabelece competência operacional efetiva da migração**. É um caso concreto de possível mudança durante 2017–2019; também não prova alteração dos demais 53 pares observados.
+5. **Nota Técnica 32/2019, transcrição canônica:** `docs/discovery/cnes-nt32-2019-codigos-leito.csv` tem no retrato **201909** as linhas `66;3;UNIDADE ISOLAMENTO;Complementar`, `70;7;FIBROSE CISTICA;Hospital-Dia`, `74;3;UTI ADULTO - TIPO I;Complementar`, `77;3;UTI PEDIATRICA - TIPO I;Complementar`, `94;3;UNIDADE DE CUIDADOS INTERMEDIARIOS PEDIATRICO;Complementar` e `95;3;UNIDADE DE CUIDADOS INTERMEDIARIOS ADULTO;Complementar`, todas com status `Ativo` no anexo. **FATO DA TRANSCRIÇÃO / NÃO PROVA DE VIGÊNCIA:** não inferir automaticamente data de migração ou inconsistência normativa a partir dessa coexistência, pois o artigo 8º condiciona efeitos à implementação e a legenda possui recorte e semântica próprios.
+
+**Revisão da trilha anterior:** a Discovery III-C4.2c.3b já registrou que no RTS a versão **`LEITO 10/2019A`** foi visível em captura de 10/2019; para competências anteriores o responsável relatou resultados vazios e exibiu captura de 01/2017 sem dados. Esses fatos **não** provam ausência de códigos históricos nem a validade de todo o catálogo em 2017–2019. O RTS acessível na Wiki não substitui os **dados de domínio históricos**. A abertura direta de `https://rts.saude.gov.br` neste ambiente de pesquisa **não retornou conteúdo utilizável nesta rodada**; nenhum endpoint profundo/arquivo não inspecionado foi inventado.
+
+### Síntese da triagem — graus de comprovação
+
+| Questão | Evidência encontrada | Resultado |
+|---|---|---|
+| Existência de canais oficiais de versionamento | Wiki RTS e CNES documentam versões, competências e downloads | **FATO VERIFICADO — CANAL DOCUMENTADO**, não catálogo obtido |
+| Documento oficial que determina mudança de código em 2019 | Portaria SAS/MS nº 298/2019, pares de migração `77→94` e `74→95` | **FATO VERIFICADO — ATO IDENTIFICADO**, mês de efeito **NÃO DEMONSTRADO** |
+| Lista composta oficial datada de 201909 | Nota Técnica MS 32/2019; 65 pares; 57/57 PB e 35.518/35.518 LT em cobertura técnica | **FATO VERIFICADO — SNAPSHOT**, sem extrapolação normativa mensal |
+| Tabela federal histórica `NFCES001/TB_LEITO` com associação tipo, código, descrição e data | Esquema documentado no dicionário SCNES, nenhum dataset versionado inspecionado nesta rodada | **PENDENTE** |
+| Mudanças efetivas dos 57 pares em cada competência entre 201701–201912 | Nenhuma sequência temporal completa de versões oficiais obtida | **PENDENTE / T29 NOT_APPROVED** |
+| Conflito `3/66` LT/Nota Técnica vs `2/66` indicador CNESNet | Confronto já documentado III-C4; sem evidência de correção retrospectiva | **DIVERGÊNCIA PRESERVADA** |
+
+### Próximo checkpoint C4.2c.4a — triagem empírica DIRECIONADA, sem normatização
+
+**Novo script read-only:** `tools/triage_cnes_lt_portaria_298_2019.py` na branch atual. Lê **apenas os 36 CSVs LT** e valida **35518 linhas/57 pares** já conhecidos; imprime, para `CODLEITO` **74, 77, 94 e 95**, o número real de registros na PB, sua distribuição por competência mensal e os tipos `TP_LEITO` brutos observados. Também conserva os controles `66`/`70` e não troca o tipo `3` por `2` no conflito 66.
+
+- **NÃO** compara códigos como se a transição observada provasse eficácia normativa, **NÃO** determina `effective_month`, **NÃO** produz versão histórica de domínio, não altera `T29` e não cria dimensão/QVD/CSV/JSON.
+- Se todos os quatro códigos forem ausentes nos LT da PB, o ato segue importante como prova de **mudança possível no domínio nacional**, mas seu impacto quantitativo no recorte PB será **não observado**. Se presentes, priorizar **metadados da versão SCNES implementadora** e a data de início de aplicação operacional específica antes de rotular a série.
+- Inspecionar metadados, **sem download em massa**, de no máximo quatro pontos de controle do portal CNES/SCNES (`201701`, `201712`, `201903`, `201909` e `201912`, ajustando para o início público **201706**) e registrar o **nome/versão/data/URL real do arquivo existente, se exibido**, formato e indício de conter `TB_LEITO`; **não presumir** conteúdo por nome de pacote ou calendário. Se necessário obter um único artefato histórico para prova, pedir autorização de aquisição mínima com hash e licença, sem massa de dados.
+- A investigação normativa restante dos **57 pares** exigiria versão oficial de domínio ou atos específicos que cubram **toda alteração relevante e data efetiva**, confrontados com a fonte; não bastam ausência de mudança nos códigos LT nem estabilidade textual dos indicadores.
+
+### Como executar a triagem local (sem QlikView nem escrita)
+
+```powershell
+git pull --ff-only
+if ($LASTEXITCODE -ne 0) { throw "Falha ao atualizar branch de Discovery" }
+.\.venv\Scripts\python.exe .\tools\triage_cnes_lt_portaria_298_2019.py
+if ($LASTEXITCODE -ne 0) { throw "Falha na triagem histórica LT" }
+```
+
+**Estado após esta rodada:** `C4.2c.4=OFFICIAL_SOURCE_CHANNELS_AND_NORMATIVE_CHANGE_IDENTIFIED / 2017_2019_FULL_DOMAIN_UNVERIFIED`; `C4.2c.4a=LOCAL_READ_ONLY_CODE_TRIAGE_NOT_RUN`; `A1_TEMPORAL_GRAIN_PREFLIGHT=PASS_LOCAL`; `A2_MODEL_CONTRACT_DECISION=PENDING`; `T29_HISTORICAL=NOT_APPROVED`; `main=7/8`. Sem aprovação da 8ª dimensão, sem mudança de Boundary 7, sem QVD nem dados baixados.
