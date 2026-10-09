@@ -185,3 +185,75 @@ Somente se tudo passar: `TEMPORAL_NATURAL_DIM_KEYS=2021`, `FACT_CANDIDATE_KEY_DU
 4. **Somente depois de decisão aprovada e documentada** considerar construir a oitava dimensão e definir gates QlikView 12. Manter `T29_HISTORICAL=NOT_APPROVED` até evidência histórica própria; nenhuma implementação de fatos/Link Table/painéis.
 
 **ESTADO:** `OPTION_A=DISCOVERY_AUTHORIZED_CONTRACT_CANDIDATE_READ_ONLY_PREFLIGHT_NOT_RUN`. `MAIN=7/8`. Nenhuma alteração na SK aprovada do Boundary 7, modelo acadêmico, arquivos de dados ou QVDs.
+
+## Gate A1 — validação física de granularidade temporal PASS local (09/10/2026)
+
+**FATO VERIFICADO — saída PowerShell entregue pelo responsável:** depois de `git pull --ff-only` na branch `feat/phase-4-dim-tipo-leito-discovery`, executou `tools/preflight_dim_tipo_leito_contrato_a.py` e obteve:
+
+```text
+MODE=IV_TIPO_LEITO_OPTION_A_READ_ONLY_GRAIN_PREFLIGHT
+OUTPUT_FILES_WRITTEN=0
+DIM_TIPO_LEITO_QVD_GENERATED=False
+QLIK_HASH128_EXECUTED=False
+SNAPSHOT_201909_SHA256=dddb261e754f2f3bb82a462c94ae8219b84cd77c1fce3204cd6f3867c3d3bd5e
+SNAPSHOT_PAIRS=65
+SNAPSHOT_REFERENCE_COMPETENCE=201909
+SNAPSHOT_HISTORICAL_VALIDITY=NOT_VERIFIED
+LT_STAGING_QVD_ROWS=35518
+SNAPSHOT_QVD_ROWS=65
+SNAPSHOT_QVD_FIELDS=13
+CHECKPOINT_C4_3=PASS_PARTIAL_SNAPSHOT_ONLY
+LT_FILES=36
+LT_COMPETENCES=36
+LT_ROWS=35518
+LT_YEARS=[('2017', 12254), ('2018', 11616), ('2019', 11648)]
+PAIRS_TOTAL_DISTINCT=57
+TEMPORAL_NATURAL_KEY=(TP_LEITO_RTRIM_ASCII,CODLEITO_TEXT,COMPETEN)
+TEMPORAL_NATURAL_DIM_KEYS=2021
+TEMPORAL_NATURAL_KEY_DUPLICATES=0
+TYPE_ASCII_RTRIM_COLLISIONS=0
+FACT_CANDIDATE_KEY=(CNES,COMPETEN,CODLEITO)
+FACT_CANDIDATE_KEY_DUPLICATES=0
+FACT_ROWS_WITH_CANDIDATE_DIM_KEY=35518
+LT_PAIR_3_66_ROWS=1480
+LT_CODE_7_70_ROWS=5
+LT_CODE_7_70_MONTHS=201801,201802,201803,201804,201805
+REFERENCE_201909_LABEL_ELIGIBLE_NATURAL_KEYS=56
+HISTORICAL_LABEL_UNVERIFIED_NATURAL_KEYS=1965
+LEGEND_201909_USED_AS_HISTORICAL_LABEL_JOIN=False
+CANDIDATE_KEY_IS_NOT_AN_APPROVED_HASH128_IMPLEMENTATION=True
+COMPETENCIA_REFERENCIA_SEMANTICS=DECISION_PENDING
+T29_HISTORICAL=NOT_APPROVED
+FACT_AND_DIM_QVD_GENERATED=False
+VERDICT=PASS_OPTION_A_TEMPORAL_GRAIN_PREFLIGHT_ONLY
+```
+
+**Evidência complementar:** a saída listou os 36 meses: **56 pares por competência**, salvo **201801–201805 com 57**, totalizando `31×56 + 5×57 = 2021` pares-mês. Os dados anuais são `2017=12254`, `2018=11616`, `2019=11648` e `35518` no total. O par `3/66` foi observado `1480` vezes e deve permanecer nessa classificação de origem, sem imputar o tipo `2` de indicador divergente.
+
+**Leitura correta dos controles:**
+
+- **PASS FÍSICO de grão candidato:** toda linha LT tem `(TP_LEITO_RTrim_ASCII,CODLEITO,COMPETEN)`; os conjuntos reais contêm 2021 chaves naturais únicas por construção da deduplicação; o perfil mensal validado permite interpretar o grão. **`TEMPORAL_NATURAL_KEY_DUPLICATES=0` é rótulo emitido após inserção em `set`; não é auditoria independente de duplicatas em linhas brutas.** Repetição da mesma combinação entre diferentes estabelecimentos é esperada e não viola o grão da dimensão.
+- **PASS de não colisão observada:** cada par normalizado tem uma única representação bruta `"N "` de `TP_LEITO`; o teste não mostrou colisões introduzidas por `rstrip(" ")`.
+- **PASS de unicidade física da futura chave de fato:** `(CNES,COMPETEN,CODLEITO)` teve **0 duplicatas** entre as 35.518 linhas; esse controle não cria nem aprova a implementação de `FATO_CAPACIDADE_LEITO`.
+- **Cobertura por projeção de chave natural:** 35.518/35.518 linhas podem apontar para um par-mês de seus próprios registros. Isto **não valida um JOIN de SK QlikView**, porque `Hash128` não foi executado.
+- **Escopo limitado de descrições:** em `COMPETEN=201909`, há 56 combinações observadas **potencialmente elegíveis** ao retrato datado daquele mês. As outras **1965 combinações** (97,2% das 2021) **não têm descrição histórica temporalmente comprovada por essa fonte**. Não atribuir valores da legenda 201909 a essas combinações, nem afirmar que todas as demais estão incorretas ou que os códigos eram inválidos.
+- **T29 permanece `NOT_APPROVED`**, sem evidência normativa mensal completa; `DIM_TIPO_LEITO_QVD_GENERATED=False` e `OUTPUT_FILES_WRITTEN=0`.
+
+**VEREDITO:** `IV_TIPO_LEITO_OPTION_A_GRAIN_PREFLIGHT=PASS_LOCAL_READ_ONLY`. Isto encerra a medição física das chaves naturais da alternativa A, **não aprova o contrato da chave substituta nem a dimensão**.
+
+## Gate A2 — proposta de decisão arquitetural, NÃO APROVADA
+
+**HIPÓTESE DE MODELAGEM recomendada para decisão do responsável:** formalizar duas competências com significados distintos:
+
+1. **`COMPETEN` = competência observada do registro CNES/LT**, determinando a versão da combinação técnica de códigos que se relacionaria à futura capacidade hospitalar. Para a alternativa A, a dimensão candidata teria uma linha por `(TP_LEITO_textual_normalizado,CODLEITO_textual,COMPETEN)`, com cardinalidade física observada de **2021** linhas.
+2. **`competencia_referencia` da legenda = `201909`**, metadado de procedência temporal do **catálogo descritivo**. Não representa validade da legenda em meses anteriores/posteriores e não substituiria a competência observada.
+
+**CONFLITO COM DECISÃO VIGENTE:** Boundary 7 aprovou textualmente `%SK_TIPO_LEITO=Hash128('LEITO',TP_LEITO,CODLEITO,COMPETENCIA_REFERENCIA)` sem fechar se `COMPETENCIA_REFERENCIA` é competência de observação ou referência normativa. A proposta A requer **aprovação expressa** de semântica para o quarto argumento, mantendo o desenho competência-aware. Uma mudança de significado não pode ser registrada como simples correção factual.
+
+**Política descritiva candidata (não aprovada):** atributos de descrição do tipo e do leito **nulos** nos 1965 pares-mês sem fonte descritiva aplicável por competência; para as 56 combinações de `201909`, permitir rótulos **apenas identificados explicitamente como da legenda de setembro/2019**. Revisar necessidade de distinguir descrição textual de proveniência e de impedir agrupamento analítico indevido por rótulos ausentes. A dimensão assim construída teria utilidade primária em análises quantitativas por códigos e competência; descrições históricas completas continuariam pendentes.
+
+**Aderência acadêmica:** os Capítulos 1–2 fechados **exigem os atributos** descrição do tipo e descrição/especialidade do leito; o contrato acadêmico **não demonstra se atributos nulos na maior parte da série são aceitáveis ao professor**. Como o requisito mínimo de seis dimensões já está satisfeito por **sete** integradas, não presumir autorização acadêmica para completar a oitava de forma parcial. Considerar confirmação do professor se essas descrições forem obrigatórias para o período completo.
+
+**DECISÃO PENDENTE DO RESPONSÁVEL:** ratificar ou rejeitar o princípio do contrato A — distinção explícita de competências, granularidade por par-mês e `NULL` descritivo quando a fonte histórica é insuficiente — **antes** de pedir alteração documentada do Boundary 7 e antes de escrever scripts `transf_dim_tipo_leito.qvs`, QVD/checkpoint, fato, Link Table, painel ou PR de implementação. Se rejeitado, manter alternativa B (obter domínio histórico oficial) como caminho aberto.
+
+**Estado persistente:** `A1=PASS_LOCAL`; `A2=DECISION_PENDING`; `T29_HISTORICAL=NOT_APPROVED`; `main=7/8`. A primeira entrega acadêmica permanece intocada.
