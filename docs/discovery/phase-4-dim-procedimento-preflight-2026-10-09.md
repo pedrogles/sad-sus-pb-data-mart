@@ -279,3 +279,27 @@ if ($LASTEXITCODE -ne 0) { throw "Auditoria SHA hierarquica falhou" }
 **Próximo gate:** auditar as descrições **no corpus local de 36 competências já persistido**, com leitura estrita `cp1252` como candidato, inspeção de bytes, caracteres de controle, sequências suspeitas de mojibake, diferenças de grafia/acentos e amostras diversificadas para revisão humana. Não criar conteúdo derivado, QVD ou expandir a aquisição antes dessa validação.
 
 **Estado:** `PHASE_IV=IN_PROGRESS`, 3 de 8 dimensões integradas; `DIM_PROCEDIMENTO=NOT_STARTED`; `T27=PASS_ANTERIOR`; `T29_HISTORICAL=NOT_APPROVED`; `FACTS_AND_LINK_TABLE=NOT_STARTED`.
+
+## Gate textual SIGTAP — auditoria somente leitura preparada, sem execução local
+
+Após a materialização dos 216 membros e a reconciliação SHA integral **PASS**, foi acrescentado o script versionável **`tools/audit_sigtap_hierarchy_descriptions.py`**. **O teste ainda não foi executado** nesta etapa.
+
+**Contrato:**
+- Primeiro chama o auditor independente preexistente `audit_sigtap_hierarchy_history.py` para exigir manifesto e **216 SHA-256** íntegros;
+- lê de disco os dados e layouts das **36 competências × 3 níveis**, inspeciona `NO_GRUPO`, `NO_SUB_GRUPO`, `NO_FORMA_ORGANIZACAO` nas posições reais de layout verificadas por hash, e reconcilia contagens de cada mês com `records_by_month` do manifesto;
+- exige `CO_*` numéricos ASCII, chaves sem duplicação e `DT_COMPETENCIA` do próprio mês, sem usar tabela de 2019 para nome de 2017;
+- testa decodificação **estrita `cp1252`**, nomes vazios, caracteres de controle, padrões de *mojibake* e quantidade de registros com bytes acima de 0x7F compatíveis ou incompatíveis com UTF-8 estrito;
+- apresenta até 8 amostras acentuadas únicas por nível, distribuídas nos meses `201701`, `201801`, `201901`, `201912`, e quantidade de chaves cujas descrições mudam entre competências, **sem tratar alterações históricas como erros automaticamente**;
+- nenhuma escrita de dados, CSV, QVD, manifesto ou modificação no repositório pela execução;
+- `VERDICT=PASS_CP1252_TEXT_SANITY_CANDIDATE_ONLY` se houver **0 anomalias estruturais/textuais detectadas**; alternativamente `VERDICT=REVIEW_SIGTAP_DESCRIPTION_ENCODING_ISSUES` com exemplos para investigação; **em qualquer caso**, `DESCRIPTION_ENCODING_APPROVAL=NOT_APPROVED` até revisão humana da saída. O teste textual não concede `T29_HISTORICAL`.
+
+### Execução do gate textual — somente leitura (Windows)
+
+```powershell
+git pull --ff-only
+if ($LASTEXITCODE -ne 0) { throw "Falha no git pull" }
+.\.venv\Scripts\python.exe .\tools\audit_sigtap_hierarchy_descriptions.py
+if ($LASTEXITCODE -ne 0) { throw "Auditoria textual exige investigacao" }
+```
+
+**Próxima decisão após receber o log:** avaliar a diversidade de amostras, caracteres anômalos e a compatibilidade UTF-8, determinar se `cp1252` pode ser aprovado **apenas para os textos do corpus histórico auditado**, sem inferir validade normativa retroativa, e em seguida planejar **staging descritivo competência-aware** no QlikView. Antes disso: `DIM_PROCEDIMENTO=NOT_STARTED`; `PHASE_IV=IN_PROGRESS`.
