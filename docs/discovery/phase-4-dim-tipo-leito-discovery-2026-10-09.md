@@ -117,3 +117,71 @@ VERDICT=PASS_LT_SNAPSHOT_TECHNICAL_PREFLIGHT_ONLY
 **Recomendação técnica para decisão do responsável:** avaliar a alternativa **A apenas como hipótese** de viabilização de análise por código/competência, mantendo a legenda de setembro/2019 como referência independente e datada, com **descrições históricas desconhecidas explicitamente ausentes**. Antes de autorizar a implementação, elaborar/validar contrato de SK, grão, relação com o fato e tratamento da competência de referência, sem criar novas entidades arbitrárias. Caso o requisito acadêmico de descrição integral seja obrigatório também para todos os meses, preferir **B** em vez de completar descrições por suposição. Como o mínimo acadêmico de seis dimensões já está atendido por sete dimensões integradas, **não há motivo para forçar a oitava** sem decisão fundamentada.
 
 **DECISÃO PENDENTE:** escolher seguir Discovery da alternativa A ou buscar referência histórica (B). Nenhuma alteração de modelagem aprovada ou implementação QlikView está autorizada por este preflight.
+
+## Alternativa A — proposta de contrato lógico/físico para validação (Discovery autorizada)
+
+**AUTORIZAÇÃO RECEBIDA:** o responsável autorizou **seguir pela alternativa A somente para fechar e validar o contrato**, sem implementar a dimensão. Esta autorização **não** aprova reinterpretar a SK do Boundary 7, preencher descrições históricas, alterar o capítulo acadêmico ou liberar `T29_HISTORICAL`.
+
+### 1. Contratos que não podem ser alterados
+
+**FATO VERIFICADO nos documentos acadêmicos:** `DIM_TIPO_LEITO` é uma dimensão desnormalizada `TIPO_LEITO → LEITO`, com SK, código e descrição de tipo, código e descrição/especialidade de leito, associada a `FATO_CAPACIDADE_LEITO`.
+
+**FATO VERIFICADO no Boundary 7:** grão de `FATO_CAPACIDADE_LEITO` preservado em **`CNES × COMPETEN × CODLEITO`**; fato deve ter chave exclusiva de tipo/leito. A SK de dimensão está aprovada **literalmente** como `%SK_TIPO_LEITO = Hash128('LEITO', TP_LEITO, CODLEITO, COMPETENCIA_REFERENCIA)` enquanto não há prova de invariância histórica. A expressão não define na íntegra como mapear `COMPETENCIA_REFERENCIA` para cada registro histórico de LT, e a fonte de 201909 **não** é suficiente para inferir uma referência histórica diferente em cada mês.
+
+**FATO VERIFICADO nos dados CNES/LT:** 36 competências (2017–2019), 35.518 registros, 57 pares `TP_LEITO+CODLEITO`, tipos brutos `"1 "`–`"7 "` e `CODLEITO` ASCII de dois algarismos, com o par `3/66` preservado (1.480 ocorrências), sem correção silenciosa para o `2/66` de um indicador agregado. A referência do anexo da Nota Técnica MS 32/2019 é **datada apenas de 201909** (65 pares).
+
+### 2. Modelo A proposto, ainda NÃO aprovado para implementação
+
+| Aspecto | Contrato técnico CANDIDATO (não implementado) | Evidência / risco |
+|---|---|---|
+| Grão natural da dimensão | **1 par de códigos fonte `TP_LEITO,CODLEITO` por competência LT `COMPETEN`**, sem multiplicar por estabelecimento | Evita assumir estabilidade temporal não demonstrada; distinto do grão da fato |
+| Código do tipo | Preservar `TP_LEITO` bruto `"N "` para rastreabilidade e derivar **código técnico normalizado `RTrim` de espaço ASCII** para comparação com o snapshot `201909`. Não usar `Trim` ou conversão numérica silenciosamente | Normalização só passa após auditar ausência de colisões por toda a série; usar `Text()` no QlikView para controlar dupla representação |
+| Código do leito | Preservar **dois dígitos textuais `CODLEITO`**; nunca usar `CODLEITO` isolado como chave global de descrição | Chave composta reconhecida na Discovery C4 |
+| Competência de observação | `COMPETEN` do LT `YYYYMM`, **campo real**, sem inferência do nome do arquivo | 36 competências validadas; teste novo confrontará todos os registros com o arquivo |
+| Competência da legenda descritiva | `201909` **somente** como proveniência do catálogo oficial existente, não como competência de todos os LT | Snapshot C4.3 PASS apenas descritivo, histórico T29 não aprovado |
+| Atributos de descrição do tipo e leito | **Descrição só candidata para os pares observados em `COMPETEN=201909`**; em outras competências sem fonte mensal comprobatória, **`NULL` de informação não verificada**, não nome retroativo e não string falsa de descrição | Diminui utilidade da dimensão para agrupamentos históricos; não cumpre automaticamente eventual exigência de descrição integral |
+| Relacionamento com a futura fato | Para cada linha LT, projeção para **uma** chave natural dimensional `(TP_LEITO_normalizado,CODLEITO,COMPETEN)`; avaliar unicidade da chave de fato `(CNES,COMPETEN,CODLEITO)` sem construí-la | A Cardinalidade real completa e o mapeamento precisam ser conferidos por teste sobre os 35.518 LT |
+| Proveniência e status | Se futura modelagem for aprovada, reter distinção entre descrição comprovada em 201909 e descrição `NULL` fora dessa competência; sem tratar a referência como catálogo SCD2 histórico | Política física exata de campos de rastreio ainda requer aprovação; não inventar atributos acadêmicos nem domínio histórico |
+
+**QUESTÃO DE SEMÂNTICA QUE IMPEDE APROVAR A SK AGORA:** no Boundary 7, o último argumento da expressão é `COMPETENCIA_REFERENCIA`, enquanto **`COMPETEN` representa a competência da linha observada**. Substituir implicitamente `COMPETENCIA_REFERENCIA` por `COMPETEN` no `Hash128` para criar chaves por mês **seria alteração material da decisão vigente**, e aplicar `201909` indiscriminadamente também seria inadequado (apaga sensibilidade mensal). É necessário **definir formalmente o significado do quarto argumento**: competência de observação/versão da chave ou competência de validade da descrição, antes de criar a SK QlikView. A alternativa A foi autorizada **para investigar**, não para modificar isso.
+
+**HIPÓTESE DE MODELAGEM (sujeita a aprovação do responsável):** se a dimensão for versionada por mês observado, a chave natural única do grão seria `(TP_LEITO_normalizado,CODLEITO,COMPETEN)`; após prova física, submeter eventual contrato que distingua explicitamente `COMPETENCIA_OBSERVACAO` de `COMPETENCIA_LEGENDA`, alinhando ou **atualizando com aprovação explícita** o uso de `COMPETENCIA_REFERENCIA` na SK aprovada. Isso não altera o capítulo impresso.
+
+### 3. Validação física READ-ONLY para fechar as quantidades e as chaves naturais
+
+Script novo: `tools/preflight_dim_tipo_leito_contrato_a.py` (branch `feat/phase-4-dim-tipo-leito-discovery`). Não gera QVD, SK Hash128, fato, dimensão, script QlikView nem altera quaisquer arquivos.
+
+O script verificará diretamente em todos os **36 CSVs LT**:
+
+- integridade do snapshot e cabeçalhos de QVD/CKPT já validados, preservando `T29=NOT_APPROVED`;
+- formato `"N "` (ASCII trailing space), `CODLEITO` de dois dígitos e competência `COMPETEN` física igual à do arquivo, com validação de colisões de `RTrim` ASCII;
+- unicidade das chaves naturais candidatas **`(tipo normalizado,codleito,COMPETEN)`** na dimensão deduplicada;
+- existência de chave dimensional candidata para cada linha do futuro fato LT (sem produzir o fato);
+- unicidade física potencial da chave de fato **`(CNES,COMPETEN,CODLEITO)`** sobre as **35.518** linhas, antes validada apenas em checkpoints amostrais;
+- contagem de pares por mês (perfil C4.1 reportou 56 por competência, **exceto 201801–201805 com 57**), presença mensal do par `7/70` e preservação das 1.480 ocorrências de `3/66`;
+- separação **somente virtual** das chaves de dimensão cuja competência de observação é 201909 (potencialmente elegíveis a usar a legenda contemporânea) das chaves de 2017–2019 sem evidência descritiva histórica. Não atribui nomes.
+
+**HIPÓTESE NUMÉRICA PARA O TESTE, derivada dos perfis mensais documentados (não ainda reexecutada):** `31 × 56 + 5 × 57 = 2021` chaves naturais compostas mensais; `56` chaves elegíveis a rótulos `201909`, `1965` sem prova descritiva para sua própria competência. O script **exige essa partição** como regressão e imprimirá totais observados; estes números ainda **não constituem PASS novo** até a execução local.
+
+### Execução local solicitada
+
+```powershell
+git fetch origin
+git switch feat/phase-4-dim-tipo-leito-discovery
+git pull --ff-only
+if ($LASTEXITCODE -ne 0) { throw "Falha ao atualizar branch de Discovery tipo leito" }
+
+.\.venv\Scripts\python.exe .\tools\preflight_dim_tipo_leito_contrato_a.py
+if ($LASTEXITCODE -ne 0) { throw "Validação física temporal do contrato A falhou" }
+```
+
+Somente se tudo passar: `TEMPORAL_NATURAL_DIM_KEYS=2021`, `FACT_CANDIDATE_KEY_DUPLICATES=0`, `TYPE_ASCII_RTRIM_COLLISIONS=0`, `REFERENCE_201909_LABEL_ELIGIBLE_NATURAL_KEYS=56`, `HISTORICAL_LABEL_UNVERIFIED_NATURAL_KEYS=1965`, `VERDICT=PASS_OPTION_A_TEMPORAL_GRAIN_PREFLIGHT_ONLY`; obrigatoriamente também `COMPETENCIA_REFERENCIA_SEMANTICS=DECISION_PENDING`, `T29_HISTORICAL=NOT_APPROVED`, `DIM_TIPO_LEITO_QVD_GENERATED=False`. Os números são **esperados, não verificados por esta nova execução ainda**.
+
+### 4. Próximos gates sem implementação
+
+1. Obter o PASS físico das chaves naturais e cardinalidades com o novo preflight; qualquer desvio reabre a hipótese A e **não** será corrigido por suposição.
+2. Decidir explicitamente o significado de `COMPETENCIA_REFERENCIA` no `Hash128` frente à `COMPETEN` física, bem como a política de campos `NULL` e rastreabilidade para descrição não comprovada.
+3. Conferir conformidade da proposta com o **modelo dimensional acadêmico fechado** (descrições são atributos aprovados, mas podem ficar `NULL` fora da competência justificada?) e, se necessário, buscar confirmação do professor sem reescrever silenciosamente Capítulos 1 e 2.
+4. **Somente depois de decisão aprovada e documentada** considerar construir a oitava dimensão e definir gates QlikView 12. Manter `T29_HISTORICAL=NOT_APPROVED` até evidência histórica própria; nenhuma implementação de fatos/Link Table/painéis.
+
+**ESTADO:** `OPTION_A=DISCOVERY_AUTHORIZED_CONTRACT_CANDIDATE_READ_ONLY_PREFLIGHT_NOT_RUN`. `MAIN=7/8`. Nenhuma alteração na SK aprovada do Boundary 7, modelo acadêmico, arquivos de dados ou QVDs.
