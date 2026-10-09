@@ -537,3 +537,16 @@ Após receber o log real, revisar o conjunto do PR e somente então classificar 
 - Limite da revisão: o log do QlikView foi fornecido como **excertos do log real**, e o auditor Python não decodifica o corpo binário QVD independentemente. Não descrever esse material como suíte CI ou auditoria binária integral.
 
 **DECISÃO PENDENTE:** aprovar explicitamente o **squash merge do PR #77** após a revisão; não iniciar merge automaticamente por aprovação técnica de fonte nem incrementar as dimensões da `main` antes de confirmar a integração. Estado: `IV-PROCEDIMENTO=READY_FOR_REVIEW_QV_PASS_LOCAL_MERGE_PENDING`, `PHASE_IV=IN_PROGRESS`, `MAIN_INTEGRATED_DIMENSIONS=3/8`; `T29_HISTORICAL=NOT_APPROVED`.
+
+## IV-PROCEDIMENTO — integração concluída na `main` (09/10/2026)
+
+**FATO VERIFICADO — GitHub após autorização explícita do responsável:**
+
+- **PR [#77](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/77)** `feat/phase-4-dim-procedimento` → `main` **MERGED**, método **squash**, commit **`4ecd27fc3cfa96ffd8c784128650323b197d5892`**.
+- Preflight remoto antes do merge: PR `open`, `draft=false`, `mergeable=true`, comparação `behind_by=0`, 14 arquivos restritos a transformação QlikView, scripts de evidência e documentação. Merge foi executado com `expected_head_sha=82629089a0005509c3eea7d8059ea3c450d11c99` (fail-closed contra movimentação da branch); GitHub respondeu `merged=true`.
+- Verificação posterior: PR `closed`, `merged=true`, `merge_commit_sha=4ecd27fc3cfa96ffd8c784128650323b197d5892`. Os 14 arquivos versionáveis estão incorporados à `main`; datasets grandes, CSVs/QVDs físicos continuam locais, ignorados pelo Git.
+- Evidência de qualidade **local**, não CI: QlikView 12 completou reload de IV-PROCEDIMENTO com 165203 registros fonte/36 competências/0 inválidos, 165203 SK, RD 566672/0 unmatched, `PASS_PARTIAL_DIM_PROCEDIMENTO_ONLY`; auditor read-only `PASS_LOCAL_DIM_PROCEDIMENTO_QVD_HEADER_CHECKPOINT_RECONCILED`, QVD 165203×12 SHA-256 `620b3f9d4d1babdf25b2d1f2f5653ad7089e4003986048bdb746b5662f2de56b`; checkpoint SHA-256 `b6180cecb7b91b93d2fd5906ed7034549ce38105cde4d6d0eb0f03b4a7639543`. Não foram encontradas execuções GitHub CI/revisões de terceiro para este PR na consulta; isso não altera a evidência local.
+- **Estado após merge:** Fase IV `IN_PROGRESS`, **4/8 dimensões integradas** (`DIM_TEMPO`, `DIM_MUNICIPIO`, `DIM_ESTABELECIMENTO`, `DIM_PROCEDIMENTO`). `IV-PROCEDIMENTO=MERGED_QV_LOCAL_PASS`. Próxima dimensão prevista: `DIM_DIAGNOSTICO` com preflight CID-10/T28; não avançar fatos, Link Table ou PAINEL.
+- Restrições preservadas: `DESCRICAO_OFICIAL` detalhada permanece NULL/status explícito, `cp1252` escolha operacional equivalente a ISO-8859-1 nos bytes descritos, ressalva do ZIP SIGTAP 201808 retrospectivo (`v2102261143`), `T29_HISTORICAL=NOT_APPROVED`. Nada nesta integração reabre o relatório acadêmico impresso de Capítulos 1–2.
+
+**Fonte de verdade operacional atualizada:** `AGENTS.md` e `docs/project/current-state.md` na `main` registram 4/8 dimensões e próximo gate `DIM_DIAGNOSTICO`. Seções anteriores deste relatório documentam **estados anteriores cronológicos** (incluindo PR Draft/review), não o status atual.
