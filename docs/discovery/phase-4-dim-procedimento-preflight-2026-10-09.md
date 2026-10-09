@@ -222,3 +222,20 @@ git pull --ff-only
 **Ponto de decisão:** se houver `RuntimeError` ou `VERDICT` ausente, investigar o mês/arquivo real sem materializar. Se todas as 36 competências passarem, registrar os contadores, hashes relevantes e decidir a materialização controlada. Não iniciar a transformação dimensional/QLIK antes da auditoria da referência hierárquica e do encoding.
 
 **Status:** `IV-PROCEDIMENTO=FOUR_MONTH_RELATIONAL_PASS_FULL_36_VALIDATOR_READY_NOT_RUN`; `DIM_PROCEDIMENTO_QVD=NOT_STARTED`; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
+
+## Boundary — validação relacional integral de 36 competências PASS / sem persistência (09/10/2026)
+
+**FATO VERIFICADO — log Python local enviado pelo responsável do projeto:**
+
+- `git pull --ff-only` atualizou a branch `feat/phase-4-dim-procedimento` até `d4743c3`, incluindo `tools/materialize_sigtap_hierarchy_history.py`.
+- Execução **exclusivamente** com `--validate-only`: `PROCEDURE_HISTORY_SHA_AND_MONTH_CHECK=PASS`, `PROCEDURE_HISTORY_ROWS=165203`, `MODE=CONTROLLED_SIGTAP_HIERARCHY_36_MONTH_HISTORY`, `COMPETENCES=36`, `ONLY_6_FILES_PER_PACKAGE=True`, `VALIDATE_ONLY=True`, `T29_HISTORICAL=NOT_APPROVED`.
+- O log contém uma linha de cobertura `[AAAAMM]` para **cada mês de 201701 a 201912**, todas com `UNMATCHED_GROUP=0 UNMATCHED_SUBGROUP=0 UNMATCHED_FORM=0 PARENTS=0`. 8 grupos e 59 subgrupos por mês; formas de organização variaram entre 382–386 nesta série.
+- Totais finais: **`MONTHS_VALIDATED=36`**, **`MEMBERS_VALIDATED=216`**, **`PROCEDURES_COVERED=165203`**, **`UNMATCHED_ALL_LEVELS=0`**, **`PERSISTENT_OUTPUTS=NONE`**, **`VERDICT=PASS_36_MONTH_RELATIONAL_VALIDATION_ONLY`**.
+- Cada ZIP de fonte foi comparado por hash e tamanho ao manifesto histórico da Fase III (e CRC no ZIP), com leitura dos 6 membros hierárquicos exatos, layout SHA-256 estável, códigos/layouts validados, chave e competência sem duplicação, subgrupo→grupo e forma→subgrupo/grupo sem órfãos. Os 36 `tb_procedimento.txt` preexistentes foram lidos com reconciliação de hash/competência conforme o script. O console comprova o veredito do script, mas não é auditoria independente dos arquivos binários do ZIP.
+- **Ressalva importante de proveniência:** para a **competência 201808**, o pacote do inventário e do log é `TabelaUnificada_201808_v2102261143.zip` (sufixo de versão com data em 2021). Esse ZIP tem competência interna compatível e foi validado contra o manifesto, porém a existência de uma versão posterior **não prova que o conteúdo era publicado exatamente assim em 2018**. Preservar nome/hash de proveniência e manter `T29_HISTORICAL=NOT_APPROVED`, sem atribuir validade normativa retroativa.
+- Nenhum TXT hierárquico foi materializado ainda; o script `--validate-only` baixou ZIPs apenas temporariamente, sem arquivos persistentes, sem QVD, sem alteração nas dimensões integradas ou nos fatos.
+
+**VEREDITO LIMITADO:** `IV-PROCEDIMENTO=PASS_36_MONTH_RELATIONAL_VALIDATION_ONLY`, correspondência exata 2/4/6 dígitos e integridade pai-filho **demonstradas para o corpus oficial de 36 meses usado no projeto**, sem generalizar para todas as versões normativas possíveis. **Codificação de `NO_GRUPO`, `NO_SUB_GRUPO` e `NO_FORMA_ORGANIZACAO` não foi homologada como texto descritivo oficial**: `cp1252` permanece candidato de decodificação a inspecionar.
+
+**Próximo gate:** reavaliar o script já existente de materialização (`tools/materialize_sigtap_hierarchy_history.py`) e usar a variante com consentimento explícito de escrita SOMENTE para preservar os 216 membros originais em `BASE/REFERENCIAS/SIGTAP/PROCEDIMENTO/YYYYMM` e manifesto local, sem sobrescrever divergências. Após confirmação física dos hashes dos 216 membros persistidos, auditar o encoding dos nomes descritivos e preparar atualização controlada do staging de referência SIGTAP/QlikView, mantendo `T27=PASS_ANTERIOR`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IV=IN_PROGRESS`. Não gerar `DIM_PROCEDIMENTO.qvd` antes da prova dos textos.
+
