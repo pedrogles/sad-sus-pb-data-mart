@@ -183,3 +183,15 @@ Somente após analisar as linhas reais de log: revisar diff do PR, abrir PR de i
 - Limitações de fonte e modelagem intactas: `201912` é **superset descritivo sem validade mensal dos CID**, `T29_HISTORICAL=NOT_APPROVED`, somente diagnóstico principal; sem fatos, Link Table ou painel.
 
 **DECISÃO PENDENTE:** obter autorização específica do responsável **antes do squash merge** do PR #78. Até a confirmação de merge, a `main` mantém **4/8 dimensões integradas**; a quinta está validada **localmente** e submetida a revisão, não integrada. Não antecipar desenvolvimento de fatos ou alterar a primeira entrega acadêmica.
+
+## Integração concluída — PR #78 (09/10/2026)
+
+**FATO VERIFICADO no GitHub após autorização explícita do responsável:**
+
+- [PR #78](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/78), `feat/phase-4-dim-diagnostico` → `main`: **MERGED via squash**, commit **`6f565e8832521935f0ffb0c752c9c3cb5d2f72db`**. O merge foi feito com proteção `expected_head_sha=c03ad3cd9f8a26f4c715bb30e9b786afa7483134` e o GitHub retornou `merged=true`. Revisão anterior: `draft=false`, `mergeable=true`, `behind_by=0` e 7 arquivos estritamente em QlikView/Python/docs.
+- Conteúdo QlikView e ferramentas foram integrados à `main`, mas os QVDs físicos de dados permanecem no ambiente local, não versionados no Git.
+- Evidência local do quinto checkpoint: SOURCE 14230 chaves CID201912, DIM_DIAGNOSTICO com 14230 linhas/5 campos, 14230 SK distintas, RD 566672/5480 distintos/0 unmatched; log parcial de 09/10/2026 10:04:55 indica `Execução concluída.`. Auditor read-only local `PASS_LOCAL_DIM_DIAGNOSTICO_QVD_HEADER_CHECKPOINT_RECONCILED`, QVD SHA `5d5912c12023c33ad85f93070e7d1ccf55e0d333686d8625c9804a76c06ef1d8`, checkpoint SHA `e608153559e07282ceb2dc914f636c06c565f8d3d7df8fe2472e5f1340485a94`. Não há inspeção independente de corpo binário QVD nem CI automatizado comprovado.
+- **Estado após integração: Fase IV `IN_PROGRESS`, 5/8 dimensões integradas**: TEMPO, MUNICIPIO, ESTABELECIMENTO, PROCEDIMENTO, DIAGNOSTICO. A próxima dimensão é `DIM_CARATER_ATENDIMENTO`, iniciando por Discovery READ-ONLY de campo SIH/RD, códigos, domínio e fonte oficial para descrições.
+- **Restrições persistentes**: CID201912 é referência de consulta **descritiva estática** (sem vigência normativa mensal comprovada), `Text(RTrim(Text(DIAG_PRINC)))` é regra preservada, `T29_HISTORICAL=NOT_APPROVED`, nenhuma tabela fato/Link Table/painel foi implementada, e os Capítulos 1–2 acadêmicos continuam fechados.
+
+Seções anteriores deste documento refletem estados cronológicos anteriores do PR (Draft/Ready for review) e não seu estado atual, que é MERGED.
