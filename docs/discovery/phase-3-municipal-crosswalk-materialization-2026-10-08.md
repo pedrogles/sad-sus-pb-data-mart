@@ -66,3 +66,34 @@ if ($LASTEXITCODE -ne 0) { throw "Auditoria municipal C5.2 falhou" }
 - `PHASE_III=IN_PROGRESS`.
 
 Após PASS real e merge: revisar lacuna de nomes históricos `201701–201705` conforme Boundary 5; reconciliar extração/QVDs T07/T08 e dependências efetivas de referências; somente após gate final da Fase III começar transformação dimensional. A primeira entrega acadêmica (Capítulos 1 e 2) permanece intocada.
+
+
+## 5. III-C5.2 — resultado real da execução local (08/10/2026)
+
+**FATO VERIFICADO — saída PowerShell enviada pelo responsável do projeto:** após checkout da branch `feat/phase-3-c5-2-municipal-pb-reference`, a variável `$reloadStartedUtc` foi registrada antes da execução de `Qv.exe /r .../EXTRACAO/EXT.qvw`. O comando `Get-Content .\\EXTRACAO\\QVD\\_CHECKPOINT_EXTRACAO_C5_2_MUNICIPIO_PB.csv` retornou:
+
+```text
+generated_at;stage;status;ibge_source_rows;bridge_pairs;distinct_datasus6;distinct_ibge7;invalid_pair_rows;st_unmatched_rows;lt_unmatched_rows;rd_attendance_unmatched_rows;rd_residence_pb_unmatched_rows;rd_residence_outside_pb_rows;reference_nature;phase_iii_status
+08/10/2026 21:03:53;EXTRACAO_C5_2_MUNICIPIO_PB;PASS_PARTIAL_REFERENCE_PB_ONLY;669;223;223;223;0;0;0;0;0;5202;DERIVED_PB_REFERENCE_NOT_OFFICIAL_STANDALONE_TABLE;IN_PROGRESS
+```
+
+A auditoria real executada no Python 3 do ambiente `.venv`, com `--since-utc $reloadStartedUtc`, retornou **código de saída zero** (bloco PowerShell posterior de checagem de `$LASTEXITCODE` não gerou exceção) e:
+
+```text
+IBGE_OFFICIAL_XLS=3 HASHED
+IBGE_STAGING_QVD_SHA256=252f7dfce384206751261b564d3b8111a79613d5b95501f9c34b6d0fe2cce70b
+DERIVED_QVD_SHA256=93143c1124eac4dbab0822db610f9de86448752fb7994c8402b3e001849ae38e
+DERIVED_CSV_SHA256=fdf016e4eaf7a7b8b396d3908da2ec6737944bc9aaf3e6018badb763725c257d
+CROSSWALK_PAIRS=223 DISTINCT_DATASUS6=223 DISTINCT_IBGE7=223
+PB_UNMATCHED=0 RD_RESIDENCE_EXTERNAL_PRESERVED=5202
+REFERENCE_NATURE=DERIVED_FROM_OFFICIAL_IBGE_SOURCE_NOT_EXTERNAL_STANDALONE
+PHASE_III=IN_PROGRESS T29_HISTORICAL=NOT_APPROVED
+MANIFEST=BASE\\REFERENCIAS\\c5_2_municipio_pb_manifest.json
+VERDICT=PASS_LOCAL_REFERENCE_AUDIT
+```
+
+**CONCLUSÃO DO GATE:** `III-C5.2=PASS_LOCAL_QV_AND_SHA_AUDIT`. Os 223 pares derivados `COD_DATASUS_6 ↔ COD_IBGE_7`, a unicidade, cobertura PB e metadados passaram na carga e no verificador local. A saída `REF_MUNICIPIO_PB_DERIVADA.qvd` e o CSV auxiliar tiveram a existência e integridade hash verificadas pela auditoria; esta verificação é baseada na **saída local fornecida pelo usuário**. Os hashes individuais dos 3 XLS foram **gravados no manifesto local**, mas seus valores não foram transcritos na saída enviada, e os arquivos binários não foram inspecionados independentemente neste chat.
+
+**LIMITES:** a referência é **derivada pelo projeto**, não uma tabela oficial externa publicada; o recorte de cobertura é PB, não nacional. Os **5.202 registros de residência codificados como não-PB** permanecem fora da vinculação com população municipal PB, não são erros excluídos nem prova de cobertura nacional. Nenhum fato/dimensão/Link Table implementado. `PHASE_III=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
+
+**Próximo gate:** após revisão de escopo e merge do PR #72, avaliar documentalmente o tratamento de atributos históricos dos estabelecimentos conforme Boundary 5 (sem backfill de 201701–201705) e reconciliar os QVDs/checkpoints da Fase III. Não repetir a investigação de normas CNES para bloquear análises quantitativas independentes.
