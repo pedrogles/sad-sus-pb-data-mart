@@ -204,6 +204,10 @@ LOAD
     $(vP4InterRows) AS rd_inter_rows,
     $(vP4DateInputRows) AS rd_total_date_rows,
     $(vP4InvalidDates) AS invalid_date_rows,
+    Text(Date($(vP4ObservedMinDay), 'YYYY-MM-DD')) AS rd_min_date,
+    Text(Date($(vP4ObservedMaxDay), 'YYYY-MM-DD')) AS rd_max_date,
+    Text(Date($(vP4FirstDay), 'YYYY-MM-DD')) AS calendar_min_date,
+    Text(Date($(vP4LastDay), 'YYYY-MM-DD')) AS calendar_max_date,
     'NOT_APPROVED' AS t29_historical,
     'NOT_STARTED' AS facts_and_link_table
 AUTOGENERATE 1;
