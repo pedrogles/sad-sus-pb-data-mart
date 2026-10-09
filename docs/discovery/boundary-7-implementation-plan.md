@@ -1239,3 +1239,33 @@ Próxima etapa:
 **BOUNDARY 8 — Readiness**.
 
 A implementação definitiva permanece bloqueada até o Boundary 8 emitir **GO**.
+
+## Adendo de apresentação — aviso metodológico obrigatório CNES/LT (09/10/2026)
+
+**DECISÃO APROVADA PELO RESPONSÁVEL:** as limitações da `DIM_TIPO_LEITO` devem aparecer **de forma visível e explícita nos gráficos de leitos e em suas análises interpretativas**, e não apenas nesta documentação. Esta é uma condição de aceite da futura Fase de PAINEL e de qualquer apresentação/impressão acadêmica com capacidade CNES/LT. Não criar PAINEL/figuras nesta fase IV: documentar o contrato para implementá-lo e testá-lo quando houver fatos/Link Table.
+
+### Mensagem metodológica canônica para a cobertura global de 2017–2019
+
+> **AVISO METODOLÓGICO — Leitos CNES (2017–2019):** 1.965 de 2.021 combinações distintas de código de tipo + código de leito + competência mensal (**97,2%**) não possuem descrição histórica comprovada para seu respectivo mês. O percentual refere-se **às combinações da dimensão**, **não** a leitos, estabelecimentos, internações ou registros de LT. Os códigos e quantitativos mensais CNES/LT permanecem disponíveis para análise; `NULL` de descrição **não** significa leito inexistente. Nomes exibidos em `201909` vêm exclusivamente da legenda datada de setembro/2019 (Nota Técnica 32/2019), sem comprovação de validade retrospectiva ou posterior. `T29_HISTORICAL=NOT_APPROVED`.
+
+**Exibição obrigatória**: em toda visualização que apresente capacidade hospitalar por **nome, tipo/especialidade de leito ou comparação temporal entre tipos**, exibir uma versão legível deste aviso **na própria folha/painel ou ao lado do gráfico**, com referência à fonte. Não basta colocar texto oculto em tooltip, aba de ajuda, documentação de desenvolvimento ou checklist. Manter o aviso nas capturas usadas no relatório, PDFs/exportações e comentários escritos relativos à mesma análise. Para gráficos de capacidade **apenas por código**, exibir ao menos nota concisa junto ao gráfico, indicando códigos sem validação histórica das descrições. Não impor este aviso em gráficos que usem apenas SIH/RD ou IBGE e não dependam de descrição CNES/LT.
+
+**Nota concisa aprovada**: `CNES/LT 2017–2019: descrições históricas não verificadas em 1.965/2.021 pares código×competência (97,2%). Nomes disponíveis apenas para set/2019; dados quantitativos por código mantidos. Fonte: CNES/LT e NT 32/2019. T29 histórico não aprovado.`
+
+**Regras de filtro e denominador**:
+- Os valores **1.965/2.021 = 97,2%** são do **universo global de pares-mês da dimensão**, apurados no A1; **não** são proporção ponderada pelo número de leitos nem percentual de registros LT.
+- Para filtro de competência, município, estabelecimento ou tipo, **não reapresentar 97,2% como percentual do subconjunto**. Se o painel calcular cobertura no filtro, calcular `combinações sem rótulo / combinações distintas do conjunto filtrado` usando competência+código de tipo+código de leito; rotular claramente **percentual no filtro**. Quando não houver medição filtrada implementada, manter a nota global como global, ou suprimir apenas a porcentagem do filtro não medida.
+- Rótulos `NULL` não devem virar `Outros`, `Sem leitos`, `Desconhecido` como categoria de negócio nem receber cor/legenda que sugira zero capacidade. Se for preciso exibir texto de interface, usar `Descrição histórica não verificada` **apenas na camada visual**, mantendo `NULL` no QVD.
+- Não agregar ou comparar **nomes de setembro/2019** contra meses sem nomes como se a classificação nominal fosse temporalmente equivalente. Para séries históricas, utilizar **códigos**, exibir a ressalva e registrar que consistência normativa entre competências não foi integralmente comprovada. Leitos são **snapshots semi-aditivos**: análise anual por média mensal, jamais soma de leitos ao longo dos meses.
+- Todo texto analítico de capacidade deve citar `CNES/LT`, período/competência, natureza de snapshot, limitação descritiva e não interpretar ausência de nomes como ausência de capacidade.
+
+### Critérios obrigatórios do futuro aceite de PAINEL
+
+1. Cada objeto/gráfico/folha afetado contém aviso persistente e legível; capturas para relatório/exportação retêm o aviso.
+2. A nota numérica global 1.965/2.021 (97,2%) está explícita como **pares-mês da dimensão** e não como número/porcentagem de leitos.
+3. Filtros não alteram indevidamente o denominador exibido; qualquer estatística dinâmica é calculada com unidades e universo claros.
+4. `201909` é a única competência com descrições candidatas pelo snapshot, enquanto competências restantes usam código e `NULL` para descrições não comprovadas.
+5. Notas e conclusões não chamam 2017–2019 de série de nomes historicamente validada nem marcam `T29` como PASS.
+6. Revisão visual dos 3 painéis exigidos pelo professor e das capturas impressas deve rejeitar `PASS` se faltar a ressalva nas visualizações de leitos.
+
+**Gates**: `PRESENTATION_CNES_HISTORICAL_CAVEAT=REQUIRED_NOT_IMPLEMENTED`; `T29_HISTORICAL=NOT_APPROVED`; `A2_CONTRACT=APPROVED_DOCUMENTED_NOT_IMPLEMENTED` no momento desta decisão. O PAINEL continua não iniciado.
