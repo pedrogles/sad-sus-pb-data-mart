@@ -63,6 +63,12 @@ EXPECTED_MARKER = {
 }
 
 
+def remove_if_exists(path: Path) -> None:
+    # Python 3.7 compativel com o baseline de readiness do projeto.
+    if path.exists():
+        path.unlink()
+
+
 def sha256_file(path: Path) -> str:
     h = hashlib.sha256()
     with path.open("rb") as source:
@@ -188,8 +194,8 @@ def main() -> int:
 
     # Remove somente os artefatos finais de sucesso ANTES de tentar reload.
     # Artefatos parciais/QVDs antigos ficam intactos para diagnostico.
-    MARKER.unlink(missing_ok=True)
-    MANIFEST.unlink(missing_ok=True)
+    remove_if_exists(MARKER)
+    remove_if_exists(MANIFEST)
     started = datetime.now(timezone.utc)
     print(f"RELOAD_STARTED_UTC={started.isoformat()}")
     print("OLD_SUCCESS_MARKER=INVALIDATED")
@@ -208,8 +214,8 @@ def main() -> int:
         return 0
     except (ValueError, OSError, UnicodeError, csv.Error, subprocess.TimeoutExpired) as exc:
         # Nunca deixar marcador de sucesso com auditoria externa falha.
-        MARKER.unlink(missing_ok=True)
-        MANIFEST.unlink(missing_ok=True)
+        remove_if_exists(MARKER)
+        remove_if_exists(MANIFEST)
         print(f"VERDICT=FAIL_CLOSED ERROR={exc}")
         print("PHASE_III=IN_PROGRESS")
         return 3
