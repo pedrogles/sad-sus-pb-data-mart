@@ -198,4 +198,4 @@ DROP TABLE C5_MUNICIPAL_PREFLIGHT_CHECKPOINT;
 DROP TABLE C5_IBGE_PB_CODES;
 
 TRACE [EXTRACAO] PHASE_III_C5_MUNICIPAL_PREFLIGHT_PASS IBGE_7=$(vC5IBGECodes) ST_6=$(vC5STDistinct) ST_UNMATCHED=$(vC5STUnmatched) LT_UNMATCHED=$(vC5LTUnmatched) RD_ATT_UNMATCHED=$(vC5RDAttUnmatched) RD_RES_PB_UNMATCHED=$(vC5RDResPBUnmatched) RD_RES_EXTERNAL=$(vC5RDResExternal);
-TRACE [EXTRACAO] PHASE_III_IN_PROGRESS: municipal bridge not materialized and external residence unmapped.
+TRACE [EXTRACAO] PHASE_III_IN_PROGRESS: C5.1 preflight only; C5.2 may materialize derived PB reference; external residence remains outside PB population.
