@@ -382,3 +382,62 @@ O `CODLEITO=95` já aparece em **cada uma das 36 competências físicas**, inclu
 **Critério de encerramento desta Discovery restrita:** (a) descobrir versão(s) normativas suficientes para modelar descrições com intervalos comprováveis; **ou** (b) registrar que as rotas documentadas não forneceram evidência histórica no escopo, apresentando ao responsável a alternativa A incompleta ou a postergação da oitava dimensão. Não exigir busca indefinida para concluir que **não há prova encontrada**, o que não significa afirmar que as referências históricas não existem.
 
 **Estado:** `C4.2c.4a=PASS_LOCAL_OBSERVED_LT_CODES`, `C4.2c.4b=SCNES_VERSIONED_DOMAIN_INVENTORY_PENDING`, `T29_HISTORICAL=NOT_APPROVED`, `A2=CONTRACT_DECISION_PENDING`, `main=7/8`.
+
+## C4.2c.4b — inventário metadata-only de versões históricas SCNES (09/10/2026)
+
+**MODO EXECUTADO:** consulta HTTP/texto em páginas oficiais do CNES/DATASUS e Wiki CNES. **Nenhum instalador, arquivo compactado, banco histórico, QVD ou dataset foi baixado, extraído ou modificado.** Não se utilizou navegador gráfico com JavaScript nem se inspecionou o conteúdo binário `NFCES001/TB_LEITO`.
+
+### 1. Entradas oficiais e URLs reais verificadas
+
+| Canal | URL **observada** e função | Resultado da inspeção remota |
+|---|---|---|
+| Portal CNES — aplicativos | https://cnes.datasus.gov.br/pages/downloads/aplicativos.jsp | Página HTTP acessível; seções `VERSÃO SCNES` completa/atualização e `VERSÕES SCNES ANTERIORES` completa/atualização **existem**. Lista de versões anteriores e seus respectivos arquivos **não são renderizados no HTML estático**; a versão atual aparece como expressão Angular literal `{{scnesCompleta.versao...}}`. Sem JS interativo, **não foram extraídos itens nem URL binária individual de 2017–2019**. |
+| Portal CNES — bases de dados | https://cnes.datasus.gov.br/pages/downloads/arquivosBaseDados.jsp | Página HTTP acessível; seção `BASE DE DADOS` apresenta apenas `SELECIONE` no HTML estático. **Nenhuma lista real de arquivos por competência, metadados, tamanho, conteúdo ou SHA observáveis neste modo.** A Wiki explica a disponibilidade por competência a partir de **201706**, sem provar que esses pacotes contenham `TB_LEITO`. |
+| Portal CNES — outros sistemas | https://cnes.datasus.gov.br/pages/downloads/arquivosOutros.jsp | Página HTTP acessível; seção **`LEITOS 65`** exibe **link denominado `LFCES002_201301_65.ZIP`**. É um **nome literal visível**, não arquivo baixado, tamanho conhecido ou estrutura examinada. **Não equivale automaticamente** a `NFCES001/TB_LEITO` ou catálogo mensal 2017–2019; etiqueta `201301` não autoriza inferir conteúdo/vigência. Não foi seguido o link de download. |
+| Wiki CNES — Portal | https://wiki.saude.gov.br/cnes/index.php/Portal_CNES | Confirma formalmente a existência de versões anteriores do SCNES, completa/atualização, arquivos para outros sistemas (`LEITOS 65`) e base por competência desde **06/2017**. É **documentação da rota**, não manifesto de binários históricos. |
+| Wiki CNES — Guia instalação | https://wiki.saude.gov.br/cnes/index.php/Guia_de_Instala%C3%A7%C3%A3o_dos_Sistemas | Diferencia **SCNES COMPLETO** (instala tabelas e arquivos) de **ATUALIZAÇÃO** (conserva dados locais e pode implementar regras). Define modelo de nomes `SCNESXXXX-COMPLETA.ZIP` e `SCNESXXXX-ATUALIZACAO.ZIP` **como convenção genérica**, não prova que existam arquivos desses nomes para versões específicas nem que tragam histórico de `TB_LEITO`. |
+| Informes históricos oficiais do CNES | https://cnes2.datasus.gov.br/Mod_Mensagem_Abertura1.asp | Página pública acessível, com informes textuais datados que mencionam **versões literais** em alguns marcos. Nenhum item dessa página fornece aqui a composição/hashes do instalador histórico. |
+| RTS, conforme gate anterior | https://wiki.saude.gov.br/RTS/index.php/RTS_Portal | Canal versionado documentado, mas ensaio visual anterior encontrou `LEITO 10/2019A` para competência 201910 e resultados vazios nos testes anteriores. Não houve novo dump/versionamento das tabelas 2017–2019 nesta rodada. |
+
+**URL funcional corrigida e confirmada:** a página de base de dados é `/pages/downloads/arquivosBaseDados.jsp`, **não** `/pages/downloads/baseDados.jsp`; esta última tentativa não forneceu página utilizável. Nunca registrar o caminho tentado como link comprovado de download.
+
+### 2. Identificadores de release visíveis em informes datados — sem atribuição de competência exata
+
+| Data do **informe** | Evidência textual literal | O que não foi comprovado |
+|---|---|---|
+| **13/12/2017** | Informe sobre municípios-satélites do DF menciona **SCNES 4.0.20** e alteração que seria realizada **a partir de sua disponibilização**; **não** é aviso explícito de disponibilidade naquele dia | Não provar `COMPETEN=201712` para essa versão, nem mudança da tabela de leitos. |
+| **13/04/2018** | Informe **`VERSÃO SCNES 4.0.30`** declara versão **obrigatória e disponibilizada**, informa correção de credenciais e compatibilidade de importação com bases `4.0.20`/`4.0.21` | Não associar release a uma versão de `TB_LEITO` ou a mudanças no domínio hospitalar. |
+| **22/11/2019** | Informe **`Instalador VERSÃO SCNES 4.1.50`** declara versão disponibilizada para correção da seleção de pasta no instalador | Não provar que versão `4.1.50` era usada em `201909` ou `201912`, nem que seu conteúdo alterou leitos. |
+| **16/01/2020** (controle posterior, fora do recorte) | Informe anuncia **`SCNES 4.1.70`** atualização/completa, obrigatória | Não aplicar retroativamente ao recorte 2017–2019. |
+
+**Proveniência:** todas as quatro referências acima são do mesmo histórico oficial de informes CNES/DATASUS. **Versão do software não equivale a versão da terminologia RTS, competência administrativa do LT ou período de validade dos códigos de leito.** Os informes não fornecem lista exaustiva das versões; a ausência de linha no período não prova inexistência de release.
+
+### 3. Matriz dos checkpoints solicitados vs evidência realmente encontrada
+
+| Marco | Evidência metadata-only | `TB_LEITO` e pares versionados | Situação |
+|---|---|---|---|
+| `201701` | Canal histórico de apps e arquivo de texto CNES; **nenhuma versão plena/arquivo SCNES identificada para este mês** | Não inspecionado | `VERSION_NOT_RESOLVED`; bases públicas CNES documentadas somente desde 201706 |
+| `201703–201706` | Disponibilidade de bases públicas **a partir de 201706** declarada na Wiki, não inventariadas por competência | Não inspecionado | `PUBLIC_BASE_CHANNEL_DOCUMENTED_ONLY` |
+| `201712` | Informe `13/12/2017` menciona `SCNES 4.0.20` como implantação futura; sem data de entrega comprovada | Não inspecionado | `VERSION_NAME_MENTIONED_NOT_DATED_RELEASE` |
+| `201804` (controle suplementar) | Informe de 13/04/2018 comprova disponibilidade de **SCNES 4.0.30** | Não inspecionado | `DATED_RELEASE_NOTICE_FOUND` |
+| `201903` | Fonte normativa Portaria SAS/MS 298/2019, efeitos **condicionados** à disponibilização DATASUS | Não inspecionado | `VERSION_NOT_RESOLVED` |
+| `201909` | Snapshot oficial NT32/2019 já auditado e datado de setembro; **não foi encontrada nesta triagem a versão SCNES deste mês** | Referência de setembro conhecida, **não** versão binária `TB_LEITO` | `DATED_LEGEND_ONLY` |
+| `201911` (controle suplementar) | Informe 22/11/2019 confirma instalador **SCNES 4.1.50**, sem listar bancos/tabelas | Não inspecionado | `DATED_RELEASE_NOTICE_FOUND` |
+| `201912` | Download por competência documentado, **sem versão/arquivo específico 201912 identificado** | Não inspecionado | `VERSION_NOT_RESOLVED` |
+
+### 4. Nova evidência complementar — arquivo `LEITOS 65`
+
+O Portal CNES **exibe realmente** `LFCES002_201301_65.ZIP` em **Downloads → Arquivos para outros sistemas → LEITOS 65**, diferente da trilha **Aplicativos → Versões anteriores SCNES**. Esse achado pode ser útil numa futura consulta **minimamente direcionada**, mas o nome `201301` e o termo `LEITOS 65` **não demonstram** ser tabela normativa CNES de 2017–2019, não demonstram associação `TP_LEITO/CODLEITO`, nem relação com `TB_LEITO`.
+
+**HIPÓTESE INVESTIGATIVA — NÃO VALIDADA:** se vier a ser autorizada aquisição mínima de um único arquivo, sua documentação e conteúdo poderão dizer se ele é apenas um arquivo auxiliar de processamento ou se fornece referência historicamente relevante. **Nenhum download foi executado, logo não há SHA, conteúdo, tamanho nem link direto de bytes verificados.**
+
+### 5. Resultado do gate e próxima ação limitada
+
+**Resultado da Discovery C4.2c.4b:** `SCNES_OFFICIAL_ENTRYPOINTS_AND_RELEASE_NOTICES_VERIFIED / HISTORICAL_TB_LEITO_BINARY_INVENTORY_NOT_RESOLVED`.
+
+- **FATO VERIFICADO:** URLs oficiais de **aplicativos, bases por competência e arquivos para outros sistemas** foram abertas; há arquivos SCNES históricos descritos na documentação e releases nomeados/datados em informes (ex.: `4.0.30` em 201804 e `4.1.50` em 201911).
+- **DECISÃO PENDENTE / BLOQUEIO:** o HTML sem execução de JavaScript **não enumerou arquivos individuais de versões antigas**. Nenhuma versão de `NFCES001/TB_LEITO` foi obtida, comparada ou ligada a um mês LT; `T29_HISTORICAL=NOT_APPROVED`.
+- **PRÓXIMO GATE C4.2c.4c — MANUAL ENUMERATION ONLY, SEM DOWNLOAD:** com navegador local no [Portal CNES — Aplicativos](https://cnes.datasus.gov.br/pages/downloads/aplicativos.jsp), inspecionar a seção **`VERSÕES SCNES ANTERIORES`**, registrar em captura/tabela apenas **nome literal da versão, rótulo completa/atualização, eventuais datas e detalhes/links exibidos** para amostras 2017, 2019; não clicar em binários. Na página [Base de Dados](https://cnes.datasus.gov.br/pages/downloads/arquivosBaseDados.jsp), verificar se o seletor de competência mostra `201706`, `201903`, `201909`, `201912`, **sem iniciar download**. Marcar `JS_NOT_ENUMERABLE` ou `ACCESS_BLOCKED` se a interface não apresentar a lista. Registrar ausência de datas sem inventar versão/mês.
+- **ESCALONAMENTO:** se a enumeração encontrar um candidato **cuja descrição pública afirme conter domínio de leitos**, propor posteriormente uma única aquisição técnica controlada (bytes, hash, lista interna e contrato do arquivo) **somente com autorização específica**. Não instalar executáveis por padrão; priorizar documento/layout/listagem acessível sem execução.
+
+**ESTADO:** `C4.2c.4a=PASS_LOCAL`, `C4.2c.4b=METADATA_ONLY_PARTIAL_CHANNELS_IDENTIFIED_BINARY_NOT_ENUMERATED`, `C4.2c.4c=LOCAL_BROWSER_ENUMERATION_PENDING`, `A2=CONTRACT_DECISION_PENDING`, `T29_HISTORICAL=NOT_APPROVED`, `main=7/8`. Nenhum `DIM_TIPO_LEITO.qvd`, fato, Link Table ou painel gerado.
