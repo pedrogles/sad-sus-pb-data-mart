@@ -152,3 +152,18 @@ Get-Item .\TRANSFORMACAO\QVD\DIM_ESTABELECIMENTO.qvd -ErrorAction SilentlyContin
 ### Gate físico (read-only, sem Qlik reload)
 
 Na raiz do repositório local, Python 3 deve analisar `TRANSFORMACAO/QVD/DIM_ESTABELECIMENTO.qvd` até `</QvdTableHeader>`, validar `NoOfRecords=220390`, 14 `FieldName` esperados (`%SK_ESTABELECIMENTO`, `CNES`, `COMPETENCIA`, `CODUFMUN`, `COD_CEP`, `CNPJ_MAN`, `VINC_SUS`, `TPGESTAO`, `TP_UNID`, `NATUREZA`, `NAT_JUR`, `NOME_FANTASIA`, `RAZAO_SOCIAL`, `NOME_HISTORICO_STATUS`), SHA-256, checkpoint de 19 campos/uma linha e todos os controles acima. Não converter `QLIK_EXIT=0` sozinho em PASS físico.
+
+## Auditoria física final — DIM_ESTABELECIMENTO (09/10/2026 00:24:41)
+
+**FATO VERIFICADO — saída do script Python 3 local fornecida pelo responsável:**
+
+- Auditoria somente leitura e sem novo reload, encerrada com `VEREDITO=PASS_LOCAL_QVD_HEADER_CHECKPOINT_RECONCILED`. Todas as assertions declaradas concluíram sem exceção.
+- `TRANSFORMACAO/QVD/DIM_ESTABELECIMENTO.qvd`: **7.580.750 bytes**, modificação `2026-10-09 00:24:41.201298`, SHA-256 **`ba0139ed025e7f261304aa59128cfe4e664dd023d1df2e641b7d41b8837f2508`**.
+- `QvdTableHeader` extraído do QVD real contém **`NoOfRecords=220390`** e **14 campos sem faltas ou excedentes**: `%SK_ESTABELECIMENTO`, `CNES`, `COMPETENCIA`, `CODUFMUN`, `COD_CEP`, `CNPJ_MAN`, `VINC_SUS`, `TPGESTAO`, `TP_UNID`, `NATUREZA`, `NAT_JUR`, `NOME_FANTASIA`, `RAZAO_SOCIAL`, `NOME_HISTORICO_STATUS`.
+- `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_ESTABELECIMENTO.csv`: **566 bytes**, modificação `2026-10-09 00:24:41.204918`, SHA-256 **`67c2f945c69de9143643c4ae8d4e619c0b822c267132a95ebb2af34f954e80c5`**.
+- CSV realmente reimportado, **uma linha e 19 campos**, `status=PASS_PARTIAL_DIM_ESTABELECIMENTO_ONLY` e 12 contadores verificados: `dimension_rows=220390`, `dimension_fields=14`, `distinct_cnes=6822`, `distinct_competences=36`, `unique_versions=220390`, `unique_surrogate_keys=220390`, `invalid_dimension_rows=0`, `self_unmatched=0`, `rd_rows=566672`, `rd_monthly_version_unmatched=0`, `lt_rows=35518`, `lt_monthly_version_unmatched=0`.
+- Também confirmados no checkpoint: `historical_names_policy=NULL_NO_FUTURE_BACKFILL`, `t29_historical=NOT_APPROVED`, `facts_and_link_table=NOT_STARTED`. Os timestamps locais dos dois artefatos foram comparados a `generated_at` do CSV, tolerância **15 segundos**, sem exceção.
+
+**CONCLUSÃO:** `IV-ESTABELECIMENTO=PASS_LOCAL_QVD_HEADER_CHECKPOINT_RECONCILED`. A evidência final engloba execução QlikView 12/T16, checkpoint físico e auditoria independente dos metadados do QVD. **Limite:** a leitura do cabeçalho não decodifica individualmente todas as 220.390 linhas binárias; integridade por registro (incluindo nomes nulos e versionamento) advém dos testes do script Qlik e da constatação dos campos de origem ausentes nos 36 ST. Não inventar nomes nem tratar `T29_HISTORICAL` como aprovado.
+
+**Integração:** PR #76 `feat/phase-4-dim-estabelecimento` fica apto à revisão de patch, comparação com main e integração controlada por squash. O PASS técnico **não** significa fase IV final: apenas 3 de 8 dimensões concluídas tecnicamente se e quando #76 for integrado; fatos/Link Table/PAINEL ainda não iniciados.
