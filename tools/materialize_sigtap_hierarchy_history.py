@@ -148,9 +148,14 @@ def evaluate_month(month: str, blobs: dict[str, bytes], codes: list[str]) -> dic
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--timeout", type=int, default=120)
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument(
         "--validate-only", action="store_true",
         help="Inspeciona 36 meses SEM gravar TXT nem manifesto (mas baixa ZIPs temporarios).",
+    )
+    mode.add_argument(
+        "--materialize", action="store_true",
+        help="Apos todas as validacoes, preservar os 216 TXT originais e manifesto local.",
     )
     args = parser.parse_args()
 
