@@ -1,7 +1,7 @@
 # Fase III-C5.2 — Referência municipal PB derivada (DATASUS6 ↔ IBGE7)
 
 **Data:** 08/10/2026  
-**Status:** `IMPLEMENTATION_READY / LOCAL_QV_RELOAD_AND_SHA_AUDIT_PENDING`  
+**Status atual:** `III-C5.2=PASS_LOCAL_QV_AND_SHA_AUDIT`, ver seção 5; a seção 3 conserva os critérios definidos antes da execução.  
 **Branch:** `feat/phase-3-c5-2-municipal-pb-reference`  
 **Aprovação:** registrada no checkpoint III-C5.1 do documento `phase-3-municipal-crosswalk-preflight-2026-10-08.md`.  
 **Ferramenta obrigatória:** QlikView 12.
@@ -36,7 +36,7 @@ Este script:
 
 Os arquivos QVD/CSV derivados e manifesto local ficam fora do Git; scripts e esta documentação são versionados. Não implementar `DIM_MUNICIPIO`, `FATO_POPULACAO`, `LINK_ANALISE`, painéis ou referência nacional de moradores externos.
 
-## 3. Gate local, pendente
+## 3. Gate local — critérios estabelecidos antes da execução (posteriormente PASS)
 
 Na raiz do repositório em uma árvore limpa, após atualizar main e obter a branch do PR:
 
@@ -57,7 +57,7 @@ if ($LASTEXITCODE -ne 0) { throw "Auditoria municipal C5.2 falhou" }
 
 **Falha:** interromper e analisar o erro; não fazer merge com testes pendentes/falhos nem assumir que um checkpoint antigo representa o novo reload.
 
-## 4. Limites e próximos gates
+## 4. Limites e próximos gates — estado antes da execução local
 
 - `III-C5.1=PASS_LOCAL_CANDIDATE_MAPPING`;
 - `III-C5.2=IMPLEMENTED_CODE_LOCAL_TEST_PENDING`;
