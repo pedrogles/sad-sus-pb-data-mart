@@ -544,3 +544,24 @@ Comparação de códigos contra `docs/discovery/cnes-nt32-2019-codigos-leito.csv
 **`T29_HISTORICAL=NOT_APPROVED`**, **`A2_SK_CONTRACT=DECISION_PENDING`**, **`DIM_TIPO_LEITO_QVD_GENERATED=False`**, **`MAIN=7/8`** e fatos/Link Table/PAINEL NOT_STARTED.
 
 **Recomendação:** encerrar esta tentativa de aquisição e decidir separadamente **A2 (contrato dimensional conservador)**, especificando competência observada versus competência/versão da fonte descritiva, comportamento `NULL` para descrição histórica não comprovada e o significado vigente de `COMPETENCIA_REFERENCIA` antes de alterar a SK do Boundary 7. Manter bloqueio da oitava dimensão até aprovação; não é necessário buscar indefinidamente versões sem novos indícios. O ZIP e XLS não foram adicionados ao GitHub.
+
+## Gate A2 — contrato conservador ratificado e reconciliado com Boundary 7 (09/10/2026)
+
+**DECISÃO APROVADA PELO RESPONSÁVEL:** após concluir o inventário físico C4.2c.4e, o responsável ratificou **prosseguir com o fechamento do contrato A2 conservador** (alternativa A) conforme proposto neste documento. Esta ratificação **substitui exclusivamente o status `A2=DECISION_PENDING` dos relatos anteriores**, sem apagá-los da cronologia e sem autorizar inferências de vigência. Atualização explícita incorporada ao `docs/discovery/boundary-7-implementation-plan.md`, § 14, adendo A2 (decisão semântica; não mudança silenciosa da SK).
+
+### Contrato de modelagem ratificado (não é PASS de QlikView)
+
+1. **Identidade/grão da dimensão:** `(TP_LEITO_normalizado,CODLEITO_textual,COMPETEN)`, uma linha por combinação fonte e competência observada; A1 local: **2.021 pares-mês** em 36 competências.
+2. **`TP_LEITO`** para computar a SK: normalização textual limitada à remoção de **espaços ASCII finais** de `"N "`, mantendo o campo bruto rastreável; `CODLEITO` continua dois dígitos textuais. Conduta `3/66` permanece sem correção; não usar `CODLEITO` sozinho como chave.
+3. **Esclarecimento autorizado do quarto argumento do Boundary 7:** **`COMPETENCIA_REFERENCIA` da expressão `%SK_TIPO_LEITO=Hash128('LEITO',TP_LEITO,CODLEITO,COMPETENCIA_REFERENCIA)` receberá `COMPETEN` observada no LT exclusivamente para esta chave.** Fórmula e temporalidade são preservadas; outros usos do nome em referências históricas/PROCEDIMENTO não são reinterpretados.
+4. **Descrição e proveniência:** o snapshot `201909` continua catálogo **descritivo independente**, jamais substituto da competência observada da SK. Para **56** combinações do mês `201909` (após validar associação por par), usar apenas rótulos explicitamente identificados como provenientes daquele mês; as **1.965** combinações fora dessa competência **mantêm ambas as descrições `NULL`** por ausência de fonte mensal aplicável. Proibição de descrição retroativa, sentinela textual que pareça descrição verdadeira ou propagação pelo código entre meses.
+5. **Fato/relacionamentos:** `FATO_CAPACIDADE_LEITO` continua `CNES × COMPETEN × CODLEITO`, medida de leitos semi-aditiva. Cada registro LT deverá mapear-se a **uma única SK**, com cobertura integral `35.518/35.518` e sem multiplicações, a validar em QlikView.
+6. **Limite acadêmico:** modelo dimensional e atributos descritivos do relatório impresso mantidos **sem alteração**. A aprovação técnica de campos `NULL` não comprova aceitação pelo professor; preservar a ressalva e solicitar orientação acadêmica se houver exigência de descrição histórica plena.
+
+### Gatilhos, testes e mudanças permitidas
+
+**Status do contrato:** `A2_CONTRACT=APPROVED_DOCUMENTED_NOT_IMPLEMENTED`; `T29_HISTORICAL=NOT_APPROVED`; `IV_TIPO_LEITO_QV_PHYSICAL_GATE=NOT_RUN`; `MAIN_DIMENSIONS=7/8`.
+
+**Próxima atividade permitida:** pré-gate de **planejamento/implementação isolada** de `DIM_TIPO_LEITO` no QlikView 12, após conferir os nomes reais dos campos no staging e as aliases associativas do Qlik (evitar accidental synthetic keys). Nenhuma mudança em fatos/Link Table/PAINEL faz parte desta autorização de decisão A2. O código, QVD e checkpoint da oitava dimensão continuam **não produzidos**.
+
+**Critérios mínimos a demonstrar posteriormente:** `2.021` chaves dimensionais de Hash128 únicas (sem colisões), nenhuma representação de tipo fora do normalizador auditado, `35.518/35.518` vínculos unívocos com LT, `0` unmatched e `0` multiplicações de linhas, `56` pares-mês `201909` com descrição datada validada, `1.965` sem descrições históricas indevidamente imputadas, e regressões `3/66=1.480`, `7/70=5`. Diferenciar **validação dos códigos** de **aprovação de validade histórica**. Sem redefinir T29; sem promover a `main` por mera aprovação documental.
