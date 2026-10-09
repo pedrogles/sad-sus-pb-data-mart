@@ -510,3 +510,19 @@ Identificar o **log mais recente de `TRANSF.qvw` realmente correspondente ao nov
 5. sem evidência de criação de fatos, Link Table ou marcador global `_SUCCESS_TRANSFORMACAO.csv`.
 
 Após receber o log real, revisar o conjunto do PR e somente então classificar esta dimensão como candidata à integração. Não inferir o PASS de reload com base no arquivo QVD isolado.
+
+## IV-PROCEDIMENTO — evidência complementar de Reload QlikView 12 PASS (09/10/2026)
+
+**FATO VERIFICADO — saída do PowerShell e excertos do arquivo de log QlikView enviados pelo responsável:**
+
+- Após `git pull --ff-only`, a branch `feat/phase-4-dim-procedimento` avançou por fast-forward de `83e1b7b` até `dfe3e7c` (somente alterações documentais).
+- Log mais recente encontrado em `TRANSFORMACAO/TRANSF.qvw.2026_10_09_09_24_36.log`; execução observada das **09:24:36 às 09:24:48 de 09/10/2026**, inclusive traces IV-PROCEDIMENTO e finalização.
+- O mesmo log registra `[TRANSFORMACAO][IV-PROCEDIMENTO] START` às **09:24:45**, `SOURCE Rows=165203 Fields=10 Keys=165203 Months=36 Invalid=0` às **09:24:46**; `COVER RD=566672 UNMATCHED=0` às **09:24:48**; `DIM_PROCEDIMENTO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN` às **09:24:48**.
+- Na seção `P4P_DIM_CHECKPOINT`, o log mostra explicitamente `165203 AS dimension_rows`, `12 AS dimension_fields`, `36 AS distinct_competences`, `165203 AS unique_surrogate_keys`, `165203 AS unique_procedure_month_versions`, `0 AS invalid_dimension_rows`, `566672 AS rd_rows`, `0 AS rd_procedure_unmatched`, `NOT_APPROVED AS t29_historical`, `NOT_STARTED AS facts_and_link_table`; registra `STORE DIM_PROCEDIMENTO`, `STORE P4P_DIM_CHECKPOINT`, e termina com `Execução concluída.` às **09:24:48**.
+- A busca PowerShell por `ScriptError` mostra expressões condicionais/guardas `IF ScriptErrorCount > 0 THEN` no texto de script, **não mensagens de erro de execução**. Nos trechos enviados, não se vê mensagem `FAIL`, abortamento ou erro efetivamente emitido.
+- Esta evidência se soma à auditoria independente do QVD/checkpoint já executada anteriormente: `QVD_SHA256=620b3f9d4d1babdf25b2d1f2f5653ad7089e4003986048bdb746b5662f2de56b`, `CHECKPOINT_SHA256=b6180cecb7b91b93d2fd5906ed7034549ce38105cde4d6d0eb0f03b4a7639543`, `PASS_LOCAL_DIM_PROCEDIMENTO_QVD_HEADER_CHECKPOINT_RECONCILED`. A auditoria não descompacta as linhas binárias do QVD: a prova da qualidade de carga e dos joins decorre do log/Qlik e do staging Python verificado linha a linha.
+- **Limite da evidência:** o responsável compartilhou a seleção de linhas e as últimas 40 linhas, **não o arquivo de log integral**. As evidências fornecidas atendem aos controles exigidos de conclusão e traces do quarto checkpoint; não equivalem a uma auditoria independente do log completo. O include Qlik documentado contém apenas dimensões parciais e não implementa fatos/Link Table, mas esta mensagem não demonstrou por inspeção do diretório a ausência de qualquer marcador global pré-existente.
+
+**Veredito do checkpoint:** `IV-PROCEDIMENTO=PASS_LOCAL_QLIK_RELOAD_AND_QVD_CHECKPOINT_RECONCILED`; quarto checkpoint **validado localmente**. Não declarar `PHASE_IV=PASS_FINAL` nem quarta dimensão **integrada na main** antes do merge do PR. A `main` contém **3/8 dimensões integradas**, com esta quarta pronta para revisão. Preservar fonte SIGTAP de 201808 como versão retrospectiva `v2102261143`, charset `cp1252` operacional indistinguível de ISO-8859-1 nos bytes inspecionados, `DESCRICAO_OFICIAL=NULL` sem campo detalhado oficial validado, e `T29_HISTORICAL=NOT_APPROVED`.
+
+**Próximo gate:** revisar alterações entre `main` e `feat/phase-4-dim-procedimento`, abrir PR de revisão sem auto-merge e decidir sua integração somente com aprovação explícita. Após merge, restarão quatro dimensões ainda não integradas: `DIM_DIAGNOSTICO`, `DIM_CARATER_ATENDIMENTO`, `DIM_MOTIVO_SAIDA_PERMANENCIA` e `DIM_TIPO_LEITO`.
