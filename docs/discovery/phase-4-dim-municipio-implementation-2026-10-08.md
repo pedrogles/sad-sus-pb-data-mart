@@ -106,3 +106,27 @@ Se a branch ja existir localmente, `git switch feat/phase-4-dim-municipio` e `gi
 **Próximo gate:** verificar `Get-Process Qv`, existência e atualização de `TRANSF.qvw`, presença do include no `transf_main.qvs` local e timestamps dos logs; se QlikView estiver aberto, fechá-lo normalmente antes de novo teste controlado. Para nova tentativa, usar `Start-Process -Wait -PassThru` com `/r` e caminho absoluto para esperar a conclusão, e **exigir** log contemporâneo e novo checkpoint. **Não apagar QVD de extração ou alterar scripts durante diagnóstico.**
 
 **Estado:** `IV-MUNICIPIO=RELOAD_NOT_OBSERVED / PHYSICAL_GATE_PENDING`; `IV-TEMPO=MERGED_PASS`; `PR_75=DRAFT`; `T29_HISTORICAL=NOT_APPROVED`.
+
+## Segundo reload IV-MUNICIPIO — falha de cobertura no self-map (08/10/2026 23:55)
+
+**FATO VERIFICADO — resultado PowerShell enviado pelo responsavel:**
+
+- `git pull --ff-only` atualizou a branch local, `Start-Process -Wait -PassThru` aguardou `Qv.exe /r TRANSFORMACAO/TRANSF.qvw`; `QLIK_EXIT=0`.
+- Log **novo** `TRANSF.qvw.2026_10_08_23_55_04.log` (`LOG_NOVO=True`), portanto o include `transf_dim_municipio.qvs` executou fisicamente.
+- Perfil de `DIM_MUNICIPIO` em memoria: **937 linhas**, **937 chaves SK distintas**, **937 DATASUS6 distintos**, **223 PB**, **714 codigos externos distintos**, **0 linhas invalidas**. A verificacao `937 <> 223 + 714` passou.
+- `MAP_P4M_DIM_CODE` estava definido como `MAPPING LOAD COD_DATASUS_6, COD_DATASUS_6 RESIDENT DIM_MUNICIPIO`, 937 linhas carregadas conforme log.
+- No gate de dominio, `ApplyMap('MAP_P4M_DIM_CODE', ... , '#MISSING#')` registrou **566672 RD residencia sem match, 566672 RD atendimento sem match, 220390 ST sem match e 35518 LT sem match**. Essas quatro contagens equivalem precisamente aos totais de cada fonte; nao se trata de 4 familias realmente sem municipio reconhecido.
+- O log encerrou em `[TRANSFORMACAO][IV-MUNICIPIO] FAIL RD/ST/LT domain coverage` e `EXIT SCRIPT`, apesar do codigo de saida 0. **Nenhum** `DIM_MUNICIPIO.qvd` nem `_CHECKPOINT_DIM_MUNICIPIO.csv` foi gravado; fail-closed funcionou.
+- O preflight III-C5.1 ja havia comprovado **zero** unmatched para os codigos PB em RD/ST/LT; 5.202 registros de residencia nao PB, preservados.
+
+**Diagnostico:** o conjunto da dimensao foi construido coerentemente, mas **a verificacao por `ApplyMap` falhou sistematicamente**. A causa de baixo nivel do retorno de todos os defaults na expressao de agregacao ainda nao foi demonstrada. Nao imputar o problema aos dados oficiais, nao modificar 223 pares, nao inventar identificadores externos.
+
+**Correcao pontual em branch PR #75 (codigo, nao validada fisicamente):** a tabela de mapeamento auto-referente (mesmo campo em suas duas colunas) foi retirada **somente do gate de dominio**. As quatro verificacoes agora usam `Not Exists(COD_DATASUS_6, Trim(Text(<campo_fonte>)))`, sobre a coluna `COD_DATASUS_6` ja carregada e verificada unica na propria `DIM_MUNICIPIO`. Segundo a documentacao QlikView, `Exists(field_name,expr)` retorna verdadeiro se esse valor ja foi carregado para `field_name`. Referencia: https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/InterRecordFunctions/Exists.htm.
+
+**Controles preservados:** 223 PB; 714 externos apenas como cardinalidade **observada no reload anterior** (nao hardcode); 5.202 linhas RD externas; unicidade SK/COD_DATASUS6; codigo IBGE7 e nome 2019 somente PB; nulos externos; coverage zero unmatched esperado; scripts versionados; QVD/checkpoint gravados apenas apos gate PASS.
+
+**Estado atualizado:** `IV-MUNICIPIO=FIX_CODE_READY_RELOAD_REQUIRED`, `PR_75=DRAFT`, `PHASE_IV=IN_PROGRESS`. O `QLIK_EXIT=0` de 23:55 nao e PASS. A correcao com `Exists` ainda exige **outro reload controlado** e auditoria de QVD/CSV/log antes de merge.
+
+### Proxima execucao local
+
+Na branch `feat/phase-4-dim-municipio` atualizada via `git pull --ff-only`, manter o QlikView fechado antes de `Start-Process -Wait`. Executar `TRANSFORMACAO/TRANSF.qvw` e exigir log novo, `_CHECKPOINT_DIM_MUNICIPIO.csv` novo com `PASS_PARTIAL_DIM_MUNICIPIO_ONLY`, 223 PB, 5.202 RD residentes externos, 714 codigos externos se mantido mesmo staging, `dimension_rows=937`, zero invalidos e zero unmatched, `DIM_MUNICIPIO.qvd` novo. Os 714/937 sao expectativas **reconciliadas na memoria do reload de 23:55**, a revisar se staging alterar. Nunca aprovar so por ExitCode 0.
