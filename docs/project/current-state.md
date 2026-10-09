@@ -9,7 +9,7 @@
 - Objetivo: Data Mart da **demanda de internações SIH/SUS, capacidade de leitos CNES e população IBGE** na Paraíba, **2017–2019**.
 - Primeira entrega acadêmica (**Capítulos 1 e 2**, relatório impresso em **13/10/2026**): modelagem **FECHADA — PRONTA PARA IMPRESSÃO/ENTREGA** desde 02/10; não reabrir por causa de ajustes de staging.
 - A origem baseada em arquivos está sujeita à **avaliação caso a caso pelo professor**, conforme os requisitos oficiais.
-- Próxima prioridade operacional: **auditar limites reais de datas e log do primeiro checkpoint da Fase IV (DIM_TEMPO); reload local/CSV e QVD (cabecalho, SHA-256 e nove campos) ja conferidos**. A Fase III está reconciliada e o PR #73 foi integrado à `main`. Fatos, Link Table e PAINEL ainda não iniciados; não transformar o Data Mart em pesquisa normativa CNES.
+- Próxima prioridade operacional: **investigar o checkpoint IV-TEMPO ausente no caminho esperado apos reload local de 08/10/2026 22:40:12**, antes de qualquer merge. O QVD do primeiro reload (22:17) foi auditado; o ultimo log executou `STORE` e terminou, mas `Import-Csv` falhou com FileNotFoundException. Limites Qlik observados: 39448..43830 (4.383 dias). Diagnostico read-only de caminho/I-O pendente. A Fase III está reconciliada e o PR #73 foi integrado à `main`. Fatos, Link Table e PAINEL ainda não iniciados; não transformar o Data Mart em pesquisa normativa CNES.
 
 Referências: [requirements.md](../academic/requirements.md), [chapter-1-2-modeling.md](../academic/chapter-1-2-modeling.md), [first-delivery-review.md](../academic/first-delivery-review.md).
 
