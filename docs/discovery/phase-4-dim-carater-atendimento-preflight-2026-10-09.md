@@ -131,3 +131,24 @@ Os 36 CSVs SIH/RD físicos têm `CAR_INT` **textual com exatamente dois dígitos
 **Estado atual:** `IV-CARATER_ATENDIMENTO=LOCAL_QVD_HEADER_CHECKPOINT_PASS_RELOAD_LOG_PENDING`. Há QVD/checkpoint locais inspecionados; **a sexta dimensão ainda NÃO está integrada à main**, que permanece em **5/8 dimensões**. `T29_HISTORICAL=NOT_APPROVED` e fatos/Link Table/PAINEL `NOT_STARTED` permanecem.
 
 **Próximo gate:** localizar `TRANSFORMACAO/TRANSF.qvw*.log` mais recente, correlacionar seu horário com o QVD/checkpoint e comprovar **na mesma execução** `[IV-CARATER] SOURCE Rows=6 Fields=4 Codes=6 Invalid=0`, `COVER RD=566672 Distinct=4 UNMATCHED=0 Invalid=0`, `COUNTS 01=80167 02=470512 03=0 04=0 05=1670 06=14323`, `DIM_CARATER_ATENDIMENTO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN` e finalização normal. Guardas impressas `IF ScriptErrorCount > 0 THEN` **não** constituem erros de execução. Somente após essa evidência e revisão do diff encaminhar PR, sem executar merge automático.
+
+## Gate QlikView 12 — reload local PASS confirmado (09/10/2026)
+
+**FATO VERIFICADO — trechos do log real fornecidos pelo responsável em PowerShell:**
+
+- Arquivo `TRANSFORMACAO/TRANSF.qvw.2026_10_09_10_50_54.log`, tamanho **87.265 bytes**, com `LastWriteTime=09/10/2026 10:51:08`; registros Qlik da mesma execução às **10:51:07–10:51:08**.
+- Linhas 1079–1080: `[TRANSFORMACAO][IV-CARATER] START`.
+- Linhas 1131–1132: **`SOURCE Rows=6 Fields=4 Codes=6 Invalid=0`**.
+- Linhas 1226–1227: **`COVER RD=566672 Distinct=4 UNMATCHED=0 Invalid=0`**.
+- Linhas 1229–1230: **`COUNTS 01=80167 02=470512 03=0 04=0 05=1670 06=14323`**.
+- Linhas 1271–1272: **`DIM_CARATER_ATENDIMENTO_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN`**.
+- Linhas 1274–1275: `PHASE_IV_PARTIAL_ONLY T29_HISTORICAL_NOT_APPROVED`; linha 1277: **`Execução concluída.`**
+- O trecho `Get-Content -Tail 40` mostra `P4C_DIM_CHECKPOINT` com `status=PASS_PARTIAL_DIM_CARATER_ATENDIMENTO_ONLY`, 6 linhas/4 campos, 6 chaves substitutas únicas, 0 linhas inválidas, RD 566672/4 códigos, sem unmatched/invalid, distribuição 01–06 exata, `domain_policy=COMPLETE_01_TO_06`, `label_policy=EXACT_SOURCE_C1_LABELS`, `t29_historical=NOT_APPROVED`, `facts_and_link_table=NOT_STARTED`. Houve `STORE` do checkpoint, 24 campos de checkpoint e 1 linha, antes de `Execução concluída.`
+- Metadados físicos informados: `TRANSFORMACAO/QVD/DIM_CARATER_ATENDIMENTO.qvd` **3383 bytes** e `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_CARATER_ATENDIMENTO.csv` **535 bytes**, ambos com `LastWriteTime=09/10/2026 10:51:08`, simultâneos à gravação e ao término do log.
+- A busca `Select-String -SimpleMatch` apresentada não retornou `Error: Unknown statement` ou `Syntax Error`. Linhas impressas `IF ScriptErrorCount > 0 THEN` são **guardas de código**, não erros observados. O log fornecido contém **ocorrências filtradas e últimas 40 linhas**, não o arquivo de 87.265 bytes integral; nenhuma inspeção integral é reivindicada.
+
+**Auditoria física read-only anteriormente aprovada:** `PASS_LOCAL_DIM_CARATER_QVD_HEADER_CHECKPOINT_RECONCILED`; SHA-256 QVD `b43851e7c57e33804ddde812ff47959510c07950a8db54d8aa9406dfa01861b4`, SHA-256 checkpoint `97fffb687609c6566fac39da97b4a9e059c32efae5ee7144f1ebc5cc5dba87a0`. O auditor validou hashes/cabeçalho/campos/contagens da linha de checkpoint, **não decodificou os registros binários QVD**; evidência de qualidade é a combinação dos controles físicos, CSV RD e execução QlikView real. Não tratar como CI automatizada.
+
+**Resultado:** `IV-CARATER_ATENDIMENTO=LOCAL_QLIK_RELOAD_QVD_CHECKPOINT_PASS_REVIEW_PENDING`. A sexta dimensão tem **PASS local** de carga QlikView e auditoria QVD/checkpoint; está **apta a revisão/PR**, não integrada à `main` sem merge. `MAIN_INTEGRATED_DIMENSIONS=5/8`.
+
+**Próximo gate:** revisar diff `main` vs branch `feat/phase-4-dim-carater-atendimento`, abrir PR de revisão **sem merge**, e obter autorização específica antes do squash. Não criar tabelas fato, Link Table ou painel nem revisar capítulos acadêmicos fechados. `T29_HISTORICAL=NOT_APPROVED` permanece.
