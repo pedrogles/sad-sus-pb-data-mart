@@ -4,6 +4,8 @@
 Executar SOMENTE após reload local de TRANSFORMACAO/TRANSF.qvw.
 A validação da fonte LT/legenda é reexecutada com o preflight A1.
 Lê header XML do QVD e checkpoint; não decodifica linhas binárias QVD.
+O atributo TP_LEITO_TEXTO_STAGING representa o valor QVD, não o ASCII bruto
+com espaço final preservado exclusivamente nos CSVs originais e auditado no A1.
 Não escreve QVD, CSV ou qualquer outro arquivo.
 """
 from __future__ import annotations
@@ -21,7 +23,7 @@ CHECKPOINT = Path("TRANSFORMACAO/QVD/_CHECKPOINT_DIM_TIPO_LEITO.csv")
 EXPECTED_FIELDS = [
     "%SK_TIPO_LEITO",
     "COD_TIPO_LEITO",
-    "TP_LEITO_BRUTO",
+    "TP_LEITO_TEXTO_STAGING",
     "COD_LEITO",
     "COMPETENCIA_OBSERVACAO_LEITO",
     "DESCRICAO_TIPO_LEITO",
