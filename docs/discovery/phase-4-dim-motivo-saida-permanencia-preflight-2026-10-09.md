@@ -49,3 +49,73 @@ if ($LASTEXITCODE -ne 0) { throw "Preflight DIM_MOTIVO_SAIDA_PERMANENCIA falhou"
 **DECISÕES PENDENTES:** compatibilidade completa físico-textual entre RD/SIH, CSV corrigido e QVD C1, distribuição real por código, regra de forma textual efetiva no QlikView 12 e campos físicos definitivos. Preservar `T29_HISTORICAL=NOT_APPROVED` e o relatório acadêmico impresso intacto.
 
 **Estado final deste checkpoint de Discovery:** `main=6/8 DIMENSOES INTEGRADAS`; `MOTIVO=READ_ONLY_PREFLIGHT_CODE_READY_NOT_RUN`.
+
+## Gate IV-MOTIVO — preflight físico PASS local (09/10/2026)
+
+**FATO VERIFICADO — PowerShell fornecido pelo responsável**, após atualizar `main` e entrar na branch de `DIM_MOTIVO_SAIDA_PERMANENCIA`, executando `tools/preflight_dim_motivo_saida_permanencia.py`:
+
+```text
+MODE=IV_DIM_MOTIVO_SAIDA_READ_ONLY_PREFLIGHT
+OUTPUT_FILES_WRITTEN=0
+QVD_GENERATED=False
+REFERENCE_CSV_SHA256=dea572f8b04acd06ea214711ac1c56d5f494e2fa7e0713883881c65fa850bdac
+REFERENCE_C1_MANIFEST=PASS
+REFERENCE_ROWS=28
+REFERENCE_DISTINCT_SOURCE_CODES=28
+REFERENCE_DISTINCT_NORMATIVE_CODES=28
+REFERENCE_CODE_24=2.4
+REFERENCE_REVOKED_13_17=ABSENT
+REFERENCE_GROUP_ROWS=[('POR ALTA', 7), ('POR OUTROS MOTIVOS', 1), ('POR PERMANÊNCIA', 8), ('POR PROCEDIMENTO DE PARTO', 7), ('POR TRANSFERÊNCIA', 2), ('POR ÓBITO', 3)]
+REFERENCE_SOURCE_LABELS=EXACT_MATCH_C1_MATERIALIZER
+REFERENCE_QVD_ROWS=28
+REFERENCE_QVD_FIELDS=9
+RD_QVD_ROWS=566672
+CHECKPOINT_C1=PASS_PARTIAL_ZERO_UNMATCHED
+RD_FILES=36
+RD_MONTHS=36
+RD_ROWS=566672
+RD_RAW_DISTINCT=26
+RD_NORMALIZED_DISTINCT=26
+RD_ABSENT_OFFICIAL_CODES=32,67
+RD_REVOKED_13_17=ABSENT
+RD_CODE_24_ROWS=6
+RD_SOURCE_COUNTS=[('11', 14134), ('12', 333271), ('14', 10447), ('15', 6699), ('16', 2870), ('18', 1101), ('19', 45), ('21', 11901), ('22', 13209), ('23', 3369), ('24', 6), ('25', 279), ('26', 1751), ('27', 1860), ('28', 311), ('31', 13066), ('41', 22596), ('42', 576), ('43', 3408), ('51', 1585), ('61', 120725), ('62', 2130), ('63', 234), ('64', 1068), ('65', 11), ('66', 20)]
+RD_NORMALIZED_COUNTS=[('11', 14134), ('12', 333271), ('14', 10447), ('15', 6699), ('16', 2870), ('18', 1101), ('19', 45), ('21', 11901), ('22', 13209), ('23', 3369), ('24', 6), ('25', 279), ('26', 1751), ('27', 1860), ('28', 311), ('31', 13066), ('41', 22596), ('42', 576), ('43', 3408), ('51', 1585), ('61', 120725), ('62', 2130), ('63', 234), ('64', 1068), ('65', 11), ('66', 20)]
+RD_YEAR_COUNTS=[('2017', 187726), ('2018', 187293), ('2019', 191653)]
+RD_UNMATCHED=0
+SK_RULE_CANDIDATE=Hash128_MOT_AND_COBRANCA_TEXTUAL
+SOURCE_DOMAIN_POLICY=FULL_UPDATED_28_CODES
+HISTORICAL_INDIVIDUAL_VALIDITY=NOT_ESTABLISHED_BY_THIS_TEST
+VERDICT=PASS_MOTIVO_28_CODE_REFERENCE_AND_RD_PREFLIGHT_ONLY
+```
+
+**Interpretação:** o CSV corrigido da Fase III-C1 tem **28 linhas únicas**, SHA acima; o QVD da referência tem **28 linhas/9 campos**; o checkpoint C1 permanece `PASS_PARTIAL`. O código fonte SIH `COBRANCA` está presente nos **36 CSVs RD (566672 linhas)**, com **26 códigos distintos efetivos**, todos de dois dígitos (sem mudança pela normalização), zero sem referência; `32` e `67` são códigos normativos sem registros no recorte, e **continuam na DIM**. O mapeamento `24` → `2.4` possui **6 registros RD**. As seis categorias são comprovadas pelos rótulos de `grupo` e contagens `7,1,8,7,2,3`, respectivamente. Não se observou código revogado `13`/`17`.
+
+**VEREDITO:** `IV-MOTIVO=PHYSICAL_PREFLIGHT_PASS`. Aprova avançar para **implementação QlikView isolada**, mas **não** comprova vigência normativa individual em cada competência (apenas chave e cobertura estática). A referência tem conteúdo e rótulos reconciliados ao materializador C1, não constitui inspeção independente da íntegra das portarias. Nenhum arquivo físico novo foi criado nesse preflight.
+
+## Sétimo checkpoint — código QlikView/auditor preparado, execução pendente
+
+**Implementação candidata já versionada na branch** `feat/phase-4-dim-motivo-saida-permanencia`:
+
+- Novo `TRANSFORMACAO/transf_dim_motivo_saida_permanencia.qvs` referenciado após `transf_dim_carater_atendimento.qvs` em `TRANSFORMACAO/transf_main.qvs`. O sétimo script só prossegue se a sexta dimensão mantiver `6 SK, 566672 RD e 0 unmatched`.
+- Lê `EXTRACAO/QVD/REF_MOTIVO_SAIDA.qvd` (códigos `COBRANCA`, códigos normativos pontuados, descrição, categoria e duas fontes oficiais C1), exigindo **28 linhas, 28 códigos fonte únicos, 28 normativos distintos, 6 categorias, ausência de 13/17 e equivalência 24→2.4**. Não regrava a referência QVD.
+- Dimensão proposta: **28 linhas e sete atributos físicos** — `%SK_MOTIVO_SAIDA` (a **SK exata aprovada em Boundary 7**, `Hash128('MOT', codigo_fonte)`), `COD_MOTIVO_SAIDA_FONTE`, `COD_MOTIVO_SAIDA_NORMATIVO`, `DESCRICAO_OFICIAL_MOTIVO_SAIDA`, `CATEGORIA_ENCERRAMENTO`, `MOTIVO_FONTE_OFICIAL_BASE`, `MOTIVO_FONTE_OFICIAL_ATUALIZACAO`. As duas URLs são **metadados de rastreabilidade** e não novas entidades. Campos nomeados especificamente para impedir associações não intencionais com outras dimensões.
+- Reconciliação `COBRANCA` em `EXTRACAO/QVD/SRC_SIH_RD.qvd` usando **normalização do III-C1** (`Right('00' & KeepChar(Text(COBRANCA),'0123456789'),2)`), exigindo **566672 linhas/26 códigos efetivos/0 inválidos/0 unmatched**, 6 registros para `24`, e **zero diferenças em relação às 26 frequências** verificadas independentemente nos CSVs pelo Python. A tabela temporária de mapeamento das frequências documentadas só é usada para **controle de qualidade**; nenhum fato ou relacionamento é construído.
+- Após todos os gates, produzir exclusivamente `TRANSFORMACAO/QVD/DIM_MOTIVO_SAIDA_PERMANENCIA.qvd` e `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_MOTIVO_SAIDA_PERMANENCIA.csv`, contendo `PASS_PARTIAL_DIM_MOTIVO_SAIDA_ONLY`, 28 SK únicas e zero diferenças de frequência. Não criar marcador global de transformação, fatos, Link Table ou painel.
+- Auditor independente **READ-ONLY** `tools/audit_dim_motivo_saida_permanencia_qvd.py` criado (não executado), repetirá validação do manifesto, CSV e 36 RD e verificará **header XML QVD 28×7**, SHA-256 QVD/checkpoint, valores esperados e frescor. Usa o SHA da referência corrigida `dea572f8b04acd06ea214711ac1c56d5f494e2fa7e0713883881c65fa850bdac`. **Não decodifica o corpo binário do QVD**; confirmar integridade da carga também pelo log real do QlikView.
+
+### Gate QlikView 12 local — pendente
+
+1. Atualizar `feat/phase-4-dim-motivo-saida-permanencia` com `git pull --ff-only`, conferir a presença do novo include e do auditor, e abrir `TRANSFORMACAO/TRANSF.qvw` no QlikView 12.
+2. Executar **Reload** e exigir na **mesma execução**:
+   ```text
+   [TRANSFORMACAO][IV-MOTIVO] SOURCE Rows=28 Fields=7 Codes=28 NormCodes=28 Groups=6 Invalid=0 Map24=1
+   [TRANSFORMACAO][IV-MOTIVO] COVER RD=566672 Distinct=26 UNMATCHED=0 Invalid=0 Code24=6
+   [TRANSFORMACAO][IV-MOTIVO] DISTRIBUTION Groups=26 Mismatches=0 Absent32_67=True
+   [TRANSFORMACAO][IV-MOTIVO] DIM_MOTIVO_SAIDA_PERMANENCIA_QVD_AND_PARTIAL_CHECKPOINT_WRITTEN
+   ```
+   Verificar `Execução concluída.`, sem erros de execução, timestamps condizentes com QVD/checkpoint gerados.
+3. Somente depois de reload concluído rodar `tools/audit_dim_motivo_saida_permanencia_qvd.py` e esperar (se passar) `VERDICT=PASS_LOCAL_DIM_MOTIVO_QVD_HEADER_CHECKPOINT_RECONCILED`.
+4. Trazer **trechos do log e saída do auditor** para decisão da revisão/PR. **O novo QlikView ainda NÃO foi executado**; toda a evidência operacional é do preflight Python anterior, não do QVD dimensional.
+
+**Estado:** `IV-MOTIVO=PHYSICAL_PREFLIGHT_PASS_QLIK_CODE_AND_AUDITOR_READY_NOT_RUN`; `main=6/8` dimensões; `T29_HISTORICAL=NOT_APPROVED`. A primeira entrega impressa (Capítulos 1–2) continua fechada.
