@@ -160,3 +160,13 @@ Os 36 CSVs SIH/RD físicos têm `CAR_INT` **textual com exatamente dois dígitos
 **Revisão estática de escopo:** PASS — nenhuma alteração em extração, QVDs versionados, modelo acadêmico encerrado, fatos, Link Table ou painel. Checkpoints locais QlikView 12 e auditor físico QVD/CSV foram recebidos e documentados; o log foi fornecido em trechos e a auditoria independente **não decodifica o corpo binário do QVD**. Não há justificativa para afirmar CI automatizado PASS.
 
 **DECISÃO PENDENTE:** promover o PR #79 a `Ready for review` após revisão final e, em decisão **separada**, autorizar eventual squash merge; **nenhum merge automático**. A `main` ainda possui **5/8 dimensões integradas**. `T29_HISTORICAL=NOT_APPROVED` e `FACTS_AND_LINK_TABLE=NOT_STARTED` permanecem.
+
+## PR #79 — Ready for review (09/10/2026)
+
+**FATO VERIFICADO NO GITHUB:** após solicitação de prosseguimento do responsável, PR [#79](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/79) foi **promovido de Draft para Ready for review**. O GitHub retornou `state=open`, `draft=false`, `merged=false`, `mergeable=true`. Head antes da atualização documental: `95a112f477cfdd76f004e5321b17d03c1f9f80af`.
+
+**Revisão de escopo:** comparação `feat/phase-4-dim-carater-atendimento` versus `main` com `behind_by=0` e exatamente **7 arquivos** (QlikView include e entrypoint, preflight Python, auditor Python e três documentos); `fetch_pr_patch` conferiu o mesmo conjunto. Revisão estática de invariantes da sexta dimensão: domínio completo 01–06, SK `Hash128('CAR', codigo)`, seis códigos e seis SK únicas, normalização C1, RD 566672/0 unmatched, distribuição real 01=80167, 02=470512, 03=0, 04=0, 05=1670, 06=14323, QVD/checkpoint exclusivos e parciais; as cinco dimensões anteriores permanecem intactas.
+
+**Limites:** checks de status e workflows GitHub consultados para o head da promoção retornaram **listas vazias** — **não há CI PASS comprovado**. A auditoria QVD/Python e o reload QlikView passaram **localmente**, com log fornecido em excertos; auditor externo não decodifica corpo binário do QVD. Consultas ao PR não mostraram revisões formais de terceiros nem threads.
+
+**DECISÃO PENDENTE:** autorização **específica** para executar o **squash merge do PR #79**. Não integrar automaticamente. Até merge confirmado, `main` segue **5/8 dimensões integradas**. Próximo checkpoint após integração é `DIM_MOTIVO_SAIDA_PERMANENCIA`, sujeito a Discovery/preflight próprio. `T29_HISTORICAL=NOT_APPROVED`, fatos/Link Table/PAINEL `NOT_STARTED`.
