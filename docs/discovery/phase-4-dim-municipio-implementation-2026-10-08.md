@@ -170,3 +170,27 @@ Documentacao de semantica:
 **Estado:** `IV-MUNICIPIO=FAIL_CLOSED_DIAG_NOT_COMPLETED`, `PR_75=DRAFT`, `DIAG_CODE_FIXED_LOCAL_TEST_PENDING`, `PHASE_IV=IN_PROGRESS`.
 
 **Proxima acao:** executar novo reload sincronizado e mostrar `Get-Content $log.FullName -Tail 75` em adicao a `Select-String 'DIAG_|FAIL|Execution finished'`. **Nao reexecutar se o Qlik estiver aberto**, nem declarar sucesso apenas por exit 0. Se `TRACE DIAG_` aparecer, usar amostras para isolar eventual falha agregada antes de nova alteracao.
+
+## Quinto reload — self-lookup confirmou desencontro representacional (09/10/2026 00:06)
+
+**FATO VERIFICADO — novo log enviado pelo responsável:**
+- Branch local atualizada por `git pull --ff-only`; QlikView 12 executado de forma síncrona, `QLIK_EXIT=0`, log novo `TRANSF.qvw.2026_10_09_00_06_39.log`.
+- `P4M_DIAG_MAP: MAPPING LOAD COD_DATASUS_6, 1 RESIDENT DIM_MUNICIPIO` carregou **937 linhas**.
+- `P4M_DIAG_SELF` executou `Exists(COD_DATASUS_6, '250010')` e `ApplyMap('P4M_DIAG_MAP', '250010', 0)`. Ambos retornaram **0**.
+- Amostras de RD residência, RD atendimento e CNES/ST exibiram exatamente a representação textual `250010`, mas `MAP=0` e `EXISTS=0` em todas.
+- O script chegou ao `DIAG_SELF_LOOKUP_FAILED` e encerrou antes do gate agregado. `CHECKPOINT_EXISTS=False`; nenhum novo PASS de `DIM_MUNICIPIO`.
+- Isso comprova **falha no lookup com os valores Qlik dessa execução, inclusive self-lookup**. Não comprova inexistência do município `250010` nem corrupção dos datasets.
+
+**HIPÓTESE DE MODELAGEM TÉCNICA, ainda não confirmada pelo novo teste:** divergência entre representação numérica e textual `dual` na comparação de chaves. A documentação oficial descreve as representações dual e `Text()`: https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/data-types.htm e https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/InterpretationFunctions/Text.htm. Discussão na comunidade Qlik recomenda prefixo não-numérico uniforme quando códigos aparentam ser iguais, mas não associam: https://community.qlik.com/t5/QlikView/ApplyMap-with-LOAD-INLINE-not-working/m-p/1006302/highlight/true. **Não declarar a causa raiz comprovada apenas por este indício.**
+
+**Correção experimental controlada, versionada no PR #75 e aguardando teste local:**
+- **Apenas o gate técnico de associação**, no `TRANSFORMACAO/transf_dim_municipio.qvs`, foi substituído. A `DIM_MUNICIPIO` e seus campos/chaves continuam intocados.
+- Mapa auxiliar, não persistido, `P4M_DOMAIN_TEXT_MAP`: `'M|' & Trim(Text(COD_DATASUS_6)) → 1`. O prefixo `M|` elimina interpretação como número para fins da correspondência interna.
+- **Autoverificação fail-closed**: calcular flags de associação para cada uma das linhas da própria `DIM_MUNICIPIO`, agregar e exigir `self_rows = dimension_rows` e `self_missing=0` antes de carregar qualquer domínio RD/ST/LT. Emitir `TRACE PREFIXED_SELF_CHECK Rows=... Missing=...`.
+- Para RD residência/atendimento, CNES ST e LT, calcular `ApplyMap('P4M_DOMAIN_TEXT_MAP','M|' & Trim(Text(campo)),0)` **linha a linha** e somente depois somar flags 0/1 em tabelas residentes, para dissociar o lookup do contexto agregado. O **gate original** ainda exige RD=566672, ST=220390, LT=35518, externas=5202 e quatro contadores unmatched=0.
+- Na falha de self-check ou coverage, `EXIT SCRIPT` antes do `STORE`. Não criar QVD/checkpoint indevidos; não alterar nem inferir códigos IBGE de externos; sem fatos/Link Table.
+- O prefixo **não é gravado** em `DIM_MUNICIPIO.qvd`, nem usado para alterar `Hash128('MUN',COD_DATASUS_6)`.
+
+**Status:** `IV-MUNICIPIO=PREFIXED_LOOKUP_CODE_READY_PHYSICAL_GATE_PENDING`; `PR_75=DRAFT`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IV=IN_PROGRESS`.
+
+**Próximo gate:** recarregar localmente após `git pull --ff-only`, Qlik fechado e `Start-Process -Wait`; exigir `PREFIXED_SELF_CHECK Rows=937 Missing=0` e, depois, checkpoint `PASS_PARTIAL_DIM_MUNICIPIO_ONLY` com `dimension_rows=937`, `municipalities_pb=223`, `external_distinct_codes=714`, `external_rd_rows=5202`, quatro unmatched=0, QVD físico novo e log contemporâneo. Os 937/714 são expectativas do último staging conhecido, não regras universais.
