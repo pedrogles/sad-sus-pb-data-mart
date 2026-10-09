@@ -263,3 +263,19 @@ if ($LASTEXITCODE -ne 0) { throw "Auditoria SHA hierarquica falhou" }
 ```
 
 **Status até receber essa saída:** `IV-PROCEDIMENTO=FULL_36_RELATIONAL_VALIDATION_ONLY_PASS_MATERIALIZATION_PENDING`; `DIM_PROCEDIMENTO_QVD=NOT_STARTED`; `T27=PASS_ANTERIOR`; `T29=NOT_APPROVED`; `PHASE_IV=IN_PROGRESS`.
+
+## Gate IV-PROCEDIMENTO — 216 membros materializados e auditados (09/10/2026)
+
+**FATO VERIFICADO — log Windows/Python do responsável, após fast-forward `d4743c3..fb81676`:**
+
+1. Executou `tools/materialize_sigtap_hierarchy_history.py --materialize` (opção de escrita explicitamente autorizada). A reconciliação inicial mostrou `PROCEDURE_HISTORY_SHA_AND_MONTH_CHECK=PASS`, `PROCEDURE_HISTORY_ROWS=165203`, `COMPETENCES=36`, `VALIDATE_ONLY=False` e `T29_HISTORICAL=NOT_APPROVED`.
+2. Cada uma das **36 competências 201701–201912** mostrou `UNMATCHED_GROUP=0 UNMATCHED_SUBGROUP=0 UNMATCHED_FORM=0 PARENTS=0`; 8 grupos e 59 subgrupos por mês e formas variando de 382 a 386. O código validou o ZIP oficial da competência contra SHA-256 e tamanho de C3.3b.1, CRC, o layout e cobertura por prefixos na **mesma competência** antes da gravação.
+3. Saída final da materialização: `MONTHS_VALIDATED=36`, `MEMBERS_VALIDATED=216`, `PROCEDURES_COVERED=165203`, `UNMATCHED_ALL_LEVELS=0`, `NEW_MEMBERS_MATERIALIZED=216`, `MANIFEST=BASE\\REFERENCIAS\\sigtap_hierarchy_history_manifest.json`, `MANIFEST_SHA256=362301077a9823eca5e05362825b31471e0604bc4a9e3d308107252308f09ff5`, `DESCRIPTION_ENCODING=REVIEW_PENDING` e `VERDICT=PASS_36_MONTH_HIERARCHY_PHYSICAL_AND_RELATIONAL`.
+4. Em seguida, executou **`tools/audit_sigtap_hierarchy_history.py`**, auditor independente/read-only. Obteve o **mesmo SHA-256 do manifesto** `362301077a9823eca5e05362825b31471e0604bc4a9e3d308107252308f09ff5`, `COMPETENCES_VERIFIED=36`, `FILES_VERIFIED=216`, `PROCEDURES_RECONCILED=165203`, `UNMATCHED_ALL_LEVELS=0`, `FILES_TOTAL_BYTES=1863390`, `DESCRIPTION_ENCODING=NOT_APPROVED`, `T29_HISTORICAL=NOT_APPROVED`, `QVD_GENERATED=False`, `VERDICT=PASS_LOCAL_216_HIERARCHY_FILES_SHA_RECONCILED`. O retorno não acionou o `throw` PowerShell.
+5. Os **216 originais** consistem em `tb_grupo[,_layout].txt`, `tb_sub_grupo[,_layout].txt` e `tb_forma_organizacao[,_layout].txt` para 36 competências, ao lado de `tb_procedimento.txt` já existente. Os arquivos e o manifesto de origem são **locais, ignorados pelo Git**; **nenhum QVD/dimensão nova foi produzido**.
+
+**VEREDITO FORMAL:** `IV-PROCEDIMENTO=PASS_36_MONTH_HIERARCHY_PHYSICAL_AND_RELATIONAL_SHA_RECONCILED`. Esta conclusão combina correspondência por competência, 216 membros persistidos, controle de proveniência e hashes independentes. **Não abrange** aprovação do charset das descrições `NO_GRUPO`, `NO_SUB_GRUPO`, `NO_FORMA_ORGANIZACAO`, nem vigência normativa histórica T29. A origem `TabelaUnificada_201808_v2102261143.zip` continua exigindo ressalva de versão retrospectiva.
+
+**Próximo gate:** auditar as descrições **no corpus local de 36 competências já persistido**, com leitura estrita `cp1252` como candidato, inspeção de bytes, caracteres de controle, sequências suspeitas de mojibake, diferenças de grafia/acentos e amostras diversificadas para revisão humana. Não criar conteúdo derivado, QVD ou expandir a aquisição antes dessa validação.
+
+**Estado:** `PHASE_IV=IN_PROGRESS`, 3 de 8 dimensões integradas; `DIM_PROCEDIMENTO=NOT_STARTED`; `T27=PASS_ANTERIOR`; `T29_HISTORICAL=NOT_APPROVED`; `FACTS_AND_LINK_TABLE=NOT_STARTED`.
