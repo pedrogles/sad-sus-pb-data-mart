@@ -189,3 +189,24 @@ DIAGNOSTIC_EXIT=0
 **Próximo diagnóstico obrigatório:** verificar nas propriedades do **mesmo arquivo `EXTRACAO/EXT.qvw`** as opções `Generate Logfile` e `Timestamp in Logfile Name`, habilitar e **salvar o QVW**, fechar QlikView Desktop. Documentação Qlik: <https://community.qlik.com/t5/Official-Support-Articles/How-To-Enable-QlikView-Document-Reload-Log/ta-p/1710459>. Somente então executar **uma vez** via `tools/run_phase3_extraction.py` e buscar o **novo** `EXT.qvw*.log` cujo `LastWriteTime` seja posterior ao reload. Inspecionar primeiro `Erro:` e `[EXTRACAO][FINAL]`, não reutilizar o log antigo das 12:44. Sem registro novo, investigar por que o QVW não está persistindo a opção de logging, sem alterar scripts/dados.
 
 **Estado:** `III-FINAL=FAIL_CLOSED_2X`; `QVD_HEADER_CONTRACT=PASS_READ_ONLY`; `PHASE_III=IN_PROGRESS`; `PR_73=DRAFT`; `T29_HISTORICAL=NOT_APPROVED`.
+
+
+## 9. Terceira tentativa — log Qlik contemporâneo e raiz do bloqueio
+
+**FATO VERIFICADO — log `EXTRACAO/EXT.qvw.2026_10_08_21_36_53.log`, gerado em 08/10/2026 21:36:53 e atualizado às 21:37:14 local, fornecido pelo usuário (últimas 120 linhas).**
+
+- `RELOAD_STARTED_UTC=2026-10-09T00:36:53.100327+00:00`, `Qv.exe exit=3`, `FAIL_CLOSED` e marcador final invalidado.
+- Gate `QVD_CONTRACT_PASS REF_MUNICIPIO_PB_DERIVADA records=223 required_fields=7`, último contrato do conjunto de dez; antes, o índice `vP3ValidatedFields` já atingia `106+1`, portanto 107 campos foram inspecionados pelo Qlik.
+- T07 **rodou em Qlik** para `SRC_SIH_RD`, `SRC_CNES_LT`, `SRC_CNES_ST`: cada LOAD DISTINCT capturou 36 competências; cada agregado produziu `IF 36 <> 36 OR 0 <> 0 THEN`; três `TRACE [EXTRACAO][FINAL] T07_PASS` confirmam aprovação operacional das três famílias.
+- A reconciliação das referências C1–C5 produziu `IF 3 <> 3 OR 107 <= 0 OR 0 <> 0 ... OR 57 <> 57 ... OR 5202 <> 5202 ... OR 223 <> 223 ... THEN`; o caminho de erro não foi acionado.
+- **Bloqueio real:** `IF ScriptErrorCount > 0 THEN` acionou `TRACE [EXTRACAO][FINAL] Script errors found after reconciliation. Errors=Syntax Error\nSyntax Error\nSyntax Error`, seguido por `EXIT SCRIPT`. A linha do log `IF ScriptErrorCount > 3 THEN` durante T07 mostra que **três erros de sintaxe já estavam acumulados antes do T07**. Não atribuir erro sem localizar as primeiras ocorrências no log completo.
+- Esta evidência prova sucesso dos contratos QVD/T07 dentro do script, **mas não justifica `PHASE_III=PASS`** enquanto `ScriptErrorCount > 0`. Sem `_SUCCESS_EXTRACAO.csv`, manifesto SHA ou integração.
+
+**DECISÃO OPERACIONAL:** manter `III_FINAL=FAIL_CLOSED` e PR #73 **Draft/sem merge**. **Não suprimir `ScriptErrorCount`, zerar artificialmente contador nem emitir marcador ignorando três erros.** Solicitar **primeiras ocorrências** de `Syntax Error`/ `Erro:` e contexto das linhas de origem no **log completo novo**, não apenas as últimas 120 linhas. Exemplo, em PowerShell:
+
+```powershell
+$log = Get-ChildItem .\\EXTRACAO -Filter "EXT.qvw*.log" -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+Select-String -LiteralPath $log.FullName -Pattern 'Syntax Error','Erro:', 'Error:' -Context 10,5 | Select-Object -First 12
+```
+
+A coleta de log integral é preferível se houver erros distribuídos ao longo do processamento. Depois de identificar causa e linha efetivas, corrigir o mínimo necessário no script fonte versionado e reexecutar pelo runner, preservando T29 não aprovado.
