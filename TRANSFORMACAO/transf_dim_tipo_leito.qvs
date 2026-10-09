@@ -14,6 +14,9 @@ IF $(vP4MDimRows) <> 28 OR $(vP4MUniqueSK) <> 28 OR $(vP4MRDRows) <> 566672 OR $
 ENDIF
 
 // Os campos sao os campos QVD reais aprovados na EXTRACAO da Fase III.
+// A1 verifica "N " NO CSV original; o QVD/Text pode ter "N" sem padding.
+// Nao reconstruir o bruto por suposicao: preservar somente o texto DO QVD.
+// A validacao admite apenas "N" ou "N " (N=1..7); sem Trim generico.
 // As colunas temporarias possuem aliases exclusivos, sem join implicito.
 P4L_LT_SOURCE:
 NOCONCATENATE LOAD
@@ -39,9 +42,10 @@ LOAD
     Count(DISTINCT _P4L_CNES & '|' & _P4L_COMP & '|' & _P4L_BED) AS _P4L_FACT_KEYS,
     Sum(If(
         IsNull(_P4L_CNES) OR Len(Trim(_P4L_CNES)) = 0
-        OR IsNull(_P4L_TYPE_RAW) OR Len(_P4L_TYPE_RAW) <> 2
+        OR IsNull(_P4L_TYPE_RAW)
         OR Match(_P4L_TYPE, '1','2','3','4','5','6','7') = 0
-        OR Right(_P4L_TYPE_RAW,1) <> ' '
+        OR (Len(_P4L_TYPE_RAW) <> 1 AND
+            (Len(_P4L_TYPE_RAW) <> 2 OR Right(_P4L_TYPE_RAW,1) <> ' '))
         OR IsNull(_P4L_BED) OR Len(_P4L_BED) <> 2
         OR Len(KeepChar(_P4L_BED,'0123456789')) <> 2
         OR IsNull(_P4L_COMP) OR Len(_P4L_COMP) <> 6
@@ -62,6 +66,9 @@ LOAD
         OR Len(KeepChar(_P4L_COMP,'0123456789'))<>6
         OR _P4L_COMP<'201701' OR _P4L_COMP>'201912',1,0)) AS _P4L_DIAG_COMP,
     Sum(If(_P4L_COMP<>_P4L_META_COMP,1,0)) AS _P4L_DIAG_META,
+    Sum(If(Len(_P4L_TYPE_RAW)=1 AND Match(_P4L_TYPE,'1','2','3','4','5','6','7')>0,1,0)) AS _P4L_DIAG_QVD_SINGLE,
+    Sum(If(Len(_P4L_TYPE_RAW)=2 AND Match(_P4L_TYPE,'1','2','3','4','5','6','7')>0
+        AND Right(_P4L_TYPE_RAW,1)=' ',1,0)) AS _P4L_DIAG_QVD_PADDED,
     Sum(If(_P4L_TYPE='3' AND _P4L_BED='66',1,0)) AS _P4L_3_66,
     Sum(If(_P4L_TYPE='7' AND _P4L_BED='70',1,0)) AS _P4L_7_70
 RESIDENT P4L_LT_SOURCE;
@@ -79,14 +86,16 @@ LET vP4LDiagType = Peek('_P4L_DIAG_TYPE',0,'P4L_LT_PROFILE');
 LET vP4LDiagBed = Peek('_P4L_DIAG_BED',0,'P4L_LT_PROFILE');
 LET vP4LDiagComp = Peek('_P4L_DIAG_COMP',0,'P4L_LT_PROFILE');
 LET vP4LDiagMeta = Peek('_P4L_DIAG_META',0,'P4L_LT_PROFILE');
+LET vP4LDiagQvdSingle = Peek('_P4L_DIAG_QVD_SINGLE',0,'P4L_LT_PROFILE');
+LET vP4LDiagQvdPadded = Peek('_P4L_DIAG_QVD_PADDED',0,'P4L_LT_PROFILE');
 LET vP4L3_66 = Peek('_P4L_3_66',0,'P4L_LT_PROFILE');
 LET vP4L7_70 = Peek('_P4L_7_70',0,'P4L_LT_PROFILE');
 DROP TABLE P4L_LT_PROFILE;
 
 // Gate permanece estrito. Nunca remover FAIL apenas para gerar QVD.
-TRACE [TRANSFORMACAO][IV-LEITO][DIAG] InvalidTotal=$(vP4LInvalid) CNES=$(vP4LDiagCNES) RawLen=$(vP4LDiagRawLen) RawTrailingASCII32=$(vP4LDiagRawSpace) Type=$(vP4LDiagType) Bed=$(vP4LDiagBed) Competence=$(vP4LDiagComp) MetaMismatch=$(vP4LDiagMeta);
+TRACE [TRANSFORMACAO][IV-LEITO][DIAG] InvalidTotal=$(vP4LInvalid) CNES=$(vP4LDiagCNES) QVDLenNot2=$(vP4LDiagRawLen) QVDMissingASCII32=$(vP4LDiagRawSpace) QVDOneDigit=$(vP4LDiagQvdSingle) QVDOneDigitPadded=$(vP4LDiagQvdPadded) Type=$(vP4LDiagType) Bed=$(vP4LDiagBed) Competence=$(vP4LDiagComp) MetaMismatch=$(vP4LDiagMeta);
 
-IF $(vP4LLTRows) <> 35518 OR $(vP4LMonths) <> 36 OR $(vP4LPairs) <> 57 OR $(vP4LPairMonths) <> 2021 OR $(vP4LFactKeys) <> 35518 OR $(vP4LInvalid) <> 0 OR $(vP4L3_66) <> 1480 OR $(vP4L7_70) <> 5 THEN
+IF $(vP4LLTRows) <> 35518 OR $(vP4LMonths) <> 36 OR $(vP4LPairs) <> 57 OR $(vP4LPairMonths) <> 2021 OR $(vP4LFactKeys) <> 35518 OR $(vP4LInvalid) <> 0 OR ($(vP4LDiagQvdSingle) + $(vP4LDiagQvdPadded)) <> 35518 OR $(vP4L3_66) <> 1480 OR $(vP4L7_70) <> 5 THEN
     TRACE [TRANSFORMACAO][IV-LEITO] FAIL LT source/grain profile;
     EXIT SCRIPT;
 ENDIF
@@ -148,8 +157,9 @@ MAPPING LOAD
 RESIDENT P4L_REF_SOURCE;
 
 // Grão dimensional: deduplicar APENAS por tipo+leito+competencia observada.
-// Tipo bruto preservado; como A1 confirmou ausencia de colisao de formatos,
-// a contagem distinta tambem valida essa invariancia fisica.
+// Este atributo e o texto do staging/QVD, NAO a transcricao byte-a-byte
+// do CSV original. O A1 comprovou "N " fisico apenas nos CSVs.
+// A contagem de pares-mes usa a representacao normalizada observada.
 P4L_DIM_NATURAL:
 NOCONCATENATE LOAD DISTINCT
     _P4L_TYPE_RAW,
@@ -170,7 +180,7 @@ DIM_TIPO_LEITO:
 NOCONCATENATE LOAD
     Hash128('LEITO', _P4L_TYPE, _P4L_BED, _P4L_COMP) AS [%SK_TIPO_LEITO],
     Text(_P4L_TYPE) AS COD_TIPO_LEITO,
-    Text(_P4L_TYPE_RAW) AS TP_LEITO_BRUTO,
+    Text(_P4L_TYPE_RAW) AS TP_LEITO_TEXTO_STAGING,
     Text(_P4L_BED) AS COD_LEITO,
     Text(_P4L_COMP) AS COMPETENCIA_OBSERVACAO_LEITO,
     If(_P4L_COMP='201909',
@@ -201,8 +211,9 @@ LOAD
     Sum(If(
         IsNull([%SK_TIPO_LEITO]) OR Len(Text([%SK_TIPO_LEITO]))=0
         OR Len(COD_TIPO_LEITO)<>1 OR Len(COD_LEITO)<>2
-        OR Len(TP_LEITO_BRUTO)<>2 OR Right(TP_LEITO_BRUTO,1)<>' '
-        OR Left(TP_LEITO_BRUTO,1)<>COD_TIPO_LEITO
+        OR (Len(TP_LEITO_TEXTO_STAGING)<>1 AND
+            (Len(TP_LEITO_TEXTO_STAGING)<>2 OR Right(TP_LEITO_TEXTO_STAGING,1)<>' '))
+        OR Left(TP_LEITO_TEXTO_STAGING,1)<>COD_TIPO_LEITO
         OR If(COMPETENCIA_OBSERVACAO_LEITO='201909',
             IsNull(DESCRICAO_TIPO_LEITO) OR IsNull(DESCRICAO_ESPECIALIDADE_LEITO)
             OR Len(Trim(DESCRICAO_TIPO_LEITO))=0 OR Len(Trim(DESCRICAO_ESPECIALIDADE_LEITO))=0
