@@ -365,3 +365,42 @@ if ($LASTEXITCODE -ne 0) { throw "Perfil historico de descricoes exige investiga
 **DECISÃO OPERACIONAL LIMITADA / SEM AFIRMAÇÃO NORMATIVA:** usar `cp1252` como *candidato de leitura* dos atributos hierárquicos para o próximo CSV local, seguindo a convenção já aprovada para `NO_PROCEDIMENTO` da Fase III-C3.4a.1. No universo dos bytes aqui verificados, a leitura é idêntica à `ISO-8859-1`. Isso **não** constitui prova do charset declarado pelo DATASUS; não alterar grafia, caixa, nome/competência, nem inferir validade normativa anterior. As seis chaves variáveis serão mantidas com seus rótulos correspondentes **exatamente ao respectivo snapshot** no CSV candidato; os cinco casos específicos de `201808` requerem ressalva de proveniência porque o ZIP `TabelaUnificada_201808_v2102261143.zip` carrega carimbo de versão de 2021. **Não** homogenizar a partir de `201809`.
 
 **Próxima etapa:** preparar arquivo candidato UTF-8 com cabeçalhos explícitos para enriquecer `REF_SIGTAP` por `competência × CO_PROCEDIMENTO` usando os três níveis hierárquicos; preservar todos os **165203** códigos/mês e os nomes originais, validar cobertura 0 unmatched, fonte 216 SHA e CSV anterior hash, **sem substituir** `EXTRACAO/QVD/REF_SIGTAP.qvd` nem materializar `DIM_PROCEDIMENTO.qvd` antes de testes locais. `T29_HISTORICAL=NOT_APPROVED`.
+
+## Preflight do CSV hierárquico SIGTAP por competência — código preparado, execução pendente
+
+**Nova implementação versionada:** `tools/materialize_sigtap_hierarchy_staging_candidate.py`. Esta etapa ainda **NÃO rodou** no Windows; não existe CSV enriquecido aprovado nem alteração em `REF_SIGTAP.qvd`.
+
+### Contrato de enriquecimento proposto e tecnicamente fundamentado
+
+O arquivo candidato parte de `BASE/REFERENCIAS/sigtap_procedimento_staging_candidate.csv` aprovado como staging III-C3.4a.1, sem alterar suas quatro colunas:
+
+- `SIGTAP_COMPETENCIA`, `SIGTAP_CO_PROCEDIMENTO`, `SIGTAP_NO_PROCEDIMENTO`, `SIGTAP_COMPETENCIA_CODIGO`.
+
+Adiciona **somente atributos derivados de campos físicos oficialmente inspecionados**, após lookup exato pela mesma competência:
+
+- `SIGTAP_CO_GRUPO` = `CO_GRUPO` do pacote, extraído dos dígitos 1–2 de `CO_PROCEDIMENTO`; `SIGTAP_NO_GRUPO` = `NO_GRUPO` do mesmo mês;
+- `SIGTAP_CO_SUB_GRUPO` = `CO_SUB_GRUPO` (dígitos 3–4); `SIGTAP_NO_SUB_GRUPO` = `NO_SUB_GRUPO` do mesmo mês e grupo;
+- `SIGTAP_CO_FORMA_ORGANIZACAO` = `CO_FORMA_ORGANIZACAO` (dígitos 5–6); `SIGTAP_NO_FORMA_ORGANIZACAO` = `NO_FORMA_ORGANIZACAO` do mesmo mês, grupo e subgrupo.
+
+**Grão preservado:** exatamente uma linha por `competência × CO_PROCEDIMENTO`, 165.203 linhas em 36 competências com chave `AAAAMM|XXXXXXXXXX` existente. O arquivo candidato contém **10 campos** e preserva nomes brutos, caixa e grafias observadas. Inclui os cinco rótulos divergentes de `201808` tal como estão no ZIP retrospectivo, sem equiparar isso a validade histórica; o manifesto gerado (se autorizado) registra `201808_source_version_caveat`. Não inventa `DESCRICAO_OFICIAL` separada de `NO_PROCEDIMENTO`: a decisão sobre descrição oficial adicional segue subordinada ao modelo acadêmico e às fontes reais.
+
+**Entrada/qualidade:** o script exige previamente PASS da auditoria de 216 TXT SHA-256; confere SHA-256 do CSV e manifesto III-C3.4a, 36 competências, 165203 chaves únicas de procedimento, valores não vazios e sem ausências na hierarquia; reconcilia número mensal com **ambos** manifestos. `cp1252` é interpretação operacional candidata compatível com ISO-8859-1 em todos os bytes hierárquicos observados. CSV de saída **UTF-8** para leitura QlikView posterior.
+
+**Controles de escrita:** exigir argumento explícito `--validate-only` ou `--materialize`; a opção `--validate-only` executa toda a reconciliação em memória **sem gravar nada** e retorna `VERDICT=PASS_36_MONTH_HIERARCHY_STAGING_CANDIDATE_VALIDATE_ONLY`. A opção de materialização (NÃO autorizar ainda) criará exclusivamente:
+- `BASE/REFERENCIAS/sigtap_procedimento_hierarquia_staging_candidate.csv`;
+- `BASE/REFERENCIAS/sigtap_procedimento_hierarquia_staging_candidate_manifest.json`.
+
+A opção de materialização recusa sobrescrever saídas existentes, preserva as fontes, e **não gera QVD, não modifica `EXTRACAO/ext_main.qvs` ou `TRANSFORMACAO/transf_main.qvs` e não inicia fatos ou Link Table**.
+
+### Próximo comando local — primeira execução, somente leitura
+
+```powershell
+git pull --ff-only
+if ($LASTEXITCODE -ne 0) { throw "Git pull falhou" }
+.\.venv\Scripts\python.exe .\tools\materialize_sigtap_hierarchy_staging_candidate.py --validate-only
+if ($LASTEXITCODE -ne 0) { throw "Preflight do candidato SIGTAP falhou" }
+```
+
+**Esperado se passar:** `COMPETENCES=36`, `REFERENCE_ROWS=165203`, `DISTINCT_CODE_MONTH_KEYS=165203`, `FIELDS=10`, `UNMATCHED_GROUP=0 UNMATCHED_SUBGROUP=0 UNMATCHED_FORM=0`, `OUTPUT_FILES_WRITTEN=0`, `QLIK_QVD=NOT_GENERATED`.
+
+**Estado:** `IV-PROCEDIMENTO=HISTORICAL_LABEL_DIFF_REVIEW_PASS_STAGING_CANDIDATE_CODE_READY_NOT_EXECUTED`; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
