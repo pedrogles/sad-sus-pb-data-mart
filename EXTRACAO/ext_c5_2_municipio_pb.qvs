@@ -1,0 +1,188 @@
+// III-C5.2 — referencia DERIVADA do projeto PB, DATASUS6 <-> IBGE7.
+// Entrada: QVD IBGE ja validado a partir de 3 XLS oficiais 2017-2019.
+// PRE-REQUISITO: ext_c5_municipal_preflight.qvs PASS no MESMO reload.
+// O codigo IBGE7 vem integralmente do XLS (UF2 + municipio5). Left(IBGE7,6)
+// e somente correspondencia PB empiricamente validada, nunca calcula 7o digito.
+// Nao acrescentar municipios de outros estados, nem associar 5.202 RD externos
+// a populacao da PB. Nao construir dimensao/fato/link ou alterar SRC_*.
+
+TRACE [EXTRACAO] Phase III-C5.2 municipal PB derived reference start;
+
+LET vC52ErrorsBefore = ScriptErrorCount;
+
+// Gate de dependencia do preflight executado neste reload.
+IF $(vC5IBGERows) <> 669 OR $(vC5Distinct7) <> 223 OR $(vC5Distinct6) <> 223 OR $(vC5STRows) <> 220390 OR $(vC5STDistinct) <> 223 OR $(vC5STUnmatched) <> 0 OR $(vC5LTRows) <> 35518 OR $(vC5LTUnmatched) <> 0 OR $(vC5RDRows) <> 566672 OR $(vC5RDAttUnmatched) <> 0 OR $(vC5RDResPBUnmatched) <> 0 OR $(vC5RDResExternal) <> 5202 THEN
+    TRACE [EXTRACAO][C5.2] Preflight dependency failed; no reference generated;
+    EXIT SCRIPT;
+ENDIF
+
+// Detalhar ano e arquivo IBGE de origem para exigir 3 fontes por codigo.
+C52_IBGE_SOURCE_ROWS:
+LOAD
+    Trim(Text(COD_IBGE_7)) AS _C52_IBGE7,
+    Trim(Text(ANO_REFERENCIA)) AS _C52_YEAR,
+    Trim(Text(_META_SOURCE_FILE)) AS _C52_SOURCE_FILE
+FROM [QVD\SRC_IBGE_POPULACAO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vC52ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5.2] QVD IBGE read failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vC52InputRows = NoOfRows('C52_IBGE_SOURCE_ROWS');
+
+C52_IBGE_PER_CODE:
+LOAD
+    _C52_IBGE7,
+    Count(*) AS _C52_ROWS_PER_CODE,
+    Count(DISTINCT _C52_YEAR) AS _C52_YEARS_PER_CODE,
+    Count(DISTINCT _C52_SOURCE_FILE) AS _C52_FILES_PER_CODE,
+    Sum(
+        If(
+            Match(_C52_YEAR, '2017', '2018', '2019') = 0
+            OR Len(_C52_SOURCE_FILE) = 0,
+            1, 0
+        )
+    ) AS _C52_BAD_SOURCE_ROWS
+RESIDENT C52_IBGE_SOURCE_ROWS
+GROUP BY _C52_IBGE7;
+
+IF ScriptErrorCount > $(vC52ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5.2] IBGE year aggregation failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+C52_SOURCE_GATE:
+LOAD
+    Count(*) AS n_reference_codes,
+    Count(DISTINCT _C52_IBGE7) AS n_ibge7,
+    Count(DISTINCT Left(_C52_IBGE7, 6)) AS n_datasus6_candidates,
+    Sum(
+        If(
+            _C52_ROWS_PER_CODE <> 3
+            OR _C52_YEARS_PER_CODE <> 3
+            OR _C52_FILES_PER_CODE <> 3
+            OR _C52_BAD_SOURCE_ROWS <> 0
+            OR Len(_C52_IBGE7) <> 7
+            OR Left(_C52_IBGE7, 2) <> '25'
+            OR Len(KeepChar(_C52_IBGE7, '0123456789')) <> 7,
+            1, 0
+        )
+    ) AS invalid_references
+RESIDENT C52_IBGE_PER_CODE;
+
+LET vC52RefCodes = Peek('n_reference_codes', 0, 'C52_SOURCE_GATE');
+LET vC52DistinctIBGE7 = Peek('n_ibge7', 0, 'C52_SOURCE_GATE');
+LET vC52DistinctDATASUS6 = Peek('n_datasus6_candidates', 0, 'C52_SOURCE_GATE');
+LET vC52Invalid = Peek('invalid_references', 0, 'C52_SOURCE_GATE');
+
+DROP TABLE C52_SOURCE_GATE;
+DROP TABLE C52_IBGE_SOURCE_ROWS;
+
+IF $(vC52InputRows) <> 669 OR $(vC52RefCodes) <> 223 OR $(vC52DistinctIBGE7) <> 223 OR $(vC52DistinctDATASUS6) <> 223 OR $(vC52Invalid) <> 0 THEN
+    TRACE [EXTRACAO][C5.2] Source integrity failed. SourceRows=$(vC52InputRows) BridgeRows=$(vC52RefCodes) IBGE7=$(vC52DistinctIBGE7) DATASUS6=$(vC52DistinctDATASUS6) Invalid=$(vC52Invalid);
+    EXIT SCRIPT;
+ENDIF
+
+// Nenhum codigo novo e fabricado; Left preserva os 6 primeiros caracteres
+// do IBGE7 oficial, apos prova de unicidade e cobertura no preflight.
+REF_MUNICIPIO_PB_DERIVADA:
+NOCONCATENATE LOAD
+    Text(Left(_C52_IBGE7, 6)) AS COD_DATASUS_6,
+    Text(_C52_IBGE7) AS COD_IBGE_7,
+    'PB' AS UF,
+    'IBGE_ESTIMATIVAS_MUNICIPAIS_2017_2019' AS FONTE_IBGE,
+    '2017,2018,2019' AS ANOS_FONTE_IBGE,
+    'DERIVADA_PROJETO_DADOS_OFICIAIS_IBGE' AS NATUREZA_REFERENCIA,
+    'PREFIXO_IBGE7_6_VALIDADO_NO_PB' AS METODO_CORRESPONDENCIA
+RESIDENT C52_IBGE_PER_CODE;
+
+IF ScriptErrorCount > $(vC52ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5.2] Reference LOAD failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+LET vC52BridgeRows = NoOfRows('REF_MUNICIPIO_PB_DERIVADA');
+
+DROP TABLE C52_IBGE_PER_CODE;
+
+C52_FINAL_CHECK:
+LOAD
+    Count(DISTINCT COD_DATASUS_6) AS distinct_datasus6,
+    Count(DISTINCT COD_IBGE_7) AS distinct_ibge7,
+    Sum(
+        If(
+            Left(COD_IBGE_7, 6) <> COD_DATASUS_6
+            OR Len(COD_DATASUS_6) <> 6
+            OR Len(COD_IBGE_7) <> 7
+            OR Left(COD_IBGE_7, 2) <> '25'
+            OR UF <> 'PB'
+            OR NATUREZA_REFERENCIA <> 'DERIVADA_PROJETO_DADOS_OFICIAIS_IBGE',
+            1, 0
+        )
+    ) AS bad_bridge_rows
+RESIDENT REF_MUNICIPIO_PB_DERIVADA;
+
+LET vC52BridgeDistinct6 = Peek('distinct_datasus6', 0, 'C52_FINAL_CHECK');
+LET vC52BridgeDistinct7 = Peek('distinct_ibge7', 0, 'C52_FINAL_CHECK');
+LET vC52BridgeBad = Peek('bad_bridge_rows', 0, 'C52_FINAL_CHECK');
+
+DROP TABLE C52_FINAL_CHECK;
+
+IF $(vC52BridgeRows) <> 223 OR $(vC52BridgeDistinct6) <> 223 OR $(vC52BridgeDistinct7) <> 223 OR $(vC52BridgeBad) <> 0 THEN
+    TRACE [EXTRACAO][C5.2] Derived reference failed. Rows=$(vC52BridgeRows) Unique6=$(vC52BridgeDistinct6) Unique7=$(vC52BridgeDistinct7) Bad=$(vC52BridgeBad);
+    EXIT SCRIPT;
+ENDIF
+
+// Saidas locais de extracao. Nenhum QVD SRC_* e sobrescrito.
+STORE REF_MUNICIPIO_PB_DERIVADA
+INTO [QVD\REF_MUNICIPIO_PB_DERIVADA.qvd] (qvd);
+
+IF ScriptErrorCount > $(vC52ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5.2] Reference QVD STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+STORE REF_MUNICIPIO_PB_DERIVADA
+INTO [QVD\REF_MUNICIPIO_PB_DERIVADA.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vC52ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5.2] Reference CSV STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE REF_MUNICIPIO_PB_DERIVADA;
+
+C52_MUNICIPAL_CHECKPOINT:
+LOAD
+    Timestamp(Now(1)) AS generated_at,
+    'EXTRACAO_C5_2_MUNICIPIO_PB' AS stage,
+    'PASS_PARTIAL_REFERENCE_PB_ONLY' AS status,
+    $(vC52InputRows) AS ibge_source_rows,
+    $(vC52BridgeRows) AS bridge_pairs,
+    $(vC52BridgeDistinct6) AS distinct_datasus6,
+    $(vC52BridgeDistinct7) AS distinct_ibge7,
+    $(vC52BridgeBad) AS invalid_pair_rows,
+    $(vC5STUnmatched) AS st_unmatched_rows,
+    $(vC5LTUnmatched) AS lt_unmatched_rows,
+    $(vC5RDAttUnmatched) AS rd_attendance_unmatched_rows,
+    $(vC5RDResPBUnmatched) AS rd_residence_pb_unmatched_rows,
+    $(vC5RDResExternal) AS rd_residence_outside_pb_rows,
+    'DERIVED_PB_REFERENCE_NOT_OFFICIAL_STANDALONE_TABLE' AS reference_nature,
+    'IN_PROGRESS' AS phase_iii_status
+AUTOGENERATE 1;
+
+STORE C52_MUNICIPAL_CHECKPOINT
+INTO [QVD\_CHECKPOINT_EXTRACAO_C5_2_MUNICIPIO_PB.csv]
+(txt, utf8, delimiter is ';', embedded labels);
+
+IF ScriptErrorCount > $(vC52ErrorsBefore) THEN
+    TRACE [EXTRACAO][C5.2] Reference checkpoint STORE failed. Errors=$(ScriptErrorList);
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE C52_MUNICIPAL_CHECKPOINT;
+
+TRACE [EXTRACAO] PHASE_III_C5_2_MUNICIPAL_PB_REFERENCE_PASS Rows=$(vC52BridgeRows) DATASUS6=$(vC52BridgeDistinct6) IBGE7=$(vC52BridgeDistinct7) RD_EXTERNAL=$(vC5RDResExternal);
+TRACE [EXTRACAO] PHASE_III_IN_PROGRESS: C5.2 reference is not DIM_MUNICIPIO, external residents not linked to PB population.

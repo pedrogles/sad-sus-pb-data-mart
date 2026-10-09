@@ -1327,8 +1327,11 @@ TRACE [EXTRACAO] PHASE_III_C3_SIGTAP_STAGING_PASS ROWS=$(vSIGTAPRows) UNMATCHED_
 $(Must_Include=ext_c4_cnes_leitos.qvs);
 
 // Ainda nao ha evidencia de fechamento final da Fase III.
-TRACE [EXTRACAO] PARTIAL ONLY: referencia municipal e nomes historicos de ST permanecem em revisao. No final extraction success marker emitted.
+TRACE [EXTRACAO] PARTIAL STAGING: preflight/ponte municipal C5 serao avaliados a seguir; historico de ST ainda tem lacunas. No final extraction success marker.
 
-// III-C5: somente probe em QVDs. Testar a chave candidata 6<->7 no IBGE oficial.
-// Nao materializa ponte nem altera SRC_* ja validados.
+// III-C5.1: preflight PB DATASUS6 <-> IBGE7. Checkpoint PARCIAL ja validado.
 $(Must_Include=ext_c5_municipal_preflight.qvs);
+
+// III-C5.2: apenas depois do C5.1 PASS, materializar referencia PB derivada.
+// Sem DIM_MUNICIPIO, fato, Link Table, deducao de digito ou residents externos.
+$(Must_Include=ext_c5_2_municipio_pb.qvs);
