@@ -61,3 +61,19 @@ print("PREFLIGHT_HEADERS_READ_ONLY_CONCLUIDO")
 ```
 
 **Próxima decisão:** conferir saída real do preflight, localizar fontes aprovadas de nome histórico se existirem e então preparar o menor script `TRANSFORMACAO/transf_dim_estabelecimento.qvs`, com gate `CNES × competência=220390`, 36 competências e nenhuma versão futura aplicada. Nenhum código implementado neste documento.
+
+## Resultado do preflight read-only dos cabeçalhos CNES/ST — 09/10/2026
+
+**FATO VERIFICADO — saída local do responsável:**
+
+- `git status --short` vazio, `git fetch origin` e checkout da branch `feat/phase-4-dim-estabelecimento` concluídos.
+- Python 3 percorreu os **36** `BASE/CONVERTIDA/ST/STPB*.csv` de `STPB1701.csv` a `STPB1912.csv`. Resultado `PREFLIGHT_HEADERS_READ_ONLY_CONCLUIDO`; **2 schemas distintos**.
+- De **201701 a 201911**, **35 arquivos com 201 colunas**. O arquivo **`STPB1912.csv` tem 208 colunas**.
+- Na competência 201912, as sete colunas novas são `AP01CV07`, `AP02CV07`, `AP03CV07`, `AP04CV07`, `AP05CV07`, `AP06CV07`, `AP07CV07`; outras colunas `APxxCVyy` também tiveram a ordem alterada. Nenhuma delas faz parte do contrato atual de staging da dimensão.
+- A busca por `NOME`, `FANT`, `RAZAO`, `RAZÃO` e `RSOC` retornou `CAMPOS_NOME=[]` para **todos os 36 cabeçalhos**; especificamente não existem campos `NOME_FANTASIA` nem `RAZAO_SOCIAL` nos ST inspecionados.
+- Os campos **realmente presentes no cabeçalho bruto e no staging QVD vigente** são `CNES`, `CODUFMUN`, `COD_CEP`, `CNPJ_MAN`, `VINC_SUS`, `TPGESTAO`, `TP_UNID`, `NATUREZA`, `NAT_JUR`, `COMPETEN`. O staging também preserva `_META_SOURCE_COMPETENCE`, `_META_SOURCE_FILE` e outros metadados.
+- A inspeção analisou **somente cabeçalhos**, não comparou valores registro por registro nem buscou outra fonte de nomes. Não afirmar que nome não existe em todo CNES oficial; o escopo da constatação são os **36 ST concretamente analisados**.
+
+**Decisão de execução compatível com Boundaries 5 e 7:** `DIM_ESTABELECIMENTO` seguirá com uma versão mensal por `CNES × COMPETENCIA`, chave `Hash128('ESTAB', CNES, COMPETENCIA)` e atributos históricos obtidos apenas do próprio snapshot. Na ausência de fonte comprovada de nomes para a mesma competência, `NOME_FANTASIA` e `RAZAO_SOCIAL` ficarão `NULL` (nenhum forward fill/backfill). Isso **não** autoriza usar nome de 2019 para dados de 2017; uma futura referência nominal exigirá validação própria por competência.
+
+**Gate seguinte, ainda não atestado:** materializar `DIM_ESTABELECIMENTO.qvd` a partir de `SRC_CNES_ST.qvd`, cobrindo o staging validado (**220.390 registros, 6.822 CNES distintos e 36 competências, sem duplicidades CNES×competência**) e executando controles `T16` contra versão histórica futura. A prova dos totais no QlikView local e a leitura do cabeçalho QVD ainda serão exigidas. `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
