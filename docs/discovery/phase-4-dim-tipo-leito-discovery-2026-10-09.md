@@ -617,3 +617,20 @@ EXIT SCRIPT
 **Correção de observabilidade versionada:** commit `45a8630a49ec01e6005fb390475ca7ce0605f7de` adiciona **sete contadores diagnósticos segregados** ao mesmo `P4L_LT_PROFILE` e o `TRACE [TRANSFORMACAO][IV-LEITO][DIAG]` antes da guarda atual: `CNES`, `RawLen`, `RawTrailingASCII32`, `Type`, `Bed`, `Competence`, `MetaMismatch`. Esta mudança **não afrouxa a expressão de aceitação, não modifica dados ou referências, não reclassifica códigos e não gera QVD da oitava dimensão por si só**. O resultado do reload com instrumentação continua **PENDENTE**.
 
 **Próxima execução:** `git pull --ff-only` da branch `feat/phase-4-dim-tipo-leito-discovery` no Windows; confirmar backup já feito dos QVDs; executar **uma** recarga QlikView 12 e extrair do novo log a linha **executada** `[TRANSFORMACAO][IV-LEITO][DIAG] InvalidTotal=...`, mais o `FAIL` e final. Somente com a decomposição determinar eventual correção mínima de representação no estágio de transformação. Não rodar auditor de QVD enquanto a oitava dimensão não for produzida. **T29_HISTORICAL=NOT_APPROVED**, **MAIN=7/8**, **A2=APPROVED** e o aviso visível obrigatório de **1.965/2.021 pares-mês (97,2%) sem descrição histórica comprovada** permanecem inalterados.
+
+## IV-TIPO_LEITO — diagnóstico do reload 14:20:41 e correção estrita do texto QVD (09/10/2026)
+
+**FATO VERIFICADO:** após `git pull --ff-only` e reload no QlikView 12, log local informado pelo responsável `TRANSF.qvw.2026_10_09_14_20_27.log` (111.089 bytes; final 14:20:41). Linha **executada** 1608 da saída `Select-String`:
+
+```text
+[TRANSFORMACAO][IV-LEITO][DIAG] InvalidTotal=35518 CNES=0 RawLen=35518 RawTrailingASCII32=35518 Type=0 Bed=0 Competence=0 MetaMismatch=0
+```
+
+O gate interrompeu em `FAIL LT source/grain profile`, **antes** de gerar `DIM_TIPO_LEITO.qvd` ou checkpoint. A decomposição demonstra que as **35.518 linhas** divergem simultaneamente das expectativas antigas `Len(TP_LEITO_QVD)=2` e último caractere espaço ASCII, sem invalidar código do tipo, CNES, código do leito, competência nem metadados. **Este log não contém distribuição de comprimentos exatos:** a interpretação `Text(TP_LEITO)` produzir `"N"` é **hipótese plausível de QVD**, ainda não fato individualmente medido. O A1 continua provando que os **CSVs originais** têm `"N "`.
+
+**Correção controlada na branch (ainda sem reload depois do patch):**
+- `TRANSFORMACAO/transf_dim_tipo_leito.qvs` commit `ea8dbb5a68a6b3fdb8f4183acd3dc84e331faade`: domínio permitido de `TP_LEITO` **somente** `"N"` ou `"N "`, com tipo normalizado de `1..7`; outros formatos falham. Duas contagens adicionais `QVDOneDigit` e `QVDOneDigitPadded` exigem conjuntamente **35.518** linhas válidas, sem suprimir os controles de grão, competência, código, estabelecimento, 3/66 ou 7/70. **Não reintroduz padding**, não modifica fonte CSV nem staging QVD, não altera a SK Hash128, não faz correção silenciosa. `TP_LEITO_BRUTO` foi **renomeado para `TP_LEITO_TEXTO_STAGING`** no QVD dimensional proposto, para não alegar equivocadamente que o texto QVD é o texto bruto com espaço ASCII da origem CSV.
+- `tools/audit_dim_tipo_leito_qvd.py` commit `65bbb17dae303dd2423a568e172f9bcf0c54d48f`: campo esperado do header ajustado a `TP_LEITO_TEXTO_STAGING`; política de read-only e 2.021×10/QVD/checkpoint permanecem.
+- Adendo explícito de proveniência no `docs/discovery/boundary-7-implementation-plan.md`. O modelo acadêmico fechado, oito dimensões e A2 **não são reabertos**.
+
+**PRÓXIMO GATE:** `git status --short` (exigir árvore limpa), `git pull --ff-only`, conferir backup QVD existente, **um reload** de `TRANSFORMACAO/TRANSF.qvw` no QlikView 12, coletar as linhas `[IV-LEITO][DIAG]` e a cauda do log recente. Somente **se existir QVD e checkpoint novos**, executar `tools/audit_dim_tipo_leito_qvd.py`. `IV_TIPO_LEITO=QVD_TEXT_VARIANTS_PATCH_READY_NOT_RUN`, `T29_HISTORICAL=NOT_APPROVED`, `MAIN=7/8`, `PRESENTATION_CNES_HISTORICAL_CAVEAT=REQUIRED_NOT_RENDERED` (1.965/2.021 = 97,2% **pares-mês**, não leitos). Não implementar fatos/Link Table/PAINEL nem abrir PR/merge antes de validação completa.
