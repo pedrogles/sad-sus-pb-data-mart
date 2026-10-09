@@ -171,3 +171,24 @@ Para gerar log no QlikView Desktop, abrir `TRANSFORMACAO/TRANSF.qvw` e habilitar
 **Veredito atual:** `IV-TEMPO=PASS_LOCAL_RELOAD_AND_PHYSICAL_PERSISTENCE`; `CSV_CONTENT_VALIDATION=PENDING`; `PRE_2017_RD_DATE_INVESTIGATION=PENDING`; `PR_74=DRAFT`; `PHASE_IV=IN_PROGRESS`. Nenhuma aprovacao de T29 nem implementacao dos fatos/Link Table.
 
 **Proxima verificacao read-only, sem novo reload:** importar agora o CSV encontrado, conferir os 15 campos e os limites `rd_min_date`, `rd_max_date`, `calendar_min_date`, `calendar_max_date`; calcular dias inclusivos com falha explicita se arquivo ou colunas estiverem ausentes. Se PASS, investigar em separado registros RD anteriores a 2017 (validade semantica, cardinalidade e papel temporal) antes de merge.
+
+## 10. Quarto checkpoint — CSV lido e limites reconciliados (08/10/2026 22:40:12)
+
+**FATO VERIFICADO — nova saida PowerShell do responsavel:**
+- `Import-Csv -LiteralPath .\\TRANSFORMACAO\\QVD\\_CHECKPOINT_DIM_TEMPO.csv -Delimiter ';'` retornou exatamente **uma linha** e os 15 campos esperados; as quatro colunas novas de limites existem.
+- `generated_at=08/10/2026 22:40:12`, `stage=TRANSFORMACAO_DIM_TEMPO`, `status=PASS_PARTIAL_DIM_TEMPO_ONLY`.
+- `calendar_day_rows=4383`, `months_2017_2019=36`, `years_2017_2019=3`, `rd_inter_rows=566672`, `rd_total_date_rows=1133344`, `invalid_date_rows=0`.
+- `rd_min_date=2008-01-01`, `rd_max_date=2019-12-31`, `calendar_min_date=2008-01-01`, `calendar_max_date=2019-12-31`.
+- Cálculo independente de intervalo inclusivo `(calendar_max_date - calendar_min_date).Days + 1 = 4383`, igual ao checkpoint. A verificação PowerShell de divergência de cardinalidade **não lançou erro**.
+- `t29_historical=NOT_APPROVED`, `facts_and_link_table=NOT_STARTED` preservados.
+- Verificação anterior da mesma execução: log contemporâneo finalizou normalmente; QVD físico e CSV contemporâneos; QVD SHA-256 `2E38647C8DBA58ED823D5E6D19DF427E78C8D41FA3A0315EBE54176AC7A5C828`.
+
+**Veredito do gate físico da dimensão:** `IV-TEMPO=PASS_LOCAL_QV_CSV_QVD_RECONCILED`. **Fase IV completa NÃO aprovada**, pois outras sete dimensões estão pendentes. **PR #74 continua Draft** até esclarecer a pertinência semântica do extremo `DT_INTER/DT_SAIDA=2008-01-01` observado nos RD de competências 2017–2019.
+
+### Investigacao semântica read-only proposta
+
+O extremo de 2008 é **dado real observado na origem serial do QlikView**, mas ainda não foi determinada sua frequencia, qual dos dois campos de datas o contém, a distribuição de `IDENT` e em quais competências ocorre. Não caracterizar como erro, placeholder ou internação prolongada sem inspeção de registros.
+
+Analisar os 36 CSVs SIH/RD que alimentaram `SRC_SIH_RD.qvd`, no padrão **`BASE/CONVERTIDA/RD/RDPB*.csv`** (contrato confirmado em `EXTRACAO/ext_main.qvs`), em modo somente leitura. Reconciliar `566672` linhas e produzir **somente agregados**, sem expor `N_AIH` ou identificadores individuais: frequência por ano de `DT_INTER` anterior a 2017, frequência do dia `2008-01-01` nos campos `DT_INTER`/`DT_SAIDA`, distribuição por `IDENT`, competência de processamento e eventuais datas de saída discordantes. Não alterar origem, staging, script, chaves nem intervalos por suposição.
+
+**Estado operativo:** `DIM_TEMPO_GATE=PASS_LOCAL`; `PRE_2017_DATE_PROVENANCE=PENDING_READ_ONLY_AUDIT`; `PR_74=DRAFT`.
