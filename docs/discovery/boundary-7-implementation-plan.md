@@ -549,6 +549,21 @@ Enquanto a invariância histórica não estiver comprovada:
 
 Isso impede aplicar classificação posterior retroativamente.
 
+### Adendo A2 — decisão explícita aprovada em 09/10/2026 (não implementada)
+
+**Mudança semântica autorizada pelo responsável:** exclusivamente para a geração de `%SK_TIPO_LEITO`, o argumento `COMPETENCIA_REFERENCIA` significa **competência da observação no CNES/LT (`COMPETEN`)**, e NÃO competência do catálogo de descrições. A expressão `Hash128('LEITO', TP_LEITO, CODLEITO, COMPETENCIA_REFERENCIA)` é **preservada literalmente**, com sensibilidade temporal. Não reinterpretar `COMPETENCIA_REFERENCIA` de `DIM_PROCEDIMENTO` ou outras tabelas.
+
+**Grão aprovado:** uma ocorrência de `(TP_LEITO_normalizado, CODLEITO_textual, COMPETEN)` por competência observada (A1: 2.021 combinações distintas; 36 competências). O argumento `TP_LEITO` passado ao Hash128 deverá ser uma versão **textual normalizada pela remoção somente de espaços ASCII finais** do campo fonte `"N "`; conservar o valor bruto para auditoria. O código `CODLEITO` deve permanecer textual de dois dígitos e a competência da chave deve ser `COMPETEN` do próprio LT; não converter numericamente, não corrigir `3/66` para `2/66`, nem realizar `Trim` genérico silencioso.
+
+**Política temporal de rótulos aprovada:** `201909` é proveniência **apenas da legenda descritiva** `REF_TIPO_LEITO`, independente da competência da SK. Somente combinações com `COMPETEN=201909` e cobertura confirmada do par `TP_LEITO+CODLEITO` poderão receber descrições da legenda daquele mês. As demais competências **não** herdam descrições: atributos de nome do tipo e descrição/especialidade de leito ficam `NULL` quando não há fonte mensal aplicável, sem preencher valor falso nem confundir `NULL` com categoria inexistente. Preservar colunas de códigos para análises e rastrear o escopo de validade do rótulo sem criar associação Qlik indevida pelo nome dos campos.
+
+**Relação com o fato:** `FATO_CAPACIDADE_LEITO` mantém o grão `(CNES, COMPETEN, CODLEITO)`; cada uma das 35.518 linhas LT terá exatamente uma chave dimensional por `(TP_LEITO_normalizado, CODLEITO_textual, COMPETEN)` quando a dimensão for implementada. O preflight A1 verificou grão/cobertura naturais e zero duplicatas na chave candidata de fato, **não** executou `Hash128` nem gerou QVD. A legenda `201909` e `SCNES_DOMINIOS.ZIP` **não** provam validade normativa de 2017–2019; o ZIP possui códigos/tipos separados, sem associação oficial no mesmo registro.
+
+**Gate de implementação separado:** antes de PASS físico QlikView 12, verificar coerência do mapeamento de campos de staging, diferença bruto/normalizado, 2.021 SK distintas/0 colisões e duplicatas, 35.518/35.518 linhas LT com uma SK/0 unmatched/sem multiplicação, 56 combinações `201909` com rótulos daquele snapshot e 1.965 combinações de outros meses sem descrição histórica comprovada e mantidas `NULL`; regressão de `3/66` (1.480) e `7/70` (5). Submeter resultado a revisão antes de integrar `main`. Não implementar automaticamente fato, Link Table ou painel.
+
+**Limite acadêmico:** atributos de descrição permanecem no modelo aprovado dos Capítulos 1–2, fechado para impressão. Aceitação acadêmica de rótulos ausentes em parte da série não foi demonstrada; registrar a ressalva e consultar o professor se exigida completude. **`T29_HISTORICAL=NOT_APPROVED`**, **`A2_CONTRACT=APPROVED_DOCUMENTED_NOT_IMPLEMENTED`**, **`IV_TIPO_LEITO_QV_PHYSICAL_GATE=NOT_RUN`**. Evidência: `docs/discovery/phase-4-dim-tipo-leito-discovery-2026-10-09.md`.
+
+
 ---
 
 # 15. DIM_TEMPO
