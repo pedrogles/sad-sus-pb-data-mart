@@ -343,3 +343,25 @@ if ($LASTEXITCODE -ne 0) { throw "Perfil historico de descricoes exige investiga
 ```
 
 **Pendente:** interpretar os seis códigos e grafias, distinguir alteração de nome de erro de codificação, decidir a política operacional de `cp1252` limitada ao corpus inspecionado, sem imputaçāo retroativa. Só então habilitar staging competência-aware do SIGTAP com separação do referencial 201808 de versão retrospectiva. `DIM_PROCEDIMENTO.qvd=NOT_STARTED`; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
+
+## Gate histórico de nomes e byte differential — PASS limitado (09/10/2026)
+
+**FATO VERIFICADO — execução PowerShell `tools/profile_sigtap_hierarchy_label_versions.py`**, após `git pull --ff-only` até `abe1791`:
+
+- Auditor independente prévio repetiu `MANIFEST_SHA256=362301077a9823eca5e05362825b31471e0604bc4a9e3d308107252308f09ff5`, `COMPETENCES_VERIFIED=36`, `FILES_VERIFIED=216`, `PROCEDURES_RECONCILED=165203`, `UNMATCHED_ALL_LEVELS=0` e `VERDICT=PASS_LOCAL_216_HIERARCHY_FILES_SHA_RECONCILED`.
+- `MODE=SIGTAP_HIERARCHY_LABEL_TRANSITIONS_AND_BYTE_DIFFERENTIAL`, `COMPETENCES=36`, `FILES_AUDITED=216`, `TOTAL_DESCRIPTION_ROWS=16247`, `STAGING_FILES_WRITTEN=0`, `QVD_GENERATED=False`, `VERDICT=PASS_SIGTAP_LABEL_VERSION_AND_BYTE_PROFILE_REVIEW_ONLY`.
+- `tb_grupo`: **288** linhas, **0** códigos com nomes variáveis.
+- `tb_sub_grupo`: **2124** linhas, **3** códigos com nomes variáveis:
+  - `0205`: `201701` "Diagnóstico por ultra-sonografia" → `201705` "Diagnóstico por ultrasonografia" (essa grafia permanece no histórico mostrado pelo perfil).
+  - `0604`: `201701` "Componente Especializado da Assitencia Farmaceutica" → `201808` "Componente especializado da assistência farmacêutica" → `201809` "Componente Especializado da Assitencia Farmaceutica".
+  - `0803`: `201701` "Autorização / Regulação" → `201808` "Autorização / regulação" → `201809` "Autorização / Regulação".
+- `tb_forma_organizacao`: **13835** linhas, **3** códigos com nomes variáveis:
+  - `010105`: `201701` "Praticas Integrativas/Complementares" → `201808` "Praticas integrativas/complementares" → `201809` "Praticas Integrativas/Complementares".
+  - `010202`: `201701` "Vigilância em Saúde do Trabalhador" → `201808` "Vigilância em saúde do trabalhador" → `201809` "Vigilância em Saúde do Trabalhador".
+  - `070103`: `201701` "OPM auditivas" → `201808` "OPM em Otorrinolaringologia." → `201809` "OPM auditivas" (**mudança semântica de rótulo, não apenas caixa/grafia**).
+- Para cada nível: `ROWS_WITH_C1_BYTES=0`; em todas as descrições `C1_0X80_TO_0X9F_BYTE_OCCURRENCES=0`, `CP1252_VS_ISO88591=NOT_DISTINGUISHABLE_WITH_OBSERVED_TEXT_BYTES`, `DESCRIPTION_ENCODING_APPROVAL=NOT_APPROVED`.
+- Combinado com o gate textual anterior: 9737 registros continham bytes altos e eram incompatíveis com UTF-8 estrito; `cp1252` estrito decodificou os 16247 sem exceções/caracteres de controle. Como nenhum byte observado diferencia `cp1252` de `ISO-8859-1`, **a origem não comprova exclusivamente qual charset foi empregado**.
+
+**DECISÃO OPERACIONAL LIMITADA / SEM AFIRMAÇÃO NORMATIVA:** usar `cp1252` como *candidato de leitura* dos atributos hierárquicos para o próximo CSV local, seguindo a convenção já aprovada para `NO_PROCEDIMENTO` da Fase III-C3.4a.1. No universo dos bytes aqui verificados, a leitura é idêntica à `ISO-8859-1`. Isso **não** constitui prova do charset declarado pelo DATASUS; não alterar grafia, caixa, nome/competência, nem inferir validade normativa anterior. As seis chaves variáveis serão mantidas com seus rótulos correspondentes **exatamente ao respectivo snapshot** no CSV candidato; os cinco casos específicos de `201808` requerem ressalva de proveniência porque o ZIP `TabelaUnificada_201808_v2102261143.zip` carrega carimbo de versão de 2021. **Não** homogenizar a partir de `201809`.
+
+**Próxima etapa:** preparar arquivo candidato UTF-8 com cabeçalhos explícitos para enriquecer `REF_SIGTAP` por `competência × CO_PROCEDIMENTO` usando os três níveis hierárquicos; preservar todos os **165203** códigos/mês e os nomes originais, validar cobertura 0 unmatched, fonte 216 SHA e CSV anterior hash, **sem substituir** `EXTRACAO/QVD/REF_SIGTAP.qvd` nem materializar `DIM_PROCEDIMENTO.qvd` antes de testes locais. `T29_HISTORICAL=NOT_APPROVED`.
