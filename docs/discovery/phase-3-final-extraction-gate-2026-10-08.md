@@ -114,3 +114,20 @@ PHASE_III=IN_PROGRESS
 **STATUS:** `III_FINAL=FAIL_CLOSED_UNDIAGNOSED`, `PHASE_III=IN_PROGRESS`, `T29_HISTORICAL=NOT_APPROVED`. O executor remove marcador final/manifesto no erro, preserva QVDs e checkpoints parciais para diagnóstico; a execução fracassada pode ter regravado QVDs antes de abortar, portanto a data física precisa ser verificada ao revisar evidências. PR #73 deve permanecer em **Draft/sem merge** até identificar a causa, corrigir apenas o que for comprovado e testar novamente.
 
 **Próxima prova requerida — READ-ONLY:** procurar log mais recente de `EXT.qvw` ou `qv.log` no diretório `EXTRACAO`, conferir `LastWriteTime` contra 08/10/2026 ~21:18 horário de João Pessoa e inspecionar final + primeiro erro. Se logs não existirem, habilitar `Configurações > Propriedades do Documento > Geral > Gerar Arquivo Log` no QlikView 12 e executar novamente **somente após** habilitar registro; não alterar scripts/dados por hipótese. Documentação Qlik: <https://help.qlik.com/pt-BR/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Document_Properties_General.htm>.
+
+
+## 6. Inspeção dos logs apresentados — evidência NÃO correspondente à tentativa atual
+
+**FATO VERIFICADO:** o usuário listou os logs `EXTRACAO/*.log` recursivamente. O mais recente retornado foi `EXT.qvw.2026_10_08_12_44_07.log`, com `LastWriteTime=08/10/2026 12:44:24` **horário local**, anterior em aproximadamente 8h34 à execução final `RELOAD_STARTED_UTC=2026-10-09T00:18:48Z` (**21:18:48 em UTC-03:00, em 08/10**). Nenhum log referente à falha atual apareceu na listagem.
+
+O log antigo termina com:
+```text
+TRACE [EXTRACAO] PARTIAL ONLY â€” CNES tipo/leito, municipal reference and establishment history remain pending
+no final extraction success marker emitted.
+Erro: Comando desconhecido
+```
+Esse `Comando desconhecido` pertence ao **script antigo antes de C4/C5**, cujo `TRACE` foi fragmentado. **Não constitui diagnóstico do exit code 3 da execução atual**; a instrução não está mais presente na versão atual de `ext_main.qvs`.
+
+**PENDÊNCIA:** localizar ou produzir log da execução de 21:18, sem alterar os contratos. Primeiro observar `LastWriteTime` dos QVDs/checkpoints posteriores à tentativa e confirmar em QlikView Desktop `Configurações → Propriedades do Documento → Geral → Gerar Arquivo Log` e `Timestamp no nome do arquivo de log`. A [orientação de suporte oficial Qlik](https://community.qlik.com/t5/Official-Support-Articles/How-To-Enable-QlikView-Document-Reload-Log/ta-p/1710459) indica que logs de reload do QlikView Desktop são gerados junto do `.qvw` quando essa opção está habilitada. Se necessário, executar **nova tentativa controlada somente após ativar logging e garantir o arquivo salvo**, usando o runner existente. **Nenhuma alteração no gate Qlik nem merge até obter o primeiro erro real.**
+
+**Estado preservado:** `III_FINAL=FAIL_CLOSED_UNDIAGNOSED`; `PHASE_III=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
