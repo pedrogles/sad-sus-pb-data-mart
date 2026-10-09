@@ -91,3 +91,18 @@ Se a branch ja existir localmente, `git switch feat/phase-4-dim-municipio` e `gi
 `IV-MUNICIPIO=CODE_READY_LOCAL_QV_GATE_PENDING`;
 `T29_HISTORICAL=NOT_APPROVED`;
 `PHASE_IV=IN_PROGRESS`.
+
+## Primeiro acionamento local IV-MUNICIPIO — sem evidência de reload novo
+
+**FATO VERIFICADO — PowerShell fornecido pelo responsável do projeto:** no checkout `feat/phase-4-dim-municipio`, `git status --short` vazio e `git switch --track` concluído. `Qv.exe /r TRANSFORMACAO/TRANSF.qvw` retornou `QLIK_EXIT=0`, mas imediatamente após:
+
+- `TRANSFORMACAO/QVD/_CHECKPOINT_DIM_MUNICIPIO.csv` **não foi encontrado**.
+- `DIM_MUNICIPIO.qvd` **não foi encontrado**.
+- `DIM_TEMPO.qvd` e `_CHECKPOINT_DIM_TEMPO.csv` permaneciam com timestamp anterior `08/10/2026 22:40:12`.
+- A busca do log mais recente retornou `TRANSF.qvw.*.log` **antigo, de 08/10/2026 22:40:12**, que termina na etapa IV-TEMPO e `Execution finished`, sem mostrar linha `[TRANSFORMACAO][IV-MUNICIPIO]`.
+
+**Interpretação:** `QLIK_EXIT=0` isolado **não é PASS do reload**; não há evidência de que o `Must_Include=transf_dim_municipio.qvs` tenha executado nesta tentativa. O log consultado é histórico, não testemunha a nova execução. **Não atribuir causa ao script municipal, ao dataset externo ou ao filesystem** com base nisso. Possibilidades incluem processo GUI existente ou saída antes de observar artefatos; ambas exigem diagnóstico.
+
+**Próximo gate:** verificar `Get-Process Qv`, existência e atualização de `TRANSF.qvw`, presença do include no `transf_main.qvs` local e timestamps dos logs; se QlikView estiver aberto, fechá-lo normalmente antes de novo teste controlado. Para nova tentativa, usar `Start-Process -Wait -PassThru` com `/r` e caminho absoluto para esperar a conclusão, e **exigir** log contemporâneo e novo checkpoint. **Não apagar QVD de extração ou alterar scripts durante diagnóstico.**
+
+**Estado:** `IV-MUNICIPIO=RELOAD_NOT_OBSERVED / PHYSICAL_GATE_PENDING`; `IV-TEMPO=MERGED_PASS`; `PR_75=DRAFT`; `T29_HISTORICAL=NOT_APPROVED`.
