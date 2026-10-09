@@ -180,3 +180,20 @@ git pull --ff-only
 **Não iniciar download em massa dos 36 pacotes ainda.** Se houver exceções, conferir os códigos reais, layout e competência antes de alterar a hipótese; não corrigir inventando joins. Se o piloto passar, preparar gate read-only abrangendo os 36 meses e perfis de descrição, e somente depois planejar aquisição/staging dos atributos hierárquicos e a `DIM_PROCEDIMENTO`.
 
 **Estado:** `IV-PROCEDIMENTO=SAMPLE_STRUCTURE_PASS_RELATIONAL_PILOT_CODE_READY_QV_NOT_STARTED`; `T27=PREVIOUS_PASS`; `PHASE_IV=IN_PROGRESS`; `T29_HISTORICAL=NOT_APPROVED`.
+
+## Gate IV-PROCEDIMENTO — piloto relacional 4 competências PASS (09/10/2026)
+
+**FATO VERIFICADO — execução local informada pelo responsável**, após `git pull --ff-only` da branch até `f72993f`, com `tools/validate_sigtap_hierarchy_relational_pilot.py`:
+
+- `INVENTORY_SHA_MATCH=True`, `INVENTORY_MEMBERS=348`; 4 competências `201701`, `201801`, `201901`, `201912`; `PERSISTENT_OUTPUTS=NONE`.
+- Totais por mês: `201701=4542`, `201801=4587`, `201901=4609`, `201912=4624`; `PILOT_PROCEDURES=18362`.
+- `UNMATCHED_PROCEDURE_GROUP=0`, `UNMATCHED_PROCEDURE_SUBGROUP=0`, `UNMATCHED_PROCEDURE_FORM=0`, `PARENT_MISSING={}`.
+- `VERDICT=PASS_4_MONTH_HIERARCHY_RELATIONAL_PILOT_ONLY`, `FULL_36_MONTH_HIERARCHY_GATE=NOT_EVALUATED`, `DESCRIPTION_ENCODING_APPROVAL=NOT_EVALUATED`.
+- Fontes hierárquicas dos mesmos meses: grupo 8/mês, subgrupo 59/mês, formas 382/384/385/386, integridade de código/competência, hash de layout estável da inspeção anterior e nenhuma exceção mostrada.
+- Prefixos observados de `CO_PROCEDIMENTO`: os **2**, **4** e **6** dígitos iniciais resolveram respectivamente as chaves `CO_GRUPO`, `CO_GRUPO+CO_SUB_GRUPO` e `CO_GRUPO+CO_SUB_GRUPO+CO_FORMA_ORGANIZACAO` no mesmo mês; sem chaves pai órfãs nesta amostra.
+
+**Conclusão delimitada:** **PASS RELACIONAL AMOSTRAL** dos 18.362 pares procedimento×competência. A interpretação dos prefixos tem agora sustentação empírica nos 4 meses testados, **não é uma regra histórica aprovada para todos os 36**; os nomes `cp1252` apresentados são somente prévias, não prova da codificação de todos os textos. O teste anterior T27 completo SIH/RD×SIGTAP permanece PASS, não foi reexecutado neste piloto. Nenhum dado histórico, QVD, fato, Link Table ou dimensão foi alterado.
+
+**Próximo gate:** adquirir de forma limitada e verificável as **seis tabelas/layouts de hierarquia dos 36 pacotes históricos já enumerados**, usando os hashes e contagens do manifesto C3.3b.1 por competência; confrontar cada pacote, layout, unicidade, competência, pais e todos os 165.203 pares procedimento×competência. Persistir somente os seis membros originais por mês e manifesto local depois de todos os 36 passes; não gerar QVD ou alterar referências existentes. Verificar encoding com amostra diversificada separadamente.
+
+**Status:** `IV-PROCEDIMENTO=FOUR_MONTH_RELATIONAL_PILOT_PASS_FULL_36_PENDING`; `T27=PASS_ANTERIOR`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IV=IN_PROGRESS`.
