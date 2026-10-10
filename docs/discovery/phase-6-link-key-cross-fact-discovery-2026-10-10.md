@@ -115,3 +115,34 @@ $Syn 1 = _P6_PROC+_P6_BAD_COORD
 **DECISÃO PENDENTE:** executar fisicamente o R2 e inspecionar `VERDICT=PASS_EXPERIMENTAL_LINK_SERIALIZATION_COVERAGE_NOT_APPROVED`, `SYNTHETIC_TABLES=0`, `BAD_COORD=NULL_KEY=0`, cobertura total RD/LT/POP e `DISTINCT_SERIAL=DISTINCT_HASH`. Até lá: `LINK_KEY_R1=SCRIPT_BLOCKED`, `LINK_KEY_R2=PREPARED_NOT_RUN`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`.
 
 O resultado `85.705` é o número de coordenadas compartilhadas distintas observado em memória na R1; **não** representa 85.705 internações, leitos ou municípios e ainda não equivale a cardinalidade física validada em uma `LINK_ANALISE` persistida.
+
+## 7. R2 — PASS experimental físico das três fontes (10/10/2026 00:41:26)
+
+**FATO VERIFICADO (saída real de PowerShell e QlikView Desktop 12 fornecida pelo responsável):** após `git pull --ff-only` que avançou a branch de `3f47d04` para `36ec322`, o executor `tools/validar_link_key_cross_fact_qlik.ps1` criou o QVW isolado `TRANSFORMACAO/P6_LINK_KEY_CROSS_FACT_PREFLIGHT_R2.qvw` (`DOCUMENT_REUSED=False`) com o script SHA-256 `41A54899536494CC08B7C3B170344D09D86E30D4C182E7D59B6F9CD7CFACC859`.
+
+```text
+MODE=PHASE_VI_LINK_KEY_CROSS_FACT_READ_ONLY
+RELOAD_STARTED=True
+RELOAD_RETURNED=True
+ALL_6_INPUT_QVD_SHA256_UNCHANGED=True
+[P6-LINK] PROCESS=RD ROWS=566672 BAD_COORD=0
+[P6-LINK] PROCESS=LT ROWS=35518 BAD_COORD=0
+[P6-LINK] PROCESS=POP ROWS=669 BAD_COORD=0
+[P6-LINK] TOTAL ROWS=602859 RD=566672 LT=35518 POP=669 BAD_COORD=0 NULL_KEY=0 DISTINCT_SERIAL=85705 DISTINCT_HASH=85705
+[P6-LINK] SYNTHETIC_TABLES=0
+[P6-LINK] VERDICT=PASS_EXPERIMENTAL_LINK_SERIALIZATION_COVERAGE_NOT_APPROVED
+[P6-LINK] FACT_QVD_GENERATED=False LINK_ANALISE_QVD_GENERATED=False OUTPUT_DATA_FILES_WRITTEN=0
+[P6-LINK] PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED LINK_KEY_CONTRACT=NOT_APPROVED
+VERDICT=PASS_EXPERIMENTAL_LINK_SERIALIZATION_COVERAGE_NOT_APPROVED
+LINK_KEY_CONTRACT=NOT_APPROVED
+PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED
+FACT_QVD_GENERATED=False
+LINK_ANALISE_QVD_GENERATED=False
+```
+
+**Conclusão estrita de R2:** os três processos mantiveram o grão original e tiveram cobertura completa das coordenadas obrigatórias no teste em memória (`BAD_COORD=0`); o serializador candidato `SAD-LINK-V1` gerou chaves não nulas em todas as **602.859 linhas**; foram observadas **85.705 serializações distintas e 85.705 hashes distintos** no snapshot validado. Essa igualdade é evidência favorável de ausência de colisões **detectáveis no conjunto examinado**, não garantia matemática para dados futuros. O QlikView apresentou `SYNTHETIC_TABLES=0` no documento isolado e os seis QVDs de entrada não tiveram mudança de SHA-256. **Nenhuma Link Table física, fato ou painel foi criado.**
+
+**O defeito QVS R1 foi corrigido no ambiente de preflight:** condição `IF` passou a ser executada integralmente, e os aliases de `P6_LINK_TEST` evitaram a chave sintética anterior. A contagem de `85.705` representa **combinações distintas de coordenadas**, não 85.705 municípios, internações, pacientes, hospitais, leitos ou linhas de uma Link Table física.
+
+**DECISÃO PENDENTE:** a saída não estabelece ainda determinismo de identidade de todas as 85.705 chaves em recargas independentes. A próxima reprodução segura é recarregar o **mesmo QVW R2 já criado**, sem alterar QVS, exigindo `DOCUMENT_REUSED=True`, seis hashes SHA-256 preservados, todos os contadores e `SYNTHETIC_TABLES=0`, e o mesmo veredito. Mesmo duas recargas com os mesmos totais **não provam igualdade exata dos conjuntos de chaves**: eventual teste posterior de conjuntos/fingerprints ordenados deverá ser desenhado explicitamente, se o contrato for promovido. `LINK_KEY_CONTRACT=NOT_APPROVED`; `ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED`; `FACT_QVD=NOT_STARTED`; `LINK_ANALISE=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. Draft PR #83 permanece sem merge.
+
