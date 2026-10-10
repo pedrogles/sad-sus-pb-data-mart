@@ -44,7 +44,7 @@ NOCONCATENATE LOAD
         OR _V5_DAYS<>Round(_V5_DAYS,1)
         OR NOT IsNum(_V5_VALUE)
         OR _V5_VALUE<0
-        OR Abs(_V5_VALUE*100-Round(_V5_VALUE*100,1))>0.001
+        OR Fabs(_V5_VALUE*100-Round(_V5_VALUE*100,1))>0.001
         OR NOT IsNum(_V5_DEATH)
         OR Match(Text(_V5_DEATH),'0','1')=0,
         1,0
