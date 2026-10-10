@@ -246,3 +246,22 @@ O teste exige `ROWS=566672`, `MONTHS=36`, `EXTERNAL=5202` e **zero chaves órfã
 
 **Status atual:** `MEASURES_CSV=PASS`, `MEASURES_STAGING_QV=PASS`, `DIMENSION_ROLE_SK_CHECK=PREPARED_NOT_EXECUTED`, `LINK_KEY=UNRESOLVED`, `FACT_QVD=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`.
 
+## 13. Primeiro teste físico de SK por papel (10/10/2026 00:02:40) — BLOCKED
+
+**FATO VERIFICADO pela saída do QlikView 12 fornecida pelo responsável:** após `git pull --ff-only` para `9c15b39`, o QVW isolado `TRANSFORMACAO/V5_RD_DIM_ROLES_PREFLIGHT.qvw` executou com QVS SHA-256 `84795435D6AC7B46C336A484AF16FC1ACBBE3B477E15276324900625778A74C4`. O runner devolveu:
+
+```text
+DOCUMENT_REUSED=False
+RELOAD_STARTED=True
+RELOAD_RETURNED=True
+ALL_8_INPUT_QVD_SHA256_UNCHANGED=True
+[V5-RD-DIM] TOTAL ROWS=566672 MONTHS=36 EXTERNAL=5202 MISS_COMP=566672 MISS_ANO=0 MISS_INTER=566672 MISS_SAIDA=566672 MISS_RES=0 MISS_SERV=0 MISS_ESTAB=0 MISS_PROC=0 MISS_DIAG=0 MISS_CAR=0 MISS_MOT=1
+[V5-RD-DIM] VERDICT=BLOCKED_DIMENSION_ROLE_SK_UNMATCHED
+FACT_QVD_GENERATED=False
+OUTPUT_DATA_FILES_WRITTEN=0
+```
+
+**Interpretação limitada:** sete dos 11 papéis de cobertura de SK bateram integralmente (**ANO, RES, SERV, ESTAB, PROC, DIAG, CAR**); **COMP, INTER, SAIDA** falharam em todos os 566.672 registros e **MOT** falhou em um registro. Cobertura parcial **não** equivale à integridade física aprovada. SHA-256 dos oito QVDs de entrada permaneceu inalterado e a contagem/grão da entrada foi preservada. Os `566672` unmatched das datas **não comprovam** ausência de meses/dias em `DIM_TEMPO` sem distinguir valores dos atributos e serialização usada na expressão `Hash128`; o `MOT=1` não pode ser descartado nem imputado.
+
+**DECISÃO PENDENTE:** comparar (somente leitura) cobertura por **valores naturais** das datas/competências e de `COBRANCA` contra os atributos dimensionais, juntamente com chaves calculadas por expressões alternativas derivadas estritamente do script dimensional. Investigar a ocorrência de MOT por **código normalizado e frequência**, sem publicar dados individualmente identificáveis (`N_AIH` não deve ser exibido). Preservar dimensões da Fase IV e as fontes físicas até evidenciar causa exata. Contrato `%LINK_KEY` permanece bloqueado; `FATO_INTERNACAO.qvd` não criada.
+
