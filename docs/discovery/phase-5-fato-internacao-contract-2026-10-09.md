@@ -217,3 +217,32 @@ LINK_KEY_GATE=NOT_EXECUTED
 
 **Gate encerrado:** `FATO_INTERNACAO_MEASURES_SOURCE=PASS`, `FATO_INTERNACAO_MEASURES_STAGING_QV=PASS`. **Gates abertos:** integridade física das SKs dimensionais e papéis role-playing; serialização única de `%LINK_KEY` para três processos; produção de `FATO_INTERNACAO.qvd` ainda `NOT_STARTED`. Não há CI nem inspeção binária independente do QVD nesta execução. `T29_HISTORICAL=NOT_APPROVED` preservado.
 
+## 12. Próximo gate — cobertura física de 11 papéis dimensionais (preparado, não executado)
+
+Scripts de teste **somente leitura** adicionados ao Draft PR #83:
+
+- `TRANSFORMACAO/phase_v_fato_internacao_qlik_dim_roles_preflight.qvs`: constrói nove **mapeamentos de domínio em memória** a partir dos sete QVDs dimensionais relevantes (`DIM_TEMPO` em três papéis físicos: dia, competência e ano; `DIM_MUNICIPIO`, `DIM_ESTABELECIMENTO`, `DIM_PROCEDIMENTO`, `DIM_DIAGNOSTICO`, `DIM_CARATER_ATENDIMENTO`, `DIM_MOTIVO_SAIDA_PERMANENCIA`). `DIM_TIPO_LEITO` pertence à fato de capacidade, não à internação. Consulta o QVD `SRC_SIH_RD.qvd`, produz somente **flags de cobertura** e totais em memória; não produz dimensões nem fato.
+- `tools/validar_fato_internacao_dim_roles_qlik.ps1`: cria/reabre exclusivamente `TRANSFORMACAO/V5_RD_DIM_ROLES_PREFLIGHT.qvw`, com log Qlik nativo, guarda da identidade exata do QVS versionado e **SHA-256 dos oito arquivos QVD de entrada** (staging + sete dimensões) antes/depois da recarga. Não sobrescreve `TRANSF.qvw`, R1/R2/R3 nem seus logs.
+
+Os **11 papéis de chave** examinados, com seus contratos já existentes:
+
+| Papel | Origem SIH/RD | Compatibilidade de chave avaliada |
+| --- | --- | --- |
+| COMP | `_META_SOURCE_COMPETENCE` | `Hash128('MES', AAAAMM)` → `DIM_TEMPO.%SK_TEMPO_COMPETENCIA` |
+| ANO | `ANO_CMPT` | `Hash128('ANO', ano_numérico)` → `DIM_TEMPO.%SK_TEMPO_ANO` |
+| INTER | `DT_INTER` | `Hash128('DATA', AAAAMMDD)` → `DIM_TEMPO.%SK_TEMPO_DATA` |
+| SAIDA | `DT_SAIDA` | `Hash128('DATA', AAAAMMDD)` → `DIM_TEMPO.%SK_TEMPO_DATA` |
+| RES | `MUNIC_RES` | `Hash128('MUN', DATASUS6)` → `DIM_MUNICIPIO.%SK_MUNICIPIO` |
+| SERV | `MUNIC_MOV` | `Hash128('MUN', DATASUS6)` → `DIM_MUNICIPIO.%SK_MUNICIPIO` |
+| ESTAB | `CNES` + `_META_SOURCE_COMPETENCE` | `Hash128('ESTAB', CNES, competência)` → `DIM_ESTABELECIMENTO.%SK_ESTABELECIMENTO` |
+| PROC | `PROC_REA` + competência | `Hash128('PROC', código, competência)` → `DIM_PROCEDIMENTO.%SK_PROCEDIMENTO` |
+| DIAG | `DIAG_PRINC` | `Hash128('CID10', Text(RTrim(Text(DIAG_PRINC))))` → `DIM_DIAGNOSTICO.%SK_DIAGNOSTICO` |
+| CAR | `CAR_INT` normalizado em 2 dígitos | `Hash128('CAR', código)` → `DIM_CARATER_ATENDIMENTO.%SK_CARATER_ATENDIMENTO` |
+| MOT | `COBRANCA` normalizado em 2 dígitos | `Hash128('MOT', código)` → `DIM_MOTIVO_SAIDA_PERMANENCIA.%SK_MOTIVO_SAIDA` |
+
+O teste exige `ROWS=566672`, `MONTHS=36`, `EXTERNAL=5202` e **zero chaves órfãs por papel**. Também exige que os oito QVDs de entrada mantenham seus SHA-256. O uso de mapas em memória verifica cobertura sem fazer `JOIN` físico sobre os 566.672 registros — técnica descrita pela [QlikView Help: ApplyMap](https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/MappingFunctions/ApplyMap.htm) e [Mapping](https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/ScriptPrefixes/Mapping.htm).
+
+**Limites:** este diagnóstico NÃO testa a materialização dos aliases físicos role-playing no `PAINEL`, não valida ausência de loops/$Syn em um modelo multi-fato, não cria `%LINK_KEY` e não prova o contrato de `LINK_ANALISE`. O mapeamento de `ANO_CMPT` como número via `Num#` e a compatibilidade exata dos 11 hashes **ainda dependem do reload físico**. Eventuais órfãos devem ser investigados sem preencher nulos, mudar as dimensões aprovadas ou relaxar o gate automaticamente.
+
+**Status atual:** `MEASURES_CSV=PASS`, `MEASURES_STAGING_QV=PASS`, `DIMENSION_ROLE_SK_CHECK=PREPARED_NOT_EXECUTED`, `LINK_KEY=UNRESOLVED`, `FACT_QVD=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`.
+
