@@ -278,3 +278,13 @@ OUTPUT_DATA_FILES_WRITTEN=0
 
 **Estado:** sete papéis com cobertura SK integral confirmada em R1; `COMP/INTER/SAIDA` 100% unmatched e `MOT` um unmatched aguardando diagnóstico R2; PR #83 Draft sem merge, `FACT_QVD=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`.
 
+## 15. Diagnóstico R2 executado — saída do runner inconclusiva por filtro de log (10/10/2026)
+
+**FATO VERIFICADO (saída PowerShell do responsável):** após atualizar a branch até `0b37f60`, criou-se `TRANSFORMACAO/V5_RD_DIM_ROLES_DIAGNOSTIC_R2.qvw` (novo, `DOCUMENT_REUSED=False`); o QVS tinha SHA-256 `CFA41178C0F009BCCF9131989860BFF8E0972F2ABED119FBE40C95A02A2F5D18`. O `Reload()` retornou ao executor sem valor explícito de API, `ALL_8_INPUT_QVD_SHA256_UNCHANGED=True`, `FACT_QVD_GENERATED=False`, `OUTPUT_DATA_FILES_WRITTEN=0`, mas a saída concluiu `VERDICT=BLOCKED_OR_INCONCLUSIVE_CHECK_QLIK_DIMENSION_LOG`, **sem linha diagnóstica** exibida. **Não inferir** que o QVS executou com sucesso ou falhou; este veredito é do executor, não do QlikView.
+
+**Defeito de observabilidade comprovado no código versionado:** `tools/diagnosticar_fato_internacao_dim_roles_r2_qlik.ps1` foi copiado do executor dimensional R1 e manteve `[V5-RD-DIM]` no filtro `Where-Object` e no detector de `BLOCKED`; o script R2 escreve **`[V5-RD-DIAG]`**. A espera do PowerShell também procurava `VERDICT=(PASS|BLOCKED)` e não reconhecia o sucesso diagnóstico `VERDICT=DIAG_CAPTURED_NOT_APPROVED`. Essas diferenças são suficientes para explicar a **ausência das linhas no stdout**, mesmo que o Qlik tenha produzido log válido. **Não comprovam que o QVS não tenha erro interno.**
+
+**Correção versionada somente no PR #83:** o runner agora filtra `[V5-RD-DIAG]`, detecta `VERDICT=(DIAG_CAPTURED_NOT_APPROVED|BLOCKED)`, distingue erro e imprime as 75 linhas finais do log nativo quando a validação não fecha. O runner preserva o mesmo QVW de diagnóstico e as verificações SHA-256 de oito QVDs, não muda o QVS, os dados ou os checkpoints aprovados. **Esta alteração do runner ainda não foi executada no Windows.**
+
+**Próxima evidência mínima antes de novo reload:** consultar `Get-Content -LiteralPath '.\TRANSFORMACAO\V5_RD_DIM_ROLES_DIAGNOSTIC_R2.qvw.log' | Select-Object -Last 120`. A extração do log atual é **read-only** e informa se o QVS R2 concluiu com `DIAG_CAPTURED_NOT_APPROVED`, produziu os contadores de `CALENDAR`/`RD`/`MOT_EXCEPTION` ou sofreu falha de script. **Nenhum gate de integridade dimensional foi fechado.**
+
