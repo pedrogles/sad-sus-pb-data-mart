@@ -311,3 +311,31 @@ VERDICT=DIAG_CAPTURED_NOT_APPROVED
 
 **Estado:** `TEMPORAL_SK_R2_CONVERSION_COVERAGE=PASS`; `MOT_R1_R2_DISCREPANCY=OPEN`; `FULL_11_ROLE_SK_R3=PREPARED_NOT_RUN`; `FACT_QVD=NOT_STARTED`; `LINK_ANALISE=NOT_STARTED`; `ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED`; `T29_HISTORICAL=NOT_APPROVED`. A política aprovada da SK de registro e as cinco medidas reconciliadas continuam válidas; nenhuma implementação de fato, Link Table ou dashboard é inferida deste diagnóstico.
 
+## 17. R3 de integridade dos 11 papéis — PASS físico em 10/10/2026 00:21:17
+
+**FATO VERIFICADO por saída PowerShell/QlikView 12 fornecida pelo responsável:** após `git pull --ff-only` da branch do PR #83 até `d291f5a`, `tools/validar_fato_internacao_dim_roles_r3_qlik.ps1` criou novo QVW isolado `TRANSFORMACAO/V5_RD_DIM_ROLES_PREFLIGHT_R3.qvw` (`DOCUMENT_REUSED=False`). A expressão temporal R3 está no `phase_v_fato_internacao_qlik_dim_roles_preflight_r3.qvs`, SHA-256 **`541A67D244D41FEEA955C9DD0252A86A67EA1F427FE677398A288B97B8840610`**. Execução local entre 00:21:14 e 00:21:17:
+
+```text
+MODE=PHASE_V_QV_DIMENSION_ROLES_READ_ONLY
+RELOAD_STARTED=True
+RELOAD_RETURNED=True
+ALL_8_INPUT_QVD_SHA256_UNCHANGED=True
+[V5-RD-DIM3] TOTAL ROWS=566672 MONTHS=36 EXTERNAL=5202 MISS_COMP=0 MISS_ANO=0 MISS_INTER=0 MISS_SAIDA=0 MISS_RES=0 MISS_SERV=0 MISS_ESTAB=0 MISS_PROC=0 MISS_DIAG=0 MISS_CAR=0 MISS_MOT=0
+[V5-RD-DIM3] VERDICT=PASS_QV_STAGING_11_DIMENSION_ROLES_NO_ORPHANS
+[V5-RD-DIM3] FACT_QVD_GENERATED=False LINK_ANALISE_GENERATED=False OUTPUT_DATA_FILES_WRITTEN=0
+[V5-RD-DIM3] ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED LINK_KEY_GATE=NOT_EXECUTED
+VERDICT=PASS_QV_STAGING_11_DIMENSION_ROLES_NO_ORPHANS
+```
+
+**Gate de cobertura encerrado para este snapshot:** os **11 de 11 papéis dimensionais** possuem cobertura integral por `ApplyMap` contra as 7 dimensões participantes, preservando **566.672 registros, 36 competências e 5.202 residentes externos**, sem alteração de bytes nos **8 QVDs de entrada**. Competência, internação e saída usam o `Date# + Date + Text` testado em R2; as oito outras expressões permanecem idênticas às de R1. **Não afirmar** que este teste materializou ou validou as FKs da fato, o modelo associativo, cardinalidades em joins ou `%LINK_KEY`.
+
+**Exceção histórica MOT ainda sem causa demonstrada:** a expressão `_P5_MISS_MOT` de R1 e de R3 foi **comparada estaticamente e é byte a byte idêntica** nos QVS versionados:
+
+```qlik
+If(ApplyMap('P5MAP_MOT', Hash128('MOT',Text(Right('00' & KeepChar(Text(COBRANCA),'0123456789'),2))), 0)=1,0,1) AS _P5_MISS_MOT
+```
+
+Apesar disso, `R1=1` unmatched, `R2=0` e `R3=0` sob snapshots imutáveis nos testes. Não atribuir causa, tratar como dado inválido nem relaxar a exigência de `0` órfãos. **Verificação adicional recomendada (pendente):** executar **uma nova recarga independente** do **mesmo QVW R3 já criado** com o runner versionado (deve indicar `DOCUMENT_REUSED=True`), sem alteração de script ou de QVD; confirmar novamente `MISS_MOT=0`, todos os onze zeros e oito SHA-256 inalterados. É reprodução adicional, não cria outro gate estrutural nem prova causa raiz. Em nova divergência, reabrir investigação específica, sem merge.
+
+**Status detalhado após R3:** `MEASURES_CSV=PASS`, `MEASURES_QVD_QV=PASS`, `SK_REGISTRO=APPROVED_WITH_IMMUTABLE_SOURCE_RESTRICTIONS`, `DIM_ROLE_COVERAGE_R3=PASS`, `MOT_R1_ANOMALY_ROOT_CAUSE=UNKNOWN`, `MOT_R3_RELOAD_STABILITY=PENDING`; `ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED`, `LINK_KEY_GATE=NOT_EXECUTED`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `PAINEL=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft, sem merge, antes da revisão final do contrato.
+
