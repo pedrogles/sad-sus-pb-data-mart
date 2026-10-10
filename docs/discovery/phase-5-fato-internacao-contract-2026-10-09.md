@@ -132,3 +132,30 @@ VERDICT=BLOCKED_OR_INCONCLUSIVE_CHECK_QLIK_LOG
 **DECISÃO PENDENTE — investigação mínima antes de editar o QVS:** consultar as linhas completas de `TRANSFORMACAO/V5_RD_MEASURE_PREFLIGHT.qvw.log` ao redor da linha 0053 e dos eventos `Error`/mensagens de erro. Se for comprovado defeito de expressão, corrigir somente o preflight isolado na branch, versionar a alteração, e ter em conta que o QVW isolado anterior contém o script antigo: **não sobrescrever silenciosamente** um QVW existente. Corrigir ou recriar de forma controlada apenas o documento temporário isolado, preservando staging e script de produção.
 
 **Estado:** `MEASURES_SOURCE_RD=PASS`; `MEASURES_QV_STAGING=BLOCKED_YEAR_AGGREGATION_ERROR`; `FACT_QVD=NOT_STARTED`; `LINK_ANALISE=NOT_STARTED`; PR #83 permanece Draft, sem merge.
+
+## 9. Causa raiz confirmada e correção versionada do preflight Qlik (09/10/2026)
+
+**FATO VERIFICADO:** o responsável compartilhou as últimas 90 linhas **completas** de `TRANSFORMACAO/V5_RD_MEASURE_PREFLIGHT.qvw.log`. QlikView Desktop **12.0.20000.0 x64**, ambiente pt-BR, leu `SRC_SIH_RD.qvd` com **6 campos projetados / 566.672 registros**, passou nos dois gates iniciais e falhou na instrução `V5_RD_MEASURE_YEAR:` (linha 53 do QVS), com mensagem inequívoca:
+
+```text
+2026-10-09 23:40:47 0053 GROUP BY _V5_YEAR
+2026-10-09 23:40:47 Erro: Error in expression:
+2026-10-09 23:40:47 ABS is not a valid function
+2026-10-09 23:40:47 0056 [V5-RD-MEAS] VERDICT=BLOCKED_YEAR_AGGREGATION_ERROR
+```
+
+**Causa raiz:** `Abs(...)` não é a função disponível para valor absoluto na expressão do QlikView. A documentação oficial da QlikView define `Fabs(x)` como função de valor absoluto, utilizável em expressões de script: <https://help.qlik.com/pt-BR/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/ChartFunctions/GeneralNumericFunctions/fabs.htm> e <https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/ChartFunctions/GeneralNumericFunctions/general-numeric-functions-charts.htm>.
+
+**Correção mínima aplicada somente na branch do PR #83:**
+
+```diff
+- OR Abs(_V5_VALUE*100-Round(_V5_VALUE*100,1))>0.001
++ OR Fabs(_V5_VALUE*100-Round(_V5_VALUE*100,1))>0.001
+```
+
+Alterações relacionadas:
+- `TRANSFORMACAO/phase_v_fato_internacao_qlik_measures_preflight.qvs`: substituição **exata de uma função**, preservando contagens, regras, totais e formatação de centavos.
+- `tools/validar_fato_internacao_medidas_qlik.ps1`: novo destino de teste `TRANSFORMACAO/V5_RD_MEASURE_PREFLIGHT_R2.qvw`; não sobrescrever `V5_RD_MEASURE_PREFLIGHT.qvw` original nem seu log. O guard contra scripts divergentes e comparação de SHA-256 do staging permanecem ativos.
+
+**Estado:** `SOURCE_RD=PASS`, `QLIK_R1=BLOCKED_INVALID_ABS_FUNCTION`, `QLIK_R2=FIXED_IN_BRANCH_PENDING_PHYSICAL_RELOAD`. Esta correção foi baseada na mensagem real do log e na documentação do fabricante; **não equivale a PASS de execução QlikView**. A tabela fato, `LINK_ANALISE` e `PAINEL` continuam `NOT_STARTED`, e a `main` permanece intocada por este PR Draft.
+
