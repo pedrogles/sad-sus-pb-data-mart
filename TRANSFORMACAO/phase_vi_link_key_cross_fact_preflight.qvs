@@ -112,8 +112,8 @@ ENDIF
 // Namespace + fixed order + named fields make the provisional encoding unambiguous.
 P6_LINK_TEST:
 NOCONCATENATE LOAD
-    _P6_PROC,
-    _P6_BAD_COORD,
+    _P6_PROC AS _P6_LINK_PROC,
+    _P6_BAD_COORD AS _P6_LINK_BAD_COORD,
     'SAD-LINK-V1|C=' & _P6_TCOMP & '|Y=' & _P6_TYEAR &
     '|R=' & _P6_TRES & '|S=' & _P6_TSERV & '|E=' & _P6_TEST AS _P6_SERIAL,
     Hash128('SAD-LINK-V1',
@@ -135,17 +135,17 @@ NOCONCATENATE LOAD
     Count(*) AS _P6_TOTAL,
     Count(DISTINCT _P6_SERIAL) AS _P6_DISTINCT_SERIAL,
     Count(DISTINCT _P6_HASH) AS _P6_DISTINCT_HASH,
-    Sum(_P6_BAD_COORD) AS _P6_BAD_TOTAL,
+    Sum(_P6_LINK_BAD_COORD) AS _P6_BAD_TOTAL,
     Sum(If(IsNull(_P6_SERIAL) OR IsNull(_P6_HASH),1,0)) AS _P6_NULL_KEY
 RESIDENT P6_LINK_TEST;
 
 P6_LINK_PROC:
 NOCONCATENATE LOAD
-    _P6_PROC AS _P6_OUT_PROC,
+    _P6_LINK_PROC AS _P6_OUT_PROC,
     Count(*) AS _P6_OUT_ROWS,
-    Sum(_P6_BAD_COORD) AS _P6_OUT_BAD
+    Sum(_P6_LINK_BAD_COORD) AS _P6_OUT_BAD
 RESIDENT P6_LINK_TEST
-GROUP BY _P6_PROC;
+GROUP BY _P6_LINK_PROC;
 
 IF ScriptErrorCount > $(vP6StartErr) OR NoOfRows('P6_LINK_PROC') <> 3 THEN
     TRACE [P6-LINK] VERDICT=BLOCKED_PROFILE_AGGREGATION;
@@ -179,10 +179,24 @@ NEXT vP6Idx
 
 TRACE [P6-LINK] TOTAL ROWS=$(vP6Total) RD=$(vP6RdRows) LT=$(vP6LtRows) POP=$(vP6PopRows) BAD_COORD=$(vP6Bad) NULL_KEY=$(vP6Null) DISTINCT_SERIAL=$(vP6SerialDistinct) DISTINCT_HASH=$(vP6HashDistinct);
 
-IF $(vP6Total)<>602859 OR $(vP6RdRows)<>566672 OR $(vP6LtRows)<>35518
-    OR $(vP6PopRows)<>669 OR $(vP6Bad)<>0 OR $(vP6ProcessBad)<>0
-    OR $(vP6Null)<>0 OR $(vP6SerialDistinct)<>$(vP6HashDistinct) THEN
+// QlikView 12 legacy script requires one physical line for compound IF predicates.
+IF $(vP6Total)<>602859 OR $(vP6RdRows)<>566672 OR $(vP6LtRows)<>35518 OR $(vP6PopRows)<>669 OR $(vP6Bad)<>0 OR $(vP6ProcessBad)<>0 OR $(vP6Null)<>0 OR $(vP6SerialDistinct)<>$(vP6HashDistinct) THEN
     TRACE [P6-LINK] VERDICT=BLOCKED_CROSS_FACT_LINK_CONTRACT;
+    EXIT SCRIPT;
+ENDIF
+
+// Synthetic keys are not acceptable even in this isolated, in-memory preflight.
+// The payload and profile tables intentionally share no TWO field names.
+LET vP6SyntheticTables=0;
+FOR vP6TableIdx=0 TO NoOfTables()-1
+    LET vP6TableLabel=TableName($(vP6TableIdx));
+    IF WildMatch('$(vP6TableLabel)','$Syn*')>0 THEN
+        LET vP6SyntheticTables=$(vP6SyntheticTables)+1;
+    ENDIF
+NEXT vP6TableIdx
+TRACE [P6-LINK] SYNTHETIC_TABLES=$(vP6SyntheticTables);
+IF $(vP6SyntheticTables)<>0 THEN
+    TRACE [P6-LINK] VERDICT=BLOCKED_SYNTHETIC_KEYS_IN_DIAGNOSTIC;
     EXIT SCRIPT;
 ENDIF
 
