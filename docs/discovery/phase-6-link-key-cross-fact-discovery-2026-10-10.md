@@ -146,3 +146,35 @@ LINK_ANALISE_QVD_GENERATED=False
 
 **DECISÃO PENDENTE:** a saída não estabelece ainda determinismo de identidade de todas as 85.705 chaves em recargas independentes. A próxima reprodução segura é recarregar o **mesmo QVW R2 já criado**, sem alterar QVS, exigindo `DOCUMENT_REUSED=True`, seis hashes SHA-256 preservados, todos os contadores e `SYNTHETIC_TABLES=0`, e o mesmo veredito. Mesmo duas recargas com os mesmos totais **não provam igualdade exata dos conjuntos de chaves**: eventual teste posterior de conjuntos/fingerprints ordenados deverá ser desenhado explicitamente, se o contrato for promovido. `LINK_KEY_CONTRACT=NOT_APPROVED`; `ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED`; `FACT_QVD=NOT_STARTED`; `LINK_ANALISE=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. Draft PR #83 permanece sem merge.
 
+## 8. R2 — segunda recarga: perfil reproduzido em 10/10/2026 00:44:00
+
+**FATO VERIFICADO pela nova execução QlikView Desktop 12 enviada pelo responsável:** depois de `git pull --ff-only` da branch do Draft PR #83 até `33e8608`, o mesmo runner `tools/validar_link_key_cross_fact_qlik.ps1` reutilizou o mesmo `TRANSFORMACAO/P6_LINK_KEY_CROSS_FACT_PREFLIGHT_R2.qvw` (`DOCUMENT_REUSED=True`) e mesmo QVS de SHA-256 `41A54899536494CC08B7C3B170344D09D86E30D4C182E7D59B6F9CD7CFACC859`, mantendo os seis QVDs SHA-256 inalterados.
+
+```text
+2026-10-10 00:44:00 [P6-LINK] PROCESS=RD ROWS=566672 BAD_COORD=0
+2026-10-10 00:44:00 [P6-LINK] PROCESS=LT ROWS=35518 BAD_COORD=0
+2026-10-10 00:44:00 [P6-LINK] PROCESS=POP ROWS=669 BAD_COORD=0
+2026-10-10 00:44:00 [P6-LINK] TOTAL ROWS=602859 RD=566672 LT=35518 POP=669 BAD_COORD=0 NULL_KEY=0 DISTINCT_SERIAL=85705 DISTINCT_HASH=85705
+2026-10-10 00:44:00 [P6-LINK] SYNTHETIC_TABLES=0
+2026-10-10 00:44:00 [P6-LINK] VERDICT=PASS_EXPERIMENTAL_LINK_SERIALIZATION_COVERAGE_NOT_APPROVED
+2026-10-10 00:44:00 [P6-LINK] FACT_QVD_GENERATED=False LINK_ANALISE_QVD_GENERATED=False OUTPUT_DATA_FILES_WRITTEN=0
+2026-10-10 00:44:00 [P6-LINK] PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED LINK_KEY_CONTRACT=NOT_APPROVED
+```
+
+**Interpretação:** perfis, hashes SHA-256 de entradas, total de 602.859 linhas, 85.705 combinações únicas e ausência de synthetic keys no **preflight isolado** foram reproduzidos em duas recargas sucessivas (00:41:26 e 00:44:00). Não houve criação de `LINK_ANALISE.qvd`, fato, painel ou associação física das três fatos. Igualdade entre quantidades distintas **não** prova igualdade exata entre **conjuntos de 85.705 valores de chave**.
+
+## 9. Próximo gate preparado — igualdade exata do conjunto de hashes entre duas recargas
+
+**HIPÓTESE DE IMPLEMENTAÇÃO para diagnóstico read-only (sem aprovação de contrato):**
+
+- `tools/validar_estabilidade_link_key_cross_fact.ps1`: reutiliza a metodologia de `tools/validar_estabilidade_sk_fato_internacao.ps1` aprovada anteriormente na Fase V. Compara primeiro a identidade exata do QVS versionado com o QVW original R2 já validado; computa SHA-256 dos seis QVDs e arquivos versionados.
+- Cria **um QVW isolado sob `%TEMP%`** e adapta somente os seis caminhos dos QVDs para endereços absolutos, porque um QVW temporário não reside na pasta `TRANSFORMACAO`.
+- Injeta **apenas no QVW temporário** a instrução `STORE _P6_HASH FROM P6_LINK_TEST INTO [arquivo-txt-temporário] (txt)`, depois dos gates existentes (coordenadas, valores nulos, 85.705 distintos e zero `$Syn`). Esta exportação de **hashes não identificáveis diretamente** é temporária e não grava QVD nem altera o QVS versionado ou o QVW R2 original.
+- Executa **duas recargas independentes**, fechando/reabrindo o QVW de teste e exigindo em ambas os mesmos controles validados do R2, `[P6-EXACT] EXPORT_COMPLETE` e arquivo exportado contemporâneo.
+- `tools/comparar_conjuntos_link_key_qlik.py` usa exclusivamente Python 3 stdlib e compara **conjuntos completos** das chaves Qlik exportadas; valida 602.859 linhas/85.705 chaves distintas por arquivo, calcula SHA-256 canônico dos 85.705 hashes ordenados, e apresenta `ONLY_A_KEYS` e `ONLY_B_KEYS`.
+- No PASS, o PowerShell confere novamente todos os SHA-256 do QVW R2, QVS original, comparador Python e seis QVDs, anuncia `VERDICT=PASS_2_RELOADS_EXACT_85705_LINK_KEY_SET_MATCH_NOT_APPROVED` e **remove os arquivos temporários**. Em falha, retém o diretório em `%TEMP%` para diagnóstico, sem tocar fontes. O runner requer `.venv\\Scripts\\python.exe`, padrão já utilizado no gate de estabilidade da SK do registro.
+
+**Restrições do gate:** comparação exata de **hashes existentes**, não de todas as coordenadas/serializações textuais; preservação dos seis QVDs é condição necessária. O resultado não valida sozinho uma `LINK_ANALISE` persistida, aliases role-playing ou ausência de loops no modelo final, tampouco elimina a necessidade de aprovar o contrato `SAD-LINK-V1` para os três processos conjuntamente.
+
+**Estado:** `LINK_KEY_EXPERIMENTAL_R2_PROFILE=PASS_REPRODUCED`, `LINK_KEY_EXACT_SET_AUDIT=PREPARED_NOT_EXECUTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVDS=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. Sem merge do PR #83.
+
