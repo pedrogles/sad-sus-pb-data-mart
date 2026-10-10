@@ -1,6 +1,6 @@
 # Fase V — run isolated QlikView 12 fact-measures preflight from versioned .qvs.
 # Reads only SRC_SIH_RD.qvd and creates/opens one isolated ignored .qvw.
-# R2 document preserves previous failed V5_RD_MEASURE_PREFLIGHT.qvw and its log.
+# R3 document preserves R1/R2 QVWs and logs; tests dot-decimal Num# without modifying staging.
 # No fact QVD, output dataset, checkpoint, Link Table or production .qvw writes.
 [CmdletBinding()]
 param([string]$Root = (Get-Location).Path)
@@ -9,7 +9,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $Root = [IO.Path]::GetFullPath($Root)
 $qvs = Join-Path $Root 'TRANSFORMACAO\phase_v_fato_internacao_qlik_measures_preflight.qvs'
-$qvw = Join-Path $Root 'TRANSFORMACAO\V5_RD_MEASURE_PREFLIGHT_R2.qvw'
+$qvw = Join-Path $Root 'TRANSFORMACAO\V5_RD_MEASURE_PREFLIGHT_R3.qvw'
 $staging = Join-Path $Root 'EXTRACAO\QVD\SRC_SIH_RD.qvd'
 $log = "$qvw.log"
 foreach ($item in @(
