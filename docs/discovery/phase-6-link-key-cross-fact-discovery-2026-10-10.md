@@ -2,7 +2,7 @@
 
 **Data:** 10/10/2026  
 **Escopo:** SIH/RD + CNES/LT + IBGE/população para PB, 2017–2019  
-**Situação:** `SERIALIZATION_CANDIDATE_PREPARED_NOT_TESTED`  
+**Situação:** `R1_DATA_PROFILE_VERIFIED_SCRIPT_BLOCKED_R2_PREPARED_NOT_RUN`  
 **Trilha:** Draft PR #83 / `feat/phase-5-fato-internacao-contract-discovery`
 
 Nenhum QVD factual, `LINK_ANALISE.qvd`, `PAINEL.qvw` ou contrato final foi criado ou aprovado por este documento.
@@ -73,3 +73,45 @@ A tag de processo (`RD`, `LT`, `POP`) serve apenas para diagnóstico por origem,
 Se houver **PASS experimental**, revisar a evidência linha a linha, decidir se a serialização candidata precisa de teste de estabilidade entre reloads (como feito com a SK RD), e submeter aprovação física explícita antes de qualquer script factual. Se houver `BLOCKED`, diagnosticar a fonte, o papel ou o token sem descartar linhas e sem substituir nulos reais por sentinelas nos campos dimensionais.
 
 **Estado final desta Discovery:** `LINK_KEY_SERIALIZER=HYPOTHESIS_PREPARED_NOT_RUN`; `THREE_FACT_STAGING_COMPATIBILITY=NOT_TESTED`; `LINK_ANALISE=NOT_STARTED`; `FACT_QVDS=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. A Discovery e scripts ainda pertencem a PR **Draft / sem merge**.
+
+## 6. Primeiro teste físico R1 — números OK, Qlik parser e $Syn bloqueados (10/10/2026 00:36:40)
+
+**FATO VERIFICADO a partir da saída nativa QlikView 12 entregue pelo responsável:** depois de `git pull --ff-only` até `3f47d04`, criou-se `TRANSFORMACAO/P6_LINK_KEY_CROSS_FACT_PREFLIGHT.qvw` (`DOCUMENT_REUSED=False`) a partir do script SHA-256 `A53796B65EF75C1219EE95543F4FA193411760BA91A1FCB08BD45EC2F0FFD42A`. O Qlik carregou os seis QVDs e calculou, em 00:36:40:
+
+```text
+PROCESS=RD ROWS=566672 BAD_COORD=0
+PROCESS=LT ROWS=35518 BAD_COORD=0
+PROCESS=POP ROWS=669 BAD_COORD=0
+TOTAL ROWS=602859 RD=566672 LT=35518 POP=669 BAD_COORD=0 NULL_KEY=0 DISTINCT_SERIAL=85705 DISTINCT_HASH=85705
+ALL_6_INPUT_QVD_SHA256_UNCHANGED=True
+FACT_QVD_GENERATED=False
+OUTPUT_DATA_FILES_WRITTEN=0
+```
+
+**Os controles quantitativos e os dados foram lidos corretamente, MAS R1 não recebeu PASS.** O QlikView emitiu dois problemas de script, demonstrados no log nativo:
+
+```text
+0182 IF 602859<>602859 OR 566672<>566672 OR 35518<>35518
+0183 Erro: Erro na linha do script:
+0183 OR 669<>669 OR 0<>0 OR 0<>0
+0184 OR 0<>0 OR 85705<>85705 THEN
+0185 TRACE [P6-LINK] VERDICT=BLOCKED_CROSS_FACT_LINK_CONTRACT
+Erro: Comando desconhecido
+$Syn 1 = _P6_PROC+_P6_BAD_COORD
+```
+
+**Causas técnicas comprovadas nos arquivos versionados:**
+
+1. A cláusula `IF` do gate final estava quebrada em três linhas de comando, inválida para o parser de script QlikView Desktop 12.0.20000.0.
+2. `P6_TYPED` e `P6_LINK_TEST` compartilhavam **dois** nomes de campos, `_P6_PROC` e `_P6_BAD_COORD`, provocando a synthetic key `$Syn 1`. A chave sintética foi gerada **no modelo temporário do preflight**, não na Link Table final (ainda inexistente).
+
+**Correção mínima R2 versionada exclusivamente na branch do PR #83, ainda NÃO EXECUTADA:**
+
+- Em `TRANSFORMACAO/phase_vi_link_key_cross_fact_preflight.qvs`, o `P6_LINK_TEST` passa a projetar `_P6_LINK_PROC` e `_P6_LINK_BAD_COORD` (aliases exclusivos), com agregações redirecionadas aos novos nomes; a semântica das cinco coordenadas, dos nulos tipados e do `Hash128('SAD-LINK-V1',...)` foi **preservada sem mudança**.
+- O `IF` de aceite passou a ser uma única linha de script, mantendo **todos** os critérios e seus valores originais.
+- Um gate adicional examina as tabelas do QlikView por `$Syn*`, imprime `[P6-LINK] SYNTHETIC_TABLES=N` e **bloqueia** quando `N > 0`. Portanto, não basta a igualdade dos 85.705 valores distintos nem os seis QVDs imutáveis.
+- `tools/validar_link_key_cross_fact_qlik.ps1` agora cria somente `TRANSFORMACAO/P6_LINK_KEY_CROSS_FACT_PREFLIGHT_R2.qvw`, preservando QVW e log R1. O runner exige `SYNTHETIC_TABLES=0` antes de aceitar o veredito experimental; continua sem gravar QVDs, CSVs ou fatos.
+
+**DECISÃO PENDENTE:** executar fisicamente o R2 e inspecionar `VERDICT=PASS_EXPERIMENTAL_LINK_SERIALIZATION_COVERAGE_NOT_APPROVED`, `SYNTHETIC_TABLES=0`, `BAD_COORD=NULL_KEY=0`, cobertura total RD/LT/POP e `DISTINCT_SERIAL=DISTINCT_HASH`. Até lá: `LINK_KEY_R1=SCRIPT_BLOCKED`, `LINK_KEY_R2=PREPARED_NOT_RUN`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`.
+
+O resultado `85.705` é o número de coordenadas compartilhadas distintas observado em memória na R1; **não** representa 85.705 internações, leitos ou municípios e ainda não equivale a cardinalidade física validada em uma `LINK_ANALISE` persistida.
