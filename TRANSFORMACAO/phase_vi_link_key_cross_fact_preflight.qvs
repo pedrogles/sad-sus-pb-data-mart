@@ -1,0 +1,196 @@
+// PHASE VI — EXPERIMENTAL ONLY: 3-fact five-coordinate link key contract.
+// No STORE, no fact QVD, no permanent LINK_ANALISE and no output data files.
+// Link Table layout comes from Boundary 6/7; this serializer is NOT approved.
+// All candidate source rows remain in one in-memory test table until the final DROP.
+SET ErrorMode=0;
+LET vP6StartErr = ScriptErrorCount;
+TRACE [P6-LINK] START READ_ONLY_CROSS_FACT_SERIALIZATION;
+
+// Read ONLY approved conforming dimensions; do not materialize aliases.
+P6_MAP_COMP:
+MAPPING LOAD DISTINCT [%SK_TEMPO_COMPETENCIA], 1 FROM [QVD\DIM_TEMPO.qvd] (qvd);
+P6_MAP_YEAR:
+MAPPING LOAD DISTINCT [%SK_TEMPO_ANO], 1 FROM [QVD\DIM_TEMPO.qvd] (qvd);
+P6_MAP_MUN:
+MAPPING LOAD DISTINCT [%SK_MUNICIPIO], 1 FROM [QVD\DIM_MUNICIPIO.qvd] (qvd);
+P6_MAP_EST:
+MAPPING LOAD DISTINCT [%SK_ESTABELECIMENTO], 1 FROM [QVD\DIM_ESTABELECIMENTO.qvd] (qvd);
+P6_MAP_IBGE7:
+MAPPING LOAD DISTINCT Text(COD_IBGE_7), [%SK_MUNICIPIO]
+FROM [QVD\DIM_MUNICIPIO.qvd] (qvd)
+WHERE NOT IsNull(COD_IBGE_7);
+
+IF ScriptErrorCount > $(vP6StartErr) THEN
+    TRACE [P6-LINK] VERDICT=BLOCKED_DIMENSION_MAP_LOAD;
+    EXIT SCRIPT;
+ENDIF
+
+// RD: all five coordinates apply (residence may be outside PB and must be preserved).
+P6_COORDS:
+NOCONCATENATE LOAD
+    'RD' AS _P6_PROC,
+    Hash128('MES',Text(Date(Date#(Trim(Text(_META_SOURCE_COMPETENCE)),'YYYYMM'),'YYYYMM'))) AS _P6_COMP,
+    Hash128('ANO',Num#(Trim(Text(ANO_CMPT)),'####','.',',')) AS _P6_YEAR,
+    Hash128('MUN',Trim(Text(MUNIC_RES))) AS _P6_RES,
+    Hash128('MUN',Trim(Text(MUNIC_MOV))) AS _P6_SERV,
+    Hash128('ESTAB',Trim(Text(CNES)),Trim(Text(_META_SOURCE_COMPETENCE))) AS _P6_EST
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP6StartErr) OR NoOfRows('P6_COORDS') <> 566672 THEN
+    TRACE [P6-LINK] VERDICT=BLOCKED_RD_LOAD_COUNT;
+    EXIT SCRIPT;
+ENDIF
+
+// LT: no residence coordinate (real Null() only, never a synthetic municipality).
+CONCATENATE (P6_COORDS)
+LOAD
+    'LT' AS _P6_PROC,
+    Hash128('MES',Text(Date(Date#(Trim(Text(_META_SOURCE_COMPETENCE)),'YYYYMM'),'YYYYMM'))) AS _P6_COMP,
+    Hash128('ANO',Num#(Left(Trim(Text(_META_SOURCE_COMPETENCE)),4),'####','.',',')) AS _P6_YEAR,
+    Null() AS _P6_RES,
+    Hash128('MUN',Trim(Text(CODUFMUN))) AS _P6_SERV,
+    Hash128('ESTAB',Trim(Text(CNES)),Trim(Text(_META_SOURCE_COMPETENCE))) AS _P6_EST
+FROM [..\EXTRACAO\QVD\SRC_CNES_LT.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP6StartErr) OR NoOfRows('P6_COORDS') <> 602190 THEN
+    TRACE [P6-LINK] VERDICT=BLOCKED_LT_LOAD_COUNT;
+    EXIT SCRIPT;
+ENDIF
+
+// IBGE: calendar month and establishment do not apply; municipality maps IBGE7 -> DATASUS6 SK.
+CONCATENATE (P6_COORDS)
+LOAD
+    'POP' AS _P6_PROC,
+    Null() AS _P6_COMP,
+    Hash128('ANO',Num#(Trim(Text(ANO_REFERENCIA)),'####','.',',')) AS _P6_YEAR,
+    ApplyMap('P6_MAP_IBGE7',Text(COD_IBGE_7),Null()) AS _P6_RES,
+    ApplyMap('P6_MAP_IBGE7',Text(COD_IBGE_7),Null()) AS _P6_SERV,
+    Null() AS _P6_EST
+FROM [..\EXTRACAO\QVD\SRC_IBGE_POPULACAO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP6StartErr) OR NoOfRows('P6_COORDS') <> 602859 THEN
+    TRACE [P6-LINK] VERDICT=BLOCKED_POP_LOAD_COUNT;
+    EXIT SCRIPT;
+ENDIF
+
+// Required coordinate NULL is an error, in contrast to expected inapplicability.
+P6_TYPED:
+NOCONCATENATE LOAD
+    _P6_PROC,
+    If(IsNull(_P6_COMP),'N','V' & Len(Text(_P6_COMP)) & ':' & Text(_P6_COMP)) AS _P6_TCOMP,
+    If(IsNull(_P6_YEAR),'N','V' & Len(Text(_P6_YEAR)) & ':' & Text(_P6_YEAR)) AS _P6_TYEAR,
+    If(IsNull(_P6_RES),'N','V' & Len(Text(_P6_RES)) & ':' & Text(_P6_RES)) AS _P6_TRES,
+    If(IsNull(_P6_SERV),'N','V' & Len(Text(_P6_SERV)) & ':' & Text(_P6_SERV)) AS _P6_TSERV,
+    If(IsNull(_P6_EST),'N','V' & Len(Text(_P6_EST)) & ':' & Text(_P6_EST)) AS _P6_TEST,
+    If(
+        IsNull(_P6_YEAR) OR IsNull(_P6_SERV)
+        OR ApplyMap('P6_MAP_YEAR',_P6_YEAR,0)<>1
+        OR ApplyMap('P6_MAP_MUN',_P6_SERV,0)<>1
+        OR (_P6_PROC='RD' AND (
+            IsNull(_P6_COMP) OR IsNull(_P6_RES) OR IsNull(_P6_EST)
+            OR ApplyMap('P6_MAP_COMP',_P6_COMP,0)<>1
+            OR ApplyMap('P6_MAP_MUN',_P6_RES,0)<>1
+            OR ApplyMap('P6_MAP_EST',_P6_EST,0)<>1))
+        OR (_P6_PROC='LT' AND (
+            NOT IsNull(_P6_RES) OR IsNull(_P6_COMP) OR IsNull(_P6_EST)
+            OR ApplyMap('P6_MAP_COMP',_P6_COMP,0)<>1
+            OR ApplyMap('P6_MAP_EST',_P6_EST,0)<>1))
+        OR (_P6_PROC='POP' AND (
+            NOT IsNull(_P6_COMP) OR NOT IsNull(_P6_EST) OR IsNull(_P6_RES)
+            OR _P6_RES<>_P6_SERV OR ApplyMap('P6_MAP_MUN',_P6_RES,0)<>1))
+        OR Match(_P6_PROC,'RD','LT','POP')=0,
+        1,0
+    ) AS _P6_BAD_COORD
+RESIDENT P6_COORDS;
+
+IF ScriptErrorCount > $(vP6StartErr) OR NoOfRows('P6_TYPED') <> 602859 THEN
+    TRACE [P6-LINK] VERDICT=BLOCKED_COORD_SERIALIZATION;
+    EXIT SCRIPT;
+ENDIF
+
+// Typed tokens distinguish Null(), empty text and any possible 32-hex SK value.
+// Namespace + fixed order + named fields make the provisional encoding unambiguous.
+P6_LINK_TEST:
+NOCONCATENATE LOAD
+    _P6_PROC,
+    _P6_BAD_COORD,
+    'SAD-LINK-V1|C=' & _P6_TCOMP & '|Y=' & _P6_TYEAR &
+    '|R=' & _P6_TRES & '|S=' & _P6_TSERV & '|E=' & _P6_TEST AS _P6_SERIAL,
+    Hash128('SAD-LINK-V1',
+        'C=' & _P6_TCOMP,
+        'Y=' & _P6_TYEAR,
+        'R=' & _P6_TRES,
+        'S=' & _P6_TSERV,
+        'E=' & _P6_TEST
+    ) AS _P6_HASH
+RESIDENT P6_TYPED;
+
+IF ScriptErrorCount > $(vP6StartErr) OR NoOfRows('P6_LINK_TEST') <> 602859 THEN
+    TRACE [P6-LINK] VERDICT=BLOCKED_CANDIDATE_KEY_PROJECTION;
+    EXIT SCRIPT;
+ENDIF
+
+P6_LINK_TOTAL:
+NOCONCATENATE LOAD
+    Count(*) AS _P6_TOTAL,
+    Count(DISTINCT _P6_SERIAL) AS _P6_DISTINCT_SERIAL,
+    Count(DISTINCT _P6_HASH) AS _P6_DISTINCT_HASH,
+    Sum(_P6_BAD_COORD) AS _P6_BAD_TOTAL,
+    Sum(If(IsNull(_P6_SERIAL) OR IsNull(_P6_HASH),1,0)) AS _P6_NULL_KEY
+RESIDENT P6_LINK_TEST;
+
+P6_LINK_PROC:
+NOCONCATENATE LOAD
+    _P6_PROC AS _P6_OUT_PROC,
+    Count(*) AS _P6_OUT_ROWS,
+    Sum(_P6_BAD_COORD) AS _P6_OUT_BAD
+RESIDENT P6_LINK_TEST
+GROUP BY _P6_PROC;
+
+IF ScriptErrorCount > $(vP6StartErr) OR NoOfRows('P6_LINK_PROC') <> 3 THEN
+    TRACE [P6-LINK] VERDICT=BLOCKED_PROFILE_AGGREGATION;
+    EXIT SCRIPT;
+ENDIF
+
+LET vP6Total = Peek('_P6_TOTAL',0,'P6_LINK_TOTAL');
+LET vP6SerialDistinct = Peek('_P6_DISTINCT_SERIAL',0,'P6_LINK_TOTAL');
+LET vP6HashDistinct = Peek('_P6_DISTINCT_HASH',0,'P6_LINK_TOTAL');
+LET vP6Bad = Peek('_P6_BAD_TOTAL',0,'P6_LINK_TOTAL');
+LET vP6Null = Peek('_P6_NULL_KEY',0,'P6_LINK_TOTAL');
+LET vP6ProcessBad = 0;
+LET vP6RdRows = -1;
+LET vP6LtRows = -1;
+LET vP6PopRows = -1;
+
+FOR vP6Idx=0 TO 2
+    LET vP6Type = Peek('_P6_OUT_PROC',$(vP6Idx),'P6_LINK_PROC');
+    LET vP6Rows = Peek('_P6_OUT_ROWS',$(vP6Idx),'P6_LINK_PROC');
+    LET vP6ProcBad = Peek('_P6_OUT_BAD',$(vP6Idx),'P6_LINK_PROC');
+    TRACE [P6-LINK] PROCESS=$(vP6Type) ROWS=$(vP6Rows) BAD_COORD=$(vP6ProcBad);
+    IF '$(vP6Type)'='RD' THEN
+        LET vP6RdRows=$(vP6Rows);
+    ELSEIF '$(vP6Type)'='LT' THEN
+        LET vP6LtRows=$(vP6Rows);
+    ELSEIF '$(vP6Type)'='POP' THEN
+        LET vP6PopRows=$(vP6Rows);
+    ENDIF
+    LET vP6ProcessBad = $(vP6ProcessBad)+$(vP6ProcBad);
+NEXT vP6Idx
+
+TRACE [P6-LINK] TOTAL ROWS=$(vP6Total) RD=$(vP6RdRows) LT=$(vP6LtRows) POP=$(vP6PopRows) BAD_COORD=$(vP6Bad) NULL_KEY=$(vP6Null) DISTINCT_SERIAL=$(vP6SerialDistinct) DISTINCT_HASH=$(vP6HashDistinct);
+
+IF $(vP6Total)<>602859 OR $(vP6RdRows)<>566672 OR $(vP6LtRows)<>35518
+    OR $(vP6PopRows)<>669 OR $(vP6Bad)<>0 OR $(vP6ProcessBad)<>0
+    OR $(vP6Null)<>0 OR $(vP6SerialDistinct)<>$(vP6HashDistinct) THEN
+    TRACE [P6-LINK] VERDICT=BLOCKED_CROSS_FACT_LINK_CONTRACT;
+    EXIT SCRIPT;
+ENDIF
+
+DROP TABLE P6_LINK_PROC;
+DROP TABLE P6_LINK_TOTAL;
+DROP TABLE P6_LINK_TEST;
+DROP TABLE P6_TYPED;
+DROP TABLE P6_COORDS;
+TRACE [P6-LINK] VERDICT=PASS_EXPERIMENTAL_LINK_SERIALIZATION_COVERAGE_NOT_APPROVED;
+TRACE [P6-LINK] FACT_QVD_GENERATED=False LINK_ANALISE_QVD_GENERATED=False OUTPUT_DATA_FILES_WRITTEN=0;
+TRACE [P6-LINK] PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED LINK_KEY_CONTRACT=NOT_APPROVED;
