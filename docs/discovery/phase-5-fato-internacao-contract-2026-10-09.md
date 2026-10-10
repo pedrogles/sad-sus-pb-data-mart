@@ -108,3 +108,27 @@ O script concluiu com `VERDICT=PASS_RD_MEASURES_SOURCE_ONLY_QLIK_RECONCILIATION_
 - `INDICADOR_OBITO_TOTAL=26611` é a soma das flags administrativas `MORTE=1`, **não quantidade de pessoas únicas**.
 - `tools/validar_fato_internacao_medidas_qlik.ps1` cria/reabre apenas o QVW isolado `TRANSFORMACAO/V5_RD_MEASURE_PREFLIGHT.qvw` para executar o QVS versionado; o QVS valida contagens anuais e totais, somando valores em **centavos inteiros** (`65938464905`) para minimizar diferenças de apresentação decimal. Sem `STORE`, `JOIN`, fato nem QVD gerado; o COM runner foi somente preparado e **não recebeu execução no Windows** até esta revisão.
 - Após PASS do Qlik, avançar à validação física das SKs dimensionais, papéis temporais/municipais e ao contrato conjunto da `%LINK_KEY`; **não gerar FATO_INTERNACAO** por inferência deste PASS de fonte.
+
+## 8. Falha QlikView — GROUP BY anual (bloqueio em 09/10/2026)
+
+O responsável executou o executor versionado `tools/validar_fato_internacao_medidas_qlik.ps1` no Windows, após fast-forward local para `c64d05b`, com o QVS SHA-256 `08EB5932288A23A09C97EF88B10B4B081BC61EDD207A1FC3390C0062CDFC9E5F`.
+
+```text
+DOCUMENT_REUSED=False
+MODE=PHASE_V_QV_STAGING_MEASURES_READ_ONLY
+FACT_QVD_GENERATED=False
+OUTPUT_DATA_FILES_WRITTEN=0
+RELOAD_STARTED=True
+RELOAD_RETURNED=True
+STAGING_QVD_SHA256_UNCHANGED=True
+LOG=TRANSFORMACAO/V5_RD_MEASURE_PREFLIGHT.qvw.log
+2026-10-09 23:40:47 0008 [V5-RD-MEAS] START QVD_STAGING_READ_ONLY
+2026-10-09 23:40:47 0056 [V5-RD-MEAS] VERDICT=BLOCKED_YEAR_AGGREGATION_ERROR
+VERDICT=BLOCKED_OR_INCONCLUSIVE_CHECK_QLIK_LOG
+```
+
+**FATO VERIFICADO:** a leitura do QVD e a conferência inicial de `NoOfRows('V5_RD_MEASURE_INPUT')=566672` prosseguiram além dos respectivos gates, e houve elevação de `ScriptErrorCount` após executar o bloco `V5_RD_MEASURE_YEAR ... RESIDENT V5_RD_MEASURE_INPUT GROUP BY _V5_YEAR`. QVD de staging SHA-256 inalterado. O log filtrado **não mostrou a mensagem diagnóstica original do QlikView** (e.g. `Invalid expression`, `Field not found`, `Syntax Error`); **não supor causa** nem dizer que medidas numéricas divergiram. A falha independe do `SyntaxWarning` Python do docstring, já corrigido.
+
+**DECISÃO PENDENTE — investigação mínima antes de editar o QVS:** consultar as linhas completas de `TRANSFORMACAO/V5_RD_MEASURE_PREFLIGHT.qvw.log` ao redor da linha 0053 e dos eventos `Error`/mensagens de erro. Se for comprovado defeito de expressão, corrigir somente o preflight isolado na branch, versionar a alteração, e ter em conta que o QVW isolado anterior contém o script antigo: **não sobrescrever silenciosamente** um QVW existente. Corrigir ou recriar de forma controlada apenas o documento temporário isolado, preservando staging e script de produção.
+
+**Estado:** `MEASURES_SOURCE_RD=PASS`; `MEASURES_QV_STAGING=BLOCKED_YEAR_AGGREGATION_ERROR`; `FACT_QVD=NOT_STARTED`; `LINK_ANALISE=NOT_STARTED`; PR #83 permanece Draft, sem merge.
