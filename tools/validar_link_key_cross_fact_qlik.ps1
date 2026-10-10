@@ -1,6 +1,6 @@
 # Phase VI — run isolated QlikView 12 cross-fact Link Key experimental preflight.
 # Reads 3 staging QVDs and 3 dimensional QVDs; creates ignored QVW only.
-# Independent phase VI document, preserving all phase V QVW/log evidence.
+# R2 preserves failed P6_LINK_KEY_CROSS_FACT_PREFLIGHT.qvw + log, plus phase V evidence.
 # No fact QVD, output dataset, checkpoint, Link Table or production .qvw writes.
 [CmdletBinding()]
 param([string]$Root = (Get-Location).Path)
@@ -9,7 +9,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $Root = [IO.Path]::GetFullPath($Root)
 $qvs = Join-Path $Root 'TRANSFORMACAO\phase_vi_link_key_cross_fact_preflight.qvs'
-$qvw = Join-Path $Root 'TRANSFORMACAO\P6_LINK_KEY_CROSS_FACT_PREFLIGHT.qvw'
+$qvw = Join-Path $Root 'TRANSFORMACAO\P6_LINK_KEY_CROSS_FACT_PREFLIGHT_R2.qvw'
 $staging = Join-Path $Root 'EXTRACAO\QVD\SRC_SIH_RD.qvd'
 $log = "$qvw.log"
 foreach ($item in @(
@@ -135,6 +135,9 @@ try {
     $failed = @($lines | Where-Object {
         $_ -match '\[P6-LINK\] VERDICT=BLOCKED'
     }).Count -gt 0
+    $syntheticZero = @($lines | Where-Object {
+        $_.Contains('[P6-LINK] SYNTHETIC_TABLES=0')
+    }).Count -eq 1
     $expected = @(
         'PROCESS=RD ROWS=566672 BAD_COORD=0',
         'PROCESS=LT ROWS=35518 BAD_COORD=0',
@@ -154,7 +157,7 @@ try {
         $hashCount = [long]$Matches[2]
         $equalDistinctCounts = ($serialCount -gt 0 -and $serialCount -eq $hashCount)
     }
-    if (-not $success -or $failed -or -not $equalDistinctCounts -or
+    if (-not $success -or $failed -or -not $syntheticZero -or -not $equalDistinctCounts -or
         @($byProcess | Where-Object { -not $_ }).Count -gt 0) {
         Write-Output 'QLIK_NATIVE_ERROR_CONTEXT_BEGIN'
         Get-Content -LiteralPath $log -Tail 95 -ErrorAction Stop | ForEach-Object { Write-Output $_ }
