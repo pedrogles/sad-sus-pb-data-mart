@@ -50,7 +50,7 @@ def main(a: Path, b: Path) -> int:
     print(f"RUN_B_SORTED_SET_SHA256={h2}")
     print(f"ONLY_A_KEYS={len(s1 - s2)} ONLY_B_KEYS={len(s2 - s1)}")
     if s1 == s2 and h1 == h2:
-        print("VERDICT=PASS_2_RELOADS_EXACT_85705_LINK_KEY_SET_MATCH_NOT_APPROVED")
+        print("COMPARISON=EXACT_85705_LINK_KEY_SET_MATCH")
         print("LINK_KEY_CONTRACT=NOT_APPROVED")
         return 0
     print("VERDICT=BLOCKED_LINK_KEY_EXACT_SET_DIFFERENCE")
