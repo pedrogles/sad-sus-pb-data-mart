@@ -159,3 +159,36 @@ Alterações relacionadas:
 
 **Estado:** `SOURCE_RD=PASS`, `QLIK_R1=BLOCKED_INVALID_ABS_FUNCTION`, `QLIK_R2=FIXED_IN_BRANCH_PENDING_PHYSICAL_RELOAD`. Esta correção foi baseada na mensagem real do log e na documentação do fabricante; **não equivale a PASS de execução QlikView**. A tabela fato, `LINK_ANALISE` e `PAINEL` continuam `NOT_STARTED`, e a `main` permanece intocada por este PR Draft.
 
+## 10. R2 — measures numericamente parciais; interpretação monetária R3 pendente
+
+**FATO VERIFICADO (QlikView 12, recarga local R2 em 09/10/2026 23:47:07):** após substituir `Abs` por `Fabs` na branch, o `TRANSFORMACAO/V5_RD_MEASURE_PREFLIGHT_R2.qvw` produziu a seguinte evidência:
+
+```text
+YEAR=2017 ROWS=187726 NEW=183532 CONT=4194 DEATHS=8626 DAYS=1039396 VALUE_CENTS=0 BAD=1
+YEAR=2018 ROWS=187293 NEW=183311 CONT=3982 DEATHS=8649 DAYS=1038921 VALUE_CENTS=0 BAD=1
+YEAR=2019 ROWS=191653 NEW=188246 CONT=3407 DEATHS=9336 DAYS=1055261 VALUE_CENTS=0 BAD=1
+TOTAL ROWS=566672 NEW=555089 CONT=11583 DEATHS=26611 DAYS=3133578 VALUE_CENTS=0 MONTHS=36 INVALID=566672 BAD=3
+VERDICT=BLOCKED_QVD_STAGING_MEASURES_MISMATCH
+STAGING_QVD_SHA256_UNCHANGED=True
+FACT_QVD_GENERATED=False
+OUTPUT_DATA_FILES_WRITTEN=0
+```
+
+Os totais de registros, `IDENT`, `MORTE`, dias e competências **correspondem à fonte**; `VALUE_CENTS=0` e as 566.672 flags `INVALID` **não correspondem**. A falha não é prova de valores zero reais. O QVS anterior usava `Num(VAL_TOT)` sobre o QVD. O script de extração `EXTRACAO/ext_main.qvs` carrega `VAL_TOT` do CSV **sem conversão explícita**, em ambiente local QlikView pt-BR.
+
+**HIPÓTESE TÉCNICA para teste (não aprovada como regra produtiva):** `VAL_TOT` do QVD tem representação textual de número com **ponto decimal** e não recebeu valor numérico válido no `Num()` do preflight R2. A documentação da QlikView diferencia `Num()` (formatação de número) e `Num#()` (interpretação numérica explícita): [Num# — QlikView Help](https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/InterpretationFunctions/num_hash.htm), [Num — QlikView Help](https://help.qlik.com/pt-BR/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Scripting/FormattingFunctions/Num.htm).
+
+**R3 — correção experimental isolada, ainda não executada fisicamente:**
+
+```qlik
+Num#(Trim(Text(VAL_TOT)), '#', '.', ',') AS _V5_VALUE,
+Text(VAL_TOT) AS _V5_VALUE_RAW,
+If(IsNum(VAL_TOT),1,0) AS _V5_VALUE_NATIVE_NUM,
+```
+
+O QVS de teste também emite, por ano e total, `NATIVE_NUM`, `PARSE_BAD` e `RAW_BLANK`. O gate exige **566.672** linhas monetárias não vazias e interpretáveis (`PARSE_BAD=0`, `RAW_BLANK=0`), soma em centavos exatamente `65938464905`, resultados anuais idênticos ao Python e `INVALID=0`; não aprova implicitamente qualquer arredondamento, coercão ou descarte de registros. `Num#` **não foi aplicado** aos QVDs de extração nem à fato de produção.
+
+**Preservação de evidências:** `tools/validar_fato_internacao_medidas_qlik.ps1` agora usa `TRANSFORMACAO/V5_RD_MEASURE_PREFLIGHT_R3.qvw`, guardando `R1` e `R2` intactos. Veredito atual: `MEASURES_SOURCE=PASS`, `MEASURES_QV_R1=BLOCKED_ABS`, `MEASURES_QV_R2=BLOCKED_NUMERIC_VALUE`, `MEASURES_QV_R3=PREPARED_PENDING_RUN`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`.
+
+**DECISÃO PENDENTE:** confirmar com a próxima saída do QlikView se a hipótese de separador decimal explica a divergência. Se R3 falhar, **não** implementar conversão na fato; investigar os valores textuais reais no QVD e o parser antes de qualquer mudança de produção.
+
