@@ -119,7 +119,7 @@ try {
             $freshLog = $file.LastWriteTimeUtc -ge $started.AddSeconds(-2)
             if ($freshLog) {
                 $lines = @(Get-Content -LiteralPath $log -ErrorAction Stop |
-                    Where-Object { $_ -match '\[V5-RD-MEAS\]' -and $_ -notmatch '\bTRACE\b' })
+                    Where-Object { $_ -match '\[V5-RD-DIM\]' -and $_ -notmatch '\bTRACE\b' })
                 if (@($lines | Where-Object {
                     $_ -match 'VERDICT=(PASS|BLOCKED)'
                 }).Count -gt 0) { break }
@@ -137,7 +137,7 @@ try {
         $_.Contains('[V5-RD-DIM] VERDICT=PASS_QV_STAGING_11_DIMENSION_ROLES_NO_ORPHANS')
     }).Count -eq 1
     $failed = @($lines | Where-Object {
-        $_ -match '\[V5-RD-MEAS\] VERDICT=BLOCKED'
+        $_ -match '\[V5-RD-DIM\] VERDICT=BLOCKED'
     }).Count -gt 0
     $total = @($lines | Where-Object {
         $_.Contains('TOTAL ROWS=566672 MONTHS=36 EXTERNAL=5202 MISS_COMP=0 MISS_ANO=0 MISS_INTER=0 MISS_SAIDA=0 MISS_RES=0 MISS_SERV=0 MISS_ESTAB=0 MISS_PROC=0 MISS_DIAG=0 MISS_CAR=0 MISS_MOT=0')
