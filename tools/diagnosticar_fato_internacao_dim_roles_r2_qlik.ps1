@@ -119,9 +119,9 @@ try {
             $freshLog = $file.LastWriteTimeUtc -ge $started.AddSeconds(-2)
             if ($freshLog) {
                 $lines = @(Get-Content -LiteralPath $log -ErrorAction Stop |
-                    Where-Object { $_ -match '\[V5-RD-DIM\]' -and $_ -notmatch '\bTRACE\b' })
+                    Where-Object { $_ -match '\[V5-RD-DIAG\]' -and $_ -notmatch '\bTRACE\b' })
                 if (@($lines | Where-Object {
-                    $_ -match 'VERDICT=(PASS|BLOCKED)'
+                    $_ -match 'VERDICT=(DIAG_CAPTURED_NOT_APPROVED|BLOCKED)'
                 }).Count -gt 0) { break }
             }
         }
@@ -137,7 +137,7 @@ try {
         $_.Contains('[V5-RD-DIAG] VERDICT=DIAG_CAPTURED_NOT_APPROVED')
     }).Count -eq 1
     $failed = @($lines | Where-Object {
-        $_ -match '\[V5-RD-DIM\] VERDICT=BLOCKED'
+        $_ -match '\[V5-RD-DIAG\] VERDICT=BLOCKED'
     }).Count -gt 0
     $baseline = @($lines | Where-Object {
         $_.Contains('RD ROWS=566672 MONTHS=36 ')
@@ -149,6 +149,9 @@ try {
         $_.Contains('MOT_EXCEPTION_GROUPS=')
     }).Count -eq 1
     if (-not $success -or $failed -or -not $baseline -or -not $calendarDiag -or -not $motiveDiag) {
+        Write-Output 'QLIK_DIAGNOSTIC_SCRIPT_LOG_TAIL_BEGIN'
+        Get-Content -LiteralPath $log -Tail 75 -ErrorAction Stop | ForEach-Object { Write-Output $_ }
+        Write-Output 'QLIK_DIAGNOSTIC_SCRIPT_LOG_TAIL_END'
         throw 'VERDICT=BLOCKED_OR_INCONCLUSIVE_CHECK_QLIK_DIMENSION_LOG'
     }
 
