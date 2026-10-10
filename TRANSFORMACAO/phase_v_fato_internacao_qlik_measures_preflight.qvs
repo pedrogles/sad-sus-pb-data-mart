@@ -13,7 +13,11 @@ NOCONCATENATE LOAD
     Text(IDENT) AS _V5_IDENT,
     Text(_META_SOURCE_COMPETENCE) AS _V5_COMPETENCE,
     Num(DIAS_PERM) AS _V5_DAYS,
-    Num(VAL_TOT) AS _V5_VALUE,
+    // R3: interpreta a string numerica com ponto decimal da fonte SIH/RD.
+    // Nao reinterpreta medidas ja em formato brasileiro silenciosamente.
+    Num#(Trim(Text(VAL_TOT)), '#', '.', ',') AS _V5_VALUE,
+    Text(VAL_TOT) AS _V5_VALUE_RAW,
+    If(IsNum(VAL_TOT),1,0) AS _V5_VALUE_NATIVE_NUM,
     Num(MORTE) AS _V5_DEATH
 FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
 
@@ -36,6 +40,9 @@ NOCONCATENATE LOAD
     Sum(If(_V5_DEATH=1,1,0)) AS _V5_AGG_DEATHS,
     Sum(_V5_DAYS) AS _V5_AGG_DAYS,
     Sum(Round(_V5_VALUE*100,1)) AS _V5_AGG_CENTS,
+    Sum(_V5_VALUE_NATIVE_NUM) AS _V5_AGG_NATIVE_NUM,
+    Sum(If(IsNull(_V5_VALUE) OR NOT IsNum(_V5_VALUE),1,0)) AS _V5_AGG_PARSE_BAD,
+    Sum(If(IsNull(_V5_VALUE_RAW) OR Len(Trim(_V5_VALUE_RAW))=0,1,0)) AS _V5_AGG_RAW_BLANK,
     Count(DISTINCT _V5_COMPETENCE) AS _V5_AGG_MONTHS,
     Sum(If(
         Match(_V5_IDENT,'1','5')=0
@@ -68,24 +75,30 @@ NOCONCATENATE LOAD
     _V5_AGG_CENTS AS _V5_OUT_CENTS,
     _V5_AGG_MONTHS AS _V5_OUT_MONTHS,
     _V5_AGG_INVALID AS _V5_OUT_INVALID,
+    _V5_AGG_NATIVE_NUM AS _V5_OUT_NATIVE_NUM,
+    _V5_AGG_PARSE_BAD AS _V5_OUT_PARSE_BAD,
+    _V5_AGG_RAW_BLANK AS _V5_OUT_RAW_BLANK,
     If(
        (_V5_AGG_YEAR='2017'
         AND _V5_AGG_ROWS=187726 AND _V5_AGG_NEW=183532
         AND _V5_AGG_CONT=4194 AND _V5_AGG_DEATHS=8626
         AND _V5_AGG_DAYS=1039396 AND _V5_AGG_CENTS=20888212074
-        AND _V5_AGG_MONTHS=12 AND _V5_AGG_INVALID=0)
+        AND _V5_AGG_MONTHS=12 AND _V5_AGG_INVALID=0
+        AND _V5_AGG_PARSE_BAD=0 AND _V5_AGG_RAW_BLANK=0)
        OR
        (_V5_AGG_YEAR='2018'
         AND _V5_AGG_ROWS=187293 AND _V5_AGG_NEW=183311
         AND _V5_AGG_CONT=3982 AND _V5_AGG_DEATHS=8649
         AND _V5_AGG_DAYS=1038921 AND _V5_AGG_CENTS=21826753676
-        AND _V5_AGG_MONTHS=12 AND _V5_AGG_INVALID=0)
+        AND _V5_AGG_MONTHS=12 AND _V5_AGG_INVALID=0
+        AND _V5_AGG_PARSE_BAD=0 AND _V5_AGG_RAW_BLANK=0)
        OR
        (_V5_AGG_YEAR='2019'
         AND _V5_AGG_ROWS=191653 AND _V5_AGG_NEW=188246
         AND _V5_AGG_CONT=3407 AND _V5_AGG_DEATHS=9336
         AND _V5_AGG_DAYS=1055261 AND _V5_AGG_CENTS=23223499155
-        AND _V5_AGG_MONTHS=12 AND _V5_AGG_INVALID=0),
+        AND _V5_AGG_MONTHS=12 AND _V5_AGG_INVALID=0
+        AND _V5_AGG_PARSE_BAD=0 AND _V5_AGG_RAW_BLANK=0),
        0,1
     ) AS _V5_OUT_BAD
 RESIDENT V5_RD_MEASURE_YEAR;
@@ -109,7 +122,10 @@ FOR vV5MeasIndex = 0 TO 2
     LET vV5MeasDays = Peek('_V5_OUT_DAYS',$(vV5MeasIndex),'V5_RD_MEASURE_CHECK');
     LET vV5MeasCents = Peek('_V5_OUT_CENTS',$(vV5MeasIndex),'V5_RD_MEASURE_CHECK');
     LET vV5MeasBad = Peek('_V5_OUT_BAD',$(vV5MeasIndex),'V5_RD_MEASURE_CHECK');
-    TRACE [V5-RD-MEAS] YEAR=$(vV5MeasYear) ROWS=$(vV5MeasRows) NEW=$(vV5MeasNew) CONT=$(vV5MeasCont) DEATHS=$(vV5MeasDeaths) DAYS=$(vV5MeasDays) VALUE_CENTS=$(vV5MeasCents) BAD=$(vV5MeasBad);
+    LET vV5MeasNativeNum = Peek('_V5_OUT_NATIVE_NUM',$(vV5MeasIndex),'V5_RD_MEASURE_CHECK');
+    LET vV5MeasParseBad = Peek('_V5_OUT_PARSE_BAD',$(vV5MeasIndex),'V5_RD_MEASURE_CHECK');
+    LET vV5MeasRawBlank = Peek('_V5_OUT_RAW_BLANK',$(vV5MeasIndex),'V5_RD_MEASURE_CHECK');
+    TRACE [V5-RD-MEAS] YEAR=$(vV5MeasYear) ROWS=$(vV5MeasRows) NEW=$(vV5MeasNew) CONT=$(vV5MeasCont) DEATHS=$(vV5MeasDeaths) DAYS=$(vV5MeasDays) VALUE_CENTS=$(vV5MeasCents) BAD=$(vV5MeasBad) NATIVE_NUM=$(vV5MeasNativeNum) PARSE_BAD=$(vV5MeasParseBad) RAW_BLANK=$(vV5MeasRawBlank);
 NEXT vV5MeasIndex
 
 V5_RD_MEASURE_TOTAL:
@@ -122,6 +138,9 @@ NOCONCATENATE LOAD
     Sum(_V5_OUT_CENTS) AS _V5_SUM_CENTS,
     Sum(_V5_OUT_MONTHS) AS _V5_SUM_MONTHS,
     Sum(_V5_OUT_INVALID) AS _V5_SUM_INVALID,
+    Sum(_V5_OUT_NATIVE_NUM) AS _V5_SUM_NATIVE_NUM,
+    Sum(_V5_OUT_PARSE_BAD) AS _V5_SUM_PARSE_BAD,
+    Sum(_V5_OUT_RAW_BLANK) AS _V5_SUM_RAW_BLANK,
     Sum(_V5_OUT_BAD) AS _V5_SUM_BAD
 RESIDENT V5_RD_MEASURE_CHECK;
 
@@ -139,10 +158,13 @@ LET vV5TotalCents = Peek('_V5_SUM_CENTS',0,'V5_RD_MEASURE_TOTAL');
 LET vV5TotalMonths = Peek('_V5_SUM_MONTHS',0,'V5_RD_MEASURE_TOTAL');
 LET vV5TotalInvalid = Peek('_V5_SUM_INVALID',0,'V5_RD_MEASURE_TOTAL');
 LET vV5TotalBad = Peek('_V5_SUM_BAD',0,'V5_RD_MEASURE_TOTAL');
+LET vV5TotalNativeNum = Peek('_V5_SUM_NATIVE_NUM',0,'V5_RD_MEASURE_TOTAL');
+LET vV5TotalParseBad = Peek('_V5_SUM_PARSE_BAD',0,'V5_RD_MEASURE_TOTAL');
+LET vV5TotalRawBlank = Peek('_V5_SUM_RAW_BLANK',0,'V5_RD_MEASURE_TOTAL');
 
-TRACE [V5-RD-MEAS] TOTAL ROWS=$(vV5TotalRows) NEW=$(vV5TotalNew) CONT=$(vV5TotalCont) DEATHS=$(vV5TotalDeaths) DAYS=$(vV5TotalDays) VALUE_CENTS=$(vV5TotalCents) MONTHS=$(vV5TotalMonths) INVALID=$(vV5TotalInvalid) BAD=$(vV5TotalBad);
+TRACE [V5-RD-MEAS] TOTAL ROWS=$(vV5TotalRows) NEW=$(vV5TotalNew) CONT=$(vV5TotalCont) DEATHS=$(vV5TotalDeaths) DAYS=$(vV5TotalDays) VALUE_CENTS=$(vV5TotalCents) MONTHS=$(vV5TotalMonths) INVALID=$(vV5TotalInvalid) BAD=$(vV5TotalBad) NATIVE_NUM=$(vV5TotalNativeNum) PARSE_BAD=$(vV5TotalParseBad) RAW_BLANK=$(vV5TotalRawBlank);
 
-IF $(vV5TotalRows) <> 566672 OR $(vV5TotalNew) <> 555089 OR $(vV5TotalCont) <> 11583 OR $(vV5TotalDeaths) <> 26611 OR $(vV5TotalDays) <> 3133578 OR $(vV5TotalCents) <> 65938464905 OR $(vV5TotalMonths) <> 36 OR $(vV5TotalInvalid) <> 0 OR $(vV5TotalBad) <> 0 THEN
+IF $(vV5TotalRows) <> 566672 OR $(vV5TotalNew) <> 555089 OR $(vV5TotalCont) <> 11583 OR $(vV5TotalDeaths) <> 26611 OR $(vV5TotalDays) <> 3133578 OR $(vV5TotalCents) <> 65938464905 OR $(vV5TotalMonths) <> 36 OR $(vV5TotalInvalid) <> 0 OR $(vV5TotalBad) <> 0 OR $(vV5TotalParseBad) <> 0 OR $(vV5TotalRawBlank) <> 0 THEN
     TRACE [V5-RD-MEAS] VERDICT=BLOCKED_QVD_STAGING_MEASURES_MISMATCH;
     EXIT SCRIPT;
 ENDIF
