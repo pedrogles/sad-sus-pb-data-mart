@@ -339,3 +339,36 @@ Apesar disso, `R1=1` unmatched, `R2=0` e `R3=0` sob snapshots imutáveis nos tes
 
 **Status detalhado após R3:** `MEASURES_CSV=PASS`, `MEASURES_QVD_QV=PASS`, `SK_REGISTRO=APPROVED_WITH_IMMUTABLE_SOURCE_RESTRICTIONS`, `DIM_ROLE_COVERAGE_R3=PASS`, `MOT_R1_ANOMALY_ROOT_CAUSE=UNKNOWN`, `MOT_R3_RELOAD_STABILITY=PENDING`; `ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED`, `LINK_KEY_GATE=NOT_EXECUTED`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `PAINEL=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft, sem merge, antes da revisão final do contrato.
 
+## 18. Repetição independente R3 — cobertura e estabilidade confirmadas (10/10/2026 00:24:41)
+
+**FATO VERIFICADO pela saída de execução fornecida pelo responsável:** após `git pull --ff-only` até `0009abe`, nova execução de `tools/validar_fato_internacao_dim_roles_r3_qlik.ps1` reutilizou **o mesmo** `TRANSFORMACAO/V5_RD_DIM_ROLES_PREFLIGHT_R3.qvw` (`DOCUMENT_REUSED=True`), com QVS de SHA-256 `541A67D244D41FEEA955C9DD0252A86A67EA1F427FE677398A288B97B8840610`, idêntico ao primeiro PASS R3. O runner confirmou `ALL_8_INPUT_QVD_SHA256_UNCHANGED=True`, `FACT_QVD_GENERATED=False`, `OUTPUT_DATA_FILES_WRITTEN=0`.
+
+```text
+2026-10-10 00:24:41 [V5-RD-DIM3] TOTAL ROWS=566672 MONTHS=36 EXTERNAL=5202 MISS_COMP=0 MISS_ANO=0 MISS_INTER=0 MISS_SAIDA=0 MISS_RES=0 MISS_SERV=0 MISS_ESTAB=0 MISS_PROC=0 MISS_DIAG=0 MISS_CAR=0 MISS_MOT=0
+2026-10-10 00:24:41 [V5-RD-DIM3] VERDICT=PASS_QV_STAGING_11_DIMENSION_ROLES_NO_ORPHANS
+2026-10-10 00:24:41 [V5-RD-DIM3] FACT_QVD_GENERATED=False LINK_ANALISE_GENERATED=False OUTPUT_DATA_FILES_WRITTEN=0
+2026-10-10 00:24:41 [V5-RD-DIM3] ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED LINK_KEY_GATE=NOT_EXECUTED
+VERDICT=PASS_QV_STAGING_11_DIMENSION_ROLES_NO_ORPHANS
+```
+
+**Resultado:** a cobertura integral dos 11 papéis por SK **PASS** foi reproduzida em duas recargas consecutivas do R3, às **00:21:17** (QVW novo) e **00:24:41** (QVW existente) sobre os oito QVDs de entrada imutáveis. O motivo de saída teve `MISS_MOT=0` nas recargas R2 (diagnóstico) e nas duas R3. O resultado anômalo de `MISS_MOT=1` no R1 **não tem causa identificada** e continua registrado, sem supor desaparecimento de uma linha, alteração de fonte ou correção da dimensão.
+
+**Gates da FASE V encerrados para o snapshot RD 2017–2019:** `SK_REGISTRO_INTERNACAO=APPROVED_WITH_RESTRICTIONS`; `FIVE_MEASURES_CSV=PASS`; `FIVE_MEASURES_QVD=PASS`; `DIMENSION_ROLE_COVERAGE_11_OF_11=PASS_REPRODUCED`.
+
+**DECISÕES PENDENTES:** `LINK_KEY_CONTRACT=NOT_VALIDATED_ACROSS_THREE_FACTS`; `ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED`; `FACT_QVD=NOT_STARTED`. O primeiro PASS R3 e sua repetição demonstram correspondência das chaves calculadas com as dimensões existentes, **não** integridade física de uma tabela fato futura ou ausência de loops/$Syn no modelo associativo.
+
+## 19. Próximo gate — contrato de %LINK_KEY comum aos três processos (sem implementação)
+
+**FATO VERIFICADO — decisões anteriores que devem ser preservadas:**
+
+- `docs/discovery/boundary-6-qlikview-physical-architecture.md`, seções 6 a 10, escolheu `LINK_ANALISE` e cinco coordenadas compartilhadas, com associação **exclusiva** das três fatos pela `%LINK_KEY`; dimensões exclusivas continuam ligadas diretamente às respectivas fatos.
+- `docs/discovery/boundary-7-implementation-plan.md`, seção 22, definiu os papéis válidos e os nulos não aplicáveis: internação usa competência+ano+residência+serviço+estabelecimento; capacidade usa competência+ano+serviço+estabelecimento e residência nula; população usa ano+residência+serviço (mesmo município), com competência/estabelecimento nulos.
+- A seção 22 também exige serialização explícita dos nulos e separadores antes do `Hash128`, Link Table deduplicada por coordenadas. O exemplo `'LINK', COMPETENCIA|<NULL>, ANO|<NULL>, ...` é **conceitual**; não constitui um script final aprovado.
+- `docs/discovery/boundary-6-qlikview-physical-architecture.md`, seção 22.5/22.6, exige exatamente uma `%LINK_KEY` por linha factual, cobertura de toda chave na Link Table, preservação dos totais e das linhas por fato, zero loops e zero chaves sintéticas não justificadas.
+
+**HIPÓTESE DE IMPLEMENTAÇÃO a testar (não aprovada):** uma única função/contrato versionável para serializar as **cinco** SKs compartilhadas na mesma ordem, representação homogênea e tratamento inequívoco de nulos, evitando confundir `Null()` não aplicável com string literal ou campo vazio. É necessário testar se argumentos diretos do `Hash128` com marcador inequívoco por coordenada são suficientes, ou se uma serialização explícita revisada traz menor risco; **não criar chave somente para a internação nem codificar uma escolha antes do teste conjunto**.
+
+**Próxima Discovery READ-ONLY:** verificar nos QVDs `SRC_SIH_RD.qvd`, `SRC_CNES_LT.qvd` e `SRC_IBGE_POP.qvd` os nomes/campos/grãos de staging reais versionados, o contrato das dimensões e os requisitos nulos de cada fato; produzir uma matriz de coordenadas com origem, normalização, semântica e compatibilidade. Em seguida testar cenários de colisão, unicidade, cobertura e preservação de grão em documento Qlik isolado **sem gravar `%LINK_KEY` factual, `LINK_ANALISE.qvd` ou alterar a transformação principal**. O nome físico real de cada QVD e campo deve ser confirmado em `ext_main.qvs` e nos gates prévios antes de gerar qualquer script.
+
+**Estado após duas R3:** `FASE_V_SOURCE_MEASURES_AND_11_SK_COVERAGE=PASS`, `MOT_R1_ROOT_CAUSE=UNKNOWN`, `LINK_KEY_DESIGN=DISCOVERY_PENDING`, `ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `PAINEL=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
+
