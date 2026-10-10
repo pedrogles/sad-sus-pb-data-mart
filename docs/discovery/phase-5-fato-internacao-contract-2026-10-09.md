@@ -288,3 +288,26 @@ OUTPUT_DATA_FILES_WRITTEN=0
 
 **Próxima evidência mínima antes de novo reload:** consultar `Get-Content -LiteralPath '.\TRANSFORMACAO\V5_RD_DIM_ROLES_DIAGNOSTIC_R2.qvw.log' | Select-Object -Last 120`. A extração do log atual é **read-only** e informa se o QVS R2 concluiu com `DIAG_CAPTURED_NOT_APPROVED`, produziu os contadores de `CALENDAR`/`RD`/`MOT_EXCEPTION` ou sofreu falha de script. **Nenhum gate de integridade dimensional foi fechado.**
 
+## 16. R2 nativo confirmado: causas temporais, motivo e preflight R3 (10/10/2026)
+
+**FATO VERIFICADO pelo log QlikView 12 entregue pelo responsável (10/10/2026 00:10:41–00:10:43):** o diagnóstico em `V5_RD_DIM_ROLES_DIAGNOSTIC_R2.qvw`, originalmente marcado como inconclusivo **apenas pelo leitor PowerShell**, foi executado até o final pelo QlikView. O log contém `VERDICT=DIAG_CAPTURED_NOT_APPROVED`, `FACT_QVD_GENERATED=False`, `OUTPUT_DATA_FILES_WRITTEN=0`; o executor já havia confirmado `ALL_8_INPUT_QVD_SHA256_UNCHANGED=True`. O QVS executado tinha SHA-256 `CFA41178C0F009BCCF9131989860BFF8E0972F2ABED119FBE40C95A02A2F5D18`.
+
+```text
+CALENDAR ROWS=4383 DIM_MONTH_REHASH_MISS=0 DIM_DAY_REHASH_MISS=0 MOT_DIM_ROWS=28 DIM_MOT_REHASH_MISS=0
+RD ROWS=566672 MONTHS=36 MONTH_ORIG=566672 MONTH_NAT=566672 MONTH_REHASH=566672 MONTH_DATEFORM=0 INTER_ORIG=566672 INTER_NAT=566672 INTER_REHASH=566672 INTER_DATEFORM=0 SAIDA_ORIG=566672 SAIDA_NAT=566672 SAIDA_REHASH=566672 SAIDA_DATEFORM=0 MOT_ORIG=0 MOT_NAT=0 MOT_REHASH=0
+MOT_EXCEPTION_GROUPS=0
+VERDICT=DIAG_CAPTURED_NOT_APPROVED
+```
+
+**Interpretação comprovada (limitada aos 566.672 registros):** os **4383 registros da DIM_TEMPO** e as **28 linhas de DIM_MOTIVO_SAIDA_PERMANENCIA** não apresentaram SK divergente quando os hashes foram refeitos usando os atributos da própria dimensão. Ao derivar as SKs temporais da fonte com `Hash128('MES', Text(Date(Date#(texto,'YYYYMM'),'YYYYMM')))` e `Hash128('DATA', Text(Date(Date#(texto,'YYYYMMDD'),'YYYYMMDD')))`, **os três papéis ficaram com zero chaves órfãs**. Os hashes diretos de texto e as comparações naturais no R2 indicaram 566.672 misses; portanto, **não** são expressões equivalentes às SKs originais nesse QlikView 12, embora a representação visual sugira que sejam. Não excluir datas nem reescrever `DIM_TEMPO`.
+
+**Motivo de saída — resultado conflitante ainda pendente:** R1 apresentou `MISS_MOT=1`, mas R2 apresentou **`MOT_ORIG=0, MOT_NAT=0, MOT_REHASH=0, MOT_EXCEPTION_GROUPS=0`** usando a mesma lógica normalizada de `COBRANCA` e as SKs persistidas. Isso refuta a hipótese de órfão permanente **nesta recarga**, porém uma única execução divergente não autoriza assumir estabilidade. **Não remover a ocorrência do registro nem alterar a dimensão ou critério de aceite para acomodar o resultado.** Atribuir causa de R1 (ex.: materialização de hash, cache, efeito da carga ou não determinismo) depende de reprodução — nenhuma dessas hipóteses foi demonstrada.
+
+**R3 — preflight completo de 11 papéis preparado, NÃO EXECUTADO:**
+
+- `TRANSFORMACAO/phase_v_fato_internacao_qlik_dim_roles_preflight_r3.qvs` deriva somente as **três SKs temporais** com a expressão `Date#() + Date() + Text()` comprovada em R2; mantém sem modificação as outras oito expressões, incluindo `MOT`. Reaproveita o baseline estrito dos **11 papéis**, `ROWS=566672`, `MONTHS=36`, `EXTERNAL=5202` e **zero unmatched em todos os 11 campos**.
+- `tools/validar_fato_internacao_dim_roles_r3_qlik.ps1` gera exclusivamente `V5_RD_DIM_ROLES_PREFLIGHT_R3.qvw`, preservando os QVWs/logs anteriores; lê os oito QVDs de entrada e confere SHA-256 de todos, log nativo contemporâneo, totais e marcador `PASS_QV_STAGING_11_DIMENSION_ROLES_NO_ORPHANS`; em falha mostra o trecho final do log.
+- Se `MISS_MOT=1` retornar, **não declarar PASS**; avaliar comparação da mesma lógica nos diferentes QVWs sob o mesmo snapshot e, se necessário, repetir a investigação pontual por código e frequência antes de criar fato.
+
+**Estado:** `TEMPORAL_SK_R2_CONVERSION_COVERAGE=PASS`; `MOT_R1_R2_DISCREPANCY=OPEN`; `FULL_11_ROLE_SK_R3=PREPARED_NOT_RUN`; `FACT_QVD=NOT_STARTED`; `LINK_ANALISE=NOT_STARTED`; `ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED`; `T29_HISTORICAL=NOT_APPROVED`. A política aprovada da SK de registro e as cinco medidas reconciliadas continuam válidas; nenhuma implementação de fato, Link Table ou dashboard é inferida deste diagnóstico.
+
