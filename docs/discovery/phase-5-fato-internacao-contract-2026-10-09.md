@@ -192,3 +192,28 @@ O QVS de teste também emite, por ano e total, `NATIVE_NUM`, `PARSE_BAD` e `RAW_
 
 **DECISÃO PENDENTE:** confirmar com a próxima saída do QlikView se a hipótese de separador decimal explica a divergência. Se R3 falhar, **não** implementar conversão na fato; investigar os valores textuais reais no QVD e o parser antes de qualquer mudança de produção.
 
+## 11. R3 — PASS de reconciliação das cinco medidas no QVD de staging
+
+**FATO VERIFICADO pelas saídas de execução fornecidas pelo responsável (09/10/2026 23:52:31–23:52:32):** a branch do PR #83 foi atualizada via `git pull --ff-only` até `65231f0`. O QlikView 12 recarregou **novo documento isolado** `TRANSFORMACAO/V5_RD_MEASURE_PREFLIGHT_R3.qvw`, com o QVS `phase_v_fato_internacao_qlik_measures_preflight.qvs` de SHA-256 **`91D9A40ACFFE840902B1B05ACFFC64D62A55CAFD6831AF4A55F2403E8A3EB254`**.
+
+```text
+DOCUMENT_REUSED=False
+MODE=PHASE_V_QV_STAGING_MEASURES_READ_ONLY
+FACT_QVD_GENERATED=False
+OUTPUT_DATA_FILES_WRITTEN=0
+RELOAD_STARTED=True
+RELOAD_RETURNED=True
+STAGING_QVD_SHA256_UNCHANGED=True
+YEAR=2017 ROWS=187726 NEW=183532 CONT=4194 DEATHS=8626 DAYS=1039396 VALUE_CENTS=20888212074 BAD=0 NATIVE_NUM=0 PARSE_BAD=0 RAW_BLANK=0
+YEAR=2018 ROWS=187293 NEW=183311 CONT=3982 DEATHS=8649 DAYS=1038921 VALUE_CENTS=21826753676 BAD=0 NATIVE_NUM=0 PARSE_BAD=0 RAW_BLANK=0
+YEAR=2019 ROWS=191653 NEW=188246 CONT=3407 DEATHS=9336 DAYS=1055261 VALUE_CENTS=23223499155 BAD=0 NATIVE_NUM=0 PARSE_BAD=0 RAW_BLANK=0
+TOTAL ROWS=566672 NEW=555089 CONT=11583 DEATHS=26611 DAYS=3133578 VALUE_CENTS=65938464905 MONTHS=36 INVALID=0 BAD=0 NATIVE_NUM=0 PARSE_BAD=0 RAW_BLANK=0
+VERDICT=PASS_QVD_STAGING_FIVE_MEASURES_RECONCILED
+DIMENSION_ASSOCIATION_GATE=NOT_EXECUTED
+LINK_KEY_GATE=NOT_EXECUTED
+```
+
+**Conclusão estrita:** no **QVD de staging**, `QTD_REGISTRO_AIH`, `QTD_INTERNACAO`, `INDICADOR_OBITO`, `DIAS_PERMANENCIA` e `VALOR_TOTAL` coincidiram com as somas independentes dos CSVs para cada ano e o período completo. `NATIVE_NUM=0` confirma que `VAL_TOT` não era reconhecido numericamente pelo Qlik na leitura direta; `Num#(Trim(Text(VAL_TOT)), '#', '.', ',')` interpretou todas as 566.672 linhas, sem nulos/blank, com soma monetária correta aos centavos. **Esta conversão está validada no preflight isolado, ainda não inserida/validada no script factual de produção**. O valor agregado `65938464905` é centavos de R$ 659.384.649,05; não confundir com um valor monetário em reais.
+
+**Gate encerrado:** `FATO_INTERNACAO_MEASURES_SOURCE=PASS`, `FATO_INTERNACAO_MEASURES_STAGING_QV=PASS`. **Gates abertos:** integridade física das SKs dimensionais e papéis role-playing; serialização única de `%LINK_KEY` para três processos; produção de `FATO_INTERNACAO.qvd` ainda `NOT_STARTED`. Não há CI nem inspeção binária independente do QVD nesta execução. `T29_HISTORICAL=NOT_APPROVED` preservado.
+
