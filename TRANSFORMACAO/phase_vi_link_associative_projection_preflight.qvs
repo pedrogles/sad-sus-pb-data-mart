@@ -176,6 +176,13 @@ IF ScriptErrorCount>$(vP6StartErr) OR $(vP6APTables)<>9 OR $(vP6APSyn)<>0 OR NoO
     EXIT SCRIPT;
 ENDIF
 
+// Defensive alias cardinalities: 2017-2019 month/year domain must be present.
+// Municipality dimension contains 937 SKs; establishment is CNES x competence (220390).
+IF $(vP6APMonths)<36 OR $(vP6APYears)<3 OR $(vP6APRes)<>937 OR $(vP6APServ)<>937 OR $(vP6APEst)<>220390 THEN
+    TRACE [P6-ASSOC] VERDICT=BLOCKED_ROLE_ALIAS_CARDINALITY;
+    EXIT SCRIPT;
+ENDIF
+
 // Do not assert full production associative PASS without role selection and measures.
 TRACE [P6-ASSOC] VERDICT=PASS_IN_MEMORY_85705_LINK_AND_3_FACT_COVERAGE_NOT_FINAL;
 TRACE [P6-ASSOC] TABLE_VIEWER_ROLE_SELECTION=NOT_TESTED CIRCULAR_LINKS_VISUAL_REVIEW=REQUIRED;
