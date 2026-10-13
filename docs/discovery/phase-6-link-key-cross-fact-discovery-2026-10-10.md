@@ -550,3 +550,13 @@ POP=0
 
 **Estado:** `MONTH_ONLY_ASSOCIATION=CONFIRMED_POP_EXCLUDED`; `MONTH_AND_YEAR_POPULATION_ASSOCIATION=CONFIRMED_POP_EXCLUDED`; `YEAR_FILTER_ASSOCIATION=PASS_ON_2019`; `RESIDENCE_FILTER_ASSOCIATION=NOT_TESTED`; `SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `ANNUAL_SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. A captura S2 fornecida pelo usuário não foi adicionada ao Git como binário.
 
+## 25. S3 — João Pessoa 250750 no papel residência (13/10/2026)
+
+**FATO VERIFICADO — captura QlikView 12:** `P6_RES_DATASUS_6=250750` selecionado (verde); ano e competência sem seleção verde. Contagens dos registros técnicos: **RD=125200; LT=0; POP=3**.
+
+Interpretação: RD é registro administrativo, não `QTD_INTERNACAO`; POP são as três linhas município×ano 2017–2019, não três habitantes. O filtro por residência exclui as linhas da projeção LT, pois a coordenada de residência não se aplica ao CNES/LT e permanece nula. **LT=0 não significa que João Pessoa não tenha leitos.**
+
+**Próximo gate S4, NÃO EXECUTADO:** limpar todas as seleções no mesmo QVW temporário, marcar `P6_SERV_DATASUS_6=250750` (município de serviço) e registrar RD/LT/POP. S5 também pendente: limpar tudo e filtrar serviço `250750` + ano `2019`. Não pressupor contagens.
+
+**Estado:** `RESIDENCE_FILTER_ASSOCIATION=CONFIRMED_LT_EXCLUDED`; `SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `ANNUAL_SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`.
+
