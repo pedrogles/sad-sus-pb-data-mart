@@ -283,3 +283,17 @@ TEMPORARY_SAMPLE_REMOVED=True
 
 **Estado:** `HASH_TEXT_CAST=PASS_QV_COUNT`; `THREE_COLUMN_SAMPLE_STORE=PASS_5000_ROWS`; `EXACT_KEY_SET_AUDIT=BLOCKED_PENDING_FULL_DISTINCT_EXPORT`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`; `FACT_QVD=NOT_STARTED`; `LINK_ANALISE=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`; PR #83 Draft.
 
+## 14. Gate de pares exatos R2 preparado — exportação integral de três colunas (13/10/2026)
+
+**HIPÓTESE DE IMPLEMENTAÇÃO / test gate READ-ONLY ainda NÃO EXECUTADO:**
+
+Foram versionados **sem modificar scripts de produção ou evidências anteriores**:
+
+- `tools/validar_estabilidade_link_key_pares_r2.ps1`: preserva `P6_LINK_KEY_CROSS_FACT_PREFLIGHT_R2.qvw` e `phase_vi_link_key_cross_fact_preflight.qvs`. Cria exclusivamente sob `%TEMP%` um novo QVW para duas recargas independentes e deriva, **após os gates R2 existentes**, uma tabela temporária `P6_EXACT_PAIRS_R2` com `NOCONCATENATE LOAD DISTINCT` sobre `Text(_P6_HASH)`, `_P6_SERIAL` e `Len(Text(_P6_HASH))`. Confere `ROWS=85705 DISTINCT_HASH=85705 DISTINCT_SERIAL=85705 BAD_HASH_LEN=0` no Qlik antes de exportar **três** colunas de texto para CSV temporário.
+- `tools/comparar_pares_link_key_qlik.py`: interpreta CSV com `csv.reader` respeitando aspas/delimitadores; exige 85.705 linhas, hashes de 22 caracteres, prefixo `SAD-LINK-V1|C=`, `LEN=22`, 85.705 hashes, 85.705 serializações e **mapeamento biunívoco** hash↔serial. Compara os **pares completos** entre as duas recargas, informa `ONLY_A_PAIRS`, `ONLY_B_PAIRS` e SHA-256 ordenado dos pares. Não exibe a serialização individual no console.
+- O PowerShell não emitirá PASS se o Python ou os gates Qlik falharem; somente após todos passarem revalida os **seis QVDs** e o **QVW R2/QVS/comparador** por SHA-256 e remove os artefatos temporários. Na falha conserva apenas o diagnóstico sob `%TEMP%`, isolado de qualquer dataset produtivo.
+
+**Motivação vinculada à evidência:** o probe amostral Qlik de **três** colunas produziu `801/801` hashes/serializações distintas entre 5.000 linhas, ao passo que a primeira tentativa com uma única coluna e 602.859 linhas exportou um hash repetido. Uma projeção `LOAD DISTINCT` de 85.705 pares reduz volume e oferece rastreabilidade hash↔coordenadas sem alterar a função candidata. **Não se sabe ainda** se esta exportação integral passará, nem se a diferença anterior decorreu do número de colunas, tamanho da tabela, ou outra particularidade do `STORE`.
+
+**Resultado esperado somente após execução física:** `RUN_A_ROWS=85705`, `RUN_B_ROWS=85705`, `ONLY_A_PAIRS=0`, `ONLY_B_PAIRS=0`, `COMPARISON=EXACT_85705_HASH_SERIAL_PAIRS_MATCH`, `ALL_6_INPUT_QVD_SHA256_UNCHANGED=True`, `VERDICT=PASS_2_RELOADS_EXACT_85705_LINK_PAIRS_MATCH_NOT_APPROVED`. Mesmo um PASS não aprova `%LINK_KEY` definitiva, `LINK_ANALISE` ou modelo role-playing. `LINK_KEY_CONTRACT=NOT_APPROVED`; `EXACT_KEY_SET_R2=PREPARED_NOT_RUN`; `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`; `FACT_QVD=NOT_STARTED`; `LINK_ANALISE=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`.
+
