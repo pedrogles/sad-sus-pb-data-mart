@@ -354,3 +354,43 @@ TEMPORARY_PAIR_EXPORTS_REMOVED=True
 
 **Estado:** `PAIR_EXACT_SET_R2=PASS`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `LINK_ANALISE_ASSOCIATIVE_PREFLIGHT=NOT_STARTED`; `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`; PR #83 mantém estado **Draft sem merge**.
 
+## 17. Preflight associativo multífato — QVW isolado preparado, NÃO EXECUTADO (13/10/2026)
+
+**Objetivo:** obter evidência QlikView 12 da construção da `LINK_ANALISE` **somente em memória** e das associações de **três projeções técnicas de fatos**, sem materializar QVD factual, `LINK_ANALISE.qvd` ou `PAINEL.qvw`. Preserva Boundaries 6 §§5–6, 22.5–22.6 e 7 §22, sem modificar o projeto acadêmico dos Capítulos 1–2.
+
+**Arquivos novos, apenas no Draft PR #83:**
+
+- `TRANSFORMACAO/phase_vi_link_associative_projection_preflight.qvs` — bloco Qlik aditivo para **QVW temporário**, sem `STORE` nem `JOIN`: lê `P6_COORDS` do preflight canônico, **recalcula de modo independente** `Hash128('SAD-LINK-V1',...)` com os cinco SKs e nulos tipados, e executa `NOCONCATENATE LOAD DISTINCT` criando `P6_LINK_SIMULADA` com **seis campos**: `%LINK_KEY`, competência, ano, município residência, município serviço, estabelecimento. Expectativa de **85.705 linhas, 85.705 hashes únicos**.
+- `tools/validar_link_associativo_qlik.ps1` — abre **somente para conferência** o QVW R2 já testado, compara QVS/QVW canônicos e SHA-256 dos **seis QVDs**, cria **um novo QVW ignorável sob `%TEMP%`** e injeta o QVS associativo dentro do script-base, antes do cleanup de P6. Não escreve datasets, fatos ou QVD; depois da recarga examina marcadores nativos e SHA-256 das entradas. Em FAIL, mantém QVW/log temporários para diagnóstico; em PASS, remove o QVW/log descartáveis.
+
+**Modelo exclusivamente diagnóstico projetado:**
+
+```text
+                  P6_DIM_COMP_SIMULADA
+                          |
+P6_DIM_RES_SIMULADA -- P6_LINK_SIMULADA -- P6_DIM_SERV_SIMULADA
+                          |               |
+                  P6_DIM_ANO_SIMULADA   (papéis nomeados)
+                          |
+                   P6_DIM_EST_SIMULADA
+                          |
+               [%LINK_KEY] comum às 3:
+           P6_FATO_RD_SIMULADA   (566672 linhas)
+           P6_FATO_LT_SIMULADA   (35518 linhas)
+           P6_FATO_POP_SIMULADA  (669 linhas)
+```
+
+A topologia acima é **conceitual**. Cada projeção de fato terá **somente** `%LINK_KEY` e um ordinal diagnóstico para contar suas linhas. Dimensões conformadas são carregadas com **aliases role-playing com campos descritivos distintos**: tempo competência, tempo ano, município residência, município serviço, estabelecimento. A `DIM_TEMPO.qvd` possui grão diário, portanto as duas aliases temporais são `LOAD DISTINCT` no papel mensal e anual para não multiplicar SKs. Residência nula de capacidade, competência/estabelecimento nulos de população, e residentes externos permanecem como aprovados; não entram sentinelas artificiais nas SKs.
+
+**Gates implementados no QVS/runner (somente esperados, ainda NÃO medidos):**
+
+1. `P6_LINK_SIMULADA=85705` linhas distintas e `COUNT(DISTINCT %LINK_KEY)=85705`, zero chaves link nulas, zero ano/município serviço inesperadamente nulos;
+2. Zero chaves da Link Table fora do conjunto original validado, com mapa `P6_ASSOC_BASE_HASH_MAP` criado do resultado anterior; **100% cobertura** fato→Link via `P6_ASSOC_LINK_KEY_MAP`;
+3. **RD=566672, LT=35518, POP=669**, zero orphans e zero `%LINK_KEY` nula em cada projeção, sem perder/duplicar registros no estágio dos fatos técnicos;
+4. Após remover as tabelas diagnósticas do preflight-base, exigir **exatamente 9 tabelas**, 0 `$Syn` no TableName, número previsto de campos por alias/fato/link e ausência de warning de circular reference detectável no log nativo;
+5. Exigir todos os marcadores estritos do QlikView, os seis QVDs, QVS-base, QVS-projeção e QVW R2 **SHA-256 inalterados**. Documento temporário será removido apenas após PASS.
+
+**Ressalvas obrigatórias:** este é um ensaio de **esquema mínimo de associação**, **não** uma implementação completa de `FATO_INTERNACAO`, `FATO_CAPACIDADE_LEITO`, `FATO_POPULACAO` nem do `PAINEL`. Não inclui as chaves exclusivas/medidas factuais e **não comprova filtros role-playing operados na interface**, Table Viewer visual nem reconciliação de indicadores do Boundary 6 §22.7. A ausência de `$Syn` e as contagens isoladas não substituem a inspeção de associações e loops na interface, quando essa etapa for efetivamente feita. Em nenhuma hipótese um PASS deste teste autoriza materialização sem revisão.
+
+**Estado:** `LINK_ASSOC_MINIMAL_9_TABLE_PREFLIGHT=PREPARED_NOT_RUN`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `LINK_ANALISE_QVD=NOT_STARTED`, `FACT_QVDS=NOT_STARTED`, `PAINEL=NOT_STARTED`, `TABLE_VIEWER_ROLE_SELECTION=NOT_TESTED`, `T29_HISTORICAL=NOT_APPROVED`. O PR #83 continua **Draft** e a `main` permanece intocada.
+
