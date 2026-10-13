@@ -577,3 +577,45 @@ Interpretação: RD é registro administrativo, não `QTD_INTERNACAO`; POP são 
 
 **Estado:** `SERVICE_FILTER_ASSOCIATION=CONFIRMED_THREE_PROCESSES_S4_250750`; `RESIDENCE_FILTER_ASSOCIATION=CONFIRMED_LT_EXCLUDED_S3_250750`; `ANNUAL_SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `MONTH_ONLY_ASSOCIATION=CONFIRMED_POP_EXCLUDED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. A captura S4 está nesta conversa; não foi versionada como binário no Git.
 
+## 27. S5 — município de serviço João Pessoa + ano 2019: os três processos continuam presentes (13/10/2026)
+
+**FATO VERIFICADO — captura do QlikView Desktop 12 enviada pelo responsável:** as caixas `P6_SERV_DATASUS_6` e `P6_ANO_ANO` mostram, respectivamente, `250750` (João Pessoa/PB) e `2019` **selecionados em verde**. As caixas `P6_COMP_COMPETENCIA` e `P6_RES_DATASUS_6` não apresentam valores selecionados em verde. O objeto de texto com as três contagens técnicas mostra:
+
+```text
+S5_SELECTED_SERVICE=250750
+S5_SELECTED_YEAR=2019
+S5_MONTH_AND_RESIDENCE=NOT_EXPLICITLY_SELECTED
+RD=79166
+LT=3412
+POP=1
+```
+
+**Interpretação estrita:** o eixo conjunto **município de serviço + ano** preservou **linhas das três projeções técnicas** e não fez a população anual desaparecer. `POP=1` significa **uma linha município×ano de João Pessoa em 2019**, não um habitante. `LT=3412` são **registros CNES/LT** no recorte, não o número de leitos disponíveis. `RD=79166` são **linhas administrativas RD**, não `QTD_INTERNACAO` após regra `IDENT=5`. Os resultados não validam automaticamente agregações aditivas de snapshots LT nem indicadores clínicos.
+
+### Síntese da primeira bateria de seleções S0–S5
+
+| Cenário físico | Seleção | RD (registros técnicos) | LT (registros técnicos) | POP (registros técnicos) | Resultado comprovado |
+| --- | --- | ---: | ---: | ---: | --- |
+| S0 | nenhuma | 566672 | 35518 | 669 | três fontes disponíveis |
+| S1 | ano `2019` | 191653 | 11648 | 223 | três fontes disponíveis por ano |
+| S1+M09 | ano `2019` e competência `201909` | 16489 | 978 | **0** | população anual excluída por filtro mensal |
+| S2 | somente competência `201909` | 16489 | 978 | **0** | exclusão de população independe de ano explicitamente escolhido |
+| S3 | residência `250750` | 125200 | **0** | 3 | CNES/LT excluído pelo papel residência não aplicável |
+| S4 | serviço `250750` | 233133 | 10072 | 3 | três fontes disponíveis no papel serviço |
+| **S5** | **serviço `250750` e ano `2019`** | **79166** | **3412** | **1** | **três fontes disponíveis no recorte anual territorial** |
+
+**Gate concluído:** `ROLE_SELECTIONS_S0_S5=COMPLETE_WITH_CONFIRMED_SEMANTIC_LIMITATIONS`; `SERVICE_YEAR_FILTER_S5=PASS_THREE_FACT_PROJECTIONS`. A integridade estrutural verificada anteriormente — 85.705 chaves distintas, nove tabelas sem `$Syn`, cobertura factual completa no preflight — **não foi refutada** pelos cenários, mas **não garante** medidas analíticas corretas. Foram demonstrados dois problemas de semântica de filtro no modelo atual: `MONTH_FILTER_EXCLUDES_ANNUAL_POP=CONFIRMED` e `RESIDENCE_FILTER_EXCLUDES_LT=CONFIRMED`. Isso não demonstra incorreção dos registros ou ausência de população/leitos na fonte; são coordenadas **fisicamente não aplicáveis** mantidas como `Null()`.
+
+### Próximo gate — seleção analítica e medidas sob granularidades diferentes (PLANEJADO, NÃO EXECUTADO)
+
+**DECISÃO PENDENTE:** como expressar indicadores por habitante e comparações demanda×capacidade sem eliminar fatos cujos papéis são não aplicáveis? Antes de construir QVDs definitivos, discutir e ensaiar, em **QVW isolado**, um contrato explícito por indicador e por papel geográfico:
+
+1. **Ano × município de residência:** internações (numerador ligado à residência) e população do **mesmo município e ano** (denominador); CNES/LT não compartilha a residência e não deve ser chamado de zero leitos.
+2. **Ano × município de serviço:** internações ocorridas no município, capacidade dos estabelecimentos no município e população municipal anual (quando desejado); diferenciar **pressão sobre serviço/território** de **taxa de internação dos residentes**. O mesmo denominador populacional não torna essas duas medidas epidemiologicamente equivalentes.
+3. **Competência × município:** preservar internações e snapshot de leitos mensais, mas buscar **população anual correspondente ao mesmo ano e município** por estratégia que será testada (e.g., set analysis ou eixo anual independente), sem distribuir nem duplicar as 223 linhas de população por mês, sem inventar competência populacional e sem preencher residência da capacidade.
+4. **Reconciliar medidas reais** só após contrato e dados finais: `QTD_INTERNACAO` respeita `IDENT=5`; população mede pessoas, e LT mede leitos disponíveis segundo regra de competência/tipo CNES aprovada, **não a contagem técnica de linhas nem soma indevida de snapshots**. Não calcular ocupação hospitalar presumida a partir destes testes de chaves.
+
+**Não aprovar ainda uma implementação `Set Analysis` específica:** seleções Qlik podem propagar-se por `%LINK_KEY`; limpar apenas um campo não garante, sem evidência, a reintrodução das linhas POP excluídas por outro caminho. Qualquer candidata deve passar com valores e totais reconciliados nos mesmos cenários S0–S5 e ser documentada como decisão separada, preservando os Boundaries 6/7 e capítulos acadêmicos fechados.
+
+**Estado consolidado:** `S0_S5_SEMANTIC_DISCOVERY=COMPLETED`; `LINK_KEY_HASH_STABILITY=PASS_85705_PAIRS`; `LINK_ASSOC_MINIMAL_9_TABLE_PREFLIGHT=PASS`; `TABLE_VIEWER_TOPOLOGY=PASS_ONE_SCREENSHOT`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_TESTED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. Draft PR #83 permanece aberto, sem merge. Preservar o QVW temporário de diagnóstico até decisão explícita sobre essa fase; a captura S5 não foi versionada como binário no Git.
+
