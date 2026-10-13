@@ -178,3 +178,32 @@ LINK_ANALISE_QVD_GENERATED=False
 
 **Estado:** `LINK_KEY_EXPERIMENTAL_R2_PROFILE=PASS_REPRODUCED`, `LINK_KEY_EXACT_SET_AUDIT=PREPARED_NOT_EXECUTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVDS=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. Sem merge do PR #83.
 
+## 10. Auditoria de conjunto exato — duas recargas Qlik PASS, exportação/comparador BLOCKED (13/10/2026)
+
+**FATO VERIFICADO (stdout de execução entregue pelo responsável, 13/10/2026):** `tools/validar_estabilidade_link_key_cross_fact.ps1` usando os scripts versionados gerou **somente artefatos em `%TEMP%`**, abriu o QVW isolado e completou **duas recargas independentes** com `RUN_1_PROFILE_PASS=True`, `RUN_2_PROFILE_PASS=True`. Cada `STORE _P6_HASH ... (txt)` temporário produziu **16.277.206 bytes** e foi preservado em `run_a.txt` e `run_b.txt`.
+
+```text
+MODE=PHASE_VI_LINK_KEY_EXACT_SET_TWO_INDEPENDENT_RELOADS
+ORIGINAL_QVW_MODIFIED=False
+ONLY_TEMPORARY_HASH_EXPORTS=True
+FACT_QVD_GENERATED=False
+LINK_ANALISE_QVD_GENERATED=False
+RUN_1_RELOAD_STARTED=True
+RUN_1_RELOAD_RETURNED=True
+RUN_1_PROFILE_PASS=True
+RUN_1_EXPORTED_HASH_BYTES=16277206
+RUN_2_RELOAD_STARTED=True
+RUN_2_RELOAD_RETURNED=True
+RUN_2_PROFILE_PASS=True
+RUN_2_EXPORTED_HASH_BYTES=16277206
+VERDICT=BLOCKED_LINK_KEY_COMPARATOR_ValueError: run_a.txt: rows=602859 unique=1; expected=602859/85705
+VERDICT=FAIL_CLOSED_Comparacao exata Python bloqueou
+TEMP_DIAGNOSTIC_DIR_RETAINED=C:\Users\pedro\AppData\Local\Temp\SAD_P6_LINK_EXACT_542214a38f724297a3f7193578c0b454
+```
+
+**Significado estrito da divergência:** no QlikView nativo, o perfil de `P6_LINK_TEST` durante cada recarga passou no gate que exige `DISTINCT_SERIAL=85705` e `DISTINCT_HASH=85705`. Entretanto, o comparador Python decodificou **602.859 linhas válidas quanto ao formato, mas apenas um valor distinto** no **arquivo A exportado em TXT**. Portanto, **não** afirmar que houve colisão das 85.705 chaves Qlik nem declarar PASS de conjunto exato. Precisamos verificar se o conteúdo bruto do TXT já contém um único hash, ou se a discrepância é de formatação/serialização/leitura. O erro `unique=1` aponta para a etapa de **exportação ou leitura**, não determina qual componente a causou.
+
+**Qualidade do gate:** o PowerShell iniciou a proteção SHA-256 dos seis QVDs, do QVW R2 e dos scripts antes das recargas, mas o erro no comparador interrompeu a execução **antes da verificação posterior de hashes**; logo, a execução atual **não** confirmou `ALL_6_INPUT_QVD_SHA256_UNCHANGED=True`. Esta verificação passou em duas recargas R2 anteriores, mas não deve ser atribuída silenciosamente ao gate que falhou. Nenhum QVD factual ou `LINK_ANALISE.qvd` foi gerado segundo o executor.
+
+**Próximo passo estritamente READ-ONLY:** inspecionar as primeiras linhas de `run_a.txt` e `run_b.txt`, quantidades distintas no texto bruto (sem transformação), tamanhos de linha e possíveis aspas/caracteres delimitadores, e comparar os dois arquivos sob o diretório temporário retido. **Não alterar `Hash128('SAD-LINK-V1',...)`, regra de nulos, QVDs, QVW R2 ou comparador para forçar PASS sem a evidência de TXT.** Em seguida, isolar e versionar uma correção mínima se necessário, repetindo a auditoria em novo diretório temporário. O registro operacional é `EXACT_KEY_SET_AUDIT=BLOCKED_EXPORT_OR_PARSE_UNDER_INVESTIGATION`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. PR #83 mantém Draft e `main` intocada.
+
