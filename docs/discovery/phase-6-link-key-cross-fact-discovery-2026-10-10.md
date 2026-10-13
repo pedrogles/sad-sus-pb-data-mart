@@ -394,3 +394,47 @@ A topologia acima é **conceitual**. Cada projeção de fato terá **somente** `
 
 **Estado:** `LINK_ASSOC_MINIMAL_9_TABLE_PREFLIGHT=PREPARED_NOT_RUN`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `LINK_ANALISE_QVD=NOT_STARTED`, `FACT_QVDS=NOT_STARTED`, `PAINEL=NOT_STARTED`, `TABLE_VIEWER_ROLE_SELECTION=NOT_TESTED`, `T29_HISTORICAL=NOT_APPROVED`. O PR #83 continua **Draft** e a `main` permanece intocada.
 
+## 18. PASS físico do preflight associativo de 9 tabelas — 13/10/2026 10:20:35
+
+**FATO VERIFICADO (stdout da execução QlikView 12 enviada pelo responsável):** após `git pull --ff-only` da branch do Draft PR #83 até `660c44e`, o executor versionado `tools/validar_link_associativo_qlik.ps1` executou integralmente o QVW temporário `P6_ASSOC_LINK_IN_MEMORY.qvw` em `%TEMP%`. Os logs nativos e o executor retornaram:
+
+```text
+MODE=PHASE_VI_ASSOCIATIVE_LINK_TABLE_PREFLIGHT_READ_ONLY
+FACT_QVD_GENERATED=False
+LINK_ANALISE_QVD_GENERATED=False
+OUTPUT_DATA_FILES_WRITTEN=0
+RELOAD_STARTED=True
+RELOAD_RETURNED=True
+2026-10-13 10:20:35 [P6-ASSOC] LINK_ROWS=85705 LINK_DISTINCT=85705 LINK_ORPHAN_BASE=0 REQUIRED_NULL=0
+2026-10-13 10:20:35 [P6-ASSOC] FACT_ROWS RD=566672 LT=35518 POP=669
+2026-10-13 10:20:35 [P6-ASSOC] FACT_ORPHANS RD=0 LT=0 POP=0
+2026-10-13 10:20:35 [P6-ASSOC] FACT_NULL RD=0 LT=0 POP=0
+2026-10-13 10:20:35 [P6-ASSOC] FINAL_MODEL TABLES=9 SYNTHETIC=0 COMP_ALIAS=144 ANO_ALIAS=12 RES_ALIAS=937 SERV_ALIAS=937 EST_ALIAS=220390
+2026-10-13 10:20:35 [P6-ASSOC] VERDICT=PASS_IN_MEMORY_85705_LINK_AND_3_FACT_COVERAGE_NOT_FINAL
+2026-10-13 10:20:35 [P6-ASSOC] TABLE_VIEWER_ROLE_SELECTION=NOT_TESTED CIRCULAR_LINKS_VISUAL_REVIEW=REQUIRED
+ALL_6_INPUT_QVD_SHA256_UNCHANGED=True
+SOURCE_R2_QVW_SHA256_UNCHANGED=True
+BASE_AND_PROJECTION_QVS_SHA256_UNCHANGED=True
+VERDICT=PASS_IN_MEMORY_LINK_COVERAGE_9_TABLE_PROJECTION_NOT_FINAL
+TABLE_VIEWER_ROLE_SELECTION=NOT_TESTED
+PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY
+LINK_KEY_CONTRACT=NOT_APPROVED
+TEMPORARY_ASSOC_QVW_REMOVED=True
+```
+
+**Interpretação estrita:** a Link Table candidata foi recomposta **somente em memória**, possui 85.705 `%LINK_KEY` distintas e zero valores obrigatórios nulos, e cobre 100% das 566.672 linhas RD, 35.518 LT e 669 IBGE das **projeções técnicas**. Zero `$Syn` identificadas e exatamente nove tabelas com os nomes/contagens esperados. Os seis QVDs e os três arquivos canônicos base QVS, projeção QVS e QVW R2 permaneceram com SHA-256 preservados; nenhum dado/QVD factual/Link Table foi materializado. O QVW descartável foi **removido**, logo não há documento deste ensaio disponível para abertura direta no Table Viewer.
+
+**Observação temporal importante:** `COMP_ALIAS=144` e `ANO_ALIAS=12` refletem os anos e competências presentes na `DIM_TEMPO.qvd` **diária** (2008–2019) e NÃO indicam 144 competências factuais nem 12 anos factuais no estudo. O recorte das três fontes continua **36 competências de 2017 a 2019** e população de **3 anos**; projeções de tempo a partir da dimensão preservam o calendário estendido por datas de internação/saída. Não converter silenciosamente a dimensão calendário para apenas três anos sem decisão.
+
+**Limites expressamente não testados:** nenhuma seleção visual de município residência/serviço, mês/ano ou estabelecimento; nenhuma validação no Table Viewer de arestas/loops; nenhum real QVD factual com medidas e chaves exclusivas; nenhuma reconciliação dos indicadores de Boundary 6 §22.7. O PASS verifica a **topologia mínima e integridade técnica das chaves**, mas não garante que filtros simultâneos e razões cruzadas (internações/população, leitos/população) selecionem os três processos com a semântica esperada. Em especial, população **não possui competência mensal**, capacidade **não possui residência** e as três serializações completas das coordenadas diferem; os seus caminhos via dimensões não devem ser tratados como equivalentes a um join de fatos.
+
+**Estado de gate:** `LINK_ASSOC_MINIMAL_9_TABLE_PREFLIGHT=PASS_QV_NATIVE`; `LINK_KEY_EXACT_PAIRS=PASS_2_RELOADS`; `TABLE_VIEWER_ROLE_SELECTION=NOT_TESTED`; `CIRCULAR_LINKS_VISUAL_REVIEW=REQUIRED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. Draft PR #83 continua sem merge.
+
+## 19. Próximo gate de interpretação associativa — inspeção visual e filtros de papéis
+
+**DECISÃO PENDENTE:** produzir um documento QVW temporário **retido com dados de recarga salvos** apenas para conferência no Table Viewer do QlikView 12 e executar verificações dirigidas de seleção, ainda sem QVD factual. A documentação oficial QlikView indica `Ctrl+T` ou File → Table Viewer para analisar arestas, visualizar estrutura interna/source e identificar chaves sintéticas. Inspecionar 9 tabelas, cinco aliases e três fatos técnicos; exigir 0 loops, 0 `$Syn` e nenhuma aresta via nome descritivo homônimo.
+
+**Ponto de risco semântico ainda aberto:** as diferenças de coordenadas são intencionais, mas a igualdade de hashes apenas quando **as cinco coordenadas completas** coincidem não significa que selecionar mês de internações seja compatível com o registro de população **sem mês**. A validação de eixos por município e ano precisa testar a seleção simultânea e seus efeitos sobre disponibilidade de cada processo antes de aprovar o modelo ou indicadores. Se houver conflito, classificar como **hipótese de modelagem a revisar**, sem modificar retroativamente o Boundary 6/7 nem a primeira entrega acadêmica.
+
+**Não executar QVDs factuais ou Link Table definitiva neste gate.** Se houver relatório de filtros/arestas a partir do visualizador, documentar a evidência com suas limitações sem alegar aprovação irrestrita. `ASSOCIATIVE_ROLE_SELECTION=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`.
+
