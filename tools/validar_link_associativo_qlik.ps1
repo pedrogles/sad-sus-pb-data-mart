@@ -1,6 +1,9 @@
 # SAD P6: temporary QlikView 12 associative projection, strictly no STORE/QVD writes.
 [CmdletBinding()]
-param([string]$Root = (Get-Location).Path)
+param(
+ [string]$Root = (Get-Location).Path,
+ [switch]$RetainForVisualReview
+)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $Root = [IO.Path]::GetFullPath($Root)
@@ -101,8 +104,19 @@ try {
  Write-Output 'RELOAD_STARTED=True'
  $null=$doc.Reload()
  Write-Output 'RELOAD_RETURNED=True'
+ if ($RetainForVisualReview) {
+  # Save loaded model ONLY in a GUID-named QVW under %TEMP%, never in the repository.
+  $null=$doc.Save()
+  Write-Output 'TEMPORARY_ASSOC_QVW_SAVED_WITH_LOADED_DATA=True'
+ }
  $null=$doc.CloseDoc()
  $doc=$null
+ if($RetainForVisualReview) {
+  if(-not (Test-Path -LiteralPath $qvw -PathType Leaf) -or
+    (Get-Item -LiteralPath $qvw).LastWriteTimeUtc -lt $start.AddSeconds(-2)) {
+    throw 'Visual-review QVW not saved with contemporary loaded data'
+  }
+ }
  if(-not (Test-Path -LiteralPath $log -PathType Leaf) -or
   (Get-Item -LiteralPath $log).LastWriteTimeUtc -lt $start.AddSeconds(-2)) {
   throw 'Qlik native log absent or stale'
@@ -139,6 +153,12 @@ try {
  Write-Output 'SOURCE_R2_QVW_SHA256_UNCHANGED=True'
  Write-Output 'BASE_AND_PROJECTION_QVS_SHA256_UNCHANGED=True'
  Write-Output 'VERDICT=PASS_IN_MEMORY_LINK_COVERAGE_9_TABLE_PROJECTION_NOT_FINAL'
+ if($RetainForVisualReview) {
+  Write-Output ('VISUAL_REVIEW_QVW='+$qvw)
+  Write-Output ('VISUAL_REVIEW_OPEN_IN_QLIKVIEW_DESKTOP=True')
+  Write-Output ('VISUAL_REVIEW_TABLE_VIEWER=NOT_TESTED')
+  Write-Output ('VISUAL_REVIEW_FILTER_SEMANTICS=NOT_TESTED')
+ }
  Write-Output 'TABLE_VIEWER_ROLE_SELECTION=NOT_TESTED'
  Write-Output 'PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY'
  Write-Output 'LINK_KEY_CONTRACT=NOT_APPROVED'
@@ -149,7 +169,10 @@ try {
  exit 1
 } finally {
  if($null -ne $doc) {try {$null=$doc.CloseDoc()} catch {}}
- if($pass) {
+ if($pass -and $RetainForVisualReview) {
+  Write-Output ('TEMPORARY_ASSOC_QVW_RETAINED_FOR_VISUAL_REVIEW='+$qvw)
+  Write-Output 'TEMPORARY_ASSOC_QVW_REMOVED=False'
+ } elseif($pass) {
   try {
    Remove-Item -LiteralPath $temp -Recurse -Force -ErrorAction Stop
    Write-Output 'TEMPORARY_ASSOC_QVW_REMOVED=True'
