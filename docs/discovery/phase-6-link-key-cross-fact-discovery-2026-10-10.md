@@ -438,3 +438,17 @@ TEMPORARY_ASSOC_QVW_REMOVED=True
 
 **Não executar QVDs factuais ou Link Table definitiva neste gate.** Se houver relatório de filtros/arestas a partir do visualizador, documentar a evidência com suas limitações sem alegar aprovação irrestrita. `ASSOCIATIVE_ROLE_SELECTION=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`.
 
+## 20. Table Viewer — retenção opcional de QVW temporário preparada, NÃO EXECUTADA
+
+**Implementação mínima somente na branch Draft PR #83:** `tools/validar_link_associativo_qlik.ps1` agora aceita o **switch opcional** `-RetainForVisualReview`. Não modifica o QVS associativo nem as seis entradas, a fórmula `SAD-LINK-V1`, os gates existentes ou o comportamento sem switch. Com switch o runner executa de novo a projeção, salva com `doc.Save()` **somente o QVW criado sob `%TEMP%`** (com o modelo carregado), verifica o timestamp, exige os gates e SHA-256 pré-existentes, e **não remove** o QVW temporário após PASS. O caminho real será impresso em `VISUAL_REVIEW_QVW=...`. Se ocorrer FAIL, o diagnóstico continua fail-closed/retido para inspeção. **Esta execução com retenção ainda NÃO ocorreu no QlikView do usuário.**
+
+**Sequência de inspeção manual posterior, sem criar tabelas de negócio:**
+
+1. Executar `tools/validar_link_associativo_qlik.ps1 -Root (Get-Location).Path -RetainForVisualReview`, após `git pull --ff-only`; exigir os mesmos números R2 e o marcador `VISUAL_REVIEW_QVW`. Se o método COM de salvar o documento falhar em alguma versão de QlikView 12, bloquear e não presumir arquivo utilizável.
+2. Abrir **somente o caminho temporário `VISUAL_REVIEW_QVW`** no QlikView Desktop 12. Pressionar `Ctrl+T` (File → Table Viewer; procedimento descrito oficialmente em [QlikView Help — Table Viewer](https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Table_Viewer.htm)). Conferir tanto *Internal Table View* quanto *Source Table View*, se disponível.
+3. Verificar `P6_LINK_SIMULADA` central com `%LINK_KEY` e cinco campos SK, três projeções de fatos com exclusivamente `%LINK_KEY` como campo compartilhado, e cinco aliases `P6_DIM_COMP_SIMULADA`, `P6_DIM_ANO_SIMULADA`, `P6_DIM_RES_SIMULADA`, `P6_DIM_SERV_SIMULADA`, `P6_DIM_EST_SIMULADA`, **sem `$Syn`**, campos descritivos homônimos ou arestas adicionais indevidas.
+4. Registrar captura (somente da estrutura) ou descrição fiel das arestas **antes** de criar seleções. Após isso, planejar testes de seleção por ano, competência e papéis municipais. **Hipótese sob teste:** seleção de competência pode excluir população anual (competência nula); seleção de município de residência pode excluir capacidade (residência nula). Não inferir que anos/população leitos/internações podem ser agregados corretamente sem observar essas seleções.
+5. Apagar o **QVW temporário** manualmente somente após documentar a verificação, se não houver pendência diagnóstica; nunca apagar `TRANSFORMACAO/P6_LINK_KEY_CROSS_FACT_PREFLIGHT_R2.qvw`, seis QVDs ou QVSs versionados.
+
+**DECISÃO PENDENTE:** o save/reopen do QVW temporário com dados, o Table Viewer e os filtros permanecem **NOT_TESTED**. Uma captura de nove tabelas não é aprovação automática de denominadores entre competências mensais e população anual; medidas factuais e indicadores reais continuam ausentes. `LINK_ASSOC_MINIMAL_9_TABLE_PREFLIGHT=PASS_QV_NATIVE`, `TABLE_VIEWER=PREPARED_NOT_RUN`, `SELECTION_SEMANTICS=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE_QVD=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`.
+
