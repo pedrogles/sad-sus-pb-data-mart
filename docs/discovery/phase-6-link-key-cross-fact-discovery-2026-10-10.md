@@ -505,3 +505,28 @@ TEMPORARY_ASSOC_QVW_REMOVED=False
 
 **Estado depois da captura:** `QVW_TEMP_SAVE_REOPEN=PASS_USER_SCREENSHOT`, `TABLE_VIEWER_TOPOLOGY=PASS_ONE_SCREENSHOT`, `ROLE_SELECTIONS=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`, `FACT_QVDS=NOT_STARTED`, `LINK_ANALISE_QVD=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`, PR #83 Draft sem merge.
 
+## 23. Seleções temporais no QlikView — S0/S1 PASS e S1+201909 exclui POP (13/10/2026)
+
+**FATO VERIFICADO (três capturas reais do mesmo QVW associativo temporário fornecidas pelo responsável):** foram adicionadas caixas de lista `P6_ANO_ANO`, `P6_COMP_COMPETENCIA` e objeto de texto com `Count(P6_RD_ROW_DEBUG)`, `Count(P6_LT_ROW_DEBUG)`, `Count(P6_POP_ROW_DEBUG)`. Os números registrados são **contagens de linhas administrativas/técnicas**, não `QTD_INTERNACAO`, número de leitos efetivos, população em pessoas nem indicadores finais.
+
+| Captura / cenário observado | Seleções visíveis | RD (linhas) | LT (linhas) | POP (linhas) | Leitura |
+| --- | --- | ---: | ---: | ---: | --- |
+| 1 — S0 | nenhuma (ano e competência sem seleção verde) | 566672 | 35518 | 669 | PASS da referência total |
+| 2 — S1 | `P6_ANO_ANO=2019` (verde), competências de 2019 possíveis | 191653 | 11648 | 223 | PASS da presença dos três processos no eixo anual |
+| 3 — S1+M09 | **`P6_ANO_ANO=2019` e `P6_COMP_COMPETENCIA=201909` ambos verdes** | 16489 | 978 | **0** | População anual excluída pela seleção mensal combinada |
+
+**Precisão de cenário obrigatória:** a captura 3 **NÃO** executou S2 no protocolo original (competência 201909 isolada após `Clear All`): o ano 2019 **permanece selecionado em verde**. O valor `POP=0` é, entretanto, evidência física inequívoca de ausência de registros da FATO_POPULACAO técnica com **2019 + competência 201909 selecionados**. Não renomear silenciosamente S1+M09 para S2.
+
+**Limitação associativa verificada:** no modelo com cinco coordenadas e nulo real para a competência da população anual, um filtro mensal combinado pode retirar completamente a disponibilidade do denominador populacional, apesar de existir `POP=223` ao filtrar apenas 2019. Uma contagem técnica `POP=223` representa **223 linhas município-ano**, não 223 habitantes. `RD=191653` é **registro administrativo RD**, não quantidade de novas admissões (o indicador `QTD_INTERNACAO` exclui `IDENT=5`). A queda `POP=223 → 0` não deve ser 'corrigida' duplicando população em 12 meses ou introduzindo sentinelas como se fossem competências reais.
+
+**HIPÓTESE DE MODELAGEM:** será necessário um mecanismo de seleção/expressão que mantenha coerência anual nos denominadores durante análises mensais (por exemplo, avaliar set analysis em ensaio separado), sem aprovar sua fórmula, efeitos de seleção, duplicações ou denominações por antecipação. A evidência não demonstra que uma estratégia específica resolva todos os cruzamentos RD/LT/POP. A conveniência de preservar a Link Table com seus cinco campos deve ser reconsiderada apenas após os demais testes e uma decisão documentada, sem alterar Boundaries 6/7 ou a entrega acadêmica por iniciativa implícita.
+
+**PRÓXIMOS TESTES READ-ONLY no QVW retido:**
+
+1. S2 isolado — limpar **todas** as seleções antes de marcar apenas `P6_COMP_COMPETENCIA=201909`; anotar RD/LT/POP. Não presumir a mesma contagem da captura S1+M09.
+2. S3 residência — limpar tudo, criar caixa `P6_RES_DATASUS_6`, selecionar um município PB com presença RD+POP e registrar **código realmente selecionado** e RD/LT/POP; capacidade tem residência nula, então `LT=0` é hipótese física a verificar.
+3. S4 serviço — limpar tudo, criar caixa `P6_SERV_DATASUS_6`, selecionar município PB com RD/LT/POP e registrar código e três contagens. Preferir o mesmo município de S3 para comparação, **sem supor valores**.
+4. S5 serviço+ano — limpar tudo e selecionar `P6_ANO_ANO=2019` e o município de serviço de S4, verificando se a população de 2019 continua associada.
+
+**DECISÃO PENDENTE:** `YEAR_FILTER_ASSOCIATION=PASS_ON_2019`; `MONTH_AND_YEAR_POPULATION_ASSOCIATION=FAIL_FOR_SHARED_FILTERING`; `MONTH_ONLY_ASSOCIATION=NOT_TESTED`; `RESIDENCE_FILTER_ASSOCIATION=NOT_TESTED`; `SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `ANNUAL_SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. A evidência está nas capturas enviadas nesta conversa, não versionadas como imagem no Git. Preservar o QVW temporário para os testes seguintes.
+
