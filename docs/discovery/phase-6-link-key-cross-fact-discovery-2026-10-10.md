@@ -297,3 +297,60 @@ Foram versionados **sem modificar scripts de produção ou evidências anteriore
 
 **Resultado esperado somente após execução física:** `RUN_A_ROWS=85705`, `RUN_B_ROWS=85705`, `ONLY_A_PAIRS=0`, `ONLY_B_PAIRS=0`, `COMPARISON=EXACT_85705_HASH_SERIAL_PAIRS_MATCH`, `ALL_6_INPUT_QVD_SHA256_UNCHANGED=True`, `VERDICT=PASS_2_RELOADS_EXACT_85705_LINK_PAIRS_MATCH_NOT_APPROVED`. Mesmo um PASS não aprova `%LINK_KEY` definitiva, `LINK_ANALISE` ou modelo role-playing. `LINK_KEY_CONTRACT=NOT_APPROVED`; `EXACT_KEY_SET_R2=PREPARED_NOT_RUN`; `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`; `FACT_QVD=NOT_STARTED`; `LINK_ANALISE=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`.
 
+## 15. PASS físico — igualdade exata de 85.705 pares em duas recargas independentes (13/10/2026)
+
+**FATO VERIFICADO — execução local Windows / QlikView Desktop 12 + Python 3 fornecida pelo responsável:** após `git pull --ff-only` da branch do PR #83 até `86dca7b`, o runner versionado `tools/validar_estabilidade_link_key_pares_r2.ps1` criou um QVW **somente em `%TEMP%`**, manteve o `SAD-LINK-V1` original e executou **duas recargas independentes**. Ambos os perfis QlikView passaram e ambos os CSVs de três colunas exportaram 16.083.119 bytes. O comparador `tools/comparar_pares_link_key_qlik.py` analisou **todos** os registros deduplicados de cada exportação:
+
+```text
+MODE=PHASE_VI_LINK_KEY_EXACT_PAIRS_R2_TWO_INDEPENDENT_RELOADS
+ORIGINAL_QVW_MODIFIED=False
+ONLY_TEMPORARY_HASH_SERIAL_PAIR_EXPORTS=True
+FACT_QVD_GENERATED=False
+LINK_ANALISE_QVD_GENERATED=False
+RUN_1_RELOAD_RETURNED=True
+RUN_1_PROFILE_PASS=True
+RUN_1_EXPORTED_PAIR_BYTES=16083119
+RUN_2_RELOAD_RETURNED=True
+RUN_2_PROFILE_PASS=True
+RUN_2_EXPORTED_PAIR_BYTES=16083119
+RUN_A_ROWS=85705
+RUN_A_DISTINCT_HASH=85705
+RUN_A_DISTINCT_SERIAL=85705
+RUN_B_ROWS=85705
+RUN_B_DISTINCT_HASH=85705
+RUN_B_DISTINCT_SERIAL=85705
+MODE=PHASE_VI_LINK_KEY_EXACT_HASH_SERIAL_PAIR_COMPARE
+RUN_A_SORTED_PAIR_SHA256=468057c560318ec15a9552e24434330da90e6c63929269f42c604c0d4085040e
+RUN_B_SORTED_PAIR_SHA256=468057c560318ec15a9552e24434330da90e6c63929269f42c604c0d4085040e
+ONLY_A_PAIRS=0 ONLY_B_PAIRS=0
+COMPARISON=EXACT_85705_HASH_SERIAL_PAIRS_MATCH
+SOURCE_R2_QVW_SHA256_UNCHANGED=True
+VERSIONED_QVS_SHA256_UNCHANGED=True
+ALL_6_INPUT_QVD_SHA256_UNCHANGED=True
+VERDICT=PASS_2_RELOADS_EXACT_85705_LINK_PAIRS_MATCH_NOT_APPROVED
+LINK_KEY_CONTRACT=NOT_APPROVED
+PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED
+TEMPORARY_PAIR_EXPORTS_REMOVED=True
+```
+
+**Interpretação do PASS (escopo estrito):** o comparador validou 85.705 pares `(Text(_P6_HASH),_P6_SERIAL)` **distintos** por recarga, 85.705 hashes e 85.705 serializações, correspondência biunívoca de hash↔serial em cada conjunto, comprimento de hash de 22 caracteres e igualdade **exata de conjuntos completos**, `ONLY_A_PAIRS=ONLY_B_PAIRS=0`. O SHA-256 dos pares ordenados coincide nas duas recargas. Seis QVDs, QVS versionado e QVW R2 original foram novamente verificados por SHA-256 e permaneceram inalterados. Arquivos temporários da auditoria **bem-sucedida** foram removidos.
+
+**Distinção importante em relação ao incidente anterior:** a primeira exportação `STORE _P6_HASH ... (txt)` de coluna única permanece com `602859` linhas e `1` valor textual bruto em seus dois diagnósticos retidos; **causa raiz técnica não comprovada**. A nova exportação temporária `LOAD DISTINCT` **de três colunas** foi bem-sucedida; não declarar que a falha anterior foi necessariamente causada por CSV de coluna única, Qlik bug ou conversão `Text()` sem experimento causal. Os TXT antigos não participam do PASS novo e podem permanecer retidos para auditoria.
+
+**Estado de gate verificado:** `CROSS_FACT_FIVE_COORDINATES=PASS_EXPERIMENTAL_R2`, `PAIR_EXACT_SET_TWO_RELOADS=PASS`, `SAD_LINK_V1_IDENTICAL_HASH_SERIAL_MAPPING=PASS_OBSERVED_SNAPSHOT_2017_2019`, `INPUT_QVD_AND_QVW_SHA256_UNCHANGED=PASS`. Esses resultados não afirmam nem aprovam a `%LINK_KEY` como contrato materializado para QVDs factuais nem demonstram o diagrama de associações QlikView final.
+
+## 16. Próximo gate contratual — LINK_ANALISE distinta e integridade associativa (READ-ONLY, NÃO EXECUTADO)
+
+**FATO DOCUMENTAL (Boundaries 6 §§22.5–22.6 e 7 §22):** a `LINK_ANALISE` materializada deverá conter somente **combinações distintas** das cinco coordenadas conformadas e a `%LINK_KEY`, com as três fatos ligando-se **somente pela `%LINK_KEY`**. Toda linha factual terá exatamente uma chave, todas deverão encontrar correspondência na Link Table, nenhum processo factual perderá ou ganhará registros, e os campos de papéis de residência e serviço deverão ser associáveis sem nomes homônimos espúrios, loops ou `$Syn` não justificadas. Os campos não aplicáveis continuam nulos. Grãos e agregações de capacidade/população permanecem protegidos, sem somar snapshots de leitos ou anos populacionais.
+
+**DECISÕES PENDENTES / sequência de validação para a próxima Discovery:**
+
+1. Projetar em memória, a partir das fontes validadas, uma `LINK_ANALISE` **simulada e distinta**, com cinco SKs coordenadas e hash candidato sem gravar `LINK_ANALISE.qvd`.
+2. Conferir cardinalidades **factual→chave→link**, cobertura de 100% para RD (566.672), LT (35.518) e IBGE (669), todos os 85.705 pares distintos, ausência de NULLs inesperados e preservação dos grãos/métricas; distinguir relação muitos-para-um válida de multiplicação indevida das linhas.
+3. Ensaiar **aliases role-playing** e nomeações associativas no Table Viewer do QlikView: papéis residência e serviço mantidos sem associação acidental por campo descritivo, nenhum loop, nenhuma `$Syn` injustificada; verificar filtros representativos do tempo/município/estabelecimento, **sem pressupor equivalência analítica entre residência e atendimento**.
+4. Reconciliar posteriormente indicadores conforme Boundary 6 §22.7, preservando fatos com aditividades diferentes, sem interpretar `internações/leito` como ocupação real.
+
+**HIPÓTESE DE MODELAGEM:** reutilizar `SAD-LINK-V1` é tecnicamente promissor para este snapshot após PASS exato, mas **aprovação do contrato final** requer o teste associativo multi-fato e revisão explícita. O teste R2 exitoso não transforma a Link Table em entidade acadêmica adicional nem modifica o Star Schema aprovado.
+
+**Estado:** `PAIR_EXACT_SET_R2=PASS`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `LINK_ANALISE_ASSOCIATIVE_PREFLIGHT=NOT_STARTED`; `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`; PR #83 mantém estado **Draft sem merge**.
+
