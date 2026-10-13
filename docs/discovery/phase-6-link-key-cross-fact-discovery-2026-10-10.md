@@ -207,3 +207,30 @@ TEMP_DIAGNOSTIC_DIR_RETAINED=C:\Users\pedro\AppData\Local\Temp\SAD_P6_LINK_EXACT
 
 **Próximo passo estritamente READ-ONLY:** inspecionar as primeiras linhas de `run_a.txt` e `run_b.txt`, quantidades distintas no texto bruto (sem transformação), tamanhos de linha e possíveis aspas/caracteres delimitadores, e comparar os dois arquivos sob o diretório temporário retido. **Não alterar `Hash128('SAD-LINK-V1',...)`, regra de nulos, QVDs, QVW R2 ou comparador para forçar PASS sem a evidência de TXT.** Em seguida, isolar e versionar uma correção mínima se necessário, repetindo a auditoria em novo diretório temporário. O registro operacional é `EXACT_KEY_SET_AUDIT=BLOCKED_EXPORT_OR_PARSE_UNDER_INVESTIGATION`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. PR #83 mantém Draft e `main` intocada.
 
+## 11. Inspeção direta de TXT retidos — valores realmente repetidos (13/10/2026)
+
+**FATO VERIFICADO** pela inspeção local read-only entregue pelo responsável usando Python 3 `Counter` sobre as duas exportações temporárias retidas. Após a remoção apenas de terminadores de linha e cabeçalho, os dois arquivos apresentaram **exatamente o mesmo valor textual bruto repetido 602.859 vezes**:
+
+```text
+ARQUIVO=run_a.txt
+LINHAS=602859
+VALORES_BRUTOS_DISTINTOS=1
+TAMANHOS=[(25, 602859)]
+PRIMEIRAS_3=['\'"HC.(+#&,>/;""QU[6LNCG`+"\'', ...]  # amostra anonimizada por conveniência
+SHA256_ARQUIVO=3431afdaf4e1b241f8a3d4d6ec05df7d4c60009e784fec058aa1b1ac647175ef
+
+ARQUIVO=run_b.txt
+LINHAS=602859
+VALORES_BRUTOS_DISTINTOS=1
+TAMANHOS=[(25, 602859)]
+SHA256_ARQUIVO=3431afdaf4e1b241f8a3d4d6ec05df7d4c60009e784fec058aa1b1ac647175ef
+```
+
+O mesmo conteúdo está presente na primeira linha, na linha central e em todas as outras; as aspas internas aparecem duplicadas, conforme escape habitual de CSV. **Esta evidência elimina a hipótese de que o comparador Python tenha transformado 85.705 valores textuais distintos em um único valor por erro de parsing.** O arquivo TXT, tal como escrito, contém somente um valor textual. O QlikView, entretanto, reportou **85.705 `Count(DISTINCT _P6_HASH)`** em cada recarga antes de `STORE`. A causa técnica desta divergência **continua não demonstrada**: pode envolver como valores de `Hash128` são representados/convertidos na exportação `STORE ... (txt)`, mas não há prova suficiente para afirmar um bug específico do QlikView.
+
+**Referência de documentação oficial QlikView:** `Hash128()` deve produzir texto de 22 caracteres; `STORE ... (txt)` produz CSV com caracteres escapados (fonte: QlikView Help, função Hash128 e comando STORE). A amostra bruta de 25 caracteres inclui aspas externas e escape de aspas internas; o fato crítico é **a repetição de um único valor**, não o comprimento bruto da linha. A equalidade de SHA-256 dos arquivos demonstra identidade dos **TXT incorretamente empobrecidos**, não identidade das 85.705 chaves em memória.
+
+**DECISÃO PENDENTE / próximo diagnóstico:** sem tocar `SAD-LINK-V1` nem nos QVDs, executar um **probe Qlik isolado** que meça `Count(DISTINCT _P6_HASH)`, `Count(DISTINCT Text(_P6_HASH))` e `Count(DISTINCT _P6_SERIAL)` no mesmo subconjunto, exportando lado a lado hash original, `Text(hash)` e serialização bruta em TXT temporário. Se houver divergência entre campos antes da exportação, separar problema de conversão/dualidade de eventual problema no `STORE`. **Nenhuma substituição de algoritmo ou normalização do hash será aprovada com base apenas na amostra.** O comparador original permanece fail-closed e os antigos `run_a.txt`/`run_b.txt` não devem ser apagados enquanto a causa é investigada.
+
+**Estado:** `RAW_TXT_DISTINCT=1` **confirmado**, `QV_IN_MEMORY_DISTINCT=85705` confirmado em gate do preflight, `EXACT_KEY_SET_AUDIT=BLOCKED_OUTPUT_REPRESENTATION`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`.
+
