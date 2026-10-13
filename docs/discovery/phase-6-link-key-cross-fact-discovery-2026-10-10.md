@@ -560,3 +560,20 @@ Interpretação: RD é registro administrativo, não `QTD_INTERNACAO`; POP são 
 
 **Estado:** `RESIDENCE_FILTER_ASSOCIATION=CONFIRMED_LT_EXCLUDED`; `SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `ANNUAL_SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`.
 
+## 26. S4 — João Pessoa no papel serviço, três processos presentes (13/10/2026)
+
+**FATO VERIFICADO — captura QlikView 12 fornecida pelo responsável:** caixa `P6_SERV_DATASUS_6` apresenta `250750` (João Pessoa/PB) em verde; caixas de município residência, competência e ano não apresentam valores selecionados em verde.
+
+| Cenário | Campo selecionado | RD — registros técnicos | LT — registros técnicos | POP — registros técnicos |
+| --- | --- | ---: | ---: | ---: |
+| S3 — residência | `P6_RES_DATASUS_6=250750` | 125200 | 0 | 3 |
+| **S4 — serviço** | **`P6_SERV_DATASUS_6=250750`** | **233133** | **10072** | **3** |
+
+**Interpretação restrita:** o mesmo código municipal sob o papel de **serviço** mantém as três projeções disponíveis. Sob o papel de residência (S3), a capacidade hospitalar fica excluída porque a residência é `Null()` no CNES/LT. A diferença de registros SIH/RD entre os papéis é coerente com seus significados (residência dos pacientes versus localização do atendimento), mas estas contagens não medem novas admissões nem fluxo líquido de pacientes. `LT=10072` significa **linhas técnicas CNES/LT**, não 10.072 leitos físicos, e `POP=3` significa três registros município×ano, não habitantes.
+
+**Hipótese de modelagem ainda pendente:** a possibilidade de ver RD/LT/POP sob um filtro comum de município de serviço é condição necessária, **não suficiente**, para validar razões por habitante ou capacidade, sobretudo com granularidades diferentes e o desaparecimento de POP sob competência mensal. Não corrigir automaticamente filtros por residência, nem preencher dimensões não aplicáveis.
+
+**Próximo teste S5 — NÃO EXECUTADO:** limpar **todas** as seleções, escolher `P6_SERV_DATASUS_6=250750` e `P6_ANO_ANO=2019` (ambos verdes), manter residência e competência **sem seleção explícita**. Registrar três contagens e capturar os campos para verificar se os três processos permanecem associados no eixo anual de João Pessoa.
+
+**Estado:** `SERVICE_FILTER_ASSOCIATION=CONFIRMED_THREE_PROCESSES_S4_250750`; `RESIDENCE_FILTER_ASSOCIATION=CONFIRMED_LT_EXCLUDED_S3_250750`; `ANNUAL_SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `MONTH_ONLY_ASSOCIATION=CONFIRMED_POP_EXCLUDED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. A captura S4 está nesta conversa; não foi versionada como binário no Git.
+
