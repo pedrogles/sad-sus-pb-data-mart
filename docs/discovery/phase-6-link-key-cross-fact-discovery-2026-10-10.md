@@ -249,3 +249,37 @@ O mesmo conteúdo está presente na primeira linha, na linha central e em todas 
 
 **Status:** `TXT_EXPORT_ROOT_CAUSE=NOT_CONFIRMED`, `P6_TEXT_PROBE=PREPARED_NOT_RUN`, `EXACT_KEY_SET_AUDIT=BLOCKED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVDS=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. Preservar arquivos retidos da falha anterior até a revisão do diagnóstico. A instrução `STORE` do novo probe é exclusivamente **temporária e amostral**, e não representa implementação do Data Mart.
 
+## 13. Probe nativo/TXT concluído — 5.000 linhas e 801 valores distintos (13/10/2026 09:30:43)
+
+**FATO VERIFICADO — QlikView Desktop 12 / PowerShell local**, após `git pull --ff-only` até `e3f4918`. O diagnóstico `tools/diagnosticar_link_key_txt_export_qlik.ps1` executou em QVW sob `%TEMP%`, sem alterar o QVS nem o QVW original:
+
+```text
+MODE=PHASE_VI_HASH128_TXT_STORE_DIAGNOSTIC_READ_ONLY
+[P6-TXT] IN_MEMORY ROWS=602859 DISTINCT_HASH=85705 DISTINCT_TEXT_CAST=85705 DISTINCT_SERIAL=85705
+[P6-TXT] SAMPLE ROWS=5000 DISTINCT_HASH=801 DISTINCT_TEXT_CAST=801 DISTINCT_SERIAL=801
+[P6-TXT] TXT_SAMPLE_EXPORT_COMPLETE
+TXT_SAMPLE_SHA256=ed9ca47582953f6678562f4f0f419ffe93acefd7f5c323c97181aa97f022c7a5
+TXT_HEADER=['_P6_TXT_DIRECT', '_P6_TXT_CAST', '_P6_TXT_SERIAL']
+TXT_ROWS=5000
+TXT_DIRECT_HASH_UNIQUE=801
+TXT_DIRECT_HASH_LENGTHS=[(22, 5000)]
+TXT_TEXT_CAST_UNIQUE=801
+TXT_TEXT_CAST_LENGTHS=[(22, 5000)]
+TXT_SERIAL_UNIQUE=801
+TXT_SERIAL_LENGTHS=[(156, 5000)]
+ALL_6_INPUT_QVD_SHA256_UNCHANGED=True
+SOURCE_R2_QVW_SHA256_UNCHANGED=True
+SOURCE_QVS_SHA256_UNCHANGED=True
+VERDICT=DIAGNOSTIC_CAPTURED_EXPORT_HASH_BEHAVIOR_NOT_LINK_APPROVED
+LINK_KEY_CONTRACT=NOT_APPROVED
+TEMPORARY_SAMPLE_REMOVED=True
+```
+
+**Conclusão estrita:** `Hash128('SAD-LINK-V1',...)` retornou 85.705 hashes distintos em memória; `Text(_P6_HASH)` também teve 85.705, logo não houve colapso de diversidade pela função `Text()` nesta execução. A amostra `FIRST 5000` possuía 801 valores distintos tanto em QlikView quanto nas **três colunas exportadas** `STORE ... (txt)`, validando esta projeção amostral e a leitura CSV para hashes de 22 caracteres. O teste isolado foi concluído sem erro de script e SHA dos oito arquivos (seis QVDs, QVW R2, QVS) inalterados.
+
+**Falha anterior preservada e causa exata ainda pendente:** a exportação de **coluna única** de 602.859 linhas continha **um hash textual repetido** em cada TXT, apesar de 85.705 hashes distintos antes de STORE. O probe amostral de três colunas **não demonstra** se a causa depende da quantidade de colunas, da materialização de tabela `LOAD DISTINCT`, do volume, de dualidade em outro contexto ou de algum outro detalhe. Não atribuir bug ao QlikView sem prova, nem corrigir o serializer `SAD-LINK-V1` por hipótese.
+
+**Próximo gate proposto:** no mesmo padrão de QVW temporário, materializar `LOAD DISTINCT` das **85.705 combinações hash+serial** sob três campos auxiliares com nomes únicos: `Text(_P6_HASH)`, `_P6_SERIAL`, `Len(Text(_P6_HASH))`; confirmar contagens de hash, serial e par distintos **85.705** em memória, `STORE` temporário **com três colunas**, e comparar pares completos `(hash,serial)` entre duas recargas independentes via Python `csv.reader`. Guardar logs e CSV em `%TEMP%`, auditar seis SHA QVD + QVW R2 + QVS após o Python. Somente um novo teste físico pode produzir PASS; a proposta segue hipótese antes da execução.
+
+**Estado:** `HASH_TEXT_CAST=PASS_QV_COUNT`; `THREE_COLUMN_SAMPLE_STORE=PASS_5000_ROWS`; `EXACT_KEY_SET_AUDIT=BLOCKED_PENDING_FULL_DISTINCT_EXPORT`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`; `FACT_QVD=NOT_STARTED`; `LINK_ANALISE=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`; PR #83 Draft.
+
