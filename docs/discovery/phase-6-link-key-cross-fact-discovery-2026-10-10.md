@@ -530,3 +530,23 @@ TEMPORARY_ASSOC_QVW_REMOVED=False
 
 **DECISÃO PENDENTE:** `YEAR_FILTER_ASSOCIATION=PASS_ON_2019`; `MONTH_AND_YEAR_POPULATION_ASSOCIATION=FAIL_FOR_SHARED_FILTERING`; `MONTH_ONLY_ASSOCIATION=NOT_TESTED`; `RESIDENCE_FILTER_ASSOCIATION=NOT_TESTED`; `SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `ANNUAL_SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. A evidência está nas capturas enviadas nesta conversa, não versionadas como imagem no Git. Preservar o QVW temporário para os testes seguintes.
 
+## 24. Seleção S2 isolada — competência 201909 exclui POP mesmo sem ano selecionado (13/10/2026)
+
+**FATO VERIFICADO — captura física do QlikView 12 fornecida pelo responsável:** o campo `P6_COMP_COMPETENCIA` aparece **com `201909` em verde**, ao passo que **nenhum valor de `P6_ANO_ANO` está em verde**; `2019` está visível como valor possível, sem seleção explícita. O objeto técnico mostra:
+
+```text
+S2_SELECTION: P6_COMP_COMPETENCIA=201909 ONLY
+P6_ANO_ANO=NOT_EXPLICITLY_SELECTED
+RD=16489
+LT=978
+POP=0
+```
+
+**Conclusão de S2 independente:** a ausência de linhas POP sob filtro mensal não depende de o usuário ter selecionado explicitamente o ano junto com o mês, pois o mesmo comportamento ocorreu com **201909 isolado**. O cenário combinado anterior (`P6_ANO_ANO=2019` + `201909`) fica **corroborado**, não é substituído retrospectivamente. `POP=0` é contagem de **linhas técnicas município×ano em estado de seleção**, não prova de ausência de população na fonte IBGE ou de habitantes reais iguais a zero. `RD=16489` conta registros RD, não `QTD_INTERNACAO`; `LT=978` conta linhas de leitos por CNES/competência/código, não o total de leitos existentes.
+
+**Limitação semântica CONFIRMADA (escopo do protótipo):** o modelo atual associa a população anual a uma `%LINK_KEY` cuja competência é `Null()`; o eixo `P6_COMP_COMPETENCIA` filtra as combinações com competência mensal, deixando sem correspondência os registros anuais de população. **DECISÃO PENDENTE:** mecanismo de denominador anual para indicadores mensais deverá ser testado em separado sem expandir a população mês a mês, preencher NULL não aplicável nem alterar silenciosamente as cinco coordenadas aprovadas. Não implementar `FATO_POPULACAO.qvd` ou `LINK_ANALISE.qvd` com base no gate de seleção parcial.
+
+**Próximo gate ainda NÃO TESTADO:** S3 município residência (limpar TODAS seleções, selecionar um `P6_RES_DATASUS_6` presente e anotar o código), seguido por S4 município serviço `P6_SERV_DATASUS_6` e S5 município serviço+ano. Se a LT desaparecer em S3, classificar como incompatibilidade com filtro de residência decorrente da coordenada não aplicável, não como falta de leitos. Preservar o QVW temporário de visualização até encerrar as seleções.
+
+**Estado:** `MONTH_ONLY_ASSOCIATION=CONFIRMED_POP_EXCLUDED`; `MONTH_AND_YEAR_POPULATION_ASSOCIATION=CONFIRMED_POP_EXCLUDED`; `YEAR_FILTER_ASSOCIATION=PASS_ON_2019`; `RESIDENCE_FILTER_ASSOCIATION=NOT_TESTED`; `SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `ANNUAL_SERVICE_FILTER_ASSOCIATION=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. A captura S2 fornecida pelo usuário não foi adicionada ao Git como binário.
+
