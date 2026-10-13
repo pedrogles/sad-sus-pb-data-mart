@@ -234,3 +234,18 @@ O mesmo conteúdo está presente na primeira linha, na linha central e em todas 
 
 **Estado:** `RAW_TXT_DISTINCT=1` **confirmado**, `QV_IN_MEMORY_DISTINCT=85705` confirmado em gate do preflight, `EXACT_KEY_SET_AUDIT=BLOCKED_OUTPUT_REPRESENTATION`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`.
 
+## 12. Probe Qlik isolado de tipagem/STORE TXT — preparado, NÃO EXECUTADO (13/10/2026)
+
+**Script de observabilidade versionado:** `tools/diagnosticar_link_key_txt_export_qlik.ps1` — **não modifica** `TRANSFORMACAO/phase_vi_link_key_cross_fact_preflight.qvs`, `TRANSFORMACAO/P6_LINK_KEY_CROSS_FACT_PREFLIGHT_R2.qvw`, nenhum dos **seis** QVDs existentes, fatos ou `LINK_ANALISE`. Segue o mesmo padrão QlikView COM + `%TEMP%`: confere identidade do QVS e QVW R2, cria um QVW isolado, substitui as seis referências de leitura por caminhos absolutos temporariamente e injeta um bloco diagnóstico exclusivamente antes dos `DROP TABLE` no documento temporário.
+
+**Medições previstas em uma única recarga física:**
+
+1. Sobre **todas as 602.859 linhas em memória**: `Count(DISTINCT _P6_HASH)`, `Count(DISTINCT Text(_P6_HASH))` e `Count(DISTINCT _P6_SERIAL)`. Exigir linha-base Qlik `602859 / 85705 / 85705` para total/hash/serial; registrar separadamente o total do cast textual sem presumir resultado.
+2. Sobre uma amostra de **até 5.000 registros** via `FIRST 5000 LOAD ... RESIDENT P6_LINK_TEST`: medir distintas de hash direto, `Text(hash)` e serialização; exportar em TXT temporário **três colunas distintas** (`_P6_TXT_DIRECT`, `_P6_TXT_CAST`, `_P6_TXT_SERIAL`) lado a lado.
+3. Interpretar somente o **TXT de amostra** com Python 3 `csv.reader`, reportando contagem de linhas e valores distintos de cada coluna, comprimentos, pequenas amostras de hashes, SHA-256 do TXT, sem publicar serializações individuais com códigos pessoais.
+4. Guardar no log Qlik os contadores nativos antes da exportação, exigir conclusão do `STORE`, preservar SHA-256 do QVW R2, QVS e seis QVDs; excluir o probe temporário após captura bem-sucedida e **reter o arquivo temporário em caso de erro**.
+
+**Motivação:** os TXT originais `run_a.txt`/`run_b.txt` têm somente um valor literal repetido, mas os perfis Qlik de `P6_LINK_TEST` afirmam 85.705 valores distintos. A comparação em paralelo permitirá diferenciar a representação `Text(_P6_HASH)` da leitura do mesmo campo pelo `STORE`, antes de decidir a correção mínima. Se `Text(_P6_HASH)` já tiver apenas um valor no Qlik, o foco será **dualidade/representação**; se `Text(_P6_HASH)` mantiver 85.705, mas a coluna TXT for constante, o foco será a **projeção/escrita CSV**. Trata-se apenas de plano condicional, **não de causa demonstrada**.
+
+**Status:** `TXT_EXPORT_ROOT_CAUSE=NOT_CONFIRMED`, `P6_TEXT_PROBE=PREPARED_NOT_RUN`, `EXACT_KEY_SET_AUDIT=BLOCKED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `ROLEPLAY_ASSOCIATIVE_MODEL=NOT_TESTED`, `FACT_QVDS=NOT_STARTED`, `LINK_ANALISE=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. Preservar arquivos retidos da falha anterior até a revisão do diagnóstico. A instrução `STORE` do novo probe é exclusivamente **temporária e amostral**, e não representa implementação do Data Mart.
+
