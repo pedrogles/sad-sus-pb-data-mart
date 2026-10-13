@@ -619,3 +619,41 @@ POP=1
 
 **Estado consolidado:** `S0_S5_SEMANTIC_DISCOVERY=COMPLETED`; `LINK_KEY_HASH_STABILITY=PASS_85705_PAIRS`; `LINK_ASSOC_MINIMAL_9_TABLE_PREFLIGHT=PASS`; `TABLE_VIEWER_TOPOLOGY=PASS_ONE_SCREENSHOT`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_TESTED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. Draft PR #83 permanece aberto, sem merge. Preservar o QVW temporário de diagnóstico até decisão explícita sobre essa fase; a captura S5 não foi versionada como binário no Git.
 
+## 28. Experimento semântico controlado — denominador anual sob filtro mensal (PREPARADO, NÃO EXECUTADO)
+
+**FATO DOCUMENTAL / contrato de origem:** o Boundary 6 §§20–22 estabelece indicadores em eixos municipais/temporais com grãos e papéis distintos; Boundary 7 §§20–22 mantém população em `município×ano` e capacidade como `CNES×COMPETEN×CODLEITO`, com `Null()` em coordenadas não aplicáveis. A bateria física S0–S5 confirmou que a população anual desaparece sob seleção de competência mensal e que LT desaparece sob filtro de município de residência. Não reabrir a primeira entrega acadêmica, não replicar população 12 vezes nem substituir NULL por chave artificial.
+
+**FATO TÉCNICO OFICIAL — QlikView Set Analysis:** um modificador `{$<CAMPO=>}` limpa a seleção somente do campo nomeado, preservando as demais seleções do estado `$`; um modificador `CAMPO={2019}` impõe o ano 2019 nesse cálculo. Documentação QlikView: https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/ChartFunctions/SetAnalysis/set-modifiers.htm e https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/ChartFunctions/SetAnalysis/set-analysis-expressions.htm .
+
+**HIPÓTESE DE MODELAGEM (não aprovada e sem execução no QlikView):** a seleção mensal que excluiu `P6_POP_ROW_DEBUG` pode permitir uma **expressão de contagem anual** independente apenas do mês, preservando o município de serviço:
+
+```qlik
+Count({$<P6_COMP_COMPETENCIA=, P6_ANO_ANO={2019}>} P6_POP_ROW_DEBUG)
+```
+
+**Esta expressão só testa a presença de uma linha técnica POP**; NÃO lê `POPULACAO_ESTIMADA`, não calcula pessoas nem é um denominador já aprovado. O `2019` **é literal de teste**, intencionalmente fixo; em produção o ano teria de derivar de maneira validada das seleções com casos de zero, um ou múltiplos anos. A expressão deve usar `$`, não `{1}`, pois o conjunto universal ignoraria também o município escolhido.
+
+**PROTOCOLO DE VERIFICAÇÃO READ-ONLY no mesmo QVW temporário retido:** adicionar um **novo objeto Text Object** no QlikView Desktop, com a seguinte expressão, sem editar script de carga e sem recarregar dados:
+
+```qlik
+='RD=' & Count(P6_RD_ROW_DEBUG)
+ & ' | LT=' & Count(P6_LT_ROW_DEBUG)
+ & ' | POP_NORMAL=' & Count(P6_POP_ROW_DEBUG)
+ & ' | POP_SEM_MES_ANO2019=' & Count({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={2019}>} P6_POP_ROW_DEBUG)
+```
+
+Antes de cada cenário, limpar todas as seleções no próprio QVW. **Expectativas são apenas hipóteses até saída observada:**
+
+| Cenário | Seleções explícitas | POP_NORMAL já observado | POP_SEM_MES_ANO2019 — hipótese |
+| --- | --- | ---: | ---: |
+| E0 | nenhuma | 669 | 223 (uma linha por município em 2019) |
+| E1 | competência `201909` apenas | 0 | 223 (ano 2019 imposto, competência ignorada apenas no objeto) |
+| E2 | serviço `250750` e ano `2019` | 1 | 1 |
+| E3 | serviço `250750`, competência `201909` e ano `2019` | ainda não medido nesta combinação | 1 |
+
+**Fail closed:** não declarar `SET_ANALYSIS_DENOMINATOR=PASS` antes de receber as quatro saídas/capturas. Se `POP_SEM_MES_ANO2019` for 0, 669 ou outro valor inesperado, investigar a propagação associativa e o estado efetivo das seleções. Não inferir que remover a competência sempre recupera o denominador correto; a estratégia NÃO define filtros de residência versus serviço, estrutura de medidas populacionais, casos múltiplos municípios/anos ou comparação com snapshots LT.
+
+**Próximos contratos depois desse experimento técnico:** (a) fontes reais de `POPULACAO_ESTIMADA` com ano×município; (b) `QTD_INTERNACAO` já reconciliada em staging, respeitando `IDENT=5`, mas ainda sem QVD de fato; (c) `QT_SUS`/`QT_EXIST` a partir da fonte LT, preservando competência, CNES, tipo e regras de semi-aditividade. Somente então testar numeradores/denominadores reais no mesmo escopo territorial, com resultados anuais independentes por município e limites de T29 expostos.
+
+**DECISÃO PENDENTE:** `S0_S5_FILTER_GATE=COMPLETE_WITH_LIMITATIONS`; `SET_ANALYSIS_2019_POP_DEBUG_TEST=PREPARED_NOT_RUN`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. Draft PR #83 permanece sem merge.
+
