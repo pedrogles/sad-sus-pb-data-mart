@@ -452,3 +452,56 @@ TEMPORARY_ASSOC_QVW_REMOVED=True
 
 **DECISÃO PENDENTE:** o save/reopen do QVW temporário com dados, o Table Viewer e os filtros permanecem **NOT_TESTED**. Uma captura de nove tabelas não é aprovação automática de denominadores entre competências mensais e população anual; medidas factuais e indicadores reais continuam ausentes. `LINK_ASSOC_MINIMAL_9_TABLE_PREFLIGHT=PASS_QV_NATIVE`, `TABLE_VIEWER=PREPARED_NOT_RUN`, `SELECTION_SEMANTICS=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`, `FACT_QVD=NOT_STARTED`, `LINK_ANALISE_QVD=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`.
 
+## 21. Table Viewer — PASS visual da topologia mínima, filtros ainda NÃO TESTADOS (13/10/2026 10:30:33)
+
+**FATO VERIFICADO** — o responsável executou fisicamente `tools/validar_link_associativo_qlik.ps1 -RetainForVisualReview` após fast-forward da branch Draft PR #83 até `55a0e36`, obteve `TEMPORARY_ASSOC_QVW_SAVED_WITH_LOADED_DATA=True`, log de preflight **PASS** às 10:30:33 e apresentou captura real do **Table Viewer do QlikView 12**. O QVW foi salvo exclusivamente em:
+
+`C:\Users\pedro\AppData\Local\Temp\SAD_P6_ASSOC_PREFLIGHT_07355503816541ddbed257b795d42ea2\P6_ASSOC_LINK_IN_MEMORY.qvw`
+
+**Nativo na recarga com retenção:**
+
+```text
+[P6-ASSOC] LINK_ROWS=85705 LINK_DISTINCT=85705 LINK_ORPHAN_BASE=0 REQUIRED_NULL=0
+[P6-ASSOC] FACT_ROWS RD=566672 LT=35518 POP=669
+[P6-ASSOC] FACT_ORPHANS RD=0 LT=0 POP=0
+[P6-ASSOC] FACT_NULL RD=0 LT=0 POP=0
+[P6-ASSOC] FINAL_MODEL TABLES=9 SYNTHETIC=0 COMP_ALIAS=144 ANO_ALIAS=12 RES_ALIAS=937 SERV_ALIAS=937 EST_ALIAS=220390
+[P6-ASSOC] VERDICT=PASS_IN_MEMORY_85705_LINK_AND_3_FACT_COVERAGE_NOT_FINAL
+ALL_6_INPUT_QVD_SHA256_UNCHANGED=True
+SOURCE_R2_QVW_SHA256_UNCHANGED=True
+BASE_AND_PROJECTION_QVS_SHA256_UNCHANGED=True
+VERDICT=PASS_IN_MEMORY_LINK_COVERAGE_9_TABLE_PROJECTION_NOT_FINAL
+VISUAL_REVIEW_QVW=C:\Users\pedro\AppData\Local\Temp\SAD_P6_ASSOC_PREFLIGHT_07355503816541ddbed257b795d42ea2\P6_ASSOC_LINK_IN_MEMORY.qvw
+VISUAL_REVIEW_TABLE_VIEWER=NOT_TESTED
+VISUAL_REVIEW_FILTER_SEMANTICS=NOT_TESTED
+TEMPORARY_ASSOC_QVW_REMOVED=False
+```
+
+**Inspeção da captura de Table Viewer fornecida pelo responsável (não anexada ao Git nesta Discovery):**
+
+- Uma única `P6_LINK_SIMULADA` central apresenta seis campos: `%LINK_KEY`, `%SK_ESTABELECIMENTO`, `%SK_MUNICIPIO_SERVICO`, `%SK_TEMPO_COMPETENCIA`, `%SK_TEMPO_ANO` e `%SK_MUNICIPIO_RESIDENCIA`.
+- As três projeções `P6_FATO_RD_SIMULADA`, `P6_FATO_LT_SIMULADA`, `P6_FATO_POP_SIMULADA` possuem cada uma apenas **dois campos**: a mesma `%LINK_KEY` e seu `P6_*_ROW_DEBUG` exclusivo. A única associação desenhada entre essas projeções e a ponte é `%LINK_KEY`.
+- Cinco dimensões/papéis `P6_DIM_COMP_SIMULADA`, `P6_DIM_ANO_SIMULADA`, `P6_DIM_RES_SIMULADA`, `P6_DIM_SERV_SIMULADA`, `P6_DIM_EST_SIMULADA` ligam-se à ponte exclusivamente pela SK de seu papel, com atributos descritivos prefixados.
+- **Nove tabelas visíveis; nenhuma tabela `$Syn`, arco por campo descritivo homônimo, ligação extra ou ciclo aparente na imagem.** Esse é um **PASS visual da topologia mínima representada**, em conjunto com o PASS nativo e zero `$Syn`, mas a captura não comprova que os modos *Internal Table View* e *Source Table View* tenham sido conferidos separadamente.
+
+**Cautela operacional:** o runner imprime `VISUAL_REVIEW_TABLE_VIEWER=NOT_TESTED` por contrato, pois não controla a UI. A captura recebida agora permite atualizar **a avaliação humana visual** para `TABLE_VIEWER_TOPOLOGY=PASS_ONE_SCREENSHOT`; não alterar nem apagar retroativamente a saída do runner. `TEMPORARY_ASSOC_QVW_REMOVED=False` é esperado para a revisão visual; preservar este arquivo até terminar as seleções. Sem geração de QVDs factuais ou Link Table.
+
+## 22. Próximo gate: seleções e preservação de fatos por papéis (não executado)
+
+**DECISÃO PENDENTE / PROTOCOLO MANUAL READ-ONLY:** usar **somente o QVW temporário retido** e construir no próprio documento de diagnóstico caixas de lista para `P6_ANO_ANO`, `P6_COMP_COMPETENCIA`, `P6_RES_DATASUS_6` e `P6_SERV_DATASUS_6`, mais três objetos de texto com expressões `Count(P6_RD_ROW_DEBUG)`, `Count(P6_LT_ROW_DEBUG)`, `Count(P6_POP_ROW_DEBUG)`. Estes ordinais existem **apenas nas projeções técnicas**, portanto não são as medidas clínicas nem populacionais e só servem para observar presença de linhas associadas.
+
+**Executar isoladamente, limpando todas as seleções antes de cada cenário, e registrar as três contagens:**
+
+| Cenário | Seleção | Objetivo | Interpretação esperada, ainda HIPÓTESE |
+| --- | --- | --- | --- |
+| S0 | Nenhuma | referência de 566672 / 35518 / 669 | os 3 processos disponíveis |
+| S1 | `P6_ANO_ANO = 2019` | eixo anual comum | os 3 processos presentes, valores não inventados |
+| S2 | `P6_COMP_COMPETENCIA = 201909` | eixo mensal | RD e LT presentes; população **pode** ficar excluída pela competência `NULL` |
+| S3 | `P6_RES_DATASUS_6` de município PB com RD/POP | município residência | RD/POP presentes; LT **pode** ficar excluída pela residência `NULL` |
+| S4 | `P6_SERV_DATASUS_6` de município PB com atendimento/leitos/população | município serviço | verificar presença de RD/LT/POP, sem presumir contagens |
+| S5 | `P6_ANO_ANO=2019` + um município de serviço PB | comparação anual territorial | verificar se o denominador populacional permanece disponível |
+
+**Não selecionar ano e competência simultaneamente no primeiro teste**; deixar combinações para último passo. Se S2 ou S3 esvaziar um processo que deveria fornecer denominador em indicador, registrar como **limitação semântica do caminho de seleção**, não corrigir alterando arbitrariamente nulos, serializador, Boundary 6/7 ou capítulos impressos. Análises mensais/população anual podem exigir desenho explícito de agregação ou caminho de seleção alternativo **em decisão separada**.
+
+**Estado depois da captura:** `QVW_TEMP_SAVE_REOPEN=PASS_USER_SCREENSHOT`, `TABLE_VIEWER_TOPOLOGY=PASS_ONE_SCREENSHOT`, `ROLE_SELECTIONS=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PHYSICAL_ASSOCIATIVE_MODEL=PARTIAL_PREFLIGHT_ONLY`, `FACT_QVDS=NOT_STARTED`, `LINK_ANALISE_QVD=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`, PR #83 Draft sem merge.
+
