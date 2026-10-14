@@ -1818,3 +1818,26 @@ Compress-Archive -Path (Join-Path $out "*") -DestinationPath "$env:USERPROFILE\D
 **Execução local prevista em PowerShell, após sincronizar commit e confirmar parser:** localizar QVW E5 já usado nos ensaios F4-D2; executar `tools/validar_f4_p5_projecao_qlik.ps1 -SourceQvw <E5_QVW> -Root .`. O runner bloqueia divergências e emite `FINAL_VERDICT=PASS_PROJECTION_READINESS_ONLY` exclusivamente após verificar marcadores do log QlikView 12 e hash das fontes. No PASS, o caminho `VISUAL_REVIEW_DISPOSABLE_QVW` identifica o QVW em memória que será usado no **próximo teste físico P5 específico**, mediante nova validação de casos por indicador e sem implementar PAINEL. Se falhar, registrar a falha, não contorná-la por `JOIN` ou `DISTINCT` artificial. A ausência de PowerShell/QlikView 12 no executor deste agente impede marcar previamente qualquer PASS de reload.
 
 **Estado:** `F4_P5_SOURCE_MEASURE_PROJECTION=PREPARED_NOT_EXECUTED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`; `F4_P5_E5_READINESS=BLOCKED_BY_E5_SCHEMA` (limite do E5 original permanece); `F4_D2_COM_PREDISPATCH=PASS_LOCAL_REPORTED_RESTRICTED`; `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`; PR #83 ainda Draft e sem merge.
+
+
+### 68.1 Execução local real — projeção F4-P5 de fontes/medidas no QlikView 12 (14/10/2026)
+
+**FATO VERIFICADO — evidência textual enviada pelo responsável:** após `git fetch`/`git pull --ff-only`, HEAD local conferido em `cbc858ca3290d87f3c9c178a463d67d66bcb7e64`, nenhuma alteração em arquivos versionados detectada por `git diff`/`git diff --cached`, `Parser.ParseFile` com `PARSER_PASS`. Foi usado o runner versionado `tools/validar_f4_p5_projecao_qlik.ps1` com QVW experimental E5 de hash original `F75786A88E7563B739492F2D2BC7C5CEA50D8C7F8E73F36770AA76960FB668C6`, que montou exclusivamente em diretório `%TEMP%` o novo `F4_P5_SOURCE_PROJECTION_DISPOSABLE.qvw`; hash do QVS executado (bytes do checkout Windows) `1BC178B1C3450A6EDC7E5DC2DB95903C72DDDAB033603A66141B2738687F2B9C`. O reload foi executado no QlikView 12 Windows, com marcadores de log nativo datados de 2026-10-14 20:19:37.
+
+| Marcador/controle no log QlikView | Valor observado |
+|---|---|
+| `RD_ROWS`, `ELIGIBLE`, `IDENT5`, `UNMATCHED` | `566672`, `555089`, `11583`, `0` |
+| `LT_ROWS`, `DISTINCT_GRAIN` | `35518`, `35518` |
+| `SUS_SNAPSHOT_SUM_AUDIT`, `INVALID_QT`, `UNMATCHED` | `270076`, `0`, `0` |
+| `FINAL_TABLES` e linhas `RD`/`LT`/`POP` | `9` e `566672`/`35518`/`669` |
+| `SYN` | `0` |
+| `VERDICT` nativo | `PASS_IN_MEMORY_SOURCE_MEASURES_AND_LINK_MEMBERSHIP_ONLY_NOT_P5` |
+| `FINAL_VERDICT` do runner | `PASS_PROJECTION_READINESS_ONLY` |
+
+O runner informou `ALL_SOURCE_SHA256_UNCHANGED=True`, `SOURCE_IMMUTABILITY_FINAL=True`, `SAVE_EXECUTED_ONLY_ON_DISPOSABLE=True`, `QVD_WRITES=0`, `FACT_QVDS_GENERATED=False`, `LINK_ANALISE_QVD_GENERATED=False`. Referência da cópia temporária do executor: `%TEMP%\SAD_F4_P5_PROJECTION_292827400e2c4163a95e2e4d74af4e87\F4_P5_SOURCE_PROJECTION_DISPOSABLE.qvw`.
+
+**PARECER:** `F4_P5_SOURCE_MEASURE_PROJECTION=PASS_LOCAL_REPORTED_RESTRICTED`. A evidência comprova os controles codificados de carga, cardinalidade de linhas, agregados técnicos, pertinência de `%LINK_KEY` candidata e ausência de `$Syn`, **não** prova a correção final do significado de indicadores, a igualdade de razões no QlikView, filtros físicos P5, classificação histórica de hospitais/leitos ou cobertura anual hospitalar. O valor `270076` **é soma de snapshots mensais somente para auditoria**, não leitos simultâneos nem capacidade anual. Não foi recebido corpo binário da cópia QVW ou QVD para reauditoria independente nesta conversa; confiança limitada a script canônico inspecionado + saída do executor + log textual enviado. A verificação `9 tabelas/0 $Syn` não demonstra por si só ausência de todos os efeitos associativos indevidos sob seleções.
+
+**Próximo gate separado:** ensaio COM de **comportamento das associações e disponibilidade dos campos P5** no QVW temporário, com baseline, seleções explícitas por papéis, atributos exclusivos RD/LT e acompanhamento de numeradores e população bruta; nenhum PASS de filtros C/R/I/B por indicador antes de provar isolamento/bloqueio de medidas. A matriz completa 48+8 permanece pendente.
+
+**Estados preservados:** `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `FACT_QVDS=NOT_STARTED`, `LINK_ANALISE_QVD=NOT_STARTED`, `PAINEL=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece OPEN/Draft, sem merge.
