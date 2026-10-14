@@ -807,3 +807,29 @@ O valor `ANUAL=2420936` é precisamente `811598 (2017) + 800323 (2018) + 809015 
 **Próximo teste mínimo — diagnóstico de ano derivado do filtro mensal, NÃO EXECUTADO:** manter `P6_SERV_DATASUS_6=250750` e `P6_COMP_COMPETENCIA=201809` sem escolher ano. Em objeto novo, examinar `Only(P6_COMP_COMPETENCIA)`, `Left(Text(Only(P6_COMP_COMPETENCIA)),4)` e `GetSelectedCount(P6_COMP_COMPETENCIA)`, sem alterar script ou dados. Se for possível derivar o ano univocamente, avaliar **separadamente** uma expressão experimental cujo `P6_ANO_ANO` corresponda ao ano derivado, e exigir o total 800323 em João Pessoa/2018. Exigir recusa explícita de filtros de competências múltiplos, competências incompatíveis, ano conflitante e ausência de seleção antes de aprovar. Essa candidata não é ainda decisão arquitetural.
 
 **Estado:** `E5_MONTH_ONLY_WITHOUT_EXPLICIT_YEAR=FAIL_SEMANTIC_OBSERVED`; `E5_SINGLE_MONTH_YEAR_DERIVATION=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 mantém Draft sem merge.
+
+---
+
+## 34. E6 — derivação do ano a partir de competência única (14/10/2026)
+
+**FATO VERIFICADO — captura do QlikView Desktop 12 enviada pelo responsável.** No mesmo QVW experimental E5, sem alteração ou recarga, foram mantidas somente as seleções `P6_SERV_DATASUS_6=250750` e `P6_COMP_COMPETENCIA=201809`, sem seleção explícita em `P6_ANO_ANO`.
+
+Novo objeto de texto calculado:
+
+```qlik
+='QTD_COMP=' & GetSelectedCount(P6_COMP_COMPETENCIA)
+& ' | COMP=' & Only(P6_COMP_COMPETENCIA)
+& ' | ANO_DERIVADO=' & Left(Text(Only(P6_COMP_COMPETENCIA)),4)
+```
+
+Resultado observado no objeto:
+
+```text
+QTD_COMP=1 | COMP=201809 | ANO_DERIVADO=2018
+```
+
+**Gate de diagnóstico `E6_SINGLE_COMPETENCE_YEAR_DERIVATION=PASS_VISUAL`.** Foi demonstrado que a seleção explícita de uma competência admite ano textual inequívoco nesse caso. Isso ainda não verifica aplicação do ano como modificador do conjunto POP; o contraexemplo E5 (`ANUAL=2420936`) permanece válido para a expressão que apenas limpa competência.
+
+**Candidata para próximo ensaio manual (NÃO EXECUTADA, sem produção):** com as mesmas seleções e apenas um objeto de texto, comparar `ANUAL=2420936` com a expressão experimental de Set Analysis `RangeSum(Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={$(=Left(Text(Only(P6_COMP_COMPETENCIA)),4))}>} P6_POP_HABITANTES_E5))`. Hipótese para `DINAMICO`: 800323; verificar se a expansão de dólar entrega 2018 no QlikView 12 real. Preservar `ANUAL` para o diagnóstico e reportar qualquer erro de sintaxe em vez de corrigir sem evidência.
+
+**LIMITES / DECISÕES PENDENTES:** uma competência selecionada por vez; nenhum ano explicitamente selecionado; nenhum suporte comprovado a seleção de meses múltiplos (mesmo ano ou anos distintos), filtros municipais múltiplos, residência, conflitos ano×mês ou medidas SIH/CNES. Qualquer regra genérica precisa de testes fail-closed adicionais. Não alterar granularidade de POP nem `SAD-LINK-V1`, não gerar QVD factual, não fazer merge do PR #83. `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `T29_HISTORICAL=NOT_APPROVED`.
