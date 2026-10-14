@@ -1,12 +1,53 @@
 # SAD P6/E12 - DISCOVERY READ ONLY of QlikView 12 COM surface.
 # No selections, no reload, no Save, no QVD or repository mutation.
-# Use a closed and SAVED COPY of the experimental E5 QVW, outside %TEMP% and the repository.
+# Two modes: -Qvw existing safe copy; -SourceQvw auto-creates a unique copy in Documents.
+# E12 inspects the saved on-disk model; unsaved UI objects are not included in the copy.
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory=$true)][string]$Qvw
+    [string]$Qvw,
+    [string]$SourceQvw
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$usingExisting = -not [string]::IsNullOrWhiteSpace($Qvw)
+$usingSource = -not [string]::IsNullOrWhiteSpace($SourceQvw)
+if ($usingExisting -eq $usingSource) {
+    throw 'BLOCKED_PROVIDE_EXACTLY_ONE_OF_QVW_OR_SOURCEQVW'
+}
+if ($usingSource) {
+    $sourceResolved = [IO.Path]::GetFullPath($SourceQvw)
+    if (-not (Test-Path -LiteralPath $sourceResolved -PathType Leaf)) {
+        throw "SOURCE_QVW_NOT_FOUND=$sourceResolved"
+    }
+    if ([IO.Path]::GetFileName($sourceResolved) -cne 'P6_E5_POP_DENOMINATOR_IN_MEMORY.qvw') {
+        throw 'BLOCKED_EXPECTED_E5_QVW_FROM_VERSIONED_RUNNER'
+    }
+    if ((Get-Item -LiteralPath $sourceResolved).Length -le 0) {
+        throw 'BLOCKED_EMPTY_SOURCE_QVW'
+    }
+    $copyDir = [Environment]::GetFolderPath([Environment+SpecialFolder]::MyDocuments)
+    if ([string]::IsNullOrWhiteSpace($copyDir) -or
+        -not (Test-Path -LiteralPath $copyDir -PathType Container)) {
+        throw 'BLOCKED_DOCUMENTS_FOLDER_UNAVAILABLE'
+    }
+    if ([IO.Path]::GetFullPath($copyDir).StartsWith(
+        [IO.Path]::GetFullPath([IO.Path]::GetTempPath()),
+        [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'BLOCKED_DOCUMENTS_POINTS_TO_TEMP'
+    }
+    $copyName = 'SAD_P6_E5_POP_SEMANTICS_COPY_' + [Guid]::NewGuid().ToString('N') + '.qvw'
+    $copyPath = Join-Path $copyDir $copyName
+    $sourceHash = (Get-FileHash -LiteralPath $sourceResolved -Algorithm SHA256).Hash
+    Copy-Item -LiteralPath $sourceResolved -Destination $copyPath -ErrorAction Stop
+    if ((Get-FileHash -LiteralPath $copyPath -Algorithm SHA256).Hash -cne $sourceHash -or
+        (Get-FileHash -LiteralPath $sourceResolved -Algorithm SHA256).Hash -cne $sourceHash) {
+        throw 'BLOCKED_QVW_COPY_SHA256_MISMATCH'
+    }
+    Write-Output ('AUTO_COPY_QVW='+$copyPath)
+    Write-Output 'AUTO_COPY_SHA256_VERIFIED=True'
+    Write-Output 'SOURCE_QVW_SHA256_UNCHANGED=True'
+    $Qvw = $copyPath
+}
 $resolved = [IO.Path]::GetFullPath($Qvw)
 if (-not (Test-Path -LiteralPath $resolved -PathType Leaf)) {
     throw "QVW_NOT_FOUND=$resolved"
