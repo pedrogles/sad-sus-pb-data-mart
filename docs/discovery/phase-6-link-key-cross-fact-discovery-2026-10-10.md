@@ -763,3 +763,27 @@ A soma anual recuperada (**809.015 habitantes**) reconcilia com a referência IB
 **Próximo teste mínimo recomendado, NÃO EXECUTADO:** limpar seleções e testar município de serviço `250750` + ano `2017` + competência `201709`, esperando apenas hipoteticamente `NORMAL=0`, `ANUAL=811598`, `FIXO_2019=809015`. Após ele, priorizar seleção sem ano explícito e um segundo município antes de discutir qualquer contrato reutilizável. Não modificar fontes, script QVS ou snapshots LT.
 
 **Estado:** `E5_POP_REAL_PRESELECTION=PASS_LOCAL_LOG_REPORTED`; `E5_MONTHLY_SELECTION_JP_2018_201809=PASS_VISUAL`; `E5_MONTHLY_SELECTION_JP_2019_201909=PASS_VISUAL`; `E5_MONTHLY_SELECTION_JP_2017_201709=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`.
+
+---
+
+## 32. E5 — filtro mensal 201709, João Pessoa/serviço (14/10/2026)
+
+**FATO VERIFICADO — captura do QlikView Desktop 12 fornecida pelo responsável.** Estão simultaneamente selecionados em verde:
+
+- `P6_SERV_DATASUS_6=250750` (município de serviço João Pessoa);
+- `P6_ANO_ANO=2017`;
+- `P6_COMP_COMPETENCIA=201709`.
+
+O objeto de texto do teste E5 apresentou:
+
+```text
+NORMAL=0 | ANUAL=811598 | FIXO_2019=809015
+```
+
+O valor `ANUAL=811598` corresponde exatamente à população municipal de João Pessoa para 2017, já reconciliada diretamente com o QVD de staging no §29. O comparativo `FIXO_2019=809015` reforça que fixar o ano de 2019 não é solução genérica. O valor `NORMAL=0` decorre do recorte associativo mensal em que a fato POP não possui competência aplicável; não significa ausência de população.
+
+**Três ensaios manuais com ano explicitamente selecionado concluídos com PASS VISUAL:** 2017/201709 `ANUAL=811598` (§32), 2018/201809 `ANUAL=800323` (§30) e 2019/201909 `ANUAL=809015` (§31). Os três testes usam **somente município de serviço João Pessoa**. A recuperação pela expressão de Set Analysis que remove a seleção de `P6_COMP_COMPETENCIA` é comprovada para estes três recortes, não para o conjunto completo de cenários de uso.
+
+**Próximo gate, NÃO EXECUTADO:** limpar todas as seleções; selecionar **somente** `P6_SERV_DATASUS_6=250750` e `P6_COMP_COMPETENCIA=201809`, deixando `P6_ANO_ANO` **sem seleção explícita**. Observar `NORMAL`, `ANUAL`, `FIXO_2019`, além do estado de seleção do ano. O resultado de `ANUAL` é intencionalmente tratado como desconhecido até captura. A finalidade é verificar se limpar a competência ainda preserva o ano analítico quando este não foi explicitamente selecionado. Não presumir que o resultado seja 800323. Reconciliar com staging e registrar implicações antes de considerar derivação de ano ou fórmula genérica.
+
+**Estado:** `E5_MONTHLY_SELECTION_JP_2017_201709=PASS_VISUAL`; `E5_MONTHLY_SELECTION_JP_2018_201809=PASS_VISUAL`; `E5_MONTHLY_SELECTION_JP_2019_201909=PASS_VISUAL`; `E5_MONTH_ONLY_WITHOUT_EXPLICIT_YEAR=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft, sem merge.
