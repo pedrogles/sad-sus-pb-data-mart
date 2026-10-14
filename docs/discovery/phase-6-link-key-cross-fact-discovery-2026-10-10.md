@@ -1750,3 +1750,22 @@ Compress-Archive -Path (Join-Path $out "*") -DestinationPath "$env:USERPROFILE\D
 **Critério do próximo checkpoint:** o responsável executará localmente `tools/validar_f4_preselecao_d2_qlik.ps1`, registrando saída de cada cenário, `SOURCE_SHA256_UNCHANGED=True`, `SAVE_EXECUTED=False`, `RELOAD_EXECUTED=False`, `QVD_WRITES=0` e veredito específico `PASS_F4_D2_WRAPPER_PREDISPATCH_ONLY_PHYSICAL_CONTRACT_NOT_APPROVED`. Se o documento E5 QVW não estiver disponível, bloquear e solicitar caminho correto; **não substituí-lo** por qualquer QVW de Fase V ou por documento de apresentação. Sem PASS antecipado.
 
 **Status:** `F4_SEMANTIC_TEST_CASES=PASS_LOCAL_REVIEWED`; `F4_D2_COM_PREDISPATCH=PREPARED_NOT_RUN`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
+
+### 66.1 F4-D2 — execução real no QlikView 12 e resultado restrito (14/10/2026)
+
+**FATO VERIFICADO — saída PowerShell/COM enviada pelo responsável:** sincronização fast-forward do PR #83 até `cada5bb94244235b92973286a3c7dc4ec79f9795`, seguido de `Parser.ParseFile` sem erros e marcador `PARSER_PASS`. Entrada aceita pelo runner versionado `tools/validar_f4_preselecao_d2_qlik.ps1`: documento experimental E5 encontrado em `%TEMP%` e catálogo F4 local com `manifest_F4.json`. Log de execução exibiu `MODE=F4_D2_GUARDED_COM_PRESELECTION_DISPOSABLE`, `SOURCE_SHA256_BEFORE=F75786A88E7563B739492F2D2BC7C5CEA50D8C7F8E73F36770AA76960FB668C6`, `REFERENCE_HASH_PASS=True` e QVW descartável `P6_F4_D2_DISPOSABLE.qvw` sob `%TEMP%\SAD_F4_D2_COM_<guid>`.
+
+**Quatro cenários observados (guarda no wrapper, antes da chamada COM):**
+
+| Caso | Resultado observado | Foi enviada seleção proposta ao QlikView? |
+|---|---|---|
+| `ANO_2019_PROPOR_MES_201809` | `PREVENT_CONFLICT_BEFORE_SELECTION` | `DISPATCHED=False` |
+| `MES_201809_PROPOR_ANO_2019` | `PREVENT_CONFLICT_BEFORE_SELECTION` | `DISPATCHED=False` |
+| `ANO_2019_PROPOR_MES_201909` | `ALLOW` | `DISPATCHED=True` |
+| `MES_201809_PROPOR_ANO_2018` | `ALLOW` | `DISPATCHED=True` |
+
+**Critérios executados pelo código versionado:** nos dois conflitos, após a recusa da proposta o runner confere `GetSelectedCount` e `GetFieldSelections` do ano e competência para garantir preservação da seleção prévia; nos dois casos permitidos exige simultaneamente ano+competência explícitos compatíveis e compara a candidata E10 de população de João Pessoa contra 809.015 (2019) e 800.323 (2018). Também exige manutenção do município de serviço `250750`. O log reportou `F4_D2_FOUR_CASES=PASS_RESTRICTED_WRAPPER_ONLY`, `SOURCE_SHA256_UNCHANGED=True`, `SAVE_EXECUTED=False`, `RELOAD_EXECUTED=False`, `QVD_WRITES=0` e `VERDICT=PASS_F4_D2_WRAPPER_PREDISPATCH_ONLY_PHYSICAL_CONTRACT_NOT_APPROVED` sem mensagem de falha. Não houve nova inspeção independente do arquivo QVW binário neste chat; evidência é o log executado no Windows e a revisão do script canônico.
+
+**PARECER: `F4_D2_COM_PREDISPATCH=PASS_LOCAL_REPORTED_RESTRICTED`.** Comprovado que **o executor PowerShell** conhece estado anterior + proposta e bloqueia os dois conflitos ensaiados *sem despachar* a seleção conflitante. **Não comprova** interceptação de cliques da interface QlikView, interceptação universal de filtros, implementação de D2 no PAINEL, nem P5 físico para os 48 casos isolados/8 pares. Os contraexemplos E14/E15 na seleção nativa sem guarda permanecem válidos. Manter `F4_P5_PHYSICAL_FILTERS=NOT_TESTED` e a separação dos gates semântico/físico.
+
+**Estados preservados:** `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 OPEN/Draft, sem merge.
