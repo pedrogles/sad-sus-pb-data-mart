@@ -833,3 +833,33 @@ QTD_COMP=1 | COMP=201809 | ANO_DERIVADO=2018
 **Candidata para próximo ensaio manual (NÃO EXECUTADA, sem produção):** com as mesmas seleções e apenas um objeto de texto, comparar `ANUAL=2420936` com a expressão experimental de Set Analysis `RangeSum(Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={$(=Left(Text(Only(P6_COMP_COMPETENCIA)),4))}>} P6_POP_HABITANTES_E5))`. Hipótese para `DINAMICO`: 800323; verificar se a expansão de dólar entrega 2018 no QlikView 12 real. Preservar `ANUAL` para o diagnóstico e reportar qualquer erro de sintaxe em vez de corrigir sem evidência.
 
 **LIMITES / DECISÕES PENDENTES:** uma competência selecionada por vez; nenhum ano explicitamente selecionado; nenhum suporte comprovado a seleção de meses múltiplos (mesmo ano ou anos distintos), filtros municipais múltiplos, residência, conflitos ano×mês ou medidas SIH/CNES. Qualquer regra genérica precisa de testes fail-closed adicionais. Não alterar granularidade de POP nem `SAD-LINK-V1`, não gerar QVD factual, não fazer merge do PR #83. `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `T29_HISTORICAL=NOT_APPROVED`.
+
+---
+
+## 35. E7 — denominador dinâmico de competência única sem ano selecionado (14/10/2026)
+
+**FATO VERIFICADO — captura de QlikView Desktop 12 fornecida pelo responsável.** No QVW descartável E5 (mesmo modelo associativo em memória) estão selecionados em verde somente `P6_SERV_DATASUS_6=250750` (município de serviço de João Pessoa) e `P6_COMP_COMPETENCIA=201809`; nenhum valor de `P6_ANO_ANO` está selecionado em verde.
+
+O objeto experimental de Set Analysis com *dollar-sign expansion*:
+
+```qlik
+='DINAMICO=' &
+RangeSum(
+    Sum({
+        $<
+            P6_COMP_COMPETENCIA=,
+            P6_ANO_ANO={$(=Left(Text(Only(P6_COMP_COMPETENCIA)),4))}
+        >
+    } P6_POP_HABITANTES_E5)
+)
+```
+
+retornou **`DINAMICO=800323`**, exatamente o valor de habitantes de João Pessoa/2018 reconciliado no staging. Simultaneamente, os objetos anteriores permaneceram com `NORMAL=0`, `ANUAL=2420936`, `FIXO_2019=809015`, e o diagnóstico E6 mostrava `QTD_COMP=1`, `COMP=201809`, `ANO_DERIVADO=2018`.
+
+**Gate:** `E7_DYNAMIC_POP_JP_SERVICE_201809_SINGLE_COMP=PASS_VISUAL`. A observação comprova somente que uma competência explicitamente selecionada, sem filtro explícito de ano, pode determinar por expressão o denominador correto **neste recorte**. O Set Analysis sem derivação de ano continua semanticamente incorreto neste mesmo recorte.
+
+**Limitação — não generalizar:** não há validação para nenhum/múltiplos meses, múltiplos anos, outros municípios, filtros de residência, conflito de ano versus competência nem composição com medidas RD/LT. Além disso, `RangeSum` pode exibir `0` quando não há soma válida; uma expressão definitiva deverá retornar estado sem denominador/erro controlado em seleções inválidas, não confundir isso com zero habitantes.
+
+**Próximo ensaio físico mínimo (NÃO EXECUTADO):** limpar tudo, selecionar município de serviço `250750`, e selecionar simultaneamente duas competências de **mesmo ano** (`201808` e `201809`), deixando `P6_ANO_ANO` sem seleção explícita. Registrar `GetSelectedCount(P6_COMP_COMPETENCIA)`, `Only(P6_COMP_COMPETENCIA)`, ano derivado e o objeto `DINAMICO` atual, sem modificar script. Não antecipar resultado do objeto: a finalidade é caracterizar como o mecanismo lida com seleção mensal múltipla. Uma política de aceitar/rejeitar seleção de múltiplos meses requer decisão explícita, distinguindo meses no mesmo ano de meses em anos diferentes.
+
+**Estado:** `E7_DYNAMIC_POP_JP_SERVICE_201809_SINGLE_COMP=PASS_VISUAL`; `E7_MULTIPLE_COMPETENCES=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 segue Draft, sem merge.
