@@ -3,7 +3,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)][string]$SourceQvw,
-    [switch]$TemporalDiscovery
+    [switch]$TemporalDiscovery,
+    [switch]$AnnualRoleDiscovery
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
@@ -195,7 +196,31 @@ try {
             Write-Output ('E15_REVERSE_' + $case.Label + '=' + $value)
         }
         Write-Output ('E15_REVERSE_E10=' + [string]($doc.Evaluate($e10)))
+
         Write-Output 'E15_REVERSE_ORDER=OBSERVED_NOT_APPROVED'
+    }
+    # E16: annual-only population by municipality role. Observation, not approval.
+    # Do not assume annual population sums are suitable for every analytical measure.
+    if ($AnnualRoleDiscovery) {
+        Write-Output 'E16_ANNUAL_ROLE_DISCOVERY=STARTED'
+        $annualCandidate = 'Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5)'
+        foreach ($role in @('P6_SERV_DATASUS_6','P6_RES_DATASUS_6')) {
+            $roleLabel = if ($role -ceq 'P6_SERV_DATASUS_6') { 'SERV' } else { 'RES' }
+            foreach ($year in @('2018','2019')) {
+                ResetCase
+                SelectValue $role '250750'
+                SelectValue 'P6_ANO_ANO' $year
+                CheckValue ('E16_'+$roleLabel+'_'+$year+'_YEAR_COUNT') 'GetSelectedCount(P6_ANO_ANO)' '1'
+                CheckValue ('E16_'+$roleLabel+'_'+$year+'_MONTH_COUNT') 'GetSelectedCount(P6_COMP_COMPETENCIA)' '0'
+                CheckValue ('E16_'+$roleLabel+'_'+$year+'_ROLE_COUNT') ('GetSelectedCount('+ $role +')') '1'
+                Write-Output ('E16_'+$roleLabel+'_'+$year+'_COUNT_POP=' + [string]($doc.Evaluate('Count(P6_POP_ROW_DEBUG)')))
+                Write-Output ('E16_'+$roleLabel+'_'+$year+'_NORMAL_POP=' + [string]($doc.Evaluate('Sum(P6_POP_HABITANTES_E5)')))
+                Write-Output ('E16_'+$roleLabel+'_'+$year+'_ANNUAL_POP=' + [string]($doc.Evaluate($annualCandidate)))
+                Write-Output ('E16_'+$roleLabel+'_'+$year+'_E10=' + [string]($doc.Evaluate($e10)))
+                Write-Output ('E16_'+$roleLabel+'_'+$year+'=OBSERVED_NOT_APPROVED')
+            }
+        }
+        Write-Output 'E16_ANNUAL_ROLE_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
     }
 } catch {
     $failure=$_.Exception.Message
