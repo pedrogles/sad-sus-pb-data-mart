@@ -1900,3 +1900,25 @@ O executor escolhe procedimento e leito observados sob ano 2018 usando `MinStrin
 **Preparação e validação disponível:** revisão estática do script no GitHub (somente QVW cópia, nenhum `Save`, `Reload` ou `STORE`, SHA de referência e fonte, negação explícita de P5 geral). **Parser PowerShell, expressões Set Analysis em QlikView 12 e chamadas COM ainda não executados** pelo responsável; portanto `F4_P5_COMPONENT_RECOVERY=PREPARED_NOT_EXECUTED`, não PASS. O eventual marcador `PASS_COMPONENT_RECOVERY_WRAPPER_ONLY_P5_NOT_APPROVED` significa somente o escopo descrito.
 
 **Preservar:** `F4_P5_ASSOCIATIVE_OBSERVATION=PASS_LOCAL_REPORTED_RESTRICTED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`; `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`; PR #83 Draft, sem merge.
+
+### 70.1 Execução Windows/COM — recuperação técnica e negativa P5 restrita (14/10/2026)
+
+**FATO VERIFICADO — saída informada pelo responsável:** checkout sincronizado por fast-forward até `381233ed84be5e589a91b66029caa9e03324d50b`; nenhum diff rastreado; `Parser.ParseFile` em PowerShell devolveu `PARSER_PASS`. O executor canônico `tools/validar_f4_p5_recuperacao_componentes_com.ps1` foi executado em QlikView 12 com `P5_REFERENCE_HASH_PASS=True`, `BASELINE_PASS`, sem mensagem de falha, retornando `FINAL_VERDICT=PASS_COMPONENT_RECOVERY_WRAPPER_ONLY_P5_NOT_APPROVED`.
+
+| Cenário técnico controlado no ano 2018 | Componente recuperado | Significado permitido |
+|---|---:|---|
+| `F4_RD_PROC_REA=0201010038` | `LT_COMPONENT_RECOVERED=89422` | Soma de snapshots LT em 2018, **somente conferência**, não leitos disponíveis/ano |
+| Mesmo procedimento | `POP_COMPONENT_RECOVERED=3996496` | Total populacional PB do ano, **não** taxa |
+| `F4_LT_CODLEITO=01` | `RD_COMPONENT_RECOVERED=183311` | Internações elegíveis em 2018, **não** indicador validado para filtro de leito |
+| Mesmo código de leito | `POP_COMPONENT_RECOVERED=3996496` | Total populacional PB do ano, **não** denominador aprovado no recorte de leito |
+| Serviço João Pessoa `250750` + residência Campina Grande `250400` | `RECOVERED_SERVICE_POP=800323`, `RECOVERED_RES_POP=407472` | Componentes anuais municipais recuperados **separadamente por papel**; não soma conjunta nem taxa de fluxo |
+
+**FATO VERIFICADO — política P5 consultada e aplicada no wrapper:** procedimento recebeu, na ordem RES/LEI/REL/FLU, `R/I/B/R`; tipo/código de leito recebeu `I/R/B/I`. Para cada uma das **oito combinações filtro×indicador ensaiadas**, o executor imprimiu `P5_DENY_GENERAL` com o motivo esperado: `REQUIRES_SEPARATE_SCOPED_ANALYSIS`, `REQUIRES_EXPLICIT_ISOLATION_AND_WARNING` ou `BLOCK_GENERAL_INDICATOR`. Marcador `P5_DENIAL_FOR_EXCLUSIVE_FILTERS=PASS_WRAPPER_ONLY`. O código de política não implementa um aviso visual nem produz um KPI (a recuperação de componentes ocorre apenas em contexto diagnóstico).
+
+**Integridade reportada:** `SOURCE_SHA256_UNCHANGED=True`; `SAVE_EXECUTED=False`, `RELOAD_EXECUTED=False`, `QVD_WRITES=0`; saída temporária `%TEMP%\SAD_F4_P5_RECOVERY_e43d413b1c2c4adb8cd7fca4a82705fd`. `P5_UI_FILTER_ENFORCEMENT=NOT_IMPLEMENTED`; `PHYSICAL_INDICATORS_T24_T26=NOT_APPROVED`. Auditor não recebeu o binário QVW nem as bases brutas para reexecutar, de modo que a classificação abaixo é **PASS local relatado, verificado contra o código versionado e o log textual**, não auditoria independente completa dos bytes.
+
+**PARECER:** `F4_P5_COMPONENT_RECOVERY=PASS_LOCAL_REPORTED_RESTRICTED`. **Não promover** `F4_P5_PHYSICAL_FILTERS`: continua `NOT_TESTED`. Os oito casos são de negativa **no wrapper**, não de enforcement em objetos/expressões/seleções da interface e não validam a matriz completa `48+8`. A capacidade histórica de hospitais `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED` segue como pré-requisito para qualquer razão com leitos. Nenhum `Set Analysis` aqui foi aprovado como fórmula final. Nenhum zero associativo foi reclassificado como zero real.
+
+**Próximo gate separado:** verificar a matriz inteira P5 como política pré-avaliação no executor e observar seleções COM em cenário controlado, sem emitir qualquer KPI ou confundir bloqueio do wrapper com UI. Caso haja divergência dos códigos ou associações, falhar fechado e investigar antes de revisar contratos.
+
+**Preservados:** `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `F4_D2_COM_PREDISPATCH=PASS_LOCAL_REPORTED_RESTRICTED`; `F4_P5_ASSOCIATIVE_OBSERVATION=PASS_LOCAL_REPORTED_RESTRICTED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`; PR #83 OPEN/Draft, sem merge.
