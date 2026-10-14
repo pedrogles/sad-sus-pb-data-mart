@@ -7,6 +7,7 @@ param(
     [switch]$AnnualRoleDiscovery,
     [switch]$GeographicDiscovery,
     [switch]$CrossRoleDiscovery,
+    [switch]$RoleDenominatorDiscovery,
     [string]$OtherMunicipality = '250400'
 )
 Set-StrictMode -Version Latest
@@ -272,6 +273,9 @@ try {
 
         Write-Output 'E17_GEOGRAPHIC_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
     }
+    if ($RoleDenominatorDiscovery -and -not $CrossRoleDiscovery) {
+        throw 'BLOCKED_E19_REQUIRES_CROSS_ROLE_DISCOVERY'
+    }
     # E18: cross-role coordinates are intentionally DIFFERENT. Diagnostic, not a denominator rule.
     if ($CrossRoleDiscovery) {
         Write-Output 'E18_DIFFERENT_MUNICIPALITY_DISCOVERY=STARTED'
@@ -324,6 +328,54 @@ try {
             $intact=($svcState -ceq '250750' -and $resState -ceq $OtherMunicipality)
             Write-Output ('E18_'+$scenario.Label+'_BOTH_INTENDED_ROLE_FILTERS_SURVIVED='+$intact)
             Write-Output ('E18_'+$scenario.Label+'=OBSERVED_NOT_CONTRACT')
+        }
+
+        # E19: role-specific population candidates, compared to isolated annual baseline.
+        if ($RoleDenominatorDiscovery) {
+            Write-Output 'E19_ROLE_DENOMINATOR_DISCOVERY=STARTED'
+            $baselineByRole = @{}
+            foreach ($case in @(
+                @{Label='SERV';Field='P6_SERV_DATASUS_6';Code='250750'},
+                @{Label='RES';Field='P6_RES_DATASUS_6';Code=$OtherMunicipality}
+            )) {
+                ResetCase
+                SelectValue $case.Field $case.Code
+                SelectValue 'P6_ANO_ANO' '2018'
+                CheckValue ('E19_BASE_'+$case.Label+'_ROLE_SELECTED') ('GetSelectedCount('+$case.Field+')') '1'
+                CheckValue ('E19_BASE_'+$case.Label+'_YEAR_SELECTED') 'GetSelectedCount(P6_ANO_ANO)' '1'
+                CheckValue ('E19_BASE_'+$case.Label+'_COMP_UNSELECTED') 'GetSelectedCount(P6_COMP_COMPETENCIA)' '0'
+                CheckValue ('E19_BASE_'+$case.Label+'_POP_ROWS') 'Count(P6_POP_ROW_DEBUG)' '1'
+                $popBase=[string]($doc.Evaluate('Sum(P6_POP_HABITANTES_E5)'))
+                $baselineByRole[$case.Label]=$popBase
+                Write-Output ('E19_BASE_'+$case.Label+'_POP_2018='+$popBase)
+            }
+            $serviceCandidate = 'Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={2018},P6_RES_DATASUS_6=>} P6_POP_HABITANTES_E5)'
+            $residenceCandidate = 'Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={2018},P6_SERV_DATASUS_6=>} P6_POP_HABITANTES_E5)'
+            foreach ($scope in @('MONTH_201809','YEAR_2018')) {
+                ResetCase
+                SelectValue 'P6_SERV_DATASUS_6' '250750'
+                SelectValue 'P6_RES_DATASUS_6' $OtherMunicipality
+                if ($scope -ceq 'MONTH_201809') {
+                    SelectValue 'P6_COMP_COMPETENCIA' '201809'
+                } else {
+                    SelectValue 'P6_ANO_ANO' '2018'
+                }
+                $serviceSelection=[string]($doc.Evaluate('GetFieldSelections(P6_SERV_DATASUS_6)'))
+                $residenceSelection=[string]($doc.Evaluate('GetFieldSelections(P6_RES_DATASUS_6)'))
+                $bothIntact=($serviceSelection -ceq '250750' -and $residenceSelection -ceq $OtherMunicipality)
+                Write-Output ('E19_'+$scope+'_BOTH_ROLE_FILTERS_INTACT='+$bothIntact)
+                if (-not $bothIntact) { throw ('BLOCKED_E19_FILTERS_CHANGED_'+$scope) }
+                $svc=[string]($doc.Evaluate($serviceCandidate))
+                $res=[string]($doc.Evaluate($residenceCandidate))
+                Write-Output ('E19_'+$scope+'_SERVICE_CANDIDATE='+$svc)
+                Write-Output ('E19_'+$scope+'_RESIDENCE_CANDIDATE='+$res)
+                Write-Output ('E19_'+$scope+'_SERVICE_REFERENCE='+$baselineByRole['SERV'])
+                Write-Output ('E19_'+$scope+'_RESIDENCE_REFERENCE='+$baselineByRole['RES'])
+                Write-Output ('E19_'+$scope+'_SERVICE_MATCH='+($svc -ceq $baselineByRole['SERV']))
+                Write-Output ('E19_'+$scope+'_RESIDENCE_MATCH='+($res -ceq $baselineByRole['RES']))
+                Write-Output ('E19_'+$scope+'=OBSERVED_NOT_APPROVED')
+            }
+            Write-Output 'E19_ROLE_DENOMINATOR_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
         }
         Write-Output 'E18_DIFFERENT_MUNICIPALITY_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
     }
