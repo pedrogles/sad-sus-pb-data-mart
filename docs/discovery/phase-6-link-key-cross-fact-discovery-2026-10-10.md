@@ -974,3 +974,21 @@ DINAMICO=0
 **Próxima etapa recomendada (NÃO EXECUTADA):** substituir o ciclo repetitivo de objetos manuais por uma **matriz de regressão versionada**, usando a ferramenta QlikView 12 e o runner PowerShell existente como base, sem modificar fontes ou gerar QVD. Antes de automatizar seleções associativas COM, fazer Discovery dos métodos realmente acessíveis no Windows/QlikView 12. A matriz deve incluir: (a) sem seleção; (b) uma competência; (c) duas competências mesmo ano; (d) duas competências anos diferentes; (e) seleção explícita de ano compatível; (f) ano explícito incompatível; (g) município de serviço diferente e conjuntos múltiplos; (h) município de residência; (i) população ausente/nula e situações sem denominador. **Falhar fechado** onde houver ambiguidade e evitar tratar `RangeSum=0` como zero habitantes. Não aprovar física `SAD-LINK-V1`, fatos, ou indicador por habitante antes dos respectivos gates.
 
 **Estado:** `E11_CROSS_YEAR_COMPETENCE_GUARD=PASS_VISUAL`; `E5_TO_E11_SELECTION_MATRIX=PARTIAL_VISUAL_ONLY`; `AUTOMATED_SEMANTIC_REGRESSION=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. Draft PR #83 sem merge.
+
+---
+
+## 40. E12 — inspeção automatizável da interface QlikView COM (PREPARADA)
+
+A inspeção de capacidades de seleções associativas por QlikView COM foi preparada, mas ainda **NÃO EXECUTADA** em Windows/QlikView 12.
+
+**Script experimental versionado:** `tools/inspecionar_qlik_com_e12_readonly.ps1`. Este executor recebe o caminho de uma **cópia salva do QVW E5 fora de `%TEMP%` e do repositório**, abre-a pelo objeto COM `QlikTech.QlikView` e enumera métodos/propriedades do aplicativo, do documento e dos campos `P6_COMP_COMPETENCIA`, `P6_ANO_ANO`, `P6_SERV_DATASUS_6`, `P6_RES_DATASUS_6`. Não chama métodos de seleção, recarga, Save nem STORE; compara SHA-256 do QVW antes e depois e falha se mudar. Como a abertura de documento Qlik pode envolver comportamento de instalação/segurança, preferir documento já salvo/fechado e usar cópia descartável. O script ainda não teve execução física e sua utilidade diagnóstica depende dos membros realmente expostos.
+
+**Execução futura em PowerShell (somente após salvar a cópia):**
+
+~~~powershell
+& .\tools\inspecionar_qlik_com_e12_readonly.ps1 -Qvw 'C:\Users\pedro\Documents\SAD_P6_E5_POP_SEMANTICS_COPY.qvw'
+~~~
+
+**Objetivo:** descobrir métodos COM reais para criar posteriormente a matriz E12+ de seleções e avaliações, sem inventar contrato de API nem modificar o QVW experimental usado no E5–E11. Não criar ainda runner de automação de seleções não verificadas.
+
+**Estado:** `E11_CROSS_YEAR_COMPETENCE_GUARD=PASS_VISUAL`; `E12_COM_CAPABILITY_DISCOVERY=PREPARED_NOT_RUN`; `AUTOMATED_SEMANTIC_REGRESSION=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
