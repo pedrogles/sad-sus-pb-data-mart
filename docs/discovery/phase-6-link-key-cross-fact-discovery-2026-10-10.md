@@ -1344,3 +1344,23 @@ Nos dois contextos `BOTH_ROLE_FILTERS_INTACT=True`. O Set Analysis do denominado
 **DECISAO PENDENTE / proxima fronteira:** especificar politica de ano selecionado isoladamente versus ano derivado de uma unica competencia (ou diversas competencias no mesmo ano), proteger ambiguidade multianual e ausencia de ano sem somar POP entre anos; distinguir denominadores por residencia/servico no contrato de cada indicador. Os casos E14/E15 ja demonstraram que a selecao temporal anterior pode ser perdida no motor associativo e nao pode ser reconstruida pela expressao com apenas estado final. Validar a futura expressao dinamica contra as referencias isoladas de **mais de um ano**, com um gate que rejeite ambiguidades antes de aprovar. Nao alterar fatos, grão populacional, %LINK_KEY, modelo dimensional nem paineis enquanto o contrato estiver pendente.
 
 **Estado:** `E19_PARSER_PASS=LOCAL_REPORTED`; `E19_ROLE_POP_SERVICE_RESIDENCE_2018=PASS_LOCAL_REPORTED_RESTRICTED`; `E19_GENERIC_YEAR_OR_MULTIMUNICIPALITY=NOT_APPROVED`; `E20_TEMPORAL_ROLE_DENOMINATOR=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 segue Draft e sem merge.
+
+---
+
+## 57. E20 — tentativa de ano dinamico com denominadores por papel (PREPARADA)
+
+**EXPERIMENTO DE MODELAGEM PREPARADO, NAO EXECUTADO no QlikView 12/Windows.** O E19 (§56) comprovou igualdade numerica de dois denominadores por papel municipal para 2018 fixo, com filtros cruzados distintos. O runner versionado `tools/validar_qlik_com_e13_smoke.ps1` ganhou flag optativa `-DynamicRoleDiscovery` dependente de `-CrossRoleDiscovery`. Nao muda fatos, medidas definitivas, Link Table, arquitetura nem QVDs; trabalha em QVW descartavel e preserva regressao E13.
+
+**HIPOTESE DE MODELAGEM E20:** sob residencia e servico diferentes, o denominador por servico limpa o filtro de residencia apenas na expressao; o por residencia limpa o filtro de servico apenas na expressao. Se houver uma ou mais competencias selecionadas **todas de um unico ano**, o calculo derivara esse ano das competencias; na ausencia de competencia, **um unico ano explicitamente selecionado** devera definir o denominador. Se competencias abrangerem varios anos, ou nao existir mes nem ano univoco selecionado, deve retornar `SEM_ANO_UNICO`, nao zero/populacao somada. Esta proposta **nao resolve** conflitos cuja primeira selecao ja foi descartada pela associatividade QlikView (E14/E15).
+
+**Metodo de teste:** medir novamente as referencias por municipio e por ano sob selecoes **isoladas** (`SERV=250750` ou `RES=250400`, anos 2018 e 2019, `Count(POP)=1`). Depois testar ambas as selecoes territoriais aplicadas simultaneamente e seis recortes temporais: `MONTH_201809`, `MONTH_201909`, `YEAR_2018`, `YEAR_2019`, `TWO_MONTHS_2018` (`201808`, `201809`) e `CROSS_YEAR_MONTHS` (`201809`, `201909`). Registrar se as selecoes dos dois municipios sobreviveram, quantidade de competencias, ano selecionado, cada candidato dinamico e comparacao com referencias mensuradas. No caso entre anos, registrar explicitamente se ambos recusaram calculo. **Nenhum PASS contratual sera inferido da simples emissao de valores**; se a associacao descartar alguma selecao, o log revelara a discrepancia.
+
+**Preflight necessario no Windows antes de executar qualquer COM:** chamar `[System.Management.Automation.Language.Parser]::ParseFile` no script atualizado e interromper se `$parseErrors.Count -gt 0`. Houve somente verificacao estatica no repositorio (aspas e delimitadores equilibrados, bloco final unico, ausencia de Save/Reload); parser real E20 ainda pendente. O codigo E20 nao deve ser chamado de aprovado ate executar e comparar com os controles independentes.
+
+**Comando planejado em branch Draft, depois de git pull e parser PASS:**
+
+```powershell
+& .\tools\validar_qlik_com_e13_smoke.ps1 -SourceQvw '<QVW_E5_VERIFICADO>' -CrossRoleDiscovery -DynamicRoleDiscovery -OtherMunicipality '250400'
+```
+
+**Estado:** `E19_ROLE_DENOMINATOR_2018=PASS_LOCAL_REPORTED_RESTRICTED`; `E20_DYNAMIC_ROLE_YEAR=VERSIONED_NOT_EXECUTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
