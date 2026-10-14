@@ -4,7 +4,8 @@
 param(
     [Parameter(Mandatory=$true)][string]$SourceQvw,
     [switch]$TemporalDiscovery,
-    [switch]$AnnualRoleDiscovery
+    [switch]$AnnualRoleDiscovery,
+    [switch]$GeographicDiscovery
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
@@ -221,6 +222,51 @@ try {
             }
         }
         Write-Output 'E16_ANNUAL_ROLE_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
+
+    }
+    # E17: role/competence association, diagnostic only. No declared output is a measure contract.
+    if ($GeographicDiscovery) {
+        Write-Output 'E17_GEOGRAPHIC_DISCOVERY=STARTED'
+        foreach ($role in @('P6_SERV_DATASUS_6','P6_RES_DATASUS_6')) {
+            $roleLabel = if ($role -ceq 'P6_SERV_DATASUS_6') {'SERV'} else {'RES'}
+            ResetCase
+            SelectValue $role '250750'
+            SelectValue 'P6_COMP_COMPETENCIA' '201809'
+            CheckValue ('E17_'+$roleLabel+'_MONTH_COUNT') 'GetSelectedCount(P6_COMP_COMPETENCIA)' '1'
+            CheckValue ('E17_'+$roleLabel+'_YEAR_COUNT') 'GetSelectedCount(P6_ANO_ANO)' '0'
+            CheckValue ('E17_'+$roleLabel+'_ROLE_COUNT') ('GetSelectedCount('+$role+')') '1'
+            foreach ($metric in @(
+                @{Name='ROLE_VALUES';Expr='GetFieldSelections('+$role+')'},
+                @{Name='COUNT_POP';Expr='Count(P6_POP_ROW_DEBUG)'},
+                @{Name='NORMAL_POP';Expr='Sum(P6_POP_HABITANTES_E5)'},
+                @{Name='ANNUAL_CLEAR_COMP_POP';Expr='Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5)'}
+            )) {
+                Write-Output ('E17_'+$roleLabel+'_'+$metric.Name+'='+[string]($doc.Evaluate($metric.Expr)))
+            }
+            Write-Output ('E17_'+$roleLabel+'_E10='+[string]($doc.Evaluate($e10)))
+            Write-Output ('E17_'+$roleLabel+'_MONTH=OBSERVED_NOT_CONTRACT')
+        }
+        # Both roles selected to the SAME municipality: this is not a residence-to-service flow analysis.
+        ResetCase
+        SelectValue 'P6_SERV_DATASUS_6' '250750'
+        SelectValue 'P6_RES_DATASUS_6' '250750'
+        SelectValue 'P6_COMP_COMPETENCIA' '201809'
+        foreach ($probe in @(
+            @{Name='SERV_COUNT';Expr='GetSelectedCount(P6_SERV_DATASUS_6)'},
+            @{Name='RES_COUNT';Expr='GetSelectedCount(P6_RES_DATASUS_6)'},
+            @{Name='MONTH_COUNT';Expr='GetSelectedCount(P6_COMP_COMPETENCIA)'},
+            @{Name='YEAR_COUNT';Expr='GetSelectedCount(P6_ANO_ANO)'},
+            @{Name='SERV_VALUES';Expr='GetFieldSelections(P6_SERV_DATASUS_6)'},
+            @{Name='RES_VALUES';Expr='GetFieldSelections(P6_RES_DATASUS_6)'},
+            @{Name='COUNT_POP';Expr='Count(P6_POP_ROW_DEBUG)'},
+            @{Name='NORMAL_POP';Expr='Sum(P6_POP_HABITANTES_E5)'},
+            @{Name='ANNUAL_CLEAR_COMP_POP';Expr='Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5)'}
+        )) {
+            Write-Output ('E17_BOTH_JP_'+$probe.Name+'='+[string]($doc.Evaluate($probe.Expr)))
+        }
+        Write-Output ('E17_BOTH_JP_E10='+[string]($doc.Evaluate($e10)))
+        Write-Output 'E17_BOTH_JP_MONTH=OBSERVED_NOT_CONTRACT'
+        Write-Output 'E17_GEOGRAPHIC_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
     }
 } catch {
     $failure=$_.Exception.Message
