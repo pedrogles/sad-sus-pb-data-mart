@@ -53,6 +53,7 @@ function ResetCase {
     CheckValue 'CLEAR_MONTH' 'GetSelectedCount(P6_COMP_COMPETENCIA)' '0'
     CheckValue 'CLEAR_YEAR' 'GetSelectedCount(P6_ANO_ANO)' '0'
     CheckValue 'CLEAR_SERVICE' 'GetSelectedCount(P6_SERV_DATASUS_6)' '0'
+    CheckValue 'CLEAR_RES' 'GetSelectedCount(P6_RES_DATASUS_6)' '0'
 }
 try {
     Write-Output 'MODE=E13_COM_REGRESSION_SMOKE_DISPOSABLE'
