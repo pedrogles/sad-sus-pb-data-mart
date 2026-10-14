@@ -895,3 +895,37 @@ DINAMICO=0
 A expectativa **hipotética** é identificar `QTD_COMP=2` e um ano comum `2018`; deve ser confirmada fisicamente. Depois, antes de generalizar, testar o conflito `201809` + `201909`, ano explícito incompatível e ausência de seleções, com tratamento fail-closed. Não aprovar denominador genérico nem alterar contrato físico nesta etapa.
 
 **Estado:** `E8_SAME_YEAR_TWO_COMPETENCES=FAIL_SEMANTIC_E7`; `E8_MIN_MAX_YEAR_DIAGNOSTIC=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
+
+---
+
+## 37. E9 — ano comum detectado em duas competências de 2018 (14/10/2026)
+
+**FATO VERIFICADO — captura QlikView Desktop 12 fornecida pelo responsável:** seleção de município de serviço `P6_SERV_DATASUS_6=250750`, duas competências `201808` e `201809` (ambas em verde) e **nenhum ano explicitamente selecionado em `P6_ANO_ANO`**. O objeto experimental E9, com `MinString(P6_COMP_COMPETENCIA)` e `MaxString(P6_COMP_COMPETENCIA)`, apresentou:
+
+~~~text
+QTD_COMP=2 | MES_MIN=201808 | MES_MAX=201809 | ANO_MIN=2018 | ANO_MAX=2018
+~~~
+
+Os objetos prévios continuaram mostrando `NORMAL=0`, `ANUAL=2420936`, `FIXO_2019=809015` e `DINAMICO=0` (este último não representa zero habitantes).
+
+**Interpretação estrita:** para essas duas competências distintas, a comparação dos quatro primeiros dígitos dos extremos detectou ano comum `2018`. `E9_SAME_YEAR_MIN_MAX_DIAGNOSTIC=PASS_VISUAL`. **Não** foi testado ainda um denominador que use o ano comum, nem o caso de competência cruzando anos. O fato de extrema lexical funcionar para seis dígitos `YYYYMM` no recorte inspecionado não elimina a necessidade de validar formato/seleções conflitantes antes do contrato genérico.
+
+**Próximo ensaio físico isolado — NÃO EXECUTADO (candidata com recusa de ano ambíguo):** mantendo as mesmas seleções, adicionar objeto de texto calculado contendo:
+
+~~~qlik
+='E10_POP=' &
+If(
+    GetSelectedCount(P6_COMP_COMPETENCIA) > 0
+    and Left(Text(MinString(P6_COMP_COMPETENCIA)),4)
+        = Left(Text(MaxString(P6_COMP_COMPETENCIA)),4),
+    Sum({$<
+        P6_COMP_COMPETENCIA=,
+        P6_ANO_ANO={$(=Left(Text(MinString(P6_COMP_COMPETENCIA)),4))}
+    >} P6_POP_HABITANTES_E5),
+    'SEM_ANO_UNICO'
+)
+~~~
+
+**Hipótese E10 sob serviço `250750` + meses `201808`/`201809`:** `E10_POP=800323` (valor de João Pessoa em 2018), sem repetir a população para cada mês. A recusa textual é proposta experimental e não constitui ainda contrato de erro do painel. Após confirmar E10, testar seleções de anos distintos (`201809` e `201909`) para exigir `SEM_ANO_UNICO` e nenhum valor populacional agregado. Também são pendentes validações de ausência de seleção, ano explícito conflitante, residência, múltiplos municípios e generalidade da expressão. Evitar `RangeSum` que mascararia nulos como zero.
+
+**Estado:** `E9_SAME_YEAR_MIN_MAX_DIAGNOSTIC=PASS_VISUAL`; `E10_MULTI_MONTH_SAME_YEAR_DENOMINATOR=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
