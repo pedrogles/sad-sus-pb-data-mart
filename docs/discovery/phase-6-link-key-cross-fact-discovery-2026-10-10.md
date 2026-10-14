@@ -1922,3 +1922,15 @@ O executor escolhe procedimento e leito observados sob ano 2018 usando `MinStrin
 **Próximo gate separado:** verificar a matriz inteira P5 como política pré-avaliação no executor e observar seleções COM em cenário controlado, sem emitir qualquer KPI ou confundir bloqueio do wrapper com UI. Caso haja divergência dos códigos ou associações, falhar fechado e investigar antes de revisar contratos.
 
 **Preservados:** `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `F4_D2_COM_PREDISPATCH=PASS_LOCAL_REPORTED_RESTRICTED`; `F4_P5_ASSOCIATIVE_OBSERVATION=PASS_LOCAL_REPORTED_RESTRICTED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`; PR #83 OPEN/Draft, sem merge.
+
+---
+
+## 71. F4-P5 — ensaio completo do catálogo no wrapper COM (PREPARADO)
+
+**FATO VERIFICADO:** a Discovery VI §62.6 estabelece 12 filtros por quatro indicadores, com 13 C, 17 R, 8 I e 10 B. O catálogo F4 auditado contém 48 casos isolados e 8 pares. A recuperação de componentes §70.1 passou somente no executor, sem aprovar indicadores.
+
+**Novo ensaio versionado:** `tools/validar_f4_p5_catalogo_com.ps1`. Lê os dois CSVs F4 com validação SHA-256 pelo manifesto e confronta o conteúdo com a matriz canônica (§62.6), incluindo os oito pares. Copia o QVW de projeção F4-P5 para pasta nova em `%TEMP%`; abre somente a cópia via COM, sem Save, Reload ou QVD. Após baseline RD/LT/POP, testa seleção real de um valor existente para cada um dos 48 casos isolados, mas **não avalia indicador** em nenhum deles. Para pares, os sete contextos R/I/B são recusados **antes do despacho pelo wrapper**; o par C/C de FLU (município residência e serviço) testa seleções iguais de João Pessoa sob ano 2018, mas também não emite indicador.
+
+**Critérios esperados, ainda NÃO executados no Windows:** `SINGLES_48_OF_48=PASS_COM_SELECT_AND_WRAPPER_POLICY_ONLY`, `PAIRS_8_OF_8=PASS_PRE_DISPATCH_POLICY_ONLY`, `SOURCE_SHA256_UNCHANGED=True` e `FINAL_VERDICT=PASS_P5_48_8_WRAPPER_COM_ONLY_PHYSICAL_P5_NOT_APPROVED`. Revisão estática conferiu a matriz exata, contagens, caminhos temporários e ausência de Save/Reload/STORE; o parser PowerShell e COM ainda dependem de execução local. Qualquer drift no catálogo ou seleção deve falhar fechado.
+
+**Limite:** selecionar um campo em COM e recusar avaliação no PowerShell não implementa regras C/R/I/B em objetos QlikView ou no painel. C permanece condicional a tempo, território e cobertura; I demanda isolamento com aviso; R demanda contrato próprio; B bloqueia indicador geral. `F4_P5_48_8_WRAPPER_COM=PREPARED_NOT_EXECUTED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 Draft sem merge.
