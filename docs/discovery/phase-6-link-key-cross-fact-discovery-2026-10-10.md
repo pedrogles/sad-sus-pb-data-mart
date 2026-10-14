@@ -1398,3 +1398,32 @@ Em **todos os seis casos**, `ROLE_SELECTION_INTACT=True`: os filtros municipio s
 **PROXIMO GATE RECOMENDADO (ainda nao executado):** validar guardas temporais sem competencia nem ano e com dois anos explicitamente selecionados, ambos sob papeis distintos; em paralelo preparar uma **tabela de contrato de indicadores por papel** (demanda de residentes/populacao residente; leitos por habitante/populacao do municipio de servico; indicadores sem denominador populacional), sem aprovar fatos, Link Table nem paineis nesta Discovery.
 
 **Estado:** `E20_PARSER_PASS=LOCAL_REPORTED`; `E20_DYNAMIC_ROLE_JP_CG_2018_2019=PASS_LOCAL_REPORTED_RESTRICTED`; `E20_NUMERIC_MATCH=10_OF_10`; `E20_CROSS_YEAR_COMPETENCE_REFUSAL=PASS_LOCAL_REPORTED`; `E21_MISSING_TEMPORAL_GUARDS=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 segue Draft sem merge.
+
+---
+
+## 59. E21 — guardas de ausencia de tempo, dois anos explicitos e cobertura 2017 (PREPARADO)
+
+**HIPOTESE / SCRIPT EXPERIMENTAL VERSIONADO, NAO EXECUTADO NO WINDOWS.** E20 (§58) validou 10/10 resultados numericos de dois papeis municipais com ano 2018/2019 e recusou selecao de competencias entre anos. Permanecem ausentes no ensaio o ano 2017 e dois limites temporais relevantes: **nenhuma selecao de competencia nem ano**; **dois anos explicitamente selecionados sem competencia**.
+
+O mesmo runner `tools/validar_qlik_com_e13_smoke.ps1` agora aceita a opcao `-TemporalGuardDiscovery`, exigindo as flags existentes `-CrossRoleDiscovery -DynamicRoleDiscovery` para reutilizar as expressoes observacionais E20. Os gates E13, E18 e E20 sao executados antes de E21. O QVW original e protegido por copia descartavel/checagem de hash, sem Save/Reload ou QVD.
+
+**Matriz planejada E21 (cada caso com SERV=250750 e RES=250400):**
+
+| Caso | Selecao temporal | Expectativa e gate |
+|---|---|---|
+| `NO_PERIOD` | Sem competencia e sem ano explicito | Duas expressoes devem retornar `SEM_ANO_UNICO`, caso contrario `FAIL_CLOSED` |
+| `TWO_EXPLICIT_YEARS` | Anos 2018 e 2019 simultaneos, sem competencia | Confirmar `GetSelectedCount(ANO)=2`; ambas expressoes devem recusar |
+| `MONTH_201709` | Competencia unica `201709`, sem ano explicito | Comparar servico/residencia contra duas referencias POP anuais independentes do ano 2017 |
+| `YEAR_2017` | Ano explicito 2017, sem competencia | Comparar servico/residencia contra as mesmas referencias POP anuais isoladas |
+
+**Regra de referencia:** antes de testar os quatro casos, E21 mede a POP 2017 separadamente por municipio (servico 250750 e residencia 250400), confirmando `Count(POP)=1`; **nao possui valor de populacao 2017 codificado no script**. Cada caso valida preservacao dos filtros territoriais e falha de forma fechada se uma referencia divergir ou um caso ambiguo retornar denominador numerico. Aderencia a um numero nao aprova automaticamente a semantica geral.
+
+**Verificacoes ja realizadas:** exame **estatico** do arquivo versionado confirmou apenas um bloco `catch/finally` de topo, um veredito final, aspas/delimitadores equilibrados, presenca dos gates E13 e E21, e ausencia de comandos explicitos `Save`/`Reload`. Houve erro de parser ao criar E18 anteriormente; portanto **parser nativo PowerShell E21 e COM nao foram testados** e devem ser exigidos antes da primeira execucao.
+
+**Proxima execucao Windows planejada:** `git pull --ff-only`, `[System.Management.Automation.Language.Parser]::ParseFile` e, somente com parser PASS:
+
+```powershell
+& .\tools\validar_qlik_com_e13_smoke.ps1 -SourceQvw '<QVW_E5_JA_VERIFICADO>' -CrossRoleDiscovery -DynamicRoleDiscovery -TemporalGuardDiscovery -OtherMunicipality '250400'
+```
+
+**Limites e decisoes:** nao testa populacao de outros municipios, fluxo SIH/RD observado, validade generica da %LINK_KEY, politica de UI para perda de intencao temporal (E14/E15) nem medidas hospitalares finais. Apos E21, focar **contrato de indicadores por papel municipal e grão temporal**, nao expandir indefinidamente os cenarios isolados. Permanecem `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `FACT_QVDS=NOT_STARTED`, `LINK_ANALISE_QVD=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft sem merge.
