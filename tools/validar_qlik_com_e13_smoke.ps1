@@ -167,8 +167,35 @@ try {
         }
         $conflictValue=[string]($doc.Evaluate($e10))
         Write-Output ('E14_CONFLICT_E10=' + $conflictValue)
+        $yearCountAfterConflict = [string]($doc.Evaluate('GetSelectedCount(P6_ANO_ANO)'))
+        if ($yearCountAfterConflict -ceq '0' -and $conflictValue -ceq '800323') {
+            Write-Output 'E14_CONFLICT_SAFETY=ORIGINAL_2019_SELECTION_DROPPED_NOT_APPROVED'
+        } else {
+            Write-Output 'E14_CONFLICT_SAFETY=UNCLASSIFIED_PENDING_REVIEW'
+        }
         Write-Output 'E14_YEAR_MONTH_CONFLICT=OBSERVED_NOT_APPROVED'
         Write-Output 'E14_TEMPORAL_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
+        # E15: reverse temporal selection order (month 201809, then explicit year 2019).
+        # Diagnostic ONLY. Selection may clear an earlier incompatible selection.
+        # No expectation for COM-selected values or denominator until physical run.
+        ResetCase
+        SelectValue 'P6_SERV_DATASUS_6' '250750'
+        SelectValue 'P6_COMP_COMPETENCIA' '201809'
+        CheckValue 'E15_PRE_YEAR_COMP_COUNT' 'GetSelectedCount(P6_COMP_COMPETENCIA)' '1'
+        Write-Output ('E15_PRE_YEAR_COMP_VALUES=' + [string]($doc.Evaluate('GetFieldSelections(P6_COMP_COMPETENCIA)')))
+        SelectValue 'P6_ANO_ANO' '2019'
+        foreach ($case in @(
+            @{Label='YEAR_COUNT';Expression='GetSelectedCount(P6_ANO_ANO)'},
+            @{Label='YEAR_VALUES';Expression='GetFieldSelections(P6_ANO_ANO)'},
+            @{Label='COMP_COUNT';Expression='GetSelectedCount(P6_COMP_COMPETENCIA)'},
+            @{Label='COMP_VALUES';Expression='GetFieldSelections(P6_COMP_COMPETENCIA)'},
+            @{Label='SERV_COUNT';Expression='GetSelectedCount(P6_SERV_DATASUS_6)'}
+        )) {
+            $value = [string]($doc.Evaluate($case.Expression))
+            Write-Output ('E15_REVERSE_' + $case.Label + '=' + $value)
+        }
+        Write-Output ('E15_REVERSE_E10=' + [string]($doc.Evaluate($e10)))
+        Write-Output 'E15_REVERSE_ORDER=OBSERVED_NOT_APPROVED'
     }
 } catch {
     $failure=$_.Exception.Message
