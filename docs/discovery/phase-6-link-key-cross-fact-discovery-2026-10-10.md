@@ -992,3 +992,21 @@ A inspeção de capacidades de seleções associativas por QlikView COM foi prep
 **Objetivo:** descobrir métodos COM reais para criar posteriormente a matriz E12+ de seleções e avaliações, sem inventar contrato de API nem modificar o QVW experimental usado no E5–E11. Não criar ainda runner de automação de seleções não verificadas.
 
 **Estado:** `E11_CROSS_YEAR_COMPETENCE_GUARD=PASS_VISUAL`; `E12_COM_CAPABILITY_DISCOVERY=PREPARED_NOT_RUN`; `AUTOMATED_SEMANTIC_REGRESSION=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
+
+---
+
+## 41. E12 — automação da cópia QVW para inspeção COM (14/10/2026)
+
+**FATO VERIFICADO — saída PowerShell fornecida pelo responsável:** o primeiro E12 foi bloqueado antes da inspeção por `QVW_NOT_FOUND` em `C:\Users\pedro\Documents\SAD_P6_E5_POP_SEMANTICS_COPY.qvw`. O `git pull --ff-only` anterior foi concluído por fast-forward até `b360980`. Isso **não** é falha de Set Analysis, QlikView COM ou dados; o arquivo de destino ainda não existia.
+
+**Implementação versionada de conveniência / NÃO EXECUTADA no Windows:** foi ampliado o próprio `tools/inspecionar_qlik_com_e12_readonly.ps1`, preservando o modo antigo `-Qvw` e adicionando `-SourceQvw`. Este último exige o nome original `P6_E5_POP_DENOMINATOR_IN_MEMORY.qvw`, valida existência/tamanho, copia o QVW salvo em disco para um arquivo único `SAD_P6_E5_POP_SEMANTICS_COPY_<GUID>.qvw` dentro da pasta Documentos do Windows (respeitando o redirecionamento do perfil), verifica SHA-256 do original e da cópia, e só então prossegue à introspecção COM existente. O arquivo fonte não recebe Save, Reload ou seleção; a cópia é o único QVW deliberadamente criado fora da pasta TEMP. Os QVDs, scripts externos e repositório locais não sofrem escrita pelo runner.
+
+Comando a executar na branch do PR #83, após `git pull --ff-only`:
+
+~~~powershell
+& .\tools\inspecionar_qlik_com_e12_readonly.ps1 -SourceQvw 'C:\Users\pedro\AppData\Local\Temp\SAD_P6_E5_DENOMINATOR_e3448ab42006474f86325b9d25935d19\P6_E5_POP_DENOMINATOR_IN_MEMORY.qvw'
+~~~
+
+**Limitação de salvamento:** PowerShell copia o estado persistido no arquivo de origem, **não** objetos de texto, filtros ou propriedades ainda não salvos na sessão gráfica (asterisco no título). A descoberta E12 exige somente o modelo de dados já salvo pelo preflight e os nomes dos campos; preservar os objetos visuais E5–E11 requer salvar a sessão explicitamente antes de copiá-la. A cópia automática é insumo **diagnóstico**, não artefato canônico de produção.
+
+**Gate:** `E12_AUTOCOPY_SCRIPT=VERSIONED_STATIC_ONLY`; `E12_COM_CAPABILITY_DISCOVERY=NOT_EXECUTED`; `AUTOMATED_SEMANTIC_REGRESSION=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 Draft sem merge.
