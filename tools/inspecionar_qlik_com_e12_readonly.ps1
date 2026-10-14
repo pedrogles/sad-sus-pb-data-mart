@@ -73,6 +73,7 @@ try {
     Write-Output 'RELOAD_EXECUTED=False'
     Write-Output 'SAVE_EXECUTED=False'
     Write-Output 'QVD_WRITES=0'
+    Write-Output 'VERDICT=COM_CAPABILITIES_ENUMERATED_REVIEW_REQUIRED'
 } catch {
     Write-Output ('VERDICT=FAIL_CLOSED_'+$_.Exception.Message)
     exit 1
@@ -89,5 +90,5 @@ try {
     $hashAfter=(Get-FileHash -LiteralPath $resolved -Algorithm SHA256).Hash
     Write-Output ('QVW_SHA256_AFTER='+$hashAfter)
     Write-Output ('QVW_SHA256_UNCHANGED='+($hashBefore -ceq $hashAfter))
-    if ($hashBefore -cne $hashAfter) {Write-Output 'VERDICT=FAIL_SOURCE_QVW_CHANGED'}
+    if ($hashBefore -cne $hashAfter) {throw 'VERDICT=FAIL_SOURCE_QVW_CHANGED'}
 }
