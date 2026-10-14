@@ -1769,3 +1769,34 @@ Compress-Archive -Path (Join-Path $out "*") -DestinationPath "$env:USERPROFILE\D
 **PARECER: `F4_D2_COM_PREDISPATCH=PASS_LOCAL_REPORTED_RESTRICTED`.** Comprovado que **o executor PowerShell** conhece estado anterior + proposta e bloqueia os dois conflitos ensaiados *sem despachar* a seleção conflitante. **Não comprova** interceptação de cliques da interface QlikView, interceptação universal de filtros, implementação de D2 no PAINEL, nem P5 físico para os 48 casos isolados/8 pares. Os contraexemplos E14/E15 na seleção nativa sem guarda permanecem válidos. Manter `F4_P5_PHYSICAL_FILTERS=NOT_TESTED` e a separação dos gates semântico/físico.
 
 **Estados preservados:** `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 OPEN/Draft, sem merge.
+
+---
+
+## 67. F4-P5 — prontidão física da matriz de filtros no QVW E5 (DISCOVERY READ-ONLY)
+
+**Objetivo do próximo gate:** determinar se o QVW experimental E5 atualmente usado para F4-D2 suporta validar fisicamente as 48 situações isoladas e as oito combinações da política P5, sem inferir que PASS da guarda de ano/competência (D2) implique PASS de filtros por indicador.
+
+**FATO VERIFICADO em scripts canônicos, HEAD `44e9d8325a9348dba28aeafd6da74111f7fca860`:** os scripts `TRANSFORMACAO/phase_vi_link_associative_projection_preflight.qvs` (§projeção P6, tabelas com `_SIMULADA`) e `TRANSFORMACAO/phase_vi_e5_population_denominator_preflight.qvs` (§medida POP E5) foram inspecionados integralmente quanto às projeções `AS P6_*`. O primeiro carrega 9 tabelas em memória e seus três fatos simulados têm **somente `%LINK_KEY` e contadores técnicos**; o segundo adiciona apenas `P6_POP_HABITANTES_E5` à projeção populacional. **Nenhuma dessas projeções contém medidas reais `QTD_INTERNACAO` ou `QT_SUS`**. O `P6_POP_HABITANTES_E5` não é medida suficiente para provar T24–T26 ou P5 completo.
+
+**Cobertura dos eixos P5 na projeção E5 (verificada estaticamente por nomes de campos no QVS versionado; não auditoria binária do QVW):**
+
+| Categoria P5 semântica (§62.6) | Campo exposto em P6/E5 | Situação |
+|---|---|---|
+| Ano analítico | `P6_ANO_ANO` | PRESENTE |
+| Competência mensal | `P6_COMP_COMPETENCIA` | PRESENTE |
+| Município de residência | `P6_RES_DATASUS_6` | PRESENTE |
+| Município de serviço | `P6_SERV_DATASUS_6` | PRESENTE |
+| Estabelecimento CNES | `P6_EST_CNES` | PRESENTE |
+| Procedimento realizado `PROC_REA` | Não projetado | AUSENTE NO MODELO E5 |
+| Diagnóstico principal `DIAG_PRINC` | Não projetado | AUSENTE NO MODELO E5 |
+| Caráter do atendimento | Não projetado | AUSENTE NO MODELO E5 |
+| Motivo de saída/permanência | Não projetado | AUSENTE NO MODELO E5 |
+| Tipo/código de leito | Não projetado | AUSENTE NO MODELO E5 |
+| Data clínica de internação | Não projetado | AUSENTE NO MODELO E5 |
+| Data clínica de saída | Não projetado | AUSENTE NO MODELO E5 |
+
+**Resultado do gate de prontidão: `F4_P5_E5_READINESS=BLOCKED_BY_E5_SCHEMA`.** Apenas 5/12 categorias têm eixos explícitos; 7/12 não são projetadas e faltam componentes de medidas hospitalares. A presença de cinco campos de filtro NÃO comprova comportamento físico C/R/I/B por indicador. Portanto, **não executar os 48+8 casos sobre E5 como se fossem prova de P5**; resultado seria metodologicamente inválido. Esse bloqueio é **restrito ao QVW de ensaio E5** e não implica impossibilidade de P5 em futura estrutura adequada.
+
+**Próxima tarefa física necessária, ainda não implementada nem aprovada:** desenho de ensaio associativo **in-memory e descartável** que exponha campos reais necessários de RD/LT, medidas `QTD_INTERNACAO`, `QT_SUS` e POP por papel/ano sem violar o grão das fontes e a matriz P5. Primeiro conferir esquema, compatibilidade e associação, ausência de multiplicação/circularidade; só então ensaiar filtros isolados e pares, diferenciando BLOQUEADO, RESTRITO, ISOLADO e COMPATÍVEL nos objetos/medidas apropriados. A execução será baseada em scripts externos versionáveis e em QlikView 12, sem `STORE` de QVD fato/link, sem modificar as fontes nem o PAINEL. **HIPÓTESE DE TESTE, NÃO NOVA DECISÃO ARQUITETURAL:** projetar apenas o mínimo necessário para experimentos de comportamento, não um modelo de produção; nenhuma alteração nos grãos, dimensões, fatos ou contratos já aprovados. Antes de construir tal ensaio, conferir necessidade de resolver `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED` para testes que dependam da oferta/leitos históricos.
+
+**Estados preservados:** `F4_D2_COM_PREDISPATCH=PASS_LOCAL_REPORTED_RESTRICTED`; `F4_SEMANTIC_TEST_CASES=PASS_LOCAL_REVIEWED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`; `F4_P5_E5_READINESS=BLOCKED_BY_E5_SCHEMA`; `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft e sem merge.
