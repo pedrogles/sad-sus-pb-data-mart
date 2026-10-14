@@ -1074,3 +1074,28 @@ A prova temporal diferencia **observação de seleção/resultado** de aprovaç�
 ```
 
 **Estado:** `E13_COM_SMOKE=PASS_LOCAL_REPORTED`; `E14_TEMPORAL_DISCOVERY=PREPARED_NOT_EXECUTED`; `E14_YEAR_MONTH_CONFLICT_BEHAVIOR=UNKNOWN`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`. O PR #83 segue Draft sem merge.
+
+---
+
+## 46. E14 — matriz temporal automatizada e risco de perda de ano explícito
+
+**FATO VERIFICADO — log PowerShell/QlikView 12 entregue pelo responsável (14/10/2026):** após fast-forward da branch até `3b6d7fd`, foi executado o mesmo runner `tools/validar_qlik_com_e13_smoke.ps1 -TemporalDiscovery` sobre uma cópia descartável da fonte E5. O baseline E13 foi novamente `PASS`: `Count(P6_POP_ROW_DEBUG)=669`, `Sum(P6_POP_HABITANTES_E5)=12040181`; cenários E13 de um mês, dois meses em 2018 e competências entre 2018/2019 reproduziram 800323, 800323 e `SEM_ANO_UNICO`, respectivamente.
+
+**Matriz E14 realmente observada:**
+
+| Cenário | Filtros explícitos aplicados em ordem | Observação E10 |
+|---|---|---|
+| Nenhuma competência | ClearAll; sem mês ou ano | `SEM_ANO_UNICO` |
+| Somente ano | município serviço 250750, ano 2018, nenhuma competência | `SEM_ANO_UNICO` |
+| Ano e mês compatíveis | serviço 250750, ano 2018, competência 201809 | `800323` |
+| Ano/mês originalmente incompatíveis | serviço 250750, ano 2019, depois competência 201809 | `800323` **após Qlik limpar a seleção de 2019** |
+
+**Contraexemplo E14 de preservação de intenção:** imediatamente após selecionar ano 2019, a COM registrou `E14_CONFLICT_PRE_MONTH_SELECTED_YEAR=1`. Depois de selecionar 201809, registrou `E14_CONFLICT_YEAR_COUNT=0`, `E14_CONFLICT_YEAR_VALUES=-`, `E14_CONFLICT_COMP_COUNT=1`, `E14_CONFLICT_COMP_VALUES=201809` e `E14_CONFLICT_E10=800323`. **O valor POP 800323 é coerente com o estado final efetivo (setembro/2018), mas não preserva a intenção de ano 2019 inicialmente escolhida.** O QlikView normalizou o estado associativo descartando o filtro anterior; a expressão E10 avalia o estado resultante e não tem evidência da escolha descartada.
+
+**Conclusão semântica:** a expressão E10 **não pode, por si só, detectar conflito já apagado do estado de seleção**. Isto bloqueia aprovação de um contrato que prometa manter simultaneamente ano 2019 e competência 201809. Uma futura regra de apresentação deverá explicitar qual filtro prevalece, impedir combinações incompatíveis, ou obter intenção independente do estado associativo (proposta, não decisão). Além disso, `SEM_ANO_UNICO` sob seleção isolada de ano mostra que a fórmula E10 é propositalmente dependente de competência; não é ainda denominador anual genérico. Não redefinir a granularidade da população.
+
+**Gate técnico observado:** `E14_TEMPORAL_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW`; `SOURCE_SHA256_UNCHANGED=True`, `SAVE_EXECUTED=False`, `RELOAD_EXECUTED=False`, `QVD_WRITES=0`; `VERDICT=PASS_COM_SMOKE_ONLY_DENOMINATOR_CONTRACT_NOT_APPROVED`. Esse veredito é do smoke conhecido E13 e **não aprova** o cenário temporal conflitante E14.
+
+**E15 — experimento de ordem inversa preparado, NÃO EXECUTADO:** o mesmo runner, sob `-TemporalDiscovery`, passará a testar competência 201809 selecionada **antes** do ano explícito 2019. Registrará seleções resultantes para competência/ano/município e o E10, sem antecipar se o QlikView manterá o mês, descartará o mês ou reagirá de outra forma. Também imprimirá risco E14 quando confirmar ano descartado. Nenhuma modificação foi feita nos dados de origem; o ensaio opera somente sobre a cópia descartável.
+
+**Estado:** `E14_TEMPORAL_DISCOVERY=PASS_EXECUTION_WITH_SEMANTIC_RISK`; `E14_YEAR_MONTH_INTENT_PRESERVATION=FAIL_OBSERVED`; `E14_YEAR_ONLY_E10=SEM_ANO_UNICO_OBSERVED`; `E15_REVERSE_ORDER=PREPARED_NOT_EXECUTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft / não integrar.
