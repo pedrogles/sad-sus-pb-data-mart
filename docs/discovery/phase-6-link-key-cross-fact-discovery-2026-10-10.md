@@ -1147,3 +1147,26 @@ Cada combinação registra `Count(P6_POP_ROW_DEBUG)`, `Sum(P6_POP_HABITANTES_E5)
 ```
 
 **Estado:** `E16_ANNUAL_ROLE_DISCOVERY=VERSIONED_NOT_RUN`; `E15_REVERSE_ORDER=PASS_LOCAL_REPORTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
+
+---
+
+## 49. E16 — população anual município×ano por papel de serviço/residência (PASS local)
+
+**FATO VERIFICADO — saída PowerShell/QlikView 12 entregue pelo responsável, 14/10/2026.** Após fast-forward da branch até `fc92d8d`, executou-se `tools/validar_qlik_com_e13_smoke.ps1 -AnnualRoleDiscovery` em QVW descartável criado do E5. O baseline E13 e seus três cenários anteriores permaneceram PASS. O código E16 aplicou `ClearAll()` antes de cada caso, selecionou *apenas* o papel municipal correspondente e um ano, deixando `GetSelectedCount(P6_COMP_COMPETENCIA)=0`. Ano e papel selecionados foram confirmados como 1 cada.
+
+| E16 papel/ano | `Count(P6_POP_ROW_DEBUG)` | `Sum(P6_POP_HABITANTES_E5)` | `Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5)` | E10 |
+|---|---:|---:|---:|---|
+| Serviço 250750, 2018 | 1 | 800323 | 800323 | `SEM_ANO_UNICO` |
+| Serviço 250750, 2019 | 1 | 809015 | 809015 | `SEM_ANO_UNICO` |
+| Residência 250750, 2018 | 1 | 800323 | 800323 | `SEM_ANO_UNICO` |
+| Residência 250750, 2019 | 1 | 809015 | 809015 | `SEM_ANO_UNICO` |
+
+**Gate restrito:** `E16_ANNUAL_ONLY_SERVICE_RESIDENCE_JP_2018_2019=PASS_LOCAL_REPORTED`. O resultado demonstra uma única linha de população município×ano nesse recorte sob **qualquer um dos papéis selecionado isoladamente**, com valores reconciliados no E5. Não permite concluir que internacões/capacidade/POP tenham semântica idêntica, nem que filtros simultâneos de residência e serviço devam ter a mesma população.
+
+**Limitação da candidata E10:** exige uma competência explicitamente selecionada; logo `E10=SEM_ANO_UNICO` mesmo para ano 2018/2019 inequívoco. Em um painel anual isolado, `Sum(POP)` sem filtro mensal já forneceu o denominador correto no recorte. **HIPÓTESE DE MODELAGEM, não aprovação:** tratar seleção exclusivamente anual e seleção por competência de forma distinta, com seleção de papel municipal explicitamente vinculada ao indicador, sem somar diferentes anos de população automaticamente e sem tentar inferir seleção descartada (E14/E15).
+
+**Integridade:** `SOURCE_SHA256_UNCHANGED=True`; `SAVE_EXECUTED=False`; `RELOAD_EXECUTED=False`; `QVD_WRITES=0`; `VERDICT=PASS_COM_SMOKE_ONLY_DENOMINATOR_CONTRACT_NOT_APPROVED`. Este veredito final aprova somente o smoke E13, enquanto E16 fornece evidência visual/logada restrita e não aprova contrato genérico.
+
+**Próximo gate proposto:** ensaio E17 em COM sobre cópia descartável combinando o filtro territorial de serviço/residência com uma competência mensal; examinar a perda de população em medida normal, sua recuperação candidata no E10 e o efeito de filtros simultâneos de papéis diferentes, sem interpretação automática de "zero habitantes". Conferir também a manutenção de cada seleção pela interface COM. **Não alterar Link Table, grão da POP ou fatos.**
+
+**Estado:** `E16_ANNUAL_ROLE_JP_2018_2019=PASS_LOCAL_REPORTED`; `E16_GENERIC_MUNICIPAL_ROLE=NOT_APPROVED`; `E17_GEO_ROLE_MONTH_ASSOCIATION=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
