@@ -951,3 +951,26 @@ O resultado coincide com a população estimada de João Pessoa para 2018, recon
 **Limitações ainda pendentes:** sem competências selecionadas, mês×ano explicitamente incompatíveis, outros municípios/seleções territoriais, filtros de residência, totais de múltiplos municípios, valor nulo ou inexistente de população, medidas SIH/RD (respeitar `IDENT=5`) e snapshots CNES/LT (semi-aditividade e `T29_HISTORICAL=NOT_APPROVED`). Recomenda-se consolidar os testes restantes em **matriz automatizada e versionada PowerShell/QlikView 12** após validar a recusa entre anos, evitando repetir manualmente as 223 localidades sem critérios. Os Capítulos 1–2 e arquitetura previamente aprovada permanecem intactos.
 
 **Estado:** `E10_TWO_MONTH_SAME_YEAR_JP_SERVICE=PASS_VISUAL`; `E10_CROSS_YEAR_SELECTION=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
+
+---
+
+## 39. E11 — bloqueio de seleção de competências em anos distintos (14/10/2026)
+
+**FATO VERIFICADO — captura QlikView Desktop 12 fornecida pelo responsável.** Mesmo QVW experimental E5, somente município de serviço `P6_SERV_DATASUS_6=250750` e competências `201809` e `201909` selecionadas em verde. Não há ano explicitamente selecionado em `P6_ANO_ANO`.
+
+Objetos exibem:
+
+~~~text
+QTD_COMP=2 | MES_MIN=201809 | MES_MAX=201909 | ANO_MIN=2018 | ANO_MAX=2019
+E10_POP=SEM_ANO_UNICO
+NORMAL=0 | ANUAL=2420936 | FIXO_2019=809015
+DINAMICO=0
+~~~
+
+**FATO VERIFICADO / E11:** a expressão E10 validada anteriormente em mesmo ano (§38) recusou calcular população para competências que cruzam 2018/2019, retornando literalmente `SEM_ANO_UNICO`. Isto é comportamento de bloqueio semântico adequado ao teste, **não aprovação definitiva** de tratamento de filtros inválidos na apresentação. Os valores `ANUAL=2420936` e `FIXO_2019=809015` seguem apenas como contraexemplos diagnósticos, não denominadores permitidos neste cenário.
+
+**Gates restritos:** `E10_TWO_MONTH_SAME_YEAR_JP_SERVICE=PASS_VISUAL`; `E11_CROSS_YEAR_COMPETENCE_GUARD=PASS_VISUAL`. A lógica de `MinString`/`MaxString` com verificação de ano igual atende os dois recortes observados, mas faltam verificações de nulos, formato, seleção ano×competência conflitante, comportamento sem mês, municípios diferentes ou múltiplos, papéis residência/serviço e significado de inexistência de população.
+
+**Próxima etapa recomendada (NÃO EXECUTADA):** substituir o ciclo repetitivo de objetos manuais por uma **matriz de regressão versionada**, usando a ferramenta QlikView 12 e o runner PowerShell existente como base, sem modificar fontes ou gerar QVD. Antes de automatizar seleções associativas COM, fazer Discovery dos métodos realmente acessíveis no Windows/QlikView 12. A matriz deve incluir: (a) sem seleção; (b) uma competência; (c) duas competências mesmo ano; (d) duas competências anos diferentes; (e) seleção explícita de ano compatível; (f) ano explícito incompatível; (g) município de serviço diferente e conjuntos múltiplos; (h) município de residência; (i) população ausente/nula e situações sem denominador. **Falhar fechado** onde houver ambiguidade e evitar tratar `RangeSum=0` como zero habitantes. Não aprovar física `SAD-LINK-V1`, fatos, ou indicador por habitante antes dos respectivos gates.
+
+**Estado:** `E11_CROSS_YEAR_COMPETENCE_GUARD=PASS_VISUAL`; `E5_TO_E11_SELECTION_MATRIX=PARTIAL_VISUAL_ONLY`; `AUTOMATED_SEMANTIC_REGRESSION=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. Draft PR #83 sem merge.
