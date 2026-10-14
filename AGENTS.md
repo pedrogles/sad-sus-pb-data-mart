@@ -66,7 +66,9 @@ Antes de propor mudança significativa:
 
 Status:
 
-**FECHADA — PRONTA PARA IMPRESSÃO/ENTREGA**
+**ENTREGUE EM 13/10/2026 — AVALIAÇÃO ACADÊMICA PENDENTE**
+
+Entrega do relatório impresso (Capítulos 1 e 2) informada pelo responsável pelo projeto em 13/10/2026. Não há confirmação registrada de avaliação, aprovação ou nota do professor.
 
 Escopo concluído:
 
@@ -115,7 +117,7 @@ Dimensões aprovadas:
 
 O estado operacional confiável está em **`docs/project/current-state.md`**. Consultar esse arquivo antes de propor implementação ou reabrir um checkpoint. Não reconstruir a situação a partir da cronologia de chats, PRs ou testes antigos.
 
-- **Primeira entrega acadêmica (Capítulos 1 e 2): FECHADA / PRONTA PARA IMPRESSÃO**; prazo do professor: **13/10/2026**. Não reabrir regras de negócio, DER, lógico ou dimensional sem nova evidência/exigência acadêmica.
+- **Primeira entrega acadêmica (Capítulos 1 e 2): ENTREGUE EM 13/10/2026 (informação do responsável); AVALIAÇÃO ACADÊMICA PENDENTE.** Não reabrir regras de negócio, DER, lógico ou dimensional sem nova evidência/exigência acadêmica.
 - **Boundaries 3–8: concluídos; Boundary 8 GO.** Fase I de infraestrutura e Fase II de conversão: **PASS**, com 108/108 DBCs conferidos.
 - **FASE III — EXTRAÇÃO/STAGING: PASS LOCAL / FINAL RECONCILED em 08/10/2026 21:46:48 (UTC-03).** QlikView 12: 10 QVDs frescos, 107 campos T08, T07 36/36 competências RD/LT/ST, C1–C5 e checkpoint `_SUCCESS_EXTRACAO.csv` novo com `PASS_FINAL_RECONCILED`. Runner Python retornou exit 0, `PASS_LOCAL_QV_AND_SHA_RECONCILIATION`, manifesto SHA-256 local. A legenda CNES set/2019 é exclusivamente snapshot descritivo, sem inferir vigência; **T29 histórico 2017–2019 permanece NÃO APROVADO**. PR #73 integrado na `main` (squash `5644bdafa5fe4e437ce3417b5368113639468267`); Fase IV iniciada na branch `feat/phase-4-dim-tempo`; IV-TEMPO obteve PASS físico local, demais dimensoes pendentes.
 - A trilha RTS investigada mostrou primeiro resultado na consulta `10/2019A` do usuário; não inferir que os códigos surgiram nesse mês. Preservar `TP_LEITO="3 "` e `CODLEITO="66"` da PB: não substituir silenciosamente por `2/66` do indicador agregado CNESNet.
