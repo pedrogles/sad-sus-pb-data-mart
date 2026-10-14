@@ -863,3 +863,35 @@ retornou **`DINAMICO=800323`**, exatamente o valor de habitantes de João Pessoa
 **Próximo ensaio físico mínimo (NÃO EXECUTADO):** limpar tudo, selecionar município de serviço `250750`, e selecionar simultaneamente duas competências de **mesmo ano** (`201808` e `201809`), deixando `P6_ANO_ANO` sem seleção explícita. Registrar `GetSelectedCount(P6_COMP_COMPETENCIA)`, `Only(P6_COMP_COMPETENCIA)`, ano derivado e o objeto `DINAMICO` atual, sem modificar script. Não antecipar resultado do objeto: a finalidade é caracterizar como o mecanismo lida com seleção mensal múltipla. Uma política de aceitar/rejeitar seleção de múltiplos meses requer decisão explícita, distinguindo meses no mesmo ano de meses em anos diferentes.
 
 **Estado:** `E7_DYNAMIC_POP_JP_SERVICE_201809_SINGLE_COMP=PASS_VISUAL`; `E7_MULTIPLE_COMPETENCES=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 segue Draft, sem merge.
+
+---
+
+## 36. E8 — duas competências do mesmo ano sem ano explícito (14/10/2026)
+
+**FATO VERIFICADO — captura QlikView Desktop 12 fornecida pelo responsável:** município de serviço `P6_SERV_DATASUS_6=250750`, competências `201808` e `201809` simultaneamente selecionadas (ambas verdes), sem seleção explícita de `P6_ANO_ANO`. Mesmo QVW em memória; sem recarga de fonte.
+
+Resultados observados:
+
+~~~text
+NORMAL=0 | ANUAL=2420936 | FIXO_2019=809015
+QTD_COMP=2 | COMP= | ANO_DERIVADO=
+DINAMICO=0
+~~~
+
+**Interpretação:** `Only(P6_COMP_COMPETENCIA)` deixa de retornar uma competência única quando dois meses estão selecionados. Consequentemente, o ano derivado da expressão E7 desaparece e `DINAMICO=0` aparece porque o objeto experimental envolve a soma em `RangeSum()`. Esse zero **não equivale a zero habitantes**. O resultado `ANUAL=2420936` permanece a soma populacional indevida de João Pessoa dos anos 2017–2019. A população de referência de 2018 para o município é 800323.
+
+**Gate:** `E8_SAME_YEAR_TWO_COMPETENCES_201808_201809=FAIL_SEMANTIC_OBSERVED` **para a candidata E7 dependente de `Only(COMPETENCIA)`**, e não para qualquer alternativa ainda não testada. Manter a população no grão município×ano; não replicar por competência.
+
+**Próximo teste mínimo, diagnóstico NÃO EXECUTADO:** com as mesmas seleções, criar um único objeto Text Object:
+
+~~~qlik
+='QTD_COMP=' & GetSelectedCount(P6_COMP_COMPETENCIA)
+& ' | MES_MIN=' & MinString(P6_COMP_COMPETENCIA)
+& ' | MES_MAX=' & MaxString(P6_COMP_COMPETENCIA)
+& ' | ANO_MIN=' & Left(Text(MinString(P6_COMP_COMPETENCIA)),4)
+& ' | ANO_MAX=' & Left(Text(MaxString(P6_COMP_COMPETENCIA)),4)
+~~~
+
+A expectativa **hipotética** é identificar `QTD_COMP=2` e um ano comum `2018`; deve ser confirmada fisicamente. Depois, antes de generalizar, testar o conflito `201809` + `201909`, ano explícito incompatível e ausência de seleções, com tratamento fail-closed. Não aprovar denominador genérico nem alterar contrato físico nesta etapa.
+
+**Estado:** `E8_SAME_YEAR_TWO_COMPETENCES=FAIL_SEMANTIC_E7`; `E8_MIN_MAX_YEAR_DIAGNOSTIC=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
