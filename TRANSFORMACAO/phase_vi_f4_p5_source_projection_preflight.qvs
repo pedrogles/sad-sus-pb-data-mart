@@ -1,0 +1,170 @@
+// SAD PB: F4-P5 experimental row-preserving projection over an existing E5 QVW.
+// Disposable QVW only. No STORE, QVD output, semantic contract or production fact.
+// Recalculate P6 candidate 5-coordinate hash; NEVER JOIN on non-unique %LINK_KEY.
+LET vF4P5Errors = ScriptErrorCount;
+IF NoOfTables()<>9 OR NoOfRows('P6_LINK_SIMULADA')<>85705 OR NoOfRows('P6_FATO_RD_SIMULADA')<>566672 OR NoOfRows('P6_FATO_LT_SIMULADA')<>35518 OR NoOfRows('P6_FATO_POP_SIMULADA')<>669 THEN
+    TRACE [F4-P5] VERDICT=BLOCKED_E5_BASELINE;
+    EXIT SCRIPT;
+ENDIF
+TRACE [F4-P5] BASELINE_9_TABLES_PASS;
+
+// Reference is the EXISTING candidate link set, never a new key contract.
+F4_P5_MAP_LINK:
+MAPPING LOAD [%LINK_KEY],1 RESIDENT P6_LINK_SIMULADA;
+
+// RD: row-preserving load directly from original staging QVD.
+F4_P5_RD_RAW:
+NOCONCATENATE LOAD
+    Hash128('MES',Text(Date(Date#(Trim(Text(_META_SOURCE_COMPETENCE)),'YYYYMM'),'YYYYMM'))) AS _F4_COMP,
+    Hash128('ANO',Num#(Trim(Text(ANO_CMPT)),'####','.',',')) AS _F4_YEAR,
+    Hash128('MUN',Trim(Text(MUNIC_RES))) AS _F4_RES,
+    Hash128('MUN',Trim(Text(MUNIC_MOV))) AS _F4_SERV,
+    Hash128('ESTAB',Trim(Text(CNES)),Trim(Text(_META_SOURCE_COMPETENCE))) AS _F4_EST,
+    Text(IDENT) AS F4_RD_IDENT,
+    If(Trim(Text(IDENT))='1',1,0) AS F4_RD_QTD_INTERNACAO,
+    Text(PROC_REA) AS F4_RD_PROC_REA,
+    Text(DIAG_PRINC) AS F4_RD_DIAG_PRINC,
+    Text(CAR_INT) AS F4_RD_CAR_INT,
+    Text(COBRANCA) AS F4_RD_COBRANCA,
+    Text(DT_INTER) AS F4_RD_DT_INTER,
+    Text(DT_SAIDA) AS F4_RD_DT_SAIDA
+FROM [..\EXTRACAO\QVD\SRC_SIH_RD.qvd] (qvd);
+IF ScriptErrorCount>$(vF4P5Errors) OR NoOfRows('F4_P5_RD_RAW')<>566672 THEN
+    TRACE [F4-P5] VERDICT=BLOCKED_RD_SOURCE_ROWS;
+    EXIT SCRIPT;
+ENDIF
+
+F4_P5_RD_FACT_TEST:
+NOCONCATENATE LOAD
+    Hash128('SAD-LINK-V1',
+        'C=' & If(IsNull(_F4_COMP),'N','V' & Len(Text(_F4_COMP)) & ':' & Text(_F4_COMP)),
+        'Y=' & If(IsNull(_F4_YEAR),'N','V' & Len(Text(_F4_YEAR)) & ':' & Text(_F4_YEAR)),
+        'R=' & If(IsNull(_F4_RES),'N','V' & Len(Text(_F4_RES)) & ':' & Text(_F4_RES)),
+        'S=' & If(IsNull(_F4_SERV),'N','V' & Len(Text(_F4_SERV)) & ':' & Text(_F4_SERV)),
+        'E=' & If(IsNull(_F4_EST),'N','V' & Len(Text(_F4_EST)) & ':' & Text(_F4_EST))
+    ) AS [%LINK_KEY],
+    ApplyMap('F4_P5_MAP_LINK',Hash128('SAD-LINK-V1',
+        'C=' & If(IsNull(_F4_COMP),'N','V' & Len(Text(_F4_COMP)) & ':' & Text(_F4_COMP)),
+        'Y=' & If(IsNull(_F4_YEAR),'N','V' & Len(Text(_F4_YEAR)) & ':' & Text(_F4_YEAR)),
+        'R=' & If(IsNull(_F4_RES),'N','V' & Len(Text(_F4_RES)) & ':' & Text(_F4_RES)),
+        'S=' & If(IsNull(_F4_SERV),'N','V' & Len(Text(_F4_SERV)) & ':' & Text(_F4_SERV)),
+        'E=' & If(IsNull(_F4_EST),'N','V' & Len(Text(_F4_EST)) & ':' & Text(_F4_EST))
+    ),0) AS F4_RD_LINK_MATCH,
+    F4_RD_IDENT,F4_RD_QTD_INTERNACAO,F4_RD_PROC_REA,F4_RD_DIAG_PRINC,
+    F4_RD_CAR_INT,F4_RD_COBRANCA,F4_RD_DT_INTER,F4_RD_DT_SAIDA
+RESIDENT F4_P5_RD_RAW;
+DROP TABLE F4_P5_RD_RAW;
+IF ScriptErrorCount>$(vF4P5Errors) OR NoOfRows('F4_P5_RD_FACT_TEST')<>566672 THEN
+    TRACE [F4-P5] VERDICT=BLOCKED_RD_FACT_PROJECTION;
+    EXIT SCRIPT;
+ENDIF
+
+F4_P5_RD_PROFILE:
+NOCONCATENATE LOAD
+    Count(*) AS F4_RD_ROWS,
+    Sum(F4_RD_QTD_INTERNACAO) AS F4_RD_ELIGIBLE,
+    Sum(If(Trim(F4_RD_IDENT)='5',1,0)) AS F4_RD_CONT,
+    Sum(If(F4_RD_LINK_MATCH<>1 OR IsNull([%LINK_KEY]),1,0)) AS F4_RD_UNMATCHED
+RESIDENT F4_P5_RD_FACT_TEST;
+LET vF4RdRows=Peek('F4_RD_ROWS',0,'F4_P5_RD_PROFILE');
+LET vF4RdEligible=Peek('F4_RD_ELIGIBLE',0,'F4_P5_RD_PROFILE');
+LET vF4RdCont=Peek('F4_RD_CONT',0,'F4_P5_RD_PROFILE');
+LET vF4RdMissing=Peek('F4_RD_UNMATCHED',0,'F4_P5_RD_PROFILE');
+DROP TABLE F4_P5_RD_PROFILE;
+TRACE [F4-P5] RD_ROWS=$(vF4RdRows) ELIGIBLE=$(vF4RdEligible) IDENT5=$(vF4RdCont) UNMATCHED=$(vF4RdMissing);
+IF $(vF4RdRows)<>566672 OR $(vF4RdEligible)<>555089 OR $(vF4RdCont)<>11583 OR $(vF4RdMissing)<>0 THEN
+    TRACE [F4-P5] VERDICT=BLOCKED_RD_MEASURE_OR_LINK;
+    EXIT SCRIPT;
+ENDIF
+DROP FIELD F4_RD_LINK_MATCH FROM F4_P5_RD_FACT_TEST;
+
+// LT: only LT's original grain; never JOIN attributes by %LINK_KEY.
+F4_P5_LT_RAW:
+NOCONCATENATE LOAD
+    Hash128('MES',Text(Date(Date#(Trim(Text(_META_SOURCE_COMPETENCE)),'YYYYMM'),'YYYYMM'))) AS _F4_COMP,
+    Hash128('ANO',Num#(Left(Trim(Text(_META_SOURCE_COMPETENCE)),4),'####','.',',')) AS _F4_YEAR,
+    Null() AS _F4_RES,
+    Hash128('MUN',Trim(Text(CODUFMUN))) AS _F4_SERV,
+    Hash128('ESTAB',Trim(Text(CNES)),Trim(Text(_META_SOURCE_COMPETENCE))) AS _F4_EST,
+    Hash128(Trim(Text(CNES)),Trim(Text(COMPETEN)),Trim(Text(CODLEITO))) AS F4_LT_GRAIN_HASH,
+    Text(TP_LEITO) AS F4_LT_TP_LEITO_SOURCE,
+    Text(CODLEITO) AS F4_LT_CODLEITO,
+    QT_EXIST AS F4_LT_QT_EXIST,
+    QT_SUS AS F4_LT_QT_SUS,
+    QT_NSUS AS F4_LT_QT_NSUS
+FROM [..\EXTRACAO\QVD\SRC_CNES_LT.qvd] (qvd);
+IF ScriptErrorCount>$(vF4P5Errors) OR NoOfRows('F4_P5_LT_RAW')<>35518 THEN
+    TRACE [F4-P5] VERDICT=BLOCKED_LT_SOURCE_ROWS;
+    EXIT SCRIPT;
+ENDIF
+
+F4_P5_LT_FACT_TEST:
+NOCONCATENATE LOAD
+    Hash128('SAD-LINK-V1',
+        'C=' & If(IsNull(_F4_COMP),'N','V' & Len(Text(_F4_COMP)) & ':' & Text(_F4_COMP)),
+        'Y=' & If(IsNull(_F4_YEAR),'N','V' & Len(Text(_F4_YEAR)) & ':' & Text(_F4_YEAR)),
+        'R=' & If(IsNull(_F4_RES),'N','V' & Len(Text(_F4_RES)) & ':' & Text(_F4_RES)),
+        'S=' & If(IsNull(_F4_SERV),'N','V' & Len(Text(_F4_SERV)) & ':' & Text(_F4_SERV)),
+        'E=' & If(IsNull(_F4_EST),'N','V' & Len(Text(_F4_EST)) & ':' & Text(_F4_EST))
+    ) AS [%LINK_KEY],
+    ApplyMap('F4_P5_MAP_LINK',Hash128('SAD-LINK-V1',
+        'C=' & If(IsNull(_F4_COMP),'N','V' & Len(Text(_F4_COMP)) & ':' & Text(_F4_COMP)),
+        'Y=' & If(IsNull(_F4_YEAR),'N','V' & Len(Text(_F4_YEAR)) & ':' & Text(_F4_YEAR)),
+        'R=' & If(IsNull(_F4_RES),'N','V' & Len(Text(_F4_RES)) & ':' & Text(_F4_RES)),
+        'S=' & If(IsNull(_F4_SERV),'N','V' & Len(Text(_F4_SERV)) & ':' & Text(_F4_SERV)),
+        'E=' & If(IsNull(_F4_EST),'N','V' & Len(Text(_F4_EST)) & ':' & Text(_F4_EST))
+    ),0) AS F4_LT_LINK_MATCH,
+    F4_LT_GRAIN_HASH,F4_LT_TP_LEITO_SOURCE,F4_LT_CODLEITO,
+    F4_LT_QT_EXIST,F4_LT_QT_SUS,F4_LT_QT_NSUS
+RESIDENT F4_P5_LT_RAW;
+DROP TABLE F4_P5_LT_RAW;
+IF ScriptErrorCount>$(vF4P5Errors) OR NoOfRows('F4_P5_LT_FACT_TEST')<>35518 THEN
+    TRACE [F4-P5] VERDICT=BLOCKED_LT_FACT_PROJECTION;
+    EXIT SCRIPT;
+ENDIF
+
+F4_P5_LT_PROFILE:
+NOCONCATENATE LOAD
+    Count(*) AS F4_LT_ROWS,
+    Count(DISTINCT F4_LT_GRAIN_HASH) AS F4_LT_DISTINCT_GRAIN,
+    Sum(F4_LT_QT_SUS) AS F4_LT_SUS_SNAPSHOT_SUM_AUDIT,
+    Sum(If(IsNull(F4_LT_QT_EXIST) OR IsNull(F4_LT_QT_SUS) OR IsNull(F4_LT_QT_NSUS) OR F4_LT_QT_EXIST<0 OR F4_LT_QT_SUS<0 OR F4_LT_QT_NSUS<0 OR F4_LT_QT_EXIST<>F4_LT_QT_SUS+F4_LT_QT_NSUS,1,0)) AS F4_LT_INVALID_QT,
+    Sum(If(F4_LT_LINK_MATCH<>1 OR IsNull([%LINK_KEY]),1,0)) AS F4_LT_UNMATCHED
+RESIDENT F4_P5_LT_FACT_TEST;
+LET vF4LtRows=Peek('F4_LT_ROWS',0,'F4_P5_LT_PROFILE');
+LET vF4LtGrain=Peek('F4_LT_DISTINCT_GRAIN',0,'F4_P5_LT_PROFILE');
+LET vF4LtSus=Peek('F4_LT_SUS_SNAPSHOT_SUM_AUDIT',0,'F4_P5_LT_PROFILE');
+LET vF4LtBad=Peek('F4_LT_INVALID_QT',0,'F4_P5_LT_PROFILE');
+LET vF4LtMissing=Peek('F4_LT_UNMATCHED',0,'F4_P5_LT_PROFILE');
+DROP TABLE F4_P5_LT_PROFILE;
+TRACE [F4-P5] LT_ROWS=$(vF4LtRows) DISTINCT_GRAIN=$(vF4LtGrain) SUS_SNAPSHOT_SUM_AUDIT=$(vF4LtSus) INVALID_QT=$(vF4LtBad) UNMATCHED=$(vF4LtMissing);
+IF $(vF4LtRows)<>35518 OR $(vF4LtGrain)<>35518 OR $(vF4LtSus)<>270076 OR $(vF4LtBad)<>0 OR $(vF4LtMissing)<>0 THEN
+    TRACE [F4-P5] VERDICT=BLOCKED_LT_MEASURE_OR_LINK;
+    EXIT SCRIPT;
+ENDIF
+DROP FIELD F4_LT_LINK_MATCH FROM F4_P5_LT_FACT_TEST;
+DROP FIELD F4_LT_GRAIN_HASH FROM F4_P5_LT_FACT_TEST;
+
+// Discard ONLY the two previous ordinal-only projections in this disposable model.
+// Preserve original 85,705 link rows, POP/IBGE measure, five role dimensions.
+DROP TABLE P6_FATO_RD_SIMULADA;
+DROP TABLE P6_FATO_LT_SIMULADA;
+LET vF4FinalTables=NoOfTables();
+LET vF4FinalRdRows=NoOfRows('F4_P5_RD_FACT_TEST');
+LET vF4FinalLtRows=NoOfRows('F4_P5_LT_FACT_TEST');
+LET vF4FinalPopRows=NoOfRows('P6_FATO_POP_SIMULADA');
+LET vF4Syn=0;
+LET vF4LastTable=$(vF4FinalTables)-1;
+FOR vF4Idx=0 TO $(vF4LastTable)
+    LET vF4TableName=TableName($(vF4Idx));
+    IF Left('$(vF4TableName)',4)='$Syn' THEN
+        LET vF4Syn=$(vF4Syn)+1;
+    ENDIF
+NEXT vF4Idx
+TRACE [F4-P5] FINAL_TABLES=$(vF4FinalTables) RD=$(vF4FinalRdRows) LT=$(vF4FinalLtRows) POP=$(vF4FinalPopRows) SYN=$(vF4Syn);
+IF ScriptErrorCount>$(vF4P5Errors) OR $(vF4FinalTables)<>9 OR $(vF4FinalRdRows)<>566672 OR $(vF4FinalLtRows)<>35518 OR $(vF4FinalPopRows)<>669 OR $(vF4Syn)<>0 THEN
+    TRACE [F4-P5] VERDICT=BLOCKED_ASSOCIATIVE_PROJECTION;
+    EXIT SCRIPT;
+ENDIF
+TRACE [F4-P5] VERDICT=PASS_IN_MEMORY_SOURCE_MEASURES_AND_LINK_MEMBERSHIP_ONLY_NOT_P5;
+TRACE [F4-P5] P5_FILTER_EFFECTS=NOT_TESTED T24_T26=NOT_APPROVED T29_HISTORICAL=NOT_APPROVED;
