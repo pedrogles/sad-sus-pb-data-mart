@@ -1058,3 +1058,19 @@ A interface COM efetivamente executou `GetField().Select()`, `ToggleSelect()`, `
 **Próximo gate sugerido, ainda NÃO EXECUTADO:** ampliar a matriz automatizada, com cópia descartável e verificação de origem, para (1) sem competência; (2) ano explícito compatível; (3) ano explícito incompatível com competência; (4) segundo município de serviço e múltiplos municípios; (5) filtro de residência, isolado e combinado; (6) seleções sem população aplicável. Separar indicadores de internação por residência e atividade hospitalar por serviço antes de decidir qualquer contrato universal. Manter tratamento fail-closed de vazio/ambiguidade, sem converter nulos em zero habitantes.
 
 **Estado:** `E13_COM_SMOKE=PASS_LOCAL_REPORTED`; `E13_BASELINE_PRIOR_FAIL=RESOLVED_BY_CLEARALL`; `E13_COM_12_TABLES=9_BUSINESS_PLUS_3_SYS`; `E14_EXPANDED_SEMANTIC_REGRESSION=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
+
+---
+
+## 45. E14 — matriz temporal COM opcional preparada
+
+**HIPÓTESE / ENSAIO FUTURO (NÃO EXECUTADO no Windows):** sem introduzir outro runner, foi adicionada a flag PowerShell `-TemporalDiscovery` ao executor versionado `tools/validar_qlik_com_e13_smoke.ps1`. O modo padrão, com três cenários E13, permanece disponível e foi anteriormente validado (ver §44). O modo opcional executa esses mesmos gates e, somente após PASS, acrescenta quatro probes na **cópia descartável** do QVW, sempre limpando seleções entre casos: sem competência; somente ano 2018 com serviço 250750; ano 2018 + competência 201809 coerentes; ano 2019 + competência 201809 potencialmente incompatíveis.
+
+A prova temporal diferencia **observação de seleção/resultado** de aprovação semântica. O último caso registra os valores efetivamente selecionados e o valor E10 sem presumir se a seleção conflitante será aceita, desfeita, rejeitada ou retornará um número incorreto. O caso de ano selecionado sem competência avalia a expressão E10, mas não decide que ela é o denominador correto de um indicador anual. Os testes conhecidos continuam fail-closed e `ClearAll()` opera somente na cópia descartável. Nenhum QVD é gravado; não há `Save` nem `Reload` no código.
+
+**Comando experimental futuro, para execução local somente após atualizar a branch:**
+
+```powershell
+& .\tools\validar_qlik_com_e13_smoke.ps1 -SourceQvw '<CAMINHO_QVW_E5_JA_VERIFICADO>' -TemporalDiscovery
+```
+
+**Estado:** `E13_COM_SMOKE=PASS_LOCAL_REPORTED`; `E14_TEMPORAL_DISCOVERY=PREPARED_NOT_EXECUTED`; `E14_YEAR_MONTH_CONFLICT_BEHAVIOR=UNKNOWN`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`. O PR #83 segue Draft sem merge.
