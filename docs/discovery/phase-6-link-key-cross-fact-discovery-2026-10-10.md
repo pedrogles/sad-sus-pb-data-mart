@@ -1237,3 +1237,31 @@ O runner preserva todos os gates E13 conhecidos e opera somente sobre cópia des
 ```
 
 **Estado:** `E17_JP_SERVICE_RESIDENCE_SAME_MUNICIPALITY_201809=PASS_LOCAL_REPORTED_RESTRICTED`; `E18_CROSS_ROLE_MUNICIPALITIES=PREPARED_NOT_EXECUTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
+
+---
+
+## 53. E18 — erro de parser na primeira execução e correção mínima
+
+**FATO VERIFICADO — saída local do responsável, 14/10/2026:** após `git pull --ff-only` até `b5d12b7`, a execução de `tools/validar_qlik_com_e13_smoke.ps1 -CrossRoleDiscovery -OtherMunicipality '250400'` foi interrompida durante a fase de análise sintática do PowerShell: `ParserError`, incluindo `UnexpectedToken`, terminador de aspas ausente e blocos `try`/`if` aparentemente não fechados. **Nenhuma instrução do script chegou a ser executada**: E13–E17 não foram reexecutados e E18 não testou COM, QVW, domínios municipais, fluxo ou denominadores. Não marcar E18 como PASS, FAIL de dados ou qualquer conclusão analítica.
+
+**Causa raiz identificada ao inspecionar o arquivo versionado:** no bloco E18, uma expressão regular PowerShell `'^[0-9]{6}$'` foi quebrada e uma duplicação prematura do bloco final (`catch`/`finally`/`VERDICT`) foi inserida entre essa expressão e o operador `-or`, corrompendo a estrutura do arquivo. A falha ocorreu **na montagem da alteração de código**, não na QlikView COM nem nos datasets. Foi realizada correção cirúrgica removendo o trecho duplicado e recompondo a expressão `if ($OtherMunicipality -notmatch '^[0-9]{6}$' -or $OtherMunicipality -ceq '250750')`, mantendo intactas a matriz E13–E17 e a proposta observacional E18.
+
+**Validação disponível após o ajuste:** inspeção estática do texto remoto confirmou apenas um `catch`/`finally` de nível superior, único `VERDICT` final e delimitadores equilibrados fora de strings/comentários, além da permanência dos gates E13/E17 e ausência de chamadas `Save`/`Reload`. **Ainda não houve validação com parser nativo PowerShell nem execução QlikView 12 no Windows.** Não declarar `PARSER_PASS` antes dessa prova.
+
+**Preflight obrigatório antes da próxima execução (Windows):**
+
+```powershell
+$ps1 = (Resolve-Path .\tools\validar_qlik_com_e13_smoke.ps1).Path
+$tokens = $null
+$errors = $null
+[void][System.Management.Automation.Language.Parser]::ParseFile($ps1, [ref]$tokens, [ref]$errors)
+if ($errors.Count -gt 0) {
+    $errors | Format-List Message, Extent
+    throw 'E18_SCRIPT_PARSE_FAILED'
+}
+'PARSER_PASS'
+```
+
+Se o parser retornar PASS, somente então executar o runner E18 sobre a origem E5 validada. Caso contrário, interromper e enviar mensagens do parser. E18 continua sujeito à validação de existência de `250400` em ambos os campos COM e aos resultados dos filtros; nenhum resultado é presumido.
+
+**Estado:** `E18_POWERSHELL_PARSE=FAIL_LOCAL_REPORTED_BEFORE_FIX`; `E18_PARSER_FIX=VERSIONED_STATIC_CHECK_ONLY`; `E18_COM_EXECUTION=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft, sem merge.
