@@ -275,32 +275,7 @@ try {
     # E18: cross-role coordinates are intentionally DIFFERENT. Diagnostic, not a denominator rule.
     if ($CrossRoleDiscovery) {
         Write-Output 'E18_DIFFERENT_MUNICIPALITY_DISCOVERY=STARTED'
-        if ($OtherMunicipality -notmatch '^[0-9]{6}
-    Write-Output ('E13_GATE=FAIL_CLOSED_'+$failure)
-} finally {
-    if ($null -ne $doc) {
-        try {[void]$doc.CloseDoc()} catch {Write-Output ('E13_CLOSE_WARNING='+$_.Exception.Message)}
-        if ([Runtime.InteropServices.Marshal]::IsComObject($doc)) {
-            [void][Runtime.InteropServices.Marshal]::ReleaseComObject($doc)
-        }
-    }
-    if ($null -ne $qv -and [Runtime.InteropServices.Marshal]::IsComObject($qv)) {
-        [void][Runtime.InteropServices.Marshal]::ReleaseComObject($qv)
-    }
-    $after=(Get-FileHash -LiteralPath $src -Algorithm SHA256).Hash
-    Write-Output ('SOURCE_SHA256_UNCHANGED='+($after -ceq $srcHash))
-    Write-Output 'SAVE_EXECUTED=False'
-    Write-Output 'RELOAD_EXECUTED=False'
-    Write-Output 'QVD_WRITES=0'
-    Write-Output ('DISPOSABLE_DIAGNOSTIC_DIR='+$dir)
-    if ($after -cne $srcHash) {$failure='SOURCE_CHANGED'}
-}
-if ($null -ne $failure) {
-    Write-Output ('VERDICT=FAIL_CLOSED_'+$failure)
-    exit 1
-}
-Write-Output 'VERDICT=PASS_COM_SMOKE_ONLY_DENOMINATOR_CONTRACT_NOT_APPROVED'
- -or $OtherMunicipality -ceq '250750') {
+        if ($OtherMunicipality -notmatch '^[0-9]{6}$' -or $OtherMunicipality -ceq '250750') {
             throw 'BLOCKED_E18_OTHER_MUNICIPALITY_MUST_BE_DIFFERENT_VALID_6_DIGITS'
         }
         # Verify municipality value exists in each genuine in-memory role field before using it.
