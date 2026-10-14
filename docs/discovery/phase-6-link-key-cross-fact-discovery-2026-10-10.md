@@ -929,3 +929,25 @@ If(
 **Hipótese E10 sob serviço `250750` + meses `201808`/`201809`:** `E10_POP=800323` (valor de João Pessoa em 2018), sem repetir a população para cada mês. A recusa textual é proposta experimental e não constitui ainda contrato de erro do painel. Após confirmar E10, testar seleções de anos distintos (`201809` e `201909`) para exigir `SEM_ANO_UNICO` e nenhum valor populacional agregado. Também são pendentes validações de ausência de seleção, ano explícito conflitante, residência, múltiplos municípios e generalidade da expressão. Evitar `RangeSum` que mascararia nulos como zero.
 
 **Estado:** `E9_SAME_YEAR_MIN_MAX_DIAGNOSTIC=PASS_VISUAL`; `E10_MULTI_MONTH_SAME_YEAR_DENOMINATOR=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
+
+---
+
+## 38. E10 — denominador anual com duas competências do mesmo ano (14/10/2026)
+
+**FATO VERIFICADO — captura do QlikView Desktop 12 fornecida pelo responsável.** O mesmo QVW de diagnóstico E5 mantém município de serviço `P6_SERV_DATASUS_6=250750` (João Pessoa) e duas competências selecionadas em verde, `201808` e `201809`, sem seleção explícita do campo `P6_ANO_ANO`.
+
+O objeto E9 confirma `QTD_COMP=2`, `MES_MIN=201808`, `MES_MAX=201809`, `ANO_MIN=2018` e `ANO_MAX=2018`. O novo objeto E10, previamente especificado no §37 para só calcular quando houver competência selecionada e anos extremos iguais, retornou:
+
+~~~text
+E10_POP=800323
+~~~
+
+O resultado coincide com a população estimada de João Pessoa para 2018, reconciliada previamente com `SRC_IBGE_POPULACAO.qvd`. Os controles mantiveram `NORMAL=0`, `ANUAL=2420936`, `FIXO_2019=809015` e `DINAMICO=0`; o último é apenas efeito da candidata E7 baseada em `Only(COMPETENCIA)` e não representa zero habitantes.
+
+**Gate restrito:** `E10_TWO_MONTH_SAME_YEAR_JP_SERVICE=PASS_VISUAL`. Foi demonstrada recuperação do denominador município×ano com dois meses de 2018 **sem duplicar população**, somente neste município/papel e sem filtro explícito de ano. Isso **não prova** a validade genérica nem um modelo físico definitivo.
+
+**Próxima ação mínima, NÃO EXECUTADA:** sem mudar a fórmula E10, limpar todas as seleções; selecionar município de serviço `250750` e competências de **anos diferentes** (`201809` e `201909`); deixar ano sem seleção explícita. Observar se o E9 revela `ANO_MIN=2018` e `ANO_MAX=2019` e, sobretudo, se **E10_POP=SEM_ANO_UNICO**, recusando o cálculo de população. Não presumir um resultado antes da captura.
+
+**Limitações ainda pendentes:** sem competências selecionadas, mês×ano explicitamente incompatíveis, outros municípios/seleções territoriais, filtros de residência, totais de múltiplos municípios, valor nulo ou inexistente de população, medidas SIH/RD (respeitar `IDENT=5`) e snapshots CNES/LT (semi-aditividade e `T29_HISTORICAL=NOT_APPROVED`). Recomenda-se consolidar os testes restantes em **matriz automatizada e versionada PowerShell/QlikView 12** após validar a recusa entre anos, evitando repetir manualmente as 223 localidades sem critérios. Os Capítulos 1–2 e arquitetura previamente aprovada permanecem intactos.
+
+**Estado:** `E10_TWO_MONTH_SAME_YEAR_JP_SERVICE=PASS_VISUAL`; `E10_CROSS_YEAR_SELECTION=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
