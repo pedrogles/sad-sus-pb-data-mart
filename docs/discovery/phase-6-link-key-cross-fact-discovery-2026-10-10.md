@@ -1253,10 +1253,10 @@ O runner preserva todos os gates E13 conhecidos e opera somente sobre cópia des
 ```powershell
 $ps1 = (Resolve-Path .\tools\validar_qlik_com_e13_smoke.ps1).Path
 $tokens = $null
-$errors = $null
-[void][System.Management.Automation.Language.Parser]::ParseFile($ps1, [ref]$tokens, [ref]$errors)
-if ($errors.Count -gt 0) {
-    $errors | Format-List Message, Extent
+$parseErrors = $null
+[void][System.Management.Automation.Language.Parser]::ParseFile($ps1, [ref]$tokens, [ref]$parseErrors)
+if ($parseErrors.Count -gt 0) {
+    $parseErrors | Format-List Message, Extent
     throw 'E18_SCRIPT_PARSE_FAILED'
 }
 'PARSER_PASS'
