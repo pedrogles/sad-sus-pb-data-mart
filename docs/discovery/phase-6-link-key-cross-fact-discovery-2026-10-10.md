@@ -663,18 +663,18 @@ Antes de cada cenário, limpar todas as seleções no próprio QVW. **Expectativ
 
 **FATO VERIFICADO — saída do executor PowerShell e log nativo QlikView 12 fornecidos pelo responsável (14/10/2026, 12:06:57 em UTC-03).**
 
-Branch de teste: \`feat/phase-5-fato-internacao-contract-discovery\`, PR #83 Draft, sem merge. O responsável executou \`git pull --ff-only\` até \`2839d35\` e rodou:
+Branch de teste: `feat/phase-5-fato-internacao-contract-discovery`, PR #83 Draft, sem merge. O responsável executou `git pull --ff-only` até `2839d35` e rodou:
 
-\`\`\`powershell
+```powershell
 $assoc = 'C:\Users\pedro\AppData\Local\Temp\SAD_P6_ASSOC_PREFLIGHT_07355503816541ddbed257b795d42ea2\P6_ASSOC_LINK_IN_MEMORY.qvw'
 & .\tools\validar_denominador_populacional_e5_qlik.ps1 -AssocQvw $assoc
-\`\`\`
+```
 
-O runner versionado (\`tools/validar_denominador_populacional_e5_qlik.ps1\`) injeta \`TRANSFORMACAO/phase_vi_e5_population_denominator_preflight.qvs\` em QVW descartável, usando \`BINARY\` sobre o QVW associativo de nove tabelas e fazendo \`LEFT JOIN\` exclusivamente em memória na projeção de 669 linhas POP. **Não gera QVDs, não altera os QVDs de staging, não constrói fatos definitivos, não aprova o contrato de \`%LINK_KEY\`.**
+O runner versionado (`tools/validar_denominador_populacional_e5_qlik.ps1`) injeta `TRANSFORMACAO/phase_vi_e5_population_denominator_preflight.qvs` em QVW descartável, usando `BINARY` sobre o QVW associativo de nove tabelas e fazendo `LEFT JOIN` exclusivamente em memória na projeção de 669 linhas POP. **Não gera QVDs, não altera os QVDs de staging, não constrói fatos definitivos, não aprova o contrato de `%LINK_KEY`.**
 
 Saída apresentada:
 
-\`\`\`text
+```text
 MODE=PHASE_VI_POP_DENOMINATOR_READ_ONLY_PREFLIGHT
 SOURCE_ASSOC_QVW_SHA256=9854A42B70EBB75F2256F44CB97CC1B2601DF9F334CB93530DABE01D28B5CDCF
 RELOAD_STARTED=True
@@ -691,16 +691,48 @@ FACT_QVDS_GENERATED=False
 LINK_ANALISE_QVD_GENERATED=False
 LINK_KEY_CONTRACT=NOT_APPROVED
 VERDICT=PASS_IN_MEMORY_POP_VALUES_PRESELECTION_NOT_APPROVED
-\`\`\`
+```
 
 O QVW retido para inspeção visual pelo executor foi:
 
-\`\`\`text
+```text
 C:\Users\pedro\AppData\Local\Temp\SAD_P6_E5_DENOMINATOR_e3448ab42006474f86325b9d25935d19\P6_E5_POP_DENOMINATOR_IN_MEMORY.qvw
-\`\`\`
+```
 
-Este caminho em \`%TEMP%\` é transitório, não arquivo canônico. A saída é evidência local reportada pelo responsável; não equivale a execução independente do agente. O teste físico de **presença e valores anuais reais** passou em memória, inclusive a reconciliação dos totais PB e das estimativas de João Pessoa, mas **nenhum filtro mensal foi executado neste QVW E5**.
+Este caminho em `%TEMP%` é transitório, não arquivo canônico. A saída é evidência local reportada pelo responsável; não equivale a execução independente do agente. O teste físico de **presença e valores anuais reais** passou em memória, inclusive a reconciliação dos totais PB e das estimativas de João Pessoa, mas **nenhum filtro mensal foi executado neste QVW E5**.
 
-**Próximo gate — E5 SELECTION, NÃO EXECUTADO:** no QVW retido, limpar seleções e testar \`P6_SERV_DATASUS_6=250750\`, \`P6_ANO_ANO=2018\` e \`P6_COMP_COMPETENCIA=201809\`, comparando \`RangeSum(Sum(P6_POP_HABITANTES_E5))\` contra \`RangeSum(Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5))\` e \`RangeSum(Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={2019}>} P6_POP_HABITANTES_E5))\`. Referências anuais para a cidade: 2018 = 800323 e 2019 = 809015; expectativas após filtros são **hipóteses**, não resultados. Exigir captura dos filtros e valores retornados; repetir para 2019 somente se primeiro caso estiver coerente. Não extrapolar para residência, múltiplos municípios/anos ou medidas SIH/CNES sem baterias próprias.
+**Próximo gate — E5 SELECTION, NÃO EXECUTADO:** no QVW retido, limpar seleções e testar `P6_SERV_DATASUS_6=250750`, `P6_ANO_ANO=2018` e `P6_COMP_COMPETENCIA=201809`, comparando `RangeSum(Sum(P6_POP_HABITANTES_E5))` contra `RangeSum(Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5))` e `RangeSum(Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={2019}>} P6_POP_HABITANTES_E5))`. Referências anuais para a cidade: 2018 = 800323 e 2019 = 809015; expectativas após filtros são **hipóteses**, não resultados. Exigir captura dos filtros e valores retornados; repetir para 2019 somente se primeiro caso estiver coerente. Não extrapolar para residência, múltiplos municípios/anos ou medidas SIH/CNES sem baterias próprias.
 
-**Estado:** \`E5_POP_REAL_PRESELECTION=PASS_LOCAL_LOG_REPORTED\`; \`E5_MONTHLY_SELECTION=NOT_TESTED\`; \`MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED\`; \`LINK_KEY_CONTRACT=NOT_APPROVED\`; \`FACT_QVDS=NOT_STARTED\`; \`LINK_ANALISE_QVD=NOT_STARTED\`; \`T29_HISTORICAL=NOT_APPROVED\`.
+**Estado:** `E5_POP_REAL_PRESELECTION=PASS_LOCAL_LOG_REPORTED`; `E5_MONTHLY_SELECTION=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`.
+
+---
+
+## 30. E5 — filtro mensal 201809, João Pessoa/serviço (14/10/2026)
+
+**FATO VERIFICADO — captura fornecida pelo responsável do QVW E5 aberto no QlikView 12.** Os três campos abaixo aparecem com seleção verde simultânea:
+
+- `P6_SERV_DATASUS_6=250750` — município de serviço João Pessoa;
+- `P6_ANO_ANO=2018`;
+- `P6_COMP_COMPETENCIA=201809`.
+
+O objeto de texto calculado apresentou:
+
+```text
+NORMAL=0 | ANUAL=800323 | FIXO_2019=809015
+```
+
+As fórmulas solicitadas e observadas eram, respectivamente:
+
+```qlik
+RangeSum(Sum(P6_POP_HABITANTES_E5))
+RangeSum(Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5))
+RangeSum(Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={2019}>} P6_POP_HABITANTES_E5))
+```
+
+**Interpretação estrita:** o filtro mensal retirou a população anual do cálculo associativo normal; o modificador que limpa somente a competência recuperou **800.323 habitantes do mesmo município/ano selecionados** neste cenário; o modificador que impõe literalmente 2019 retornou **809.015 habitantes**, valor do ano incorreto para uma seleção de 2018. Resultado coerente com o staging IBGE e com o gate E5 de medidas reais em memória (§29).
+
+**Gate parcial:** `E5_MONTHLY_SELECTION_JP_2018_201809=PASS_VISUAL`. A observação **não** aprova um denominador genérico, seleção dinâmica sem ano explícito, múltiplos municípios/anos, município de residência, números de internações ou snapshots de leitos. A regra `SAD-LINK-V1`, os fatos definitivos e a Link Table persistida permanecem **não aprovados/não implementados**.
+
+**Próximo ensaio manual, ainda não executado:** limpar todas as seleções, escolher município serviço `250750`, ano `2019` e competência `201909` e verificar `NORMAL=0`, `ANUAL=809015`, `FIXO_2019=809015`. Esses valores são **expectativas** até receber a captura. Não recarregar nem alterar script/QVD para esse ensaio.
+
+**Estado:** `E5_POP_REAL_PRESELECTION=PASS_LOCAL_LOG_REPORTED`; `E5_MONTHLY_SELECTION_JP_2018_201809=PASS_VISUAL`; `E5_MONTHLY_SELECTION_JP_2019_201909=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`.
