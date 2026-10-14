@@ -787,3 +787,23 @@ O valor `ANUAL=811598` corresponde exatamente à população municipal de João 
 **Próximo gate, NÃO EXECUTADO:** limpar todas as seleções; selecionar **somente** `P6_SERV_DATASUS_6=250750` e `P6_COMP_COMPETENCIA=201809`, deixando `P6_ANO_ANO` **sem seleção explícita**. Observar `NORMAL`, `ANUAL`, `FIXO_2019`, além do estado de seleção do ano. O resultado de `ANUAL` é intencionalmente tratado como desconhecido até captura. A finalidade é verificar se limpar a competência ainda preserva o ano analítico quando este não foi explicitamente selecionado. Não presumir que o resultado seja 800323. Reconciliar com staging e registrar implicações antes de considerar derivação de ano ou fórmula genérica.
 
 **Estado:** `E5_MONTHLY_SELECTION_JP_2017_201709=PASS_VISUAL`; `E5_MONTHLY_SELECTION_JP_2018_201809=PASS_VISUAL`; `E5_MONTHLY_SELECTION_JP_2019_201909=PASS_VISUAL`; `E5_MONTH_ONLY_WITHOUT_EXPLICIT_YEAR=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft, sem merge.
+
+---
+
+## 33. E5 — competência mensal sem ano explícito, João Pessoa/serviço (14/10/2026)
+
+**FATO VERIFICADO — captura do QlikView Desktop 12 fornecida pelo responsável:** em QVW temporário E5 com valores populacionais reais, apenas `P6_SERV_DATASUS_6=250750` (João Pessoa/serviço) e `P6_COMP_COMPETENCIA=201809` aparecem em verde. O objeto `P6_ANO_ANO` não apresenta ano selecionado explicitamente (nenhum valor em verde).
+
+O texto calculado apresenta:
+
+```text
+NORMAL=0 | ANUAL=2420936 | FIXO_2019=809015
+```
+
+O valor `ANUAL=2420936` é precisamente `811598 (2017) + 800323 (2018) + 809015 (2019)`: após limpar apenas a competência no Set Analysis, o modelo recupera **todos os três anos** da população municipal, não somente o ano 2018 implícito na competência `201809`. `NORMAL=0` decorre da ausência de competência mensal na população anual; `FIXO_2019=809015` confirma a fixação indevida em outro ano.
+
+**CONCLUSÃO SEMÂNTICA / CONTRAEXEMPLO FÍSICO:** a expressão candidata `Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5)` **não é um denominador genérico correto** quando uma competência é selecionada sem ano explícito. Os PASSs dos §§30–32 continuam válidos apenas sob seleção explícita do ano. Não corrigir ampliando o grão da população ou multiplicando linhas em 12 competências.
+
+**Próximo teste mínimo — diagnóstico de ano derivado do filtro mensal, NÃO EXECUTADO:** manter `P6_SERV_DATASUS_6=250750` e `P6_COMP_COMPETENCIA=201809` sem escolher ano. Em objeto novo, examinar `Only(P6_COMP_COMPETENCIA)`, `Left(Text(Only(P6_COMP_COMPETENCIA)),4)` e `GetSelectedCount(P6_COMP_COMPETENCIA)`, sem alterar script ou dados. Se for possível derivar o ano univocamente, avaliar **separadamente** uma expressão experimental cujo `P6_ANO_ANO` corresponda ao ano derivado, e exigir o total 800323 em João Pessoa/2018. Exigir recusa explícita de filtros de competências múltiplos, competências incompatíveis, ano conflitante e ausência de seleção antes de aprovar. Essa candidata não é ainda decisão arquitetural.
+
+**Estado:** `E5_MONTH_ONLY_WITHOUT_EXPLICIT_YEAR=FAIL_SEMANTIC_OBSERVED`; `E5_SINGLE_MONTH_YEAR_DERIVATION=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 mantém Draft sem merge.
