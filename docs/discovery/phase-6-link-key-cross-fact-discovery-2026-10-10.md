@@ -1603,3 +1603,21 @@ Gates independentes seguintes devem preservar os testes T24–T26 de reconciliac
 **MANTER OS STATUS FISICOS ATUAIS:** MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED; LINK_KEY_CONTRACT=NOT_APPROVED; FACT_QVDS=NOT_STARTED; LINK_ANALISE_QVD=NOT_STARTED; PAINEL=NOT_STARTED; T29_HISTORICAL=NOT_APPROVED. Os registros de §61 e checkpoints anteriores sao historicos de testes e nao devem ser reclassificados retroativamente.
 
 **PROVENIENCIA DO ACEITE:** aprovacao expressa do responsavel, comunicada no projeto em 14/10/2026 apos minuta V2, auditoria AC-01 a AC-06 e confirmacao de que nao ha conflito semantico impeditivo. Registro documental nesta branch de Discovery; **nenhum merge autorizado**.
+
+---
+
+## 63. F1/F2 — referências independentes de internações e capacidade (PREPARADO, NÃO EXECUTADO NOS DADOS REAIS)
+
+**Autorização delimitada em 14/10/2026:** versionar `tools/preflight_f1_f2_referencias_independentes.py` e documentar o ensaio no PR #83 Draft. Não executar Windows/QlikView, criar QVD factual, Link Table ou PAINEL, modificar Boundaries 6/7, abrir E22, aprovar contrato físico ou fazer merge.
+
+**Origem e contrato existente:** 36 CSVs `BASE/CONVERTIDA/RD/RDPB*.csv` e 36 CSVs `BASE/CONVERTIDA/LT/LTPB*.csv`, mais `EXTRACAO/QVD/REF_MUNICIPIO_PB_DERIVADA.csv` (223 pares municipais PB derivados de fontes oficiais na III-C5.2). Reutiliza `COLUMNS`, `rows_from_csv` e `validate_pairs` do auditor municipal canônico, e constantes de medidas do preflight SIH/RD. A referência dos municípios do LT não é inferida dos municípios com demanda RD. 5.202 linhas RD de residência externa permanecem preservadas sem população PB atribuída.
+
+**F1 — numeradores:** gerar referências independentes agrupadas por ano/competência, município de residência, município de serviço e par de fluxo. Preservar todo registro administrativo RD e calcular `QTD_INTERNACAO` apenas para `IDENT=1`, `IDENT=5` como continuidade não elegível. Gate: 566.672 linhas, 555.089 elegíveis, 11.583 continuidades, 5.202 residências externas; agrupamentos devem reconstituir totais e anos já verificados, sem criar identidade clínica nova.
+
+**F2 — capacidade:** checar unicidade física de `CNES+COMPETEN+CODLEITO`, 35.518 LT, 36 competências, integridade de `QT_EXIST/QT_SUS/QT_NSUS` não negativos e `QT_NSUS=QT_EXIST-QT_SUS`. Somar `QT_SUS` apenas dentro de município de serviço × competência. Grade anual 223×3 distingue presença de linha, meses sem linha e valores zero observados. Ausência de linha não prova zero; 12 meses com linha permite no máximo **média candidata** sobre snapshots, nunca aprovação da cobertura completa ou do universo hospitalar. RN21 preservada; `T29_HISTORICAL=NOT_APPROVED`.
+
+**Saídas:** seis CSVs F1 (residência/serviço/fluxo × ano/competência), dois CSVs F2 (mensal observado e grade anual candidata), manifesto JSON com hashes SHA-256 de entradas/saídas e hash do próprio script; diretório novo fora do repo, publicação somente após completar staging temporário no mesmo volume. Falhas antes da publicação não deixam resultados parciais. Testes sintéticos locais: compilação Python, nove artefatos em caso positivo, falha forçada de gravação com staging limpo, destino preexistente preservado; a execução real Windows/QlikView NÃO ocorreu.
+
+**Próximos gates separados:** executar referência real e conferir SHA-256 sem alterar fontes; comparar numeradores RD e médias LT contra controles independentes e futura projeção Qlik, validar cobertura municipal/competência, universo de estabelecimentos e filtros P5. O resultado deste script não encerra T24–T26, não valida POP por múltiplos municípios, D2 seleção temporal ou `SAD-LINK-V1`. Qualquer novo experimento mutante continua dependente de autorização própria.
+
+**Estado:** `F1_F2_SOURCE_RECONCILIATION=PREPARED_NOT_EXECUTED`; `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 Draft/sem merge.
