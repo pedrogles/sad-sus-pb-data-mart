@@ -1192,3 +1192,25 @@ Para cada caso registra as contagens de seleções, número de linhas POP dispon
 ```
 
 **Gate:** `E16_ANNUAL_ROLE_JP_2018_2019=PASS_LOCAL_REPORTED`; `E17_GEO_ROLE_MONTH_ASSOCIATION=PREPARED_NOT_EXECUTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft, sem merge.
+
+---
+
+## 51. E17 — três filtros municipais e competência mensal: confirmação local
+
+**FATO VERIFICADO — saída PowerShell/QlikView 12 fornecida pelo responsável em 14/10/2026.** Após `git pull --ff-only` da branch do PR #83 até `74b123c`, a opção `-GeographicDiscovery` do runner E13 executou em QVW descartável, somente em memória. Baseline E13 de 669 registros POP e soma 12040181 reconfirmado; smoke de um mês/mesmo ano/anos distintos mantido `PASS`. Os 3 recortes E17 selecionaram competência `201809`, sem seleção explícita de `P6_ANO_ANO`, e cada papel geográfico foi validado via `GetSelectedCount` e `GetFieldSelections`.
+
+| Caso E17 | Seleções municipais | `Count(POP)` | `Sum(POP)` | `Sum({$<COMP=>} POP)` | E10 |
+|---|---|---:|---:|---:|---:|
+| SERV | serviço=250750 | 0 | 0 | 2420936 | 800323 |
+| RES | residência=250750 | 0 | 0 | 2420936 | 800323 |
+| BOTH_JP | serviço=250750; residência=250750 | 0 | 0 | 2420936 | 800323 |
+
+**Interpretação rigorosa:** a projeção factual POP está no grão anual, com competência mensal nula. A seleção `201809` faz a contagem e soma normais aparecerem como 0 por exclusão associativa; isso **não equivale a zero habitantes**. Limpar *somente* competência reexpõe os três anos de João Pessoa `811598+800323+809015=2420936`; esse agregado é inválido como denominador de 2018. O E10 derivou o ano pela competência e retornou `800323` nos três recortes para o mesmo município, coerente com as verificações E5/E13. Resultado restrito: `E17_JP_SERVICE_RESIDENCE_SAME_MUNICIPALITY_201809=PASS_LOCAL_REPORTED`.
+
+**Limite de generalização:** os três casos usam o **mesmo** município `250750` nos papéis; não provam comportamento de municípios distintos, nem denominador correto para fluxo residência→serviço quando cada papel aponta para local diferente. O Boundary 6 já diferencia internações por residência e oferta por serviço, e a população materializada usa a mesma coordenada municipal em ambos os papéis sem duplicação da fato. Qualquer medida para filtros simultâneos necessita escolha analítica explícita de papel. O contrato de indicadores e o ajuste de filtros para conflitos temporais E14/E15 seguem pendentes; não mudar grão nem Link Table.
+
+**Integridade verificada no log:** `SOURCE_SHA256_UNCHANGED=True` (mesma origem); `SAVE_EXECUTED=False`; `RELOAD_EXECUTED=False`; `QVD_WRITES=0`; `VERDICT=PASS_COM_SMOKE_ONLY_DENOMINATOR_CONTRACT_NOT_APPROVED`. O veredito automático refere-se ao smoke E13 conhecido, enquanto E17 é descoberta observacional, não aprovação genérica.
+
+**Próximo gate E18 (NÃO EXECUTADO):** testar seleção combinada **residência≠serviço**, com dois códigos municipais distintos cuja presença seja validada no QVW antes de qualquer expectativa, registrando quais seleções sobrevivem à associação e como cada medida responde. Manter semântica de população por papel explicitamente identificada e fail-closed quando a combinação não permite denominador.
+
+**Estado:** `E17_GEO_ROLE_MONTH_ASSOCIATION=PASS_LOCAL_REPORTED_RESTRICTED`; `E18_DIFFERENT_ROLE_MUNICIPALITIES=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft sem merge.
