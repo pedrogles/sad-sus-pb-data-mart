@@ -1621,3 +1621,35 @@ Gates independentes seguintes devem preservar os testes T24–T26 de reconciliac
 **Próximos gates separados:** executar referência real e conferir SHA-256 sem alterar fontes; comparar numeradores RD e médias LT contra controles independentes e futura projeção Qlik, validar cobertura municipal/competência, universo de estabelecimentos e filtros P5. O resultado deste script não encerra T24–T26, não valida POP por múltiplos municípios, D2 seleção temporal ou `SAD-LINK-V1`. Qualquer novo experimento mutante continua dependente de autorização própria.
 
 **Estado:** `F1_F2_SOURCE_RECONCILIATION=PREPARED_NOT_EXECUTED`; `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 Draft/sem merge.
+
+
+### 63.1 Execução local real e auditoria dos artefatos F1/F2 (14/10/2026)
+
+**FATO VERIFICADO — prova do executor:** usuário executou no Windows o script do commit `b3defee1c35d0f78bb63bf92f628b24ee56814da` após `git pull --ff-only`; `git rev-parse HEAD` coincidiu com o commit esperado. Logs enviados: `PREFLIGHT_FILES_RD=36 LT=36 MUNICIPAL_C5_2=223`; `F1_SOURCE_PASS RD_ROWS=566672 ELIGIBLE=555089 IDENT5=11583`; `F2_SOURCE_PASS LT_ROWS=35518 LT_COMPETENCES=36 GRAIN_DUPLICATES=0`; `SOURCE_SHA256_BEFORE_AFTER_UNCHANGED=True`; `OUTPUT_FILES_COUNT=9`; `VERDICT=PASS_SOURCE_REFERENCE_F1_F2_ONLY_CONTRACT_NOT_APPROVED`, exit code zero. A execução ocorreu no computador do responsável: **não** houve reload do QlikView por este agente.
+
+**FATO VERIFICADO — auditoria independente do ZIP recebido:** `sad-f1-f2-20261014-191743.zip`, SHA-256 `c24d9768201cd97bb70e6c89f1996e00f1b2d588c98c4614eef9481efd1c9948`; arquivo íntegro, contendo **seis CSV F1 + dois CSV F2 + um manifesto JSON**. SHA-256 do manifesto `926d5ee06373d6b30c3617501a9e81f2f0e6c16cfef98a9ef1aaf25113ef025b`; os oito arquivos CSV foram recalculados e tiveram **8/8 hashes iguais ao manifesto**. O manifesto registra SHA-256 das 72 fontes RD/LT e da referência C5.2 (CSV `fdf016e4eaf7a7b8b396d3908da2ec6737944bc9aaf3e6018badb763725c257d`, correspondente ao checkpoint C5.2). **Limitação:** as fontes brutas não foram enviadas; seus hashes e a imutabilidade são atestados pelo preflight local e seu manifesto, não recalculados pelo auditor do ZIP. Dados/ZIP derivados permanecem **fora do Git**; apenas hashes, contagens e procedimento são documentados.
+
+**Auditoria F1:** agregações independentes mensais e anuais por residência, serviço e fluxo foram somadas e cruzadas. Chaves mensais distintas: residência `10736`, serviço `2072`, fluxo `30255`; anuais: residência `1829`, serviço `184`, fluxo `5899`. Em todos os três papéis, os agregados mensais recompõem os anuais e os fluxos recompõem residência/serviço, para `registros_rd`, `internacoes_elegiveis` e `continuidades_ident5`; nenhum total divergente ou chave agregada duplicada.
+
+| Ano | Linhas RD | Internações elegíveis | IDENT=5 | Elegíveis de residentes PB | Elegíveis de residentes externos | Linhas RD de residentes externos |
+|---|---:|---:|---:|---:|---:|---:|
+| 2017 | 187726 | 183532 | 4194 | 182069 | 1463 | 1491 |
+| 2018 | 187293 | 183311 | 3982 | 181673 | 1638 | 1665 |
+| 2019 | 191653 | 188246 | 3407 | 186280 | 1966 | 2046 |
+| **Total** | **566672** | **555089** | **11583** | **550022** | **5067** | **5202** |
+
+Os 5.202 registros RD externos contêm 135 continuidades e 5.067 internações elegíveis; este conjunto é de atendimentos **na PB**, não da demanda nacional de residentes PB. O valor `550022` é soma auditável de elegíveis de residentes PB nos três anos, **não** uma taxa agregada trienal por população somada.
+
+**Auditoria F2:** `35518` linhas LT em `36` competências e `3561` grupos distintos município × competência com linhas; `105` municípios de serviço distintos têm pelo menos uma linha LT no período. As somas de snapshots **somente para auditoria de componentes**, jamais capacidade somada no tempo, são `QT_EXIST=337147`, `QT_SUS=270076` e `QT_NSUS=67071` (identidade aritmética mantida). Há `97` grupos município × competência observados com `QT_SUS=0`: **zero observado não é ausência de linhas**. A grade `223×3=669` municípios-ano confere integralmente com o detalhamento mensal, incluindo competências sem linhas (não imputadas como zero).
+
+| Ano | 12 meses com linhas LT | Cobertura parcial | Nenhum mês com linhas LT |
+|---|---:|---:|---:|
+| 2017 | 99 | 6 | 118 |
+| 2018 | 96 | 5 | 122 |
+| 2019 | 95 | 2 | 126 |
+
+**Controle cruzado demanda × capacidade:** entre as `184` combinações município de serviço × ano com internações elegíveis, `184/184` possuem 12 competências LT com linhas; entre as `2072` combinações município de serviço × competência com internações elegíveis, `2072/2072` possuem linhas LT e `QT_SUS>0` agregado bruto. Esses são **apenas controles de correspondência no recorte observado**; não garantem cobertura completa do universo hospitalar, classificação CNES/ST historicamente válida, uso dos leitos pelas internações nem filtro P5 aplicável. Nenhuma taxa de ocupação foi medida ou inferida.
+
+**PARECER:** `F1_F2_SOURCE_RECONCILIATION=PASS_LOCAL_REVIEWED` estritamente para coerência de agregados de fonte e artefatos entregues. `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; F3 (POP por papel/ano e múltiplos municípios), F4 (filtros C/R/I/B e D2) e T24–T26 (indicadores físicos QlikView) **pendentes**. Não executar F3/F4/QlikView nem criar scripts novos neste registro documental sem autorização separada. O `git status --porcelain` no Windows mostrou alterações locais antes do pull; o fast-forward concluiu, mas a limpeza do working tree **não foi demonstrada** e deve ser inspecionada sem `git reset/clean` destrutivo.
+
+**Estados inalterados:** `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. Não há autorização de merge do PR #83.
