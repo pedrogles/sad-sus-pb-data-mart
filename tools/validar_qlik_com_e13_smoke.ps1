@@ -9,6 +9,7 @@ param(
     [switch]$CrossRoleDiscovery,
     [switch]$RoleDenominatorDiscovery,
     [switch]$DynamicRoleDiscovery,
+    [switch]$TemporalGuardDiscovery,
     [string]$OtherMunicipality = '250400'
 )
 Set-StrictMode -Version Latest
@@ -280,6 +281,9 @@ try {
     if ($DynamicRoleDiscovery -and -not $CrossRoleDiscovery) {
         throw 'BLOCKED_E20_REQUIRES_CROSS_ROLE_DISCOVERY'
     }
+    if ($TemporalGuardDiscovery -and (-not $DynamicRoleDiscovery -or -not $CrossRoleDiscovery)) {
+        throw 'BLOCKED_E21_REQUIRES_E20_DYNAMIC_ROLE_DISCOVERY'
+    }
     # E18: cross-role coordinates are intentionally DIFFERENT. Diagnostic, not a denominator rule.
     if ($CrossRoleDiscovery) {
         Write-Output 'E18_DIFFERENT_MUNICIPALITY_DISCOVERY=STARTED'
@@ -445,6 +449,68 @@ try {
                     Write-Output ('E20_'+$scenario.Label+'_BOTH_REFUSED='+($sv -ceq 'SEM_ANO_UNICO' -and $rv -ceq 'SEM_ANO_UNICO'))
                 }
                 Write-Output ('E20_'+$scenario.Label+'=OBSERVED_NOT_APPROVED')
+            }
+
+            # E21: temporal guard and 2017 coverage, conditional after E20 reference tests.
+            if ($TemporalGuardDiscovery) {
+                Write-Output 'E21_TEMPORAL_GUARD_DISCOVERY=STARTED'
+                $ref17=@{}
+                foreach ($role in @(
+                    @{Label='SERV';Field='P6_SERV_DATASUS_6';Code='250750'},
+                    @{Label='RES';Field='P6_RES_DATASUS_6';Code=$OtherMunicipality}
+                )) {
+                    ResetCase
+                    SelectValue $role.Field $role.Code
+                    SelectValue 'P6_ANO_ANO' '2017'
+                    CheckValue ('E21_2017_REF_'+$role.Label+'_YEAR_COUNT') 'GetSelectedCount(P6_ANO_ANO)' '1'
+                    CheckValue ('E21_2017_REF_'+$role.Label+'_POP_ROWS') 'Count(P6_POP_ROW_DEBUG)' '1'
+                    $ref17[$role.Label]=[string]($doc.Evaluate('Sum(P6_POP_HABITANTES_E5)'))
+                    Write-Output ('E21_REFERENCE_'+$role.Label+'_2017='+$ref17[$role.Label])
+                }
+                foreach ($scenario in @(
+                    @{Label='NO_PERIOD';Year='';Months=@();TwoYears=$false;Expected='REFUSE'},
+                    @{Label='TWO_EXPLICIT_YEARS';Year='2018';Months=@();TwoYears=$true;Expected='REFUSE'},
+                    @{Label='MONTH_201709';Year='';Months=@('201709');TwoYears=$false;Expected='REFERENCE'},
+                    @{Label='YEAR_2017';Year='2017';Months=@();TwoYears=$false;Expected='REFERENCE'}
+                )) {
+                    ResetCase
+                    SelectValue 'P6_SERV_DATASUS_6' '250750'
+                    SelectValue 'P6_RES_DATASUS_6' $OtherMunicipality
+                    if ($scenario.TwoYears) {
+                        SelectValue 'P6_ANO_ANO' '2018'
+                        SelectValue 'P6_ANO_ANO' '2019' $true
+                        CheckValue ('E21_'+$scenario.Label+'_YEAR_COUNT') 'GetSelectedCount(P6_ANO_ANO)' '2'
+                    } elseif ($scenario.Year -ne '') {
+                        SelectValue 'P6_ANO_ANO' $scenario.Year
+                        CheckValue ('E21_'+$scenario.Label+'_YEAR_COUNT') 'GetSelectedCount(P6_ANO_ANO)' '1'
+                    } elseif ($scenario.Months.Count -gt 0) {
+                        SelectValue 'P6_COMP_COMPETENCIA' $scenario.Months[0]
+                        CheckValue ('E21_'+$scenario.Label+'_COMP_COUNT') 'GetSelectedCount(P6_COMP_COMPETENCIA)' '1'
+                    } else {
+                        CheckValue ('E21_'+$scenario.Label+'_YEAR_COUNT') 'GetSelectedCount(P6_ANO_ANO)' '0'
+                        CheckValue ('E21_'+$scenario.Label+'_COMP_COUNT') 'GetSelectedCount(P6_COMP_COMPETENCIA)' '0'
+                    }
+                    $roleOk=([string]($doc.Evaluate('GetFieldSelections(P6_SERV_DATASUS_6)')) -ceq '250750') -and ([string]($doc.Evaluate('GetFieldSelections(P6_RES_DATASUS_6)')) -ceq $OtherMunicipality)
+                    Write-Output ('E21_'+$scenario.Label+'_BOTH_ROLE_FILTERS_INTACT='+$roleOk)
+                    if (-not $roleOk) { throw ('BLOCKED_E21_ROLE_SELECTION_LOST_'+$scenario.Label) }
+                    $svalue=[string]($doc.Evaluate($svcDynamic))
+                    $rvalue=[string]($doc.Evaluate($resDynamic))
+                    Write-Output ('E21_'+$scenario.Label+'_SERVICE_DYNAMIC='+$svalue)
+                    Write-Output ('E21_'+$scenario.Label+'_RESIDENCE_DYNAMIC='+$rvalue)
+                    if ($scenario.Expected -ceq 'REFUSE') {
+                        $pass=($svalue -ceq 'SEM_ANO_UNICO' -and $rvalue -ceq 'SEM_ANO_UNICO')
+                        Write-Output ('E21_'+$scenario.Label+'_BOTH_REFUSED='+$pass)
+                        if (-not $pass) { throw ('BLOCKED_E21_EXPECTED_REFUSAL_'+$scenario.Label) }
+                    } else {
+                        $svcMatch=$svalue -ceq $ref17['SERV']
+                        $resMatch=$rvalue -ceq $ref17['RES']
+                        Write-Output ('E21_'+$scenario.Label+'_SERVICE_MATCH='+$svcMatch)
+                        Write-Output ('E21_'+$scenario.Label+'_RESIDENCE_MATCH='+$resMatch)
+                        if (-not $svcMatch -or -not $resMatch) { throw ('BLOCKED_E21_2017_POP_REFERENCE_MISMATCH_'+$scenario.Label) }
+                    }
+                    Write-Output ('E21_'+$scenario.Label+'=PASS_RESTRICTED_NOT_CONTRACT')
+                }
+                Write-Output 'E21_TEMPORAL_GUARD_DISCOVERY=PASS_RESTRICTED_NOT_CONTRACT'
             }
             Write-Output 'E20_DYNAMIC_ROLE_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
         }
