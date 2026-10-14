@@ -1,7 +1,10 @@
 # SAD / Phase VI E13: first COM selection/evaluation smoke on disposable copy.
 # Not production: no Save, Reload, QVD writes, changes to source QVW or repository.
 [CmdletBinding()]
-param([Parameter(Mandatory=$true)][string]$SourceQvw)
+param(
+    [Parameter(Mandatory=$true)][string]$SourceQvw,
+    [switch]$TemporalDiscovery
+)
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $src=[IO.Path]::GetFullPath($SourceQvw)
@@ -117,6 +120,56 @@ try {
     CheckValue 'CROSS_YEAR_MONTH_COUNT' 'GetSelectedCount(P6_COMP_COMPETENCIA)' '2'
     CheckValue 'CROSS_YEAR_E10' $e10 'SEM_ANO_UNICO'
     Write-Output 'E13_CROSS_YEAR=PASS'
+
+    # E14: optional, diagnostic-only temporal selection matrix.
+    # These are observation cases; they do NOT approve a denominator contract.
+    if ($TemporalDiscovery) {
+        Write-Output 'E14_TEMPORAL_DISCOVERY=STARTED'
+        # No explicit month or year: the E10 candidate has no uniquely defined annual reference.
+        ResetCase
+        CheckValue 'E14_NO_COMP_COUNT' 'GetSelectedCount(P6_COMP_COMPETENCIA)' '0'
+        CheckValue 'E14_NO_COMP_E10' $e10 'SEM_ANO_UNICO'
+        Write-Output 'E14_NO_COMP=BEHAVIOR_OBSERVED_NOT_CONTRACT'
+        # Only a year is selected; E10 was designed for month-derived annual selection.
+        ResetCase
+        SelectValue 'P6_SERV_DATASUS_6' '250750'
+        SelectValue 'P6_ANO_ANO' '2018'
+        CheckValue 'E14_YEAR_ONLY_YEAR_COUNT' 'GetSelectedCount(P6_ANO_ANO)' '1'
+        CheckValue 'E14_YEAR_ONLY_COMP_COUNT' 'GetSelectedCount(P6_COMP_COMPETENCIA)' '0'
+        $yearOnly=[string]($doc.Evaluate($e10))
+        Write-Output ('E14_YEAR_ONLY_E10=' + $yearOnly)
+        Write-Output 'E14_YEAR_ONLY=BEHAVIOR_OBSERVED_NOT_CONTRACT'
+        # Explicitly consistent year+month: observed behavior must match IBGE reference.
+        ResetCase
+        SelectValue 'P6_SERV_DATASUS_6' '250750'
+        SelectValue 'P6_ANO_ANO' '2018'
+        SelectValue 'P6_COMP_COMPETENCIA' '201809'
+        CheckValue 'E14_COMPAT_YEAR_COUNT' 'GetSelectedCount(P6_ANO_ANO)' '1'
+        CheckValue 'E14_COMPAT_COMP_COUNT' 'GetSelectedCount(P6_COMP_COMPETENCIA)' '1'
+        CheckValue 'E14_COMPAT_E10' $e10 '800323'
+        Write-Output 'E14_COMPATIBLE_EXPLICIT_YEAR=PASS_RESTRICTED'
+        # Conflicting year+month: Qlik may reject a selection or change associative state.
+        # Capture outcomes without treating any of them as an approved denominator.
+        ResetCase
+        SelectValue 'P6_SERV_DATASUS_6' '250750'
+        SelectValue 'P6_ANO_ANO' '2019'
+        Write-Output ('E14_CONFLICT_PRE_MONTH_SELECTED_YEAR=' + [string]($doc.Evaluate('GetSelectedCount(P6_ANO_ANO)')))
+        SelectValue 'P6_COMP_COMPETENCIA' '201809'
+        foreach ($case in @(
+            @{Label='CONFLICT_YEAR_COUNT';Expression='GetSelectedCount(P6_ANO_ANO)'},
+            @{Label='CONFLICT_YEAR_VALUES';Expression='GetFieldSelections(P6_ANO_ANO)'},
+            @{Label='CONFLICT_COMP_COUNT';Expression='GetSelectedCount(P6_COMP_COMPETENCIA)'},
+            @{Label='CONFLICT_COMP_VALUES';Expression='GetFieldSelections(P6_COMP_COMPETENCIA)'},
+            @{Label='CONFLICT_SERV_COUNT';Expression='GetSelectedCount(P6_SERV_DATASUS_6)'}
+        )) {
+            $result = [string]($doc.Evaluate($case.Expression))
+            Write-Output ('E14_' + $case.Label + '=' + $result)
+        }
+        $conflictValue=[string]($doc.Evaluate($e10))
+        Write-Output ('E14_CONFLICT_E10=' + $conflictValue)
+        Write-Output 'E14_YEAR_MONTH_CONFLICT=OBSERVED_NOT_APPROVED'
+        Write-Output 'E14_TEMPORAL_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
+    }
 } catch {
     $failure=$_.Exception.Message
     Write-Output ('E13_GATE=FAIL_CLOSED_'+$failure)
