@@ -1010,3 +1010,15 @@ Comando a executar na branch do PR #83, após `git pull --ff-only`:
 **Limitação de salvamento:** PowerShell copia o estado persistido no arquivo de origem, **não** objetos de texto, filtros ou propriedades ainda não salvos na sessão gráfica (asterisco no título). A descoberta E12 exige somente o modelo de dados já salvo pelo preflight e os nomes dos campos; preservar os objetos visuais E5–E11 requer salvar a sessão explicitamente antes de copiá-la. A cópia automática é insumo **diagnóstico**, não artefato canônico de produção.
 
 **Gate:** `E12_AUTOCOPY_SCRIPT=VERSIONED_STATIC_ONLY`; `E12_COM_CAPABILITY_DISCOVERY=NOT_EXECUTED`; `AUTOMATED_SEMANTIC_REGRESSION=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 Draft sem merge.
+
+---
+
+## 42. E12 COM PASS local e E13 smoke PREPARADO
+
+**FATO VERIFICADO (saida PowerShell do responsavel, 14/10/2026):** o executor E12 com -SourceQvw criou uma copia automatica do QVW de diagnostico na pasta Documentos redirecionada ao OneDrive; hashes SHA-256 da copia/origem verificados e documento fonte inalterado. A COM confirmou os quatro campos requeridos e disponibilidade dos metodos ClearAll, Evaluate, GetField, Select, SelectValues, ToggleSelect e GetSelectedValues. Nao houve selecao, recarga, Save ou escrita de QVD durante E12. Gate E12: PASS_LOCAL_REPORTED.
+
+**PENDENCIA:** COM GetTableCount retornou 12, mas o preflight Qlik Script NoOfTables havia conferido 9. A origem dessa diferenca deve ser investigada por inventario de nomes antes de fazer qualquer afirmacao sobre mudanca do modelo.
+
+**NOVO E13:** o script versionado tools/validar_qlik_com_e13_smoke.ps1 foi preparado para criar uma copia descartavel do QVW E5, validar SHA-256 e executar em COM os tres casos anteriormente observados manualmente: 201809 sozinho (esperado 800323), 201808+201809 (esperado 800323) e 201809+201909 (esperado SEM_ANO_UNICO). O script tambem tenta enumerar nomes de tabelas COM. Uso somente de memoria: sem Save, Reload ou QVD gerado. **NAO EXECUTADO no Windows; nenhuma selecao automatizada aprovada.**
+
+**Estado:** E12_COM_ENUMERATION=PASS_LOCAL_REPORTED; E12_TABLE_COUNT_DISCREPANCY=OPEN; E13_COM_SMOKE=VERSIONED_NOT_RUN; MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED; LINK_KEY_CONTRACT=NOT_APPROVED; T29_HISTORICAL=NOT_APPROVED. PR #83 segue Draft.
