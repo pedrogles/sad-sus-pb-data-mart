@@ -1876,3 +1876,27 @@ O runner informou `ALL_SOURCE_SHA256_UNCHANGED=True`, `SOURCE_IMMUTABILITY_FINAL
 **PARECER:** `F4_P5_ASSOCIATIVE_OBSERVATION=PASS_LOCAL_REPORTED_RESTRICTED` para os baseline/12 campos/seleções efetivamente ensaiadas; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED` permanece. **Não** foi executada/validada imposição explícita de C/R/I/B ou `Set Analysis` de isolamento por indicador, nem a matriz física de 48 filtros e 8 pares. Somente uma cópia QVW foi aberta; auditoria independente do binário não ocorreu nesta conversa. Avançar para prova candidata de bloqueio visível e isolamento controlado **sem emitir KPI final**. Não confundir `PASS` observacional com aprovação de contrato de medidas/denominadores, Link física ou CNES histórico.
 
 **Estados preservados:** `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `F4_D2_COM_PREDISPATCH=PASS_LOCAL_REPORTED_RESTRICTED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`; PR #83 continua Draft, sem merge.
+
+---
+
+## 70. F4-P5 — diagnóstico de isolamento de componentes versus autorização P5 (PREPARADO, NÃO EXECUTADO)
+
+**Motivação comprovada:** §69.1 registrou que o filtro de procedimento RD torna LT/POP não associados e o filtro de código de leito LT torna RD/POP não associados; residência CG simultânea com serviço JP também torna a população da fato POP indisponível por associatividade, apesar das populações individuais IBGE válidas. **Nenhum desses zeros prova ausência ou população zero.** A política C/R/I/B em §62.6 impede apresentar indicadores gerais sob filtros incompatíveis, ainda que alguma expressão `Set Analysis` possa recuperar numericamente componentes.
+
+**Novo executor experimental:** `tools/validar_f4_p5_recuperacao_componentes_com.ps1`, com apenas dois parâmetros: `-SourceQvw` (QVW da projeção F4-P5 em `%TEMP%\SAD_F4_P5_PROJECTION_<GUID>`) e `-F4Dir` (catálogo aprovado F4 com manifesto). Confere entrada, SHA-256 de `F4_p5_filtros_isolados.csv`, 48 pares categoria×indicador únicos e os códigos exatos de procedimento `R/I/B/R` e tipo/código de leito `I/R/B/I` nos quatro indicadores. Copia o QVW para pasta GUID descartável, abre **somente essa cópia** via COM, sem Save/Reload/STORE, confere integridade SHA do QVW de origem ao final.
+
+**HIPÓTESE DE TESTE, não resultado observado:** recuperar componentes via modificador QlikView `{$<campo_exclusivo=>}` (remoção explícita e temporária de um filtro na expressão) sem promover expressão final de KPI:
+
+| Recorte controlado em 2018 | Associação bruta esperada | Recuperação técnica candidata, somente auditoria |
+|---|---|---|
+| Procedimento RD existente no ano | LT/POP sem linhas associadas | Limpar apenas `F4_RD_PROC_REA`: soma de snapshots LT `89422`, POP 2018 `3996496` |
+| Código de leito LT existente no ano | RD/POP sem linhas associadas | Limpar apenas `F4_LT_CODLEITO`: RD elegíveis `183311`, POP 2018 `3996496` |
+| Ano 2018 + serviço JP `250750` + residência CG `250400` | POP sem linhas associadas | Limpar papel RES para candidata POP serviço JP `800323`; limpar papel SERV para candidata POP residência CG `407472` |
+
+O executor escolhe procedimento e leito observados sob ano 2018 usando `MinString` e recusa sample vazio. Em procedimento e leito, **nega todos os indicadores gerais RES/LEI/REL/FLU** enquanto seu código for R/I/B: R exige análise separada com contrato próprio; I exige isolamento explícito e aviso antes da disponibilidade; B bloqueia. Essa negativa é **lógica no wrapper PowerShell**, não código de interface QlikView, não implementa visualização/warning nem cria contrato de recorte. Recuperar os componentes apesar da negativa serve unicamente para avaliar a viabilidade técnica da futura distinção de contextos.
+
+**Limites críticos:** o valor `89422` é soma de snapshots LT de 2018 **só para auditoria**; não leitos anuais, pois requer média mensal em escopo historicamente validado. `3996496` é POP de 2018, não taxa. Não há validação de T24–T26 nem P5 físico 48+8, nem evidência de que desmarcar um campo não interfira de outras formas na associatividade. Sem `CNES_HOSPITAL_SCOPE_COVERAGE` comprovada, é proibido promover recuperações LT a indicador de capacidade. Alterações de resultado QlikView em relação aos valores esperados devem ser **FAIL-CLOSED**, sem editar parâmetros/expectativas por conveniência.
+
+**Preparação e validação disponível:** revisão estática do script no GitHub (somente QVW cópia, nenhum `Save`, `Reload` ou `STORE`, SHA de referência e fonte, negação explícita de P5 geral). **Parser PowerShell, expressões Set Analysis em QlikView 12 e chamadas COM ainda não executados** pelo responsável; portanto `F4_P5_COMPONENT_RECOVERY=PREPARED_NOT_EXECUTED`, não PASS. O eventual marcador `PASS_COMPONENT_RECOVERY_WRAPPER_ONLY_P5_NOT_APPROVED` significa somente o escopo descrito.
+
+**Preservar:** `F4_P5_ASSOCIATIVE_OBSERVATION=PASS_LOCAL_REPORTED_RESTRICTED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`; `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`; PR #83 Draft, sem merge.
