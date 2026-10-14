@@ -5,6 +5,9 @@
 
 ## 1. Projeto, entrega e prioridade
 
+**Checkpoint operacional mais recente (14/10/2026 — Fase VI E5):** o QlikView 12 executou o teste populacional em memória com `669` linhas e `669` chaves, `INVALID=0`, nove tabelas e `$Syn=0`, totais PB/João Pessoa 2017–2019 reconciliados e hashes de entrada inalterados. A captura de seleção simultânea **município de serviço 250750 + ano 2018 + competência 201809** confirmou `NORMAL=0`, `ANUAL=800323` e `FIXO_2019=809015`. **PASS restrito ao cenário mensal de João Pessoa/2018**, sem aprovação de regra genérica ou `%LINK_KEY`. Próximo teste: João Pessoa/2019/201909, ainda NÃO EXECUTADO. Evidência: [Discovery Fase VI, §§29–30](../discovery/phase-6-link-key-cross-fact-discovery-2026-10-10.md). PR #83 continua Draft, sem merge; `FACT_QVDS=NOT_STARTED`, `LINK_ANALISE_QVD=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`.
+
+
 - Disciplina **Sistemas de Apoio à Decisão**, Sistemas de Informação, 2026.2; **QlikView 12 obrigatório**.
 - Objetivo: Data Mart da **demanda de internações SIH/SUS, capacidade de leitos CNES e população IBGE** na Paraíba, **2017–2019**.
 - Primeira entrega acadêmica (**Capítulos 1 e 2**, relatório impresso em **13/10/2026**): modelagem **FECHADA — PRONTA PARA IMPRESSÃO/ENTREGA** desde 02/10; não reabrir por causa de ajustes de staging.
