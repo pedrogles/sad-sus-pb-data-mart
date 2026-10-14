@@ -736,3 +736,30 @@ RangeSum(Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={2019}>} P6_POP_HABITANTES_E5))
 **Próximo ensaio manual, ainda não executado:** limpar todas as seleções, escolher município serviço `250750`, ano `2019` e competência `201909` e verificar `NORMAL=0`, `ANUAL=809015`, `FIXO_2019=809015`. Esses valores são **expectativas** até receber a captura. Não recarregar nem alterar script/QVD para esse ensaio.
 
 **Estado:** `E5_POP_REAL_PRESELECTION=PASS_LOCAL_LOG_REPORTED`; `E5_MONTHLY_SELECTION_JP_2018_201809=PASS_VISUAL`; `E5_MONTHLY_SELECTION_JP_2019_201909=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`.
+
+
+---
+
+## 31. E5 — filtro mensal 201909, João Pessoa/serviço (14/10/2026)
+
+**FATO VERIFICADO — captura do QlikView Desktop 12 fornecida pelo responsável.** No mesmo QVW experimental E5 utilizado para 2018, três seleções aparecem simultaneamente em verde:
+
+- `P6_SERV_DATASUS_6=250750` — município de serviço João Pessoa;
+- `P6_ANO_ANO=2019`;
+- `P6_COMP_COMPETENCIA=201909`.
+
+O objeto de texto retornou:
+
+```text
+NORMAL=0 | ANUAL=809015 | FIXO_2019=809015
+```
+
+A expressão `ANUAL` era `RangeSum(Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5))`. `FIXO_2019` usava `RangeSum(Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={2019}>} P6_POP_HABITANTES_E5))`. O `NORMAL=0` é a apresentação numérica por `RangeSum` de uma soma sem população disponível após selecionar a competência; **não** afirma que a população real do município seja zero.
+
+A soma anual recuperada (**809.015 habitantes**) reconcilia com a referência IBGE 2019 já verificada na carga E5 (ver §29). Em conjunto com o caso 2018 `250750+2018+201809` (§30: `NORMAL=0`, `ANUAL=800323`, `FIXO_2019=809015`), confirma que a candidata `CAMPO_COMPETENCIA=` recupera a população do **mesmo município e ano explicitamente selecionados** em dois cenários mensais distintos.
+
+**Gate de observação:** `E5_MONTHLY_SELECTION_JP_2019_201909=PASS_VISUAL`. **Ainda não aprovado:** contrato de denominador genérico, ano inferido de mês sem seleção explícita, múltiplos anos/municípios, papel de residência, demais indicadores SIH/CNES, modelo físico definitivo ou `SAD-LINK-V1`. O PR #83 permanece Draft. Nenhum QVD factual ou Link Table QVD foi produzido nesta etapa.
+
+**Próximo teste mínimo recomendado, NÃO EXECUTADO:** limpar seleções e testar município de serviço `250750` + ano `2017` + competência `201709`, esperando apenas hipoteticamente `NORMAL=0`, `ANUAL=811598`, `FIXO_2019=809015`. Após ele, priorizar seleção sem ano explícito e um segundo município antes de discutir qualquer contrato reutilizável. Não modificar fontes, script QVS ou snapshots LT.
+
+**Estado:** `E5_POP_REAL_PRESELECTION=PASS_LOCAL_LOG_REPORTED`; `E5_MONTHLY_SELECTION_JP_2018_201809=PASS_VISUAL`; `E5_MONTHLY_SELECTION_JP_2019_201909=PASS_VISUAL`; `E5_MONTHLY_SELECTION_JP_2017_201709=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `T29_HISTORICAL=NOT_APPROVED`.
