@@ -1314,3 +1314,33 @@ O script reproduz dois contextos (`MONTH_201809`, `YEAR_2018`), valida que os do
 **Limites metodológicos:** a evidência é do modelo associado em memória, não prova existência de internações de residentes de `250400` atendidos em `250750`, nem regularidade de todos os 223 municípios/anos, nem o correto denominador de todo indicador. A política UI de filtro temporal conflitante (E14/E15) e o contrato da `%LINK_KEY` continuam pendentes. O arquivo usa QVW descartável, não faz Save/Reload e preserva a fonte.
 
 **Estado:** `E18_CROSS_ROLE=PASS_LOCAL_OBSERVED_WITH_ZERO_POP_EXCLUSION`; `E19_ROLE_DENOMINATOR=VERSIONED_STATIC_ONLY_NOT_EXECUTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
+
+---
+
+## 56. E19 — validacao local de denominadores separados por papel municipal
+
+**FATO VERIFICADO — saida PowerShell/QlikView 12 encaminhada pelo responsavel em 14/10/2026:** apos `git pull --ff-only` ate `ca1865a`, o parser nativo PowerShell confirmou `PARSER_PASS`; `tools/validar_qlik_com_e13_smoke.ps1 -CrossRoleDiscovery -RoleDenominatorDiscovery -OtherMunicipality '250400'` executou apenas sobre copia descartavel. E13 permaneceu PASS (669 POP municipio×ano, soma PB 2017–2019 12040181; tres cenarios temporais anteriores). O E18 repetiu tres recortes com servico `250750` e residencia `250400`: filtros de ambos os papeis preservados; POP excluida por intersecao territorial (0 linhas), E10=0 nos contextos mensais e `SEM_ANO_UNICO` no anual; **zero de expressao nao representa zero habitantes**.
+
+**Referencias anuais independentes E19, ano 2018 e sem competencia selecionada:**
+
+| Eixo municipal isolado | Selecoes | Linhas POP | Populacao IBGE |
+|---|---|---:|---:|
+| Servico `P6_SERV_DATASUS_6` | `250750`, `P6_ANO_ANO=2018` | 1 | `800323` |
+| Residencia `P6_RES_DATASUS_6` | `250400`, `P6_ANO_ANO=2018` | 1 | `407472` |
+
+**E19 comparacao de duas candidatas especificas por papel (sem alterar filtros ativos das medidas hospitalares):**
+
+| Contexto com `SERV=250750` e `RES=250400` | Denom. servico — limpa residencia e competencia, fixa 2018 | Denom. residencia — limpa servico e competencia, fixa 2018 | Igualdade com referencia |
+|---|---:|---:|---|
+| Competencia `201809` | `800323` | `407472` | `SERVICE_MATCH=True`, `RESIDENCE_MATCH=True` |
+| Ano explicito `2018` | `800323` | `407472` | `SERVICE_MATCH=True`, `RESIDENCE_MATCH=True` |
+
+Nos dois contextos `BOTH_ROLE_FILTERS_INTACT=True`. O Set Analysis do denominador de **servico** removeu apenas o filtro explicito de residencia; o denominador de **residencia** removeu apenas o de servico. A competencia e o ano sao tratados como recortes do denominador, e a escolha de papel deve seguir a finalidade de cada indicador (Boundary 6); as selecoes hospitalares nao foram limpas no estado global.
+
+**Veredito restrito:** `E19_ROLE_SPECIFIC_POP_2018_CANDIDATES=PASS_LOCAL_REPORTED_RESTRICTED`. Este resultado confirma **a igualdade numerica com duas referencias anuais isoladas dentro dos contextos medidos**, nao valida o contrato completo de indicadores, nao prova fluxo real de internacao 250400→250750 e nao autoriza generalizacao para outros municipios, multiplos anos ou ano dinamico. A expressao E19 permanece **candidata**; `P6_ANO_ANO={2018}` foi fixado deliberadamente no ensaio. Nao interpretar `VERDICT=PASS_COM_SMOKE_ONLY_DENOMINATOR_CONTRACT_NOT_APPROVED` como PASS contratual, porque este veredito pertence ao gate E13.
+
+**Integridade no log:** `SOURCE_SHA256_UNCHANGED=True`; `SAVE_EXECUTED=False`; `RELOAD_EXECUTED=False`; `QVD_WRITES=0`.
+
+**DECISAO PENDENTE / proxima fronteira:** especificar politica de ano selecionado isoladamente versus ano derivado de uma unica competencia (ou diversas competencias no mesmo ano), proteger ambiguidade multianual e ausencia de ano sem somar POP entre anos; distinguir denominadores por residencia/servico no contrato de cada indicador. Os casos E14/E15 ja demonstraram que a selecao temporal anterior pode ser perdida no motor associativo e nao pode ser reconstruida pela expressao com apenas estado final. Validar a futura expressao dinamica contra as referencias isoladas de **mais de um ano**, com um gate que rejeite ambiguidades antes de aprovar. Nao alterar fatos, grão populacional, %LINK_KEY, modelo dimensional nem paineis enquanto o contrato estiver pendente.
+
+**Estado:** `E19_PARSER_PASS=LOCAL_REPORTED`; `E19_ROLE_POP_SERVICE_RESIDENCE_2018=PASS_LOCAL_REPORTED_RESTRICTED`; `E19_GENERIC_YEAR_OR_MULTIMUNICIPALITY=NOT_APPROVED`; `E20_TEMPORAL_ROLE_DENOMINATOR=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 segue Draft e sem merge.
