@@ -1214,3 +1214,26 @@ Para cada caso registra as contagens de seleções, número de linhas POP dispon
 **Próximo gate E18 (NÃO EXECUTADO):** testar seleção combinada **residência≠serviço**, com dois códigos municipais distintos cuja presença seja validada no QVW antes de qualquer expectativa, registrando quais seleções sobrevivem à associação e como cada medida responde. Manter semântica de população por papel explicitamente identificada e fail-closed quando a combinação não permite denominador.
 
 **Estado:** `E17_GEO_ROLE_MONTH_ASSOCIATION=PASS_LOCAL_REPORTED_RESTRICTED`; `E18_DIFFERENT_ROLE_MUNICIPALITIES=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft sem merge.
+
+---
+
+## 52. E18 — municípios diferentes por papel residencial/serviço (PREPARADO)
+
+**HIPÓTESE / EXECUTOR EXPERIMENTAL VERSIONADO, NÃO EXECUTADO no Windows.** Após a evidência E17 (§51), o executor já existente `tools/validar_qlik_com_e13_smoke.ps1` ganhou modo opcional `-CrossRoleDiscovery`, com opção `-OtherMunicipality` cujo valor candidato inicial é `250400`. O código não é declarado aqui como POP/fluxo comprovado até passar a verificação COM. Antes dos ensaios, verifica que o código candidato tem exatamente seis dígitos, é distinto de `250750` e aparece em **cada um dos dois campos reais** `P6_RES_DATASUS_6` / `P6_SERV_DATASUS_6` do QVW, usando `Count({1<...>} DISTINCT campo)=1` e gate fail-closed. Essas verificações de domínio NÃO demonstram, por si só, existência de fluxo RD entre os municípios.
+
+**Cenários (todos somente observacionais):** usar serviço `250750` e residência `250400`, competência `201809` ou ano `2018`, em três execuções independentes com `ClearAll()`:
+- `SERV_FIRST_MONTH`: selecionar serviço, depois residência, depois competência;
+- `RES_FIRST_MONTH`: selecionar residência, depois serviço, depois competência;
+- `SERV_FIRST_YEAR`: selecionar serviço, depois residência, depois ano 2018 (sem competência).
+
+Registrar `GetSelectedCount` e `GetFieldSelections` de ambos os papéis, competência e ano; `Count(POP)`, `Sum(POP)`, candidata `Sum({$<COMP=>} POP)` e E10. Registrar explicitamente se **ambas as seleções municipais pretendidas sobreviveram**; a associação poderá descartar um filtro anterior. **Não presumir** que E10 retorna a população do serviço, da residência, ou zero. Nenhum desses resultados é denominador aprovado para o fluxo residência→serviço: o Boundary 6 exige que cada indicador explicite seu papel populacional. A ausência de fato POP sob filtros cruzados **não significa zero habitantes**.
+
+O runner preserva todos os gates E13 conhecidos e opera somente sobre cópia descartável do QVW E5; não executa Reload/Save/STORE e compara SHA-256 da origem após execução.
+
+**Comando futuro:**
+
+```powershell
+& .\\tools\\validar_qlik_com_e13_smoke.ps1 -SourceQvw '<CAMINHO_QVW_E5_VERIFICADO>' -CrossRoleDiscovery -OtherMunicipality '250400'
+```
+
+**Estado:** `E17_JP_SERVICE_RESIDENCE_SAME_MUNICIPALITY_201809=PASS_LOCAL_REPORTED_RESTRICTED`; `E18_CROSS_ROLE_MUNICIPALITIES=PREPARED_NOT_EXECUTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
