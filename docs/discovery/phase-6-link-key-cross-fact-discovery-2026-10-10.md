@@ -1427,3 +1427,65 @@ O mesmo runner `tools/validar_qlik_com_e13_smoke.ps1` agora aceita a opcao `-Tem
 ```
 
 **Limites e decisoes:** nao testa populacao de outros municipios, fluxo SIH/RD observado, validade generica da %LINK_KEY, politica de UI para perda de intencao temporal (E14/E15) nem medidas hospitalares finais. Apos E21, focar **contrato de indicadores por papel municipal e grão temporal**, nao expandir indefinidamente os cenarios isolados. Permanecem `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `FACT_QVDS=NOT_STARTED`, `LINK_ANALISE_QVD=NOT_STARTED`, `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft sem merge.
+
+---
+
+## 60. E21 — guardas temporais e referencia populacional de 2017
+
+**FATO VERIFICADO (saida PowerShell/QlikView 12 enviada pelo responsavel, 14/10/2026):** a branch do PR #83 foi atualizada ate `672d8c4` e `[System.Management.Automation.Language.Parser]::ParseFile` confirmou `PARSER_PASS`. Foi executado `tools/validar_qlik_com_e13_smoke.ps1 -CrossRoleDiscovery -DynamicRoleDiscovery -TemporalGuardDiscovery -OtherMunicipality '250400'` contra **copia descartavel** do QVW E5 em memoria. O baseline E13 repetiu `Count(POP)=669`, `Sum(POP)=12040181` e tres cenarios temporais PASS; E18 repetiu a exclusao da POP sob filtros de municipio de servico 250750 e residencia 250400, e E20 repetiu os 10/10 matches numericos 2018/2019 e a recusa de competencias multianuais. O veredito final do script `PASS_COM_SMOKE_ONLY_DENOMINATOR_CONTRACT_NOT_APPROVED` permanece pertencente ao smoke E13, enquanto os gates E21 especificos foram executados e registrados separadamente.
+
+**E21 — referencias anuais de 2017 efetivamente medidas (cada municipio com `Count(POP)=1`, ano selecionado=1):**
+
+| Municipio/papel no experimento | Referencia de 2017 |
+|---|---:|
+| SERV `250750` | `811598` |
+| RES `250400` | `410332` |
+
+**Matriz E21 executada, com `BOTH_ROLE_FILTERS_INTACT=True` nos quatro casos:**
+
+| Cenario | Selecao temporal real observada | Candidata SERV | Candidata RES | Gate |
+|---|---|---|---|---|
+| `NO_PERIOD` | `GetSelectedCount(ANO)=0`; `GetSelectedCount(COMP)=0` | `SEM_ANO_UNICO` | `SEM_ANO_UNICO` | `BOTH_REFUSED=True` |
+| `TWO_EXPLICIT_YEARS` | `GetSelectedCount(ANO)=2` (2018 e 2019) | `SEM_ANO_UNICO` | `SEM_ANO_UNICO` | `BOTH_REFUSED=True` |
+| `MONTH_201709` | `GetSelectedCount(COMP)=1` | `811598` | `410332` | `SERVICE_MATCH=True`, `RESIDENCE_MATCH=True` |
+| `YEAR_2017` | `GetSelectedCount(ANO)=1` | `811598` | `410332` | `SERVICE_MATCH=True`, `RESIDENCE_MATCH=True` |
+
+Todos os quatro casos retornaram `PASS_RESTRICTED_NOT_CONTRACT` e o bloco E21 encerrou com `E21_TEMPORAL_GUARD_DISCOVERY=PASS_RESTRICTED_NOT_CONTRACT`. **FATO VERIFICADO:** com estes municipios e no QVW experimental, a derivacao anual funciona para 2017 e os dois estados temporais ambiguos sao rejeitados, sem somar automaticamente populacao entre anos.
+
+**Integridade do ensaio:** `SOURCE_SHA256_BEFORE=F75786A88E7563B739492F2D2BC7C5CEA50D8C7F8E73F36770AA76960FB668C6`, `SOURCE_SHA256_UNCHANGED=True`, `SAVE_EXECUTED=False`, `RELOAD_EXECUTED=False`, `QVD_WRITES=0`. As verificacoes do log sao referentes ao QVW experimental; nao demonstram recarga completa de fatos fisicos ou PAINEL.
+
+**Limites:** a coincidencia dos resultados de E13–E21 nao prova generalidade de todos os municipios, combinacoes de filtros externos ou medidas cruzadas reais. E14/E15 ja demonstraram a perda da intencao inicial quando o QlikView remove selecao temporal incompatível; a candidata E20/E21 conhece apenas o estado associativo final, sem reconstruir o historico da selecao. Nao interpretar POP nula/excluida como habitantes=0 e nao calcular razoes com denominador zero/ambíguo. A aprovacao do **contrato semantico global** permanece pendente.
+
+**Estado:** `E21_PARSER=PASS_LOCAL_REPORTED`; `E21_2017_REFERENCE=PASS_LOCAL_REPORTED_RESTRICTED`; `E21_NO_PERIOD_REFUSAL=PASS_LOCAL_REPORTED`; `E21_TWO_EXPLICIT_YEARS_REFUSAL=PASS_LOCAL_REPORTED`; `E21_TEMPORAL_GUARD=PASS_LOCAL_REPORTED_RESTRICTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft sem merge.
+
+---
+
+## 61. Contrato de indicadores por papel municipal e periodo — matriz de revisao, NAO APROVADA
+
+**Fonte de verdade para indicadores:** decisoes ja **aprovadas academicamente**, sem nova modelagem, em `docs/academic/chapter-1-2-modeling.md` (RN09–RN16 e §13), `docs/discovery/boundary-6-qlikview-physical-architecture.md` (§§20–21) e `docs/discovery/boundary-7-implementation-plan.md` (§24). A matriz abaixo registra o significado dessas regras e os **gates de implementacao ainda em aberto**; nao altera definicao de fatos, medidas, granularidade, dimensoes ou politica CNES/LT.
+
+| Indicador/analise previstos | Numerador | Denominador | Papel territorial e tempo ja definidos | Status de implementacao |
+|---|---|---|---|---|
+| Internacoes por 1.000 habitantes | `QTD_INTERNACAO` de **residentes** | `POPULACAO_ESTIMADA` | Municipio **residencia**, mesmo **ano**; multiplicar por 1.000 | **Regra academica definida; expressao fisica final NOT_APPROVED** |
+| Leitos SUS por 1.000 habitantes | **Media mensal** de `QTD_LEITOS_SUS` no ano | `POPULACAO_ESTIMADA` | Municipio **servico/localizacao** do estabelecimento, ano compativel; multiplicar por 1.000 | **Regra academica definida; contrato fisico/numerador snapshot NOT_APPROVED** |
+| Relacao internacoes/leito | Internacoes **realizadas** no municipio e periodo | Capacidade **media** de leitos no mesmo municipio/periodo | Municipio **servico**, periodo compativel; **nao denominar taxa de ocupacao** | **Regra academica definida; validacao das duas fatos ainda pendente** |
+| Fluxo residencia → servico | Distribuicao/contagem de internacoes por par de municipios | **Sem POP implicita** | Dois papeis territoriais simultaneos, com dimensao de tempo do evento definida | **Analise academica definida; medidas/associacoes fisicas nao reconciliadas** |
+
+**HIPOTESE DE IMPLEMENTACAO RESTRITA (nao decisao final):** as candidatas E20/E21 sugerem estrategia viavel para o **denominador POP**, caso o objeto ja tenha escolhido explicitamente o papel do indicador:
+- escolher apenas um ano analitico: **ano explicito unico**, ou **competencias todas no mesmo ano**;
+- para POP por residencia, limpar no **denominador** somente o filtro de municipio **servico** e a selecao de competencia mensal, preservando municipio residencia e impondo o ano unico;
+- para POP por servico, limpar no **denominador** somente o filtro de municipio **residencia** e a selecao de competencia mensal, preservando municipio servico e impondo o ano unico;
+- na ausencia de ano unico, sinalizar indisponibilidade `SEM_ANO_UNICO`; denominador excluido/ausente, nulo ou zero **nao** gera indicador numerico automatico.
+
+A regra POP por papel acima depende dos contextos demonstrados em E19–E21 e **nao autoriza** copiar literalmente as expressoes de ensaio para os objetos do PAINEL. As referencias sao municipais anuais; **leitos sao snapshots mensais** e sua agregacao anual exige politica de cobertura/media mensal aprovada, nao `Sum` entre competencias. Numerador e denominador precisam de reconciliacao separada com as fatos reais, mantendo a semantica de `QTD_INTERNACAO` (nao substituir por `QTD_REGISTRO_AIH`).
+
+**DECISOES PENDENTES para aceite do contrato:**
+1. Especificar em texto versionavel a regra de selecao e conflito de **ano/competencia** no PAINEL (inclusive intencao perdida em E14/E15) e se o periodo pode ser multianual com calculo **por ano**, em vez de um unico denominador agregado.
+2. Associar cada expressao de indicador a seu numerador verificado, seu papel geográfico e sua unidade (por 1.000, contagem ou relacao); nao usar denominador populacional genericamente em fluxo residencia→servico.
+3. Verificar cobertura real de **populacao para municipios externos** e resposta quando referencia anual nao existir, distinguindo **indisponibilidade** de zero.
+4. Reconciliar as medidas de `FATO_INTERNACAO` e `FATO_CAPACIDADE_LEITO` antes de validar as razoes; manter `T29_HISTORICAL=NOT_APPROVED` e aviso metodologico CNES previsto na apresentacao.
+5. Validar os contratos fisicos da `%LINK_KEY` e da `LINK_ANALISE` separadamente, antes de materializar fatos ou construir painéis.
+
+**Proxima etapa proposta:** revisao de contrato semantico com essas decisoes, usando as evidencias E13–E21; nao criar E22 por padrao, novos QVDs ou objetos de PAINEL como substituto desta aprovacao.
+
+**Estado:** `E21=PASS_LOCAL_REPORTED_RESTRICTED`; `INDICATOR_ROLE_AND_YEAR_MATRIX=DOCUMENTED_FOR_REVIEW_NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 Draft sem merge.
