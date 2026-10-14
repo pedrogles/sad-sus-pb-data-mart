@@ -1170,3 +1170,25 @@ Cada combinação registra `Count(P6_POP_ROW_DEBUG)`, `Sum(P6_POP_HABITANTES_E5)
 **Próximo gate proposto:** ensaio E17 em COM sobre cópia descartável combinando o filtro territorial de serviço/residência com uma competência mensal; examinar a perda de população em medida normal, sua recuperação candidata no E10 e o efeito de filtros simultâneos de papéis diferentes, sem interpretação automática de "zero habitantes". Conferir também a manutenção de cada seleção pela interface COM. **Não alterar Link Table, grão da POP ou fatos.**
 
 **Estado:** `E16_ANNUAL_ROLE_JP_2018_2019=PASS_LOCAL_REPORTED`; `E16_GENERIC_MUNICIPAL_ROLE=NOT_APPROVED`; `E17_GEO_ROLE_MONTH_ASSOCIATION=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
+
+---
+
+## 50. E17 — descoberta COM de papéis municipais com competência (PREPARADA)
+
+**EXPERIMENTO VERSIONADO, AINDA NÃO EXECUTADO no Windows:** para verificar o efeito de uma competência mensal sobre o denominador populacional por papel territorial, `tools/validar_qlik_com_e13_smoke.ps1` ganhou a opção `-GeographicDiscovery`. O modo existente E13 continua executado primeiro e com seus valores esperados preservados; a nova opção só prossegue após o baseline e os três cenários regressivos.
+
+E17 usa o QVW E5 copiado para diretório único em `%TEMP%`, aplica `ClearAll()` entre testes e agora também verifica que a seleção explícita de residência foi limpa. Projeta três recortes experimentais com João Pessoa (`250750`) e competência `201809`, sem seleção explícita do ano:
+
+1. Somente município de **serviço** `P6_SERV_DATASUS_6=250750`;
+2. Somente município de **residência** `P6_RES_DATASUS_6=250750`;
+3. **Ambos os papéis** com o **mesmo município** `250750` — não é ainda o fluxo residência→serviço com municípios diferentes.
+
+Para cada caso registra as contagens de seleções, número de linhas POP disponíveis, soma normal `Sum(P6_POP_HABITANTES_E5)`, candidata anual que limpa competência `Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5)` e candidata E10, sem presumir os resultados dos novos recortes. Quando houver `Count(POP)=0` sob competência mensal, isso é sinal de exclusão associativa, não medição de população zero. Nenhuma medida universal será aprovada por coincidência de um resultado.
+
+**Comando local futuro:**
+
+```powershell
+& .\tools\validar_qlik_com_e13_smoke.ps1 -SourceQvw '<CAMINHO_QVW_E5_JA_VERIFICADO>' -GeographicDiscovery
+```
+
+**Gate:** `E16_ANNUAL_ROLE_JP_2018_2019=PASS_LOCAL_REPORTED`; `E17_GEO_ROLE_MONTH_ASSOCIATION=PREPARED_NOT_EXECUTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft, sem merge.
