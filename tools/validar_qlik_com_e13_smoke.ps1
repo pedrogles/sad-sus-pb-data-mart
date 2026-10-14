@@ -5,7 +5,9 @@ param(
     [Parameter(Mandatory=$true)][string]$SourceQvw,
     [switch]$TemporalDiscovery,
     [switch]$AnnualRoleDiscovery,
-    [switch]$GeographicDiscovery
+    [switch]$GeographicDiscovery,
+    [switch]$CrossRoleDiscovery,
+    [string]$OtherMunicipality = '250400'
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
@@ -267,7 +269,88 @@ try {
         }
         Write-Output ('E17_BOTH_JP_E10='+[string]($doc.Evaluate($e10)))
         Write-Output 'E17_BOTH_JP_MONTH=OBSERVED_NOT_CONTRACT'
+
         Write-Output 'E17_GEOGRAPHIC_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
+    }
+    # E18: cross-role coordinates are intentionally DIFFERENT. Diagnostic, not a denominator rule.
+    if ($CrossRoleDiscovery) {
+        Write-Output 'E18_DIFFERENT_MUNICIPALITY_DISCOVERY=STARTED'
+        if ($OtherMunicipality -notmatch '^[0-9]{6}
+    Write-Output ('E13_GATE=FAIL_CLOSED_'+$failure)
+} finally {
+    if ($null -ne $doc) {
+        try {[void]$doc.CloseDoc()} catch {Write-Output ('E13_CLOSE_WARNING='+$_.Exception.Message)}
+        if ([Runtime.InteropServices.Marshal]::IsComObject($doc)) {
+            [void][Runtime.InteropServices.Marshal]::ReleaseComObject($doc)
+        }
+    }
+    if ($null -ne $qv -and [Runtime.InteropServices.Marshal]::IsComObject($qv)) {
+        [void][Runtime.InteropServices.Marshal]::ReleaseComObject($qv)
+    }
+    $after=(Get-FileHash -LiteralPath $src -Algorithm SHA256).Hash
+    Write-Output ('SOURCE_SHA256_UNCHANGED='+($after -ceq $srcHash))
+    Write-Output 'SAVE_EXECUTED=False'
+    Write-Output 'RELOAD_EXECUTED=False'
+    Write-Output 'QVD_WRITES=0'
+    Write-Output ('DISPOSABLE_DIAGNOSTIC_DIR='+$dir)
+    if ($after -cne $srcHash) {$failure='SOURCE_CHANGED'}
+}
+if ($null -ne $failure) {
+    Write-Output ('VERDICT=FAIL_CLOSED_'+$failure)
+    exit 1
+}
+Write-Output 'VERDICT=PASS_COM_SMOKE_ONLY_DENOMINATOR_CONTRACT_NOT_APPROVED'
+ -or $OtherMunicipality -ceq '250750') {
+            throw 'BLOCKED_E18_OTHER_MUNICIPALITY_MUST_BE_DIFFERENT_VALID_6_DIGITS'
+        }
+        # Verify municipality value exists in each genuine in-memory role field before using it.
+        foreach ($role in @('P6_RES_DATASUS_6','P6_SERV_DATASUS_6')) {
+            $existExpr = "Count({1<" + $role + "={'" + $OtherMunicipality + "'}>} DISTINCT " + $role + ")"
+            CheckValue ('E18_OTHER_IN_'+$role) $existExpr '1'
+        }
+        # Three application orders of service/residence filters and temporal context.
+        foreach ($scenario in @(
+            @{Label='SERV_FIRST_MONTH';Order=@('P6_SERV_DATASUS_6','P6_RES_DATASUS_6');Competence='201809';Year=''},
+            @{Label='RES_FIRST_MONTH';Order=@('P6_RES_DATASUS_6','P6_SERV_DATASUS_6');Competence='201809';Year=''},
+            @{Label='SERV_FIRST_YEAR';Order=@('P6_SERV_DATASUS_6','P6_RES_DATASUS_6');Competence='';Year='2018'}
+        )) {
+            ResetCase
+            foreach ($role in $scenario.Order) {
+                if ($role -ceq 'P6_SERV_DATASUS_6') {
+                    SelectValue $role '250750'
+                } else {
+                    SelectValue $role $OtherMunicipality
+                }
+            }
+            if ($scenario.Competence -ne '') {
+                SelectValue 'P6_COMP_COMPETENCIA' $scenario.Competence
+            } else {
+                SelectValue 'P6_ANO_ANO' $scenario.Year
+            }
+            Write-Output ('E18_SCENARIO=' + $scenario.Label)
+            foreach ($probe in @(
+                @{Name='SERV_COUNT';Expr='GetSelectedCount(P6_SERV_DATASUS_6)'},
+                @{Name='SERV_VALUES';Expr='GetFieldSelections(P6_SERV_DATASUS_6)'},
+                @{Name='RES_COUNT';Expr='GetSelectedCount(P6_RES_DATASUS_6)'},
+                @{Name='RES_VALUES';Expr='GetFieldSelections(P6_RES_DATASUS_6)'},
+                @{Name='COMP_COUNT';Expr='GetSelectedCount(P6_COMP_COMPETENCIA)'},
+                @{Name='COMP_VALUES';Expr='GetFieldSelections(P6_COMP_COMPETENCIA)'},
+                @{Name='YEAR_COUNT';Expr='GetSelectedCount(P6_ANO_ANO)'},
+                @{Name='YEAR_VALUES';Expr='GetFieldSelections(P6_ANO_ANO)'},
+                @{Name='COUNT_POP';Expr='Count(P6_POP_ROW_DEBUG)'},
+                @{Name='NORMAL_POP';Expr='Sum(P6_POP_HABITANTES_E5)'},
+                @{Name='ANNUAL_CLEAR_COMP_POP';Expr='Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5)'}
+            )) {
+                Write-Output ('E18_'+$scenario.Label+'_'+$probe.Name+'='+[string]($doc.Evaluate($probe.Expr)))
+            }
+            Write-Output ('E18_'+$scenario.Label+'_E10='+[string]($doc.Evaluate($e10)))
+            $svcState = [string]($doc.Evaluate('GetFieldSelections(P6_SERV_DATASUS_6)'))
+            $resState = [string]($doc.Evaluate('GetFieldSelections(P6_RES_DATASUS_6)'))
+            $intact=($svcState -ceq '250750' -and $resState -ceq $OtherMunicipality)
+            Write-Output ('E18_'+$scenario.Label+'_BOTH_INTENDED_ROLE_FILTERS_SURVIVED='+$intact)
+            Write-Output ('E18_'+$scenario.Label+'=OBSERVED_NOT_CONTRACT')
+        }
+        Write-Output 'E18_DIFFERENT_MUNICIPALITY_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
     }
 } catch {
     $failure=$_.Exception.Message
