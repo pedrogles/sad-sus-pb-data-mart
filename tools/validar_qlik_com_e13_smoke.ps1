@@ -8,6 +8,7 @@ param(
     [switch]$GeographicDiscovery,
     [switch]$CrossRoleDiscovery,
     [switch]$RoleDenominatorDiscovery,
+    [switch]$DynamicRoleDiscovery,
     [string]$OtherMunicipality = '250400'
 )
 Set-StrictMode -Version Latest
@@ -276,6 +277,9 @@ try {
     if ($RoleDenominatorDiscovery -and -not $CrossRoleDiscovery) {
         throw 'BLOCKED_E19_REQUIRES_CROSS_ROLE_DISCOVERY'
     }
+    if ($DynamicRoleDiscovery -and -not $CrossRoleDiscovery) {
+        throw 'BLOCKED_E20_REQUIRES_CROSS_ROLE_DISCOVERY'
+    }
     # E18: cross-role coordinates are intentionally DIFFERENT. Diagnostic, not a denominator rule.
     if ($CrossRoleDiscovery) {
         Write-Output 'E18_DIFFERENT_MUNICIPALITY_DISCOVERY=STARTED'
@@ -376,6 +380,73 @@ try {
                 Write-Output ('E19_'+$scope+'=OBSERVED_NOT_APPROVED')
             }
             Write-Output 'E19_ROLE_DENOMINATOR_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
+        }
+
+        # E20: observational QlikView-only dynamic year and role denominator candidates.
+        if ($DynamicRoleDiscovery) {
+            Write-Output 'E20_DYNAMIC_ROLE_DISCOVERY=STARTED'
+            # Keep the monthly annual reference constrained to exactly ONE year;
+            # year-only selections are handled separately without requiring a month.
+            # Cross-role city of the OTHER role is removed ONLY inside the denominator.
+            $svcDynamic = 'If(GetSelectedCount(P6_COMP_COMPETENCIA)>0,If(Left(Text(MinString(P6_COMP_COMPETENCIA)),4)=Left(Text(MaxString(P6_COMP_COMPETENCIA)),4),Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={$(=Left(Text(MinString(P6_COMP_COMPETENCIA)),4))},P6_RES_DATASUS_6=>} P6_POP_HABITANTES_E5),''SEM_ANO_UNICO''),If(GetSelectedCount(P6_ANO_ANO)=1,Sum({$<P6_COMP_COMPETENCIA=,P6_RES_DATASUS_6=>} P6_POP_HABITANTES_E5),''SEM_ANO_UNICO''))'
+            $resDynamic = 'If(GetSelectedCount(P6_COMP_COMPETENCIA)>0,If(Left(Text(MinString(P6_COMP_COMPETENCIA)),4)=Left(Text(MaxString(P6_COMP_COMPETENCIA)),4),Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={$(=Left(Text(MinString(P6_COMP_COMPETENCIA)),4))},P6_SERV_DATASUS_6=>} P6_POP_HABITANTES_E5),''SEM_ANO_UNICO''),If(GetSelectedCount(P6_ANO_ANO)=1,Sum({$<P6_COMP_COMPETENCIA=,P6_SERV_DATASUS_6=>} P6_POP_HABITANTES_E5),''SEM_ANO_UNICO''))'
+            $refs=@{}
+            foreach ($year in @('2018','2019')) {
+                foreach ($role in @(
+                    @{Label='SERV';Field='P6_SERV_DATASUS_6';Code='250750'},
+                    @{Label='RES';Field='P6_RES_DATASUS_6';Code=$OtherMunicipality}
+                )) {
+                    ResetCase
+                    SelectValue $role.Field $role.Code
+                    SelectValue 'P6_ANO_ANO' $year
+                    CheckValue ('E20_REFERENCE_'+$role.Label+'_'+$year+'_POP_COUNT') 'Count(P6_POP_ROW_DEBUG)' '1'
+                    $value=[string]($doc.Evaluate('Sum(P6_POP_HABITANTES_E5)'))
+                    $refs[$role.Label+'_'+$year]=$value
+                    Write-Output ('E20_REFERENCE_'+$role.Label+'_'+$year+'='+$value)
+                }
+            }
+            foreach ($scenario in @(
+                @{Label='MONTH_201809';Year='';Months=@('201809');ExpectedYear='2018'},
+                @{Label='MONTH_201909';Year='';Months=@('201909');ExpectedYear='2019'},
+                @{Label='YEAR_2018';Year='2018';Months=@();ExpectedYear='2018'},
+                @{Label='YEAR_2019';Year='2019';Months=@();ExpectedYear='2019'},
+                @{Label='TWO_MONTHS_2018';Year='';Months=@('201808','201809');ExpectedYear='2018'},
+                @{Label='CROSS_YEAR_MONTHS';Year='';Months=@('201809','201909');ExpectedYear=''}
+            )) {
+                ResetCase
+                SelectValue 'P6_SERV_DATASUS_6' '250750'
+                SelectValue 'P6_RES_DATASUS_6' $OtherMunicipality
+                if ($scenario.Year -ne '') {
+                    SelectValue 'P6_ANO_ANO' $scenario.Year
+                } else {
+                    $first=$true
+                    foreach ($month in $scenario.Months) {
+                        SelectValue 'P6_COMP_COMPETENCIA' $month (-not $first)
+                        $first=$false
+                    }
+                }
+                $servSelection=[string]($doc.Evaluate('GetFieldSelections(P6_SERV_DATASUS_6)'))
+                $resSelection=[string]($doc.Evaluate('GetFieldSelections(P6_RES_DATASUS_6)'))
+                $selectedCount=[string]($doc.Evaluate('GetSelectedCount(P6_COMP_COMPETENCIA)'))
+                $effectiveRoleSelection=($servSelection -ceq '250750' -and $resSelection -ceq $OtherMunicipality)
+                Write-Output ('E20_'+$scenario.Label+'_ROLE_SELECTION_INTACT='+$effectiveRoleSelection)
+                Write-Output ('E20_'+$scenario.Label+'_COMP_COUNT='+$selectedCount)
+                Write-Output ('E20_'+$scenario.Label+'_YEAR_SELECTED='+[string]($doc.Evaluate('GetFieldSelections(P6_ANO_ANO)')))
+                $sv=[string]($doc.Evaluate($svcDynamic))
+                $rv=[string]($doc.Evaluate($resDynamic))
+                Write-Output ('E20_'+$scenario.Label+'_SERVICE_DYNAMIC='+$sv)
+                Write-Output ('E20_'+$scenario.Label+'_RESIDENCE_DYNAMIC='+$rv)
+                if ($scenario.ExpectedYear -ne '') {
+                    Write-Output ('E20_'+$scenario.Label+'_SERVICE_REFERENCE='+$refs['SERV_'+$scenario.ExpectedYear])
+                    Write-Output ('E20_'+$scenario.Label+'_RESIDENCE_REFERENCE='+$refs['RES_'+$scenario.ExpectedYear])
+                    Write-Output ('E20_'+$scenario.Label+'_SERVICE_MATCH='+($sv -ceq $refs['SERV_'+$scenario.ExpectedYear]))
+                    Write-Output ('E20_'+$scenario.Label+'_RESIDENCE_MATCH='+($rv -ceq $refs['RES_'+$scenario.ExpectedYear]))
+                } else {
+                    Write-Output ('E20_'+$scenario.Label+'_BOTH_REFUSED='+($sv -ceq 'SEM_ANO_UNICO' -and $rv -ceq 'SEM_ANO_UNICO'))
+                }
+                Write-Output ('E20_'+$scenario.Label+'=OBSERVED_NOT_APPROVED')
+            }
+            Write-Output 'E20_DYNAMIC_ROLE_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
         }
         Write-Output 'E18_DIFFERENT_MUNICIPALITY_DISCOVERY=OBSERVED_PENDING_SEMANTIC_REVIEW'
     }
