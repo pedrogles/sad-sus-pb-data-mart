@@ -1364,3 +1364,37 @@ Nos dois contextos `BOTH_ROLE_FILTERS_INTACT=True`. O Set Analysis do denominado
 ```
 
 **Estado:** `E19_ROLE_DENOMINATOR_2018=PASS_LOCAL_REPORTED_RESTRICTED`; `E20_DYNAMIC_ROLE_YEAR=VERSIONED_NOT_EXECUTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
+
+---
+
+## 58. E20 — ano dinamico com dois papeis municipais: PASS restrito local
+
+**FATO VERIFICADO — log PowerShell/QlikView 12 enviado pelo responsavel em 14/10/2026:** após `git pull --ff-only` até `ecad825`, `[System.Management.Automation.Language.Parser]::ParseFile` retornou `PARSER_PASS`. Executado `tools/validar_qlik_com_e13_smoke.ps1 -CrossRoleDiscovery -DynamicRoleDiscovery -OtherMunicipality '250400'` sobre QVW E5 descartavel. O preflight E13 repetiu PASS (669 registros POP municipio×ano; soma 12040181; um mes, dois do mesmo ano e dois de anos diferentes); E18 repetiu os filtros cruzados serviço 250750 e residência 250400 com zero linhas POP diretamente associadas. O teste E20 não aprovou mudança fisica nem gerou QVD.
+
+**Referencias POP independentes anuais observadas (cada recorte isolado `Count(POP)=1`):**
+
+| Ano | Municipio servico `250750` | Municipio residencia `250400` |
+|---|---:|---:|
+| 2018 | `800323` | `407472` |
+| 2019 | `809015` | `409731` |
+
+**Matriz E20 observada com ambos os papeis simultaneamente selecionados:**
+
+| Selecao temporal | Candidata SERV | Candidata RES | Validacao contra referencias |
+|---|---:|---:|---|
+| Competencia `201809` | `800323` | `407472` | SERV=True; RES=True |
+| Competencia `201909` | `809015` | `409731` | SERV=True; RES=True |
+| Ano `2018` isolado | `800323` | `407472` | SERV=True; RES=True |
+| Ano `2019` isolado | `809015` | `409731` | SERV=True; RES=True |
+| Duas competencias do mesmo ano `201808+201809` | `800323` | `407472` | SERV=True; RES=True |
+| Competencias entre anos `201809+201909` | `SEM_ANO_UNICO` | `SEM_ANO_UNICO` | `BOTH_REFUSED=True` |
+
+Em **todos os seis casos**, `ROLE_SELECTION_INTACT=True`: os filtros municipio serviço 250750 e residencia 250400 permaneceram. Em **cinco casos**, ambos os resultados coincidiram com a referencia correspondente (10/10 comparacoes numericas `True`). Na selecao multianual de competencias houve recusa de ambas as expressoes, em vez de somar populacoes de anos distintos. O ano no denominador foi derivado da(s) competencia(s) de um unico ano ou de um ano explicitamente escolhido. As medidas Set Analysis limparam apenas o papel municipal oposto **dentro do denominador**, sem retirar as duas selecoes territoriais no estado global.
+
+**INTEGRIDADE NO LOG:** `SOURCE_SHA256_BEFORE=F75786A88E7563B739492F2D2BC7C5CEA50D8C7F8E73F36770AA76960FB668C6`; `SOURCE_SHA256_UNCHANGED=True`; `SAVE_EXECUTED=False`; `RELOAD_EXECUTED=False`; `QVD_WRITES=0`. O `VERDICT=PASS_COM_SMOKE_ONLY_DENOMINATOR_CONTRACT_NOT_APPROVED` continua referindo-se ao smoke E13; E20 é **PASS restrito de igualdade numerica e recusa multianual observadas**, e nao aprovação de contrato.
+
+**LIMITES / DECISAO PENDENTE:** este ensaio utilizou apenas dois codigos municipais e anos 2018–2019 num QVW experimental. Não testou ausência de **ambas** selecoes temporais nem dois **anos explicitos** simultaneos; tampouco generalizou para demais municipios/anos, filtros por estabelecimento/procedimento, outros contextos municipais ou soma de multiplos municipios. Os conflitos de intenção perdidos por associatividade em E14/E15 nao podem ser reconstruidos por estas expressoes. A finalidade analitica de cada denominador (residencia para internacoes de residentes; servico para oferta/capacidade) depende de contrato por indicador, nao de coincidencia numerica. Preservar grão `municipio × ano`, modelagem academica aprovada e `FATO_POPULACAO` sem duplicacao.
+
+**PROXIMO GATE RECOMENDADO (ainda nao executado):** validar guardas temporais sem competencia nem ano e com dois anos explicitamente selecionados, ambos sob papeis distintos; em paralelo preparar uma **tabela de contrato de indicadores por papel** (demanda de residentes/populacao residente; leitos por habitante/populacao do municipio de servico; indicadores sem denominador populacional), sem aprovar fatos, Link Table nem paineis nesta Discovery.
+
+**Estado:** `E20_PARSER_PASS=LOCAL_REPORTED`; `E20_DYNAMIC_ROLE_JP_CG_2018_2019=PASS_LOCAL_REPORTED_RESTRICTED`; `E20_NUMERIC_MATCH=10_OF_10`; `E20_CROSS_YEAR_COMPETENCE_REFUSAL=PASS_LOCAL_REPORTED`; `E21_MISSING_TEMPORAL_GUARDS=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 segue Draft sem merge.
