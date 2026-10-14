@@ -1129,3 +1129,21 @@ E15_REVERSE_ORDER=OBSERVED_NOT_APPROVED
 **DECISÃO PENDENTE / HYPÓTESE DE MODELAGEM:** definir separadamente como o painel tratará: (a) população por município×ano quando só ano é escolhido (sem obrigatoriedade de mês); (b) população anual por município×ano para seleção de competências dentro de ano único; (c) conjunto multianual de competências (não somar população inadvertidamente; explicitar como indicador será calculado); (d) conflito de escolhas já descartadas pelo motor associativo, que exige comportamento de filtro/apresentação ou captura independente da intenção, não somente ajuste de Set Analysis. Preservar eixo municipal de residência versus serviço definido no Boundary 6; não transformar evidência de João Pessoa/serviço em regra universal. Priorizar agora verificação do cenário anual isolado e dos papéis territoriais, em vez de mais permutações do mesmo conflito.
 
 **Estado:** `E15_REVERSE_ORDER=PASS_LOCAL_REPORTED`; `E14_CONFLICT_SAFETY=RISK_CONFIRMED`; `E16_YEAR_ONLY_AND_GEO_CONTRACT=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 segue Draft e sem merge.
+
+---
+
+## 48. E16 — descoberta de população anual isolada por papel municipal (PREPARADA)
+
+**HIPÓTESE DE MODELAGEM, NÃO EXECUTADA no Windows:** o runner versionado `tools/validar_qlik_com_e13_smoke.ps1` foi ampliado, sem criar novo mecanismo de governança, com a flag opcional `-AnnualRoleDiscovery`. Após reproduzir obrigatoriamente os três gates E13 conhecidos, roda quatro cenários independentes no **QVW descartável**: ano 2018 ou 2019, município `250750` explicitamente selecionado no papel serviço (`P6_SERV_DATASUS_6`) ou residência (`P6_RES_DATASUS_6`), **sem seleção de competência mensal**. A função `ClearAll()` restabelece o estado a cada caso, e as contagens de seleção são verificadas.
+
+Cada combinação registra `Count(P6_POP_ROW_DEBUG)`, `Sum(P6_POP_HABITANTES_E5)` (normal), `Sum({$<P6_COMP_COMPETENCIA=>} P6_POP_HABITANTES_E5)` (candidata anual que limpa competência), e E10 (dependente de mês). Não há pressuposição de igualdade entre os papéis municipais até observar saídas reais. Os valores anuais de referência já reconciliados para João Pessoa são 2018=800323 e 2019=809015, mas **nenhum E16 foi marcado como PASS sem execução física**.
+
+**Objetivo:** decidir como apresentar população município×ano quando **somente o ano** está selecionado, sem converter `SEM_ANO_UNICO` em zero, sem repetir POP em meses e sem impor um único papel municipal indevidamente. A escolha final de população por serviço ou por residência depende da definição de cada medida/indicador e do contexto de filtro; Boundary 6 já distingue os papéis. E16 não investiga nem corrige seleção incompatível apagada pelo motor associativo (E14/E15), assunto separado da política de UI.
+
+**Comando posterior:**
+
+```powershell
+& .\tools\validar_qlik_com_e13_smoke.ps1 -SourceQvw '<CAMINHO_QVW_E5_VERIFICADO>' -AnnualRoleDiscovery
+```
+
+**Estado:** `E16_ANNUAL_ROLE_DISCOVERY=VERSIONED_NOT_RUN`; `E15_REVERSE_ORDER=PASS_LOCAL_REPORTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft, sem merge.
