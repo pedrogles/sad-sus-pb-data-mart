@@ -1287,3 +1287,30 @@ Para todos os três: `BOTH_INTENDED_ROLE_FILTERS_SURVIVED=True`. Portanto o moto
 **HIPÓTESE DE MODELAGEM PARA PRÓXIMA DISCOVERY:** numa medida cujo denominador seja a população do município **de serviço**, limpar exclusivamente o papel de **residência** além do filtro mensal e restringir o ano pode reabilitar a linha POP; na medida por **residência**, limpar exclusivamente o papel **de serviço**. Isso precisa ser testado contra duas referências anuais independentes obtidas separadamente de `serviço=250750, ano=2018` e `residência=250400, ano=2018` antes de qualquer aprovação; não presumir que basta aplicar Set Analysis nem que preservar ambos os filtros de fluxo sobre os fatos implique preservar ambos no denominador.
 
 **Estado:** `E18_PARSER_PASS=LOCAL_REPORTED`; `E18_DIFFERENT_ROLE_MONTH_AND_YEAR_FILTERS_SURVIVED=PASS_RESTRICTED`; `E18_POP_UNDER_CROSS_ROLE=EXCLUDED_ALL_THREE_SCENARIOS`; `E18_E10_CROSS_ROLE_ZERO=SEMANTIC_FAILURE`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 segue Draft e sem merge.
+
+---
+
+## 55. E19 — denominador especifico por papel municipal (PREPARADO)
+
+**HIPÓTESE DE MODELAGEM / DISCOVERY VERSIONADA, AINDA NÃO EXECUTADA NO WINDOWS.** O ensaio E18 (§54) confirmou que POP desaparece do estado associativo com filtros `SERV=250750` e `RES=250400`, mantendo ambos os filtros; E10 retornou `0` nos recortes com competência `201809`. O Boundary 6 já exige denominador explicitamente definido pelo papel municipal em indicadores de fluxo. Antes de aprovar qualquer medida, o executor existente `tools/validar_qlik_com_e13_smoke.ps1` ganhou `-RoleDenominatorDiscovery` como submodo optativo de `-CrossRoleDiscovery`.
+
+**Gate de referência independente:** E19 limpa seleções apenas na cópia descartável, seleciona `P6_SERV_DATASUS_6=250750` + ano 2018 para obter população serviço em uma linha POP, depois `P6_RES_DATASUS_6=250400` + ano 2018 para obter população residência em outra linha POP. Verifica `GetSelectedCount`, ausência de competência selecionada e `Count(P6_POP_ROW_DEBUG)=1` em ambos os recortes, e **mede** as referências sem inventar a população de `250400`.
+
+**Duas expressões experimentais E19:** sob *ambos* os filtros municipais distintos, derivar o denominador do serviço limpando o filtro residencial e a competência e fixando ano 2018; simetricamente para residência limpando o filtro de serviço. As expressões Set Analysis são **candidatas**, não contrato aprovado:
+
+```qlik
+Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={2018},P6_RES_DATASUS_6=>} P6_POP_HABITANTES_E5)
+Sum({$<P6_COMP_COMPETENCIA=,P6_ANO_ANO={2018},P6_SERV_DATASUS_6=>} P6_POP_HABITANTES_E5)
+```
+
+O script reproduz dois contextos (`MONTH_201809`, `YEAR_2018`), valida que os dois filtros municipais pretendidos permanecem ativos, registra `SERVICE_CANDIDATE`/`RESIDENCE_CANDIDATE`, compara literalmente cada resultado à referência isolada (`SERVICE_MATCH`/`RESIDENCE_MATCH`), e **não** transforma coincidência em aprovação semântica automática. O ano `2018` é literal **apenas neste ensaio controlado**, e não solução genérica do painel. Se alguma referência de POP estiver ausente, o teste bloqueia com `Count(POP)` diferente de 1. Nenhum QVD factual ou Link Table é produzido.
+
+**Comando planejado após `git pull --ff-only` e validação com parser nativo PowerShell:**
+
+```powershell
+& .\tools\validar_qlik_com_e13_smoke.ps1 -SourceQvw '<CAMINHO_QVW_E5>' -CrossRoleDiscovery -RoleDenominatorDiscovery -OtherMunicipality '250400'
+```
+
+**Limites metodológicos:** a evidência é do modelo associado em memória, não prova existência de internações de residentes de `250400` atendidos em `250750`, nem regularidade de todos os 223 municípios/anos, nem o correto denominador de todo indicador. A política UI de filtro temporal conflitante (E14/E15) e o contrato da `%LINK_KEY` continuam pendentes. O arquivo usa QVW descartável, não faz Save/Reload e preserva a fonte.
+
+**Estado:** `E18_CROSS_ROLE=PASS_LOCAL_OBSERVED_WITH_ZERO_POP_EXCLUSION`; `E19_ROLE_DENOMINATOR=VERSIONED_STATIC_ONLY_NOT_EXECUTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
