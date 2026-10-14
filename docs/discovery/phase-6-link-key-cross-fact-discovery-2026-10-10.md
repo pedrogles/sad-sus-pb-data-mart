@@ -1099,3 +1099,33 @@ A prova temporal diferencia **observação de seleção/resultado** de aprovaç�
 **E15 — experimento de ordem inversa preparado, NÃO EXECUTADO:** o mesmo runner, sob `-TemporalDiscovery`, passará a testar competência 201809 selecionada **antes** do ano explícito 2019. Registrará seleções resultantes para competência/ano/município e o E10, sem antecipar se o QlikView manterá o mês, descartará o mês ou reagirá de outra forma. Também imprimirá risco E14 quando confirmar ano descartado. Nenhuma modificação foi feita nos dados de origem; o ensaio opera somente sobre a cópia descartável.
 
 **Estado:** `E14_TEMPORAL_DISCOVERY=PASS_EXECUTION_WITH_SEMANTIC_RISK`; `E14_YEAR_MONTH_INTENT_PRESERVATION=FAIL_OBSERVED`; `E14_YEAR_ONLY_E10=SEM_ANO_UNICO_OBSERVED`; `E15_REVERSE_ORDER=PREPARED_NOT_EXECUTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft / não integrar.
+
+---
+
+## 47. E15 — seleção temporal na ordem inversa executada no QlikView 12
+
+**FATO VERIFICADO — log PowerShell/QlikView 12 enviado pelo responsável (14/10/2026).** A branch foi atualizada via `git pull --ff-only` até `117a8c3`. O executor experimental `tools/validar_qlik_com_e13_smoke.ps1 -TemporalDiscovery` trabalhou em `P6_E13_DISPOSABLE.qvw` sob pasta temporária, sem alterar o QVW fonte. `SOURCE_SHA256_UNCHANGED=True`, `SAVE_EXECUTED=False`, `RELOAD_EXECUTED=False` e `QVD_WRITES=0`.
+
+**Regressão preservada:** baseline de `669` linhas POP e `12040181` habitantes; E13 três cenários `PASS` (uma competência `201809→800323`, duas do mesmo ano `201808+201809→800323`, duas de anos diferentes `201809+201909→SEM_ANO_UNICO`). E14 repetiu o comportamento de ano 2019 selecionado antes da competência 201809 e indicou `E14_CONFLICT_SAFETY=ORIGINAL_2019_SELECTION_DROPPED_NOT_APPROVED`.
+
+**E15 — ordem inversa com resultado físico observado:** selecionar serviço `250750`, competência `201809` e depois o ano explícito `2019` produziu:
+
+```text
+E13_E15_PRE_YEAR_COMP_COUNT=1
+E15_PRE_YEAR_COMP_VALUES=201809
+E15_REVERSE_YEAR_COUNT=1
+E15_REVERSE_YEAR_VALUES=2019
+E15_REVERSE_COMP_COUNT=0
+E15_REVERSE_COMP_VALUES=-
+E15_REVERSE_SERV_COUNT=1
+E15_REVERSE_E10=SEM_ANO_UNICO
+E15_REVERSE_ORDER=OBSERVED_NOT_APPROVED
+```
+
+**Conclusão baseada na evidência:** nos dois testes contraditórios específicos, a seleção posterior prevalece no estado associativo final, e a anterior é descartada. Ano `2019` depois de `201809` elimina o mês; mês `201809` depois do ano `2019` elimina o ano. A expressão E10 não detecta o conflito **já removido do estado**. Quando somente o ano `2019` permanece, E10 retorna `SEM_ANO_UNICO` porque sua regra atual exige alguma competência explícita. Este comportamento não prova uma política universal do QlikView para todos os campos ou combinações; resulta das seleções observadas nesta projeção experimental.
+
+**Gate:** `E15_REVERSE_ORDER=PASS_EXECUTION_BEHAVIOR_OBSERVED`; `E14_E15_SELECTION_INTENT_PRESERVED=FALSE_OBSERVED`; `E10_GENERIC_TEMPORAL_DENOMINATOR=NOT_APPROVED`.
+
+**DECISÃO PENDENTE / HYPÓTESE DE MODELAGEM:** definir separadamente como o painel tratará: (a) população por município×ano quando só ano é escolhido (sem obrigatoriedade de mês); (b) população anual por município×ano para seleção de competências dentro de ano único; (c) conjunto multianual de competências (não somar população inadvertidamente; explicitar como indicador será calculado); (d) conflito de escolhas já descartadas pelo motor associativo, que exige comportamento de filtro/apresentação ou captura independente da intenção, não somente ajuste de Set Analysis. Preservar eixo municipal de residência versus serviço definido no Boundary 6; não transformar evidência de João Pessoa/serviço em regra universal. Priorizar agora verificação do cenário anual isolado e dos papéis territoriais, em vez de mais permutações do mesmo conflito.
+
+**Estado:** `E15_REVERSE_ORDER=PASS_LOCAL_REPORTED`; `E14_CONFLICT_SAFETY=RISK_CONFIRMED`; `E16_YEAR_ONLY_AND_GEO_CONTRACT=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 segue Draft e sem merge.
