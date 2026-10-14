@@ -1728,3 +1728,25 @@ Compress-Archive -Path (Join-Path $out "*") -DestinationPath "$env:USERPROFILE\D
 **PARECER:** `F4_SEMANTIC_TEST_CASES=PASS_LOCAL_REVIEWED`, estritamente quanto à geração e coerência documental do catálogo. `F4_QLIK_SELECTION_AND_FILTER_POLICY=NOT_TESTED`. **Não promover** para PASS físico em razão de um teste que apenas recalcula a própria matriz. O próximo gate requer teste observável de **intenção anterior + proposta** antes de COM `SelectInField` em QVW temporário, regressão dos casos compatíveis e incompatíveis e depois matriz P5 por indicador. Preservar E14/E15 como contraexemplos da seleção nativa sem prevenção.
 
 **Estados sem alteração:** `SEMANTIC_V2=APPROVED_SEMANTIC_ONLY`; `F3_DENOMINATOR_SOURCE_REFERENCE=PASS_LOCAL_REVIEWED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft, sem merge.
+
+
+---
+
+## 66. F4-D2 — ensaio COM de guarda antes da seleção (PREPARADO, AINDA NÃO EXECUTADO)
+
+**Justificativa e escopo:** os casos E14/E15 existentes comprovaram que uma seleção QlikView de ano e competência incompatíveis pode descartar a seleção anterior e ocultar a intenção original. O catálogo de expectativas F4 (§65.1) passou em auditoria independente, mas **não prova comportamento QlikView**. Para avançar com controle restrito, `tools/validar_f4_preselecao_d2_qlik.ps1` foi versionado como **novo executor experimental**, preservando o runner canônico `tools/validar_qlik_com_e13_smoke.ps1` sem alterações. Não criar E22 automaticamente nem implementar PAINEL/Link Table/fatos.
+
+**Ensaio desenhado:** exigir `-SourceQvw` apontando a um QVW E5 com os nove objetos de negócio do ensaio anterior (nome restringido pelo executor) e `-F4Dir` com o `manifest_F4.json` e os casos temporais auditados. Conferir SHA-256 do CSV temporal contra manifesto, copiar QVW para `%TEMP%` e conferir SHA antes de abrir por COM. No QVW descartável, `ClearAll`, conferir baseline POP 669 linhas/12.040.181 habitantes, selecionar município de serviço `250750` e executar quatro sequências com estado prévio conhecido e proposta de filtro. A lógica de guarda examina **o estado anterior e a proposta** antes de eventual chamada `GetField(...).Select(...)`.
+
+| Caso F4-D2 | Intenção anterior | Proposta | Resultado exigido |
+|---|---|---|---|
+| `ANO_2019_PROPOR_MES_201809` | ANO 2019 | COMP 201809 | Recusar, manter ANO 2019 e competência vazia |
+| `MES_201809_PROPOR_ANO_2019` | COMP 201809 | ANO 2019 | Recusar, manter COMP 201809 e ano vazio |
+| `ANO_2019_PROPOR_MES_201909` | ANO 2019 | COMP 201909 | Permitir, ambos selecionados, POP 809015 |
+| `MES_201809_PROPOR_ANO_2018` | COMP 201809 | ANO 2018 | Permitir, ambos selecionados, POP 800323 |
+
+**Limites:** essa é prova da guarda **no wrapper PowerShell que controla as chamadas COM**. Não intercepta cliques diretos nos objetos do QVW, não protege ações externas nem é controle de painel implementado. Sem `Save`/`Reload`, sem alteração de QVDs ou documento fonte, com validação final de SHA-256 do QVW original. Um futuro teste de mecanismo de seleção do PAINEL dependerá de outra aprovação de implementação e verificação de API/ações do QlikView. O conjunto completo de 48 filtros isolados + 8 combinações P5 continua **não testado fisicamente**. O validador COM não foi analisado pelo parser PowerShell neste ambiente Linux nem executado no Windows/QlikView 12; um `Parser.ParseFile` local deverá preceder a execução real.
+
+**Critério do próximo checkpoint:** o responsável executará localmente `tools/validar_f4_preselecao_d2_qlik.ps1`, registrando saída de cada cenário, `SOURCE_SHA256_UNCHANGED=True`, `SAVE_EXECUTED=False`, `RELOAD_EXECUTED=False`, `QVD_WRITES=0` e veredito específico `PASS_F4_D2_WRAPPER_PREDISPATCH_ONLY_PHYSICAL_CONTRACT_NOT_APPROVED`. Se o documento E5 QVW não estiver disponível, bloquear e solicitar caminho correto; **não substituí-lo** por qualquer QVW de Fase V ou por documento de apresentação. Sem PASS antecipado.
+
+**Status:** `F4_SEMANTIC_TEST_CASES=PASS_LOCAL_REVIEWED`; `F4_D2_COM_PREDISPATCH=PREPARED_NOT_RUN`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `PAINEL=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
