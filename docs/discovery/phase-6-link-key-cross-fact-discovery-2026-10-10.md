@@ -1022,3 +1022,15 @@ Comando a executar na branch do PR #83, após `git pull --ff-only`:
 **NOVO E13:** o script versionado tools/validar_qlik_com_e13_smoke.ps1 foi preparado para criar uma copia descartavel do QVW E5, validar SHA-256 e executar em COM os tres casos anteriormente observados manualmente: 201809 sozinho (esperado 800323), 201808+201809 (esperado 800323) e 201809+201909 (esperado SEM_ANO_UNICO). O script tambem tenta enumerar nomes de tabelas COM. Uso somente de memoria: sem Save, Reload ou QVD gerado. **NAO EXECUTADO no Windows; nenhuma selecao automatizada aprovada.**
 
 **Estado:** E12_COM_ENUMERATION=PASS_LOCAL_REPORTED; E12_TABLE_COUNT_DISCREPANCY=OPEN; E13_COM_SMOKE=VERSIONED_NOT_RUN; MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED; LINK_KEY_CONTRACT=NOT_APPROVED; T29_HISTORICAL=NOT_APPROVED. PR #83 segue Draft.
+
+---
+
+## 43. E13 — falha inicial de baseline COM, diagnostico preparado
+
+**FATO VERIFICADO — saida PowerShell do responsavel (14/10/2026):** apos git pull --ff-only ate 43f6091, foi executado o runner E13 na fonte P6_E5_POP_DENOMINATOR_IN_MEMORY.qvw (SHA-256 inicial F75786A88E7563B739492F2D2BC7C5CEA50D8C7F8E73F36770AA76960FB668C6). Foi criada a copia descartavel no diretório SAD_P6_E13_COM_a4478dcfd1134998acd9f02c35aa9d08 em TEMP. A primeira condicao combinada de baseline retornou E13_BASELINE=FAIL; o runner interrompeu em FAIL_CLOSED_BLOCKED_BASELINE_EXPECTED_PASS_GOT_FAIL.
+
+**Importante:** nao ha evidencias de erros de selecao COM, nem regressao de denominador neste teste: o runner bloqueou **antes da primeira selecao**. A origem permanece SHA-256 intacta, sem Save, Reload ou escrita de QVD. A condicao de baseline exigia simultaneamente Count(P6_POP_ROW_DEBUG)=669 e Sum(P6_POP_HABITANTES_E5)=12040181; a saida nao apresentou as duas parcelas individualmente nem confirmou se havia selecao persistida no QVW copiado. **Causa raiz em aberto.**
+
+**Mudanca de diagnostico versionada, NAO EXECUTADA no Windows:** o mesmo tools/validar_qlik_com_e13_smoke.ps1 agora lista nomes de tabelas COM antes do baseline, coleta contagens de selecoes carregadas, executa ClearAll somente na **copia descartavel**, confirma que selecoes de mes/ano/servico estao zeradas e registra, individualmente, Count, Sum e as comparacoes booleanas antes de reaplicar a mesma regra estrita do baseline. Qualquer divergencia bloqueia o smoke antes dos testes de selecao. Nao houve relaxamento dos valores esperados, nem alteracao nos QVDs ou no modelo aprovado.
+
+**Estado:** E13_COM_BASELINE=FAIL_CLOSED_LOCAL_REPORTED; E13_BASELINE_ROOT_CAUSE=UNKNOWN; E13_DIAGNOSTIC_REVISION=VERSIONED_NOT_RUN; E13_SELECTION_SMOKE=NOT_TESTED; MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED; LINK_KEY_CONTRACT=NOT_APPROVED; T29_HISTORICAL=NOT_APPROVED. PR #83 continua Draft sem merge.
