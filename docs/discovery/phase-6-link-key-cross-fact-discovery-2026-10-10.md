@@ -1265,3 +1265,25 @@ if ($parseErrors.Count -gt 0) {
 Se o parser retornar PASS, somente então executar o runner E18 sobre a origem E5 validada. Caso contrário, interromper e enviar mensagens do parser. E18 continua sujeito à validação de existência de `250400` em ambos os campos COM e aos resultados dos filtros; nenhum resultado é presumido.
 
 **Estado:** `E18_POWERSHELL_PARSE=FAIL_LOCAL_REPORTED_BEFORE_FIX`; `E18_PARSER_FIX=VERSIONED_STATIC_CHECK_ONLY`; `E18_COM_EXECUTION=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 continua Draft, sem merge.
+
+---
+
+## 54. E18 — municipios distintos, filtros preservados e POP excluida
+
+**FATO VERIFICADO — log do responsável, QlikView 12/PowerShell COM (14/10/2026).** Após `git pull --ff-only` da branch do PR #83 até `6bec6fa`, o parser nativo do Windows executou `[System.Management.Automation.Language.Parser]::ParseFile` sem erros e confirmou `PARSER_PASS`. O runner `tools/validar_qlik_com_e13_smoke.ps1 -CrossRoleDiscovery -OtherMunicipality '250400'` abriu apenas QVW descartável e reproduziu baseline e três cenários E13 PASS (`669` POP municipio-ano; soma `12040181`; E10 = 800323 com competência única; 800323 com dois meses de 2018; `SEM_ANO_UNICO` entre anos). Preflight E18 `E13_E18_OTHER_IN_P6_RES_DATASUS_6=1` e `E13_E18_OTHER_IN_P6_SERV_DATASUS_6=1` provou que o código `250400` existe em ambos os campos de papel **isoladamente**, não prova contagem de fluxos RD entre os municipios.
+
+| E18 cenário | Filtros efetivos preservados | POP linhas | POP normal | POP limpando competência | E10 |
+|---|---|---:|---:|---:|---:|
+| `SERV_FIRST_MONTH` | Serviço 250750; residência 250400; competência 201809; `YEAR_COUNT=0` | 0 | 0 | 0 | `0` |
+| `RES_FIRST_MONTH` | Serviço 250750; residência 250400; competência 201809; `YEAR_COUNT=0` | 0 | 0 | 0 | `0` |
+| `SERV_FIRST_YEAR` | Serviço 250750; residência 250400; ano 2018; `COMP_COUNT=0` | 0 | 0 | 0 | `SEM_ANO_UNICO` |
+
+Para todos os três: `BOTH_INTENDED_ROLE_FILTERS_SURVIVED=True`. Portanto o motor associativo **não apagou** nenhum dos dois municípios nestes testes; a ausência de população é causada pela **interseção territorial não compatível com a projeção POP da Link Table**, na qual cada município da POP tem a mesma coordenada nos dois papéis. Quando `SERV` difere de `RES`, não há linha POP que satisfaça simultaneamente os dois filtros. Limpar somente competência e/ou selecionar explicitamente o ano não recupera POP. A ausência/zero nas expressões **não equivale a zero habitantes**.
+
+**CONTRAEXEMPLO SEMÂNTICO CRÍTICO:** a fórmula E10 que parecia adequada a um município e competência únicos em E13–E17 retornou **zero** quando ambos os papéis municipais divergiram (inclusive com competência 201809 de ano único). Assim `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED` fica reforçado. Não usar E10 como denominador universal, nem interpretar ausência de POP como indicador zero. A seleção de papel municipal precisa ser declarada em cada indicador (Boundary 6), especialmente para fluxo residência→serviço. Não alterar dados, granularidade anual da população ou Link Table física baseada neste ensaio.
+
+**Integridade:** `SOURCE_SHA256_UNCHANGED=True`, `SAVE_EXECUTED=False`, `RELOAD_EXECUTED=False`, `QVD_WRITES=0`; `VERDICT=PASS_COM_SMOKE_ONLY_DENOMINATOR_CONTRACT_NOT_APPROVED` ainda refere-se à regressão E13, e E18 é descoberta observacional (não aprovação de contrato ou integridade de fluxo RD).
+
+**HIPÓTESE DE MODELAGEM PARA PRÓXIMA DISCOVERY:** numa medida cujo denominador seja a população do município **de serviço**, limpar exclusivamente o papel de **residência** além do filtro mensal e restringir o ano pode reabilitar a linha POP; na medida por **residência**, limpar exclusivamente o papel **de serviço**. Isso precisa ser testado contra duas referências anuais independentes obtidas separadamente de `serviço=250750, ano=2018` e `residência=250400, ano=2018` antes de qualquer aprovação; não presumir que basta aplicar Set Analysis nem que preservar ambos os filtros de fluxo sobre os fatos implique preservar ambos no denominador.
+
+**Estado:** `E18_PARSER_PASS=LOCAL_REPORTED`; `E18_DIFFERENT_ROLE_MONTH_AND_YEAR_FILTERS_SURVIVED=PASS_RESTRICTED`; `E18_POP_UNDER_CROSS_ROLE=EXCLUDED_ALL_THREE_SCENARIOS`; `E18_E10_CROSS_ROLE_ZERO=SEMANTIC_FAILURE`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 segue Draft e sem merge.
