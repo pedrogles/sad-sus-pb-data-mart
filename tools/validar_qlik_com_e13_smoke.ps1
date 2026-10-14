@@ -56,7 +56,32 @@ try {
     $qv=New-Object -ComObject 'QlikTech.QlikView'
     $doc=$qv.OpenDoc($copy,'','')
     if ($null -eq $doc) {throw 'BLOCKED_COM_OPENDOC_NULL'}
-    # Evaluate basic expressions and confirm expected E5 data.
+    # Diagnostic: an on-disk QVW can reopen with selections; gather facts before touching state.
+    # Keep the original baseline guard but diagnose each input separately.
+    $diagnostics = @(
+        @{Name='PRE_CLEAR_COMP_COUNT';Expr='GetSelectedCount(P6_COMP_COMPETENCIA)'},
+        @{Name='PRE_CLEAR_YEAR_COUNT';Expr='GetSelectedCount(P6_ANO_ANO)'},
+        @{Name='PRE_CLEAR_SERVICE_COUNT';Expr='GetSelectedCount(P6_SERV_DATASUS_6)'},
+        @{Name='PRE_CLEAR_RES_COUNT';Expr='GetSelectedCount(P6_RES_DATASUS_6)'}
+    )
+    foreach ($item in $diagnostics) {
+        try { Write-Output ('E13_DIAG_'+$item.Name+'='+[string]($doc.Evaluate($item.Expr))) }
+        catch { Write-Output ('E13_DIAG_'+$item.Name+'_ERROR='+$_.Exception.Message) }
+    }
+    # Clear selections in DISPOSABLE copy before baseline, then verify clear occurred.
+    ResetCase
+    foreach ($item in @(
+        @{Name='POST_CLEAR_POP_COUNT';Expr='Count(P6_POP_ROW_DEBUG)'},
+        @{Name='POST_CLEAR_POP_HABITANTES';Expr='Sum(P6_POP_HABITANTES_E5)'},
+        @{Name='POST_CLEAR_COUNT_MATCH';Expr='Count(P6_POP_ROW_DEBUG)=669'},
+        @{Name='POST_CLEAR_SUM_MATCH';Expr='Sum(P6_POP_HABITANTES_E5)=12040181'},
+        @{Name='POST_CLEAR_AND_MATCH';Expr='(Count(P6_POP_ROW_DEBUG)=669) and (Sum(P6_POP_HABITANTES_E5)=12040181)'},
+        @{Name='POST_CLEAR_IF';Expr="If(Count(P6_POP_ROW_DEBUG)=669 and Sum(P6_POP_HABITANTES_E5)=12040181,'PASS','FAIL')"}
+    )) {
+        try { Write-Output ('E13_DIAG_'+$item.Name+'='+[string]($doc.Evaluate($item.Expr))) }
+        catch { Write-Output ('E13_DIAG_'+$item.Name+'_ERROR='+$_.Exception.Message) }
+    }
+    # Strict unchanged baseline gate: no selection scenario is permitted if it fails.
     CheckValue 'BASELINE' "If(Count(P6_POP_ROW_DEBUG)=669 and Sum(P6_POP_HABITANTES_E5)=12040181,'PASS','FAIL')" 'PASS'
     # COM GetTableCount (12 previously) differs from NoOfTables() at reload (9); capture names, do not reinterpret topology.
     try {
