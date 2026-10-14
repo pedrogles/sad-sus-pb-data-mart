@@ -56,6 +56,15 @@ try {
     $qv=New-Object -ComObject 'QlikTech.QlikView'
     $doc=$qv.OpenDoc($copy,'','')
     if ($null -eq $doc) {throw 'BLOCKED_COM_OPENDOC_NULL'}
+    # COM GetTableCount (12 previously) differs from NoOfTables() at reload (9); capture names, do not reinterpret topology.
+    try {
+        $n=[int]$doc.GetTableCount()
+        Write-Output ('E13_COM_TABLE_COUNT='+$n)
+        for($i=0;$i -lt $n;$i++) {
+            try {Write-Output ('E13_COM_TABLE_'+$i+'='+[string]($doc.GetTableName($i)))}
+            catch {Write-Output ('E13_COM_TABLE_NAME_ERROR_'+$i+'='+$_.Exception.Message)}
+        }
+    } catch {Write-Output ('E13_TABLE_ENUMERATION_UNAVAILABLE='+$_.Exception.Message)}
     # Diagnostic: an on-disk QVW can reopen with selections; gather facts before touching state.
     # Keep the original baseline guard but diagnose each input separately.
     $diagnostics = @(
@@ -83,15 +92,6 @@ try {
     }
     # Strict unchanged baseline gate: no selection scenario is permitted if it fails.
     CheckValue 'BASELINE' "If(Count(P6_POP_ROW_DEBUG)=669 and Sum(P6_POP_HABITANTES_E5)=12040181,'PASS','FAIL')" 'PASS'
-    # COM GetTableCount (12 previously) differs from NoOfTables() at reload (9); capture names, do not reinterpret topology.
-    try {
-        $n=[int]$doc.GetTableCount()
-        Write-Output ('E13_COM_TABLE_COUNT='+$n)
-        for($i=0;$i -lt $n;$i++) {
-            try {Write-Output ('E13_COM_TABLE_'+$i+'='+[string]($doc.GetTableName($i)))}
-            catch {Write-Output ('E13_COM_TABLE_NAME_ERROR_'+$i+'='+$_.Exception.Message)}
-        }
-    } catch {Write-Output ('E13_TABLE_ENUMERATION_UNAVAILABLE='+$_.Exception.Message)}
     # A: Single selected competence: 201809 -> JP 2018.
     ResetCase
     SelectValue 'P6_SERV_DATASUS_6' '250750'
