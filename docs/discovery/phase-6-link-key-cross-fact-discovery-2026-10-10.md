@@ -1034,3 +1034,27 @@ Comando a executar na branch do PR #83, após `git pull --ff-only`:
 **Mudanca de diagnostico versionada, NAO EXECUTADA no Windows:** o mesmo tools/validar_qlik_com_e13_smoke.ps1 agora lista nomes de tabelas COM antes do baseline, coleta contagens de selecoes carregadas, executa ClearAll somente na **copia descartavel**, confirma que selecoes de mes/ano/servico estao zeradas e registra, individualmente, Count, Sum e as comparacoes booleanas antes de reaplicar a mesma regra estrita do baseline. Qualquer divergencia bloqueia o smoke antes dos testes de selecao. Nao houve relaxamento dos valores esperados, nem alteracao nos QVDs ou no modelo aprovado.
 
 **Estado:** E13_COM_BASELINE=FAIL_CLOSED_LOCAL_REPORTED; E13_BASELINE_ROOT_CAUSE=UNKNOWN; E13_DIAGNOSTIC_REVISION=VERSIONED_NOT_RUN; E13_SELECTION_SMOKE=NOT_TESTED; MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED; LINK_KEY_CONTRACT=NOT_APPROVED; T29_HISTORICAL=NOT_APPROVED. PR #83 continua Draft sem merge.
+
+---
+
+## 44. E13 — smoke COM automatizado PASS local
+
+**FATO VERIFICADO — saída PowerShell/QlikView 12 enviada pelo responsável, 14/10/2026.** Após `git pull --ff-only` até `30de18b`, o responsável executou `tools/validar_qlik_com_e13_smoke.ps1 -SourceQvw <P6_E5_POP_DENOMINATOR_IN_MEMORY.qvw>`. O executor criou somente uma cópia descartável `P6_E13_DISPOSABLE.qvw` em `%TEMP%` e interagiu com ela pela interface COM. A origem manteve o hash SHA-256 `F75786A88E7563B739492F2D2BC7C5CEA50D8C7F8E73F36770AA76960FB668C6`.
+
+**Causa do bloqueio anterior (§43) identificada pelo ensaio:** o QVW original estava gravado com `GetSelectedCount(P6_COMP_COMPETENCIA)=2` e `GetSelectedCount(P6_SERV_DATASUS_6)=1` (ano/residência sem seleções). A condição inicial de E13 era avaliada sob essas seleções. `ClearAll()` somente na cópia descartável deixou contagens de competência, ano e município serviço em zero e restabeleceu o baseline: `Count(P6_POP_ROW_DEBUG)=669`, `Sum(P6_POP_HABITANTES_E5)=12040181`. Comparações booleanas retornaram `-1` (verdadeiro na representação numérica do Qlik) e a expressão combinada retornou `PASS`. Não houve relaxamento da expectativa.
+
+**Três cenários automatizados concluídos (todos PASS):**
+
+| Cenário COM (serviço João Pessoa) | Seleções | Resultado E10 | Gate |
+|---|---|---:|---|
+| Competência única | `201809`; sem seleção explícita do ano | `800323` | `E13_SINGLE_MONTH=PASS` |
+| Competências do mesmo ano | `201808` e `201809`; ano sem seleção explícita | `800323` | `E13_SAME_YEAR=PASS` |
+| Competências entre anos | `201809` e `201909`; ano sem seleção explícita | `SEM_ANO_UNICO` | `E13_CROSS_YEAR=PASS` |
+
+A interface COM efetivamente executou `GetField().Select()`, `ToggleSelect()`, `ClearAll()` e `Document.Evaluate()`, conferindo `GetSelectedCount` em cada teste. Resultado final reportado: `VERDICT=PASS_COM_SMOKE_ONLY_DENOMINATOR_CONTRACT_NOT_APPROVED`; `SOURCE_SHA256_UNCHANGED=True`; `SAVE_EXECUTED=False`; `RELOAD_EXECUTED=False`; `QVD_WRITES=0`.
+
+**Reconciliada a aparente discrepância de tabelas:** `GetTableCount()=12` listou as nove tabelas experimentais nomeadas `P6_LINK_SIMULADA`, `P6_DIM_COMP_SIMULADA`, `P6_DIM_ANO_SIMULADA`, `P6_DIM_RES_SIMULADA`, `P6_DIM_SERV_SIMULADA`, `P6_DIM_EST_SIMULADA`, `P6_FATO_RD_SIMULADA`, `P6_FATO_LT_SIMULADA`, `P6_FATO_POP_SIMULADA` e três entradas `$$SysTable 9`, `$$SysTable 10`, `$$SysTable 11`. Portanto, **não surgiram novas tabelas de negócio**; as três entradas adicionais possuem nome de tabela de sistema. A diferença de contagem COM vs. `NoOfTables()` não sustenta mudança da arquitetura. Sua natureza exata não foi investigada além do nome.
+
+**Próximo gate sugerido, ainda NÃO EXECUTADO:** ampliar a matriz automatizada, com cópia descartável e verificação de origem, para (1) sem competência; (2) ano explícito compatível; (3) ano explícito incompatível com competência; (4) segundo município de serviço e múltiplos municípios; (5) filtro de residência, isolado e combinado; (6) seleções sem população aplicável. Separar indicadores de internação por residência e atividade hospitalar por serviço antes de decidir qualquer contrato universal. Manter tratamento fail-closed de vazio/ambiguidade, sem converter nulos em zero habitantes.
+
+**Estado:** `E13_COM_SMOKE=PASS_LOCAL_REPORTED`; `E13_BASELINE_PRIOR_FAIL=RESOLVED_BY_CLEARALL`; `E13_COM_12_TABLES=9_BUSINESS_PLUS_3_SYS`; `E14_EXPANDED_SEMANTIC_REGRESSION=NOT_STARTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `FACT_QVDS=NOT_STARTED`; `LINK_ANALISE_QVD=NOT_STARTED`; `T29_HISTORICAL=NOT_APPROVED`. PR #83 permanece Draft sem merge.
