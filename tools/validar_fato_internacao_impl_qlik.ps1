@@ -20,11 +20,12 @@ $inputs = @(
     (Join-Path $Root 'TRANSFORMACAO\QVD\DIM_CARATER_ATENDIMENTO.qvd'),
     (Join-Path $Root 'TRANSFORMACAO\QVD\DIM_MOTIVO_SAIDA_PERMANENCIA.qvd')
 )
-foreach ($path in @(
+$required = @(
     (Join-Path $Root 'AGENTS.md'),
     (Join-Path $Root 'docs\project\current-state.md'),
     $qvs
-) + $inputs) {
+) + $inputs
+foreach ($path in $required) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "VERDICT=BLOCKED_MISSING_INPUT path=$path"
     }
@@ -43,7 +44,7 @@ if ($LASTEXITCODE -ne 0 -or $trackedChanges.Count -gt 0) {
 $raw = [IO.File]::ReadAllText($qvs, [Text.Encoding]::UTF8)
 if (-not $raw.Contains('VERDICT=PASS_IN_MEMORY_CANDIDATE_ONLY_NOT_PHYSICAL_APPROVAL') -or
     -not $raw.Contains('STORE FATO_INTERNACAO INTO [QVD\FATO_INTERNACAO.qvd] (qvd);') -or
-    -not $raw.Contains("IF '$(vP5FatoInternacaoMode)' = 'PREFLIGHT' THEN") -or
+    -not $raw.Contains('IF ''$(vP5FatoInternacaoMode)'' = ''PREFLIGHT'' THEN') -or
     -not $raw.Contains("Hash128('SAD-LINK-V1',") -or
     @([regex]::Matches($raw, '(?im)^\s*STORE\s+')).Count -ne 1 -or
     $raw -match '(?im)^\s*(BINARY|EXECUTE|JOIN|LEFT\s+JOIN|RIGHT\s+JOIN)\b') {
