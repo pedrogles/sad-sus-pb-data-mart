@@ -98,8 +98,7 @@ LET vSTMonths=NoOfRows('CNES_ST_MONTHS');
 LET vLTMonths=NoOfRows('CNES_LT_MONTHS');
 LET vTPDomain=NoOfRows('CNES_ST_TP_DISTRIBUTION');
 
-IF ScriptErrorCount>$(vCNESPreErrors) OR $(vSTMonths)<>36 OR $(vLTMonths)<>36
-   OR $(vSTGroups)<1 OR $(vLTGroups)<1 OR $(vTPDomain)<1 THEN
+IF ScriptErrorCount>$(vCNESPreErrors) OR $(vSTMonths)<>36 OR $(vLTMonths)<>36 OR $(vSTGroups)<1 OR $(vLTGroups)<1 OR $(vTPDomain)<1 THEN
     TRACE [CNES-KEY] VERDICT=BLOCKED_STAGING_OR_AGGREGATE_CARDINALITY;
     EXIT SCRIPT;
 ENDIF

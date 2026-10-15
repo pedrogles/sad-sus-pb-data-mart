@@ -44,6 +44,14 @@ foreach($token in @('__ST_QVD_ABSOLUTE__','__LT_QVD_ABSOLUTE__',
 if($body -match '(?im)^\s*(STORE|JOIN|BINARY|EXECUTE|INNER JOIN|LEFT JOIN|RIGHT JOIN|OUTER JOIN)\b'){
  throw 'BLOCKED_QVS_HAS_FORBIDDEN_DATA_OPERATION'
 }
+# Qlik script control statements must be complete on the same physical line.
+# This preflight prevents a known malformed multi-line IF from opening a blocking UI error.
+$qvsLines=@($body -split '[\r\n]+')
+$incompleteIf=@($qvsLines|Where-Object{$_ -match '^\s*IF\s+' -and $_ -notmatch '\bTHEN\b'})
+if($incompleteIf.Count -gt 0){
+ throw ('BLOCKED_QVS_IF_WITHOUT_SAME_LINE_THEN='+($incompleteIf -join ' | '))
+}
+Write-Output 'QVS_IF_SAME_LINE_THEN_STATIC_CHECK=PASS'
 foreach($p in @($st,$lt)){
  if($p.Contains(']') -or $p.Contains([string][char]10) -or $p.Contains([string][char]13)){
   throw ('INVALID_QVD_PATH_FOR_BRACKET_LOAD='+$p)
