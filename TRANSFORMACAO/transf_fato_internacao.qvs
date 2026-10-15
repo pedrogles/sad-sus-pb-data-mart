@@ -50,6 +50,7 @@ NOCONCATENATE LOAD
     Hash128('CID10',Text(RTrim(Text(DIAG_PRINC)))) AS _FI_CID,
     Hash128('CAR',Text(Right('00' & KeepChar(Text(CAR_INT),'0123456789'),2))) AS _FI_CAR,
     Hash128('MOT',Text(Right('00' & KeepChar(Text(COBRANCA),'0123456789'),2))) AS _FI_MOT,
+    Text(MUNIC_RES) AS _FI_RES_CODE,
     Text(N_AIH) AS _FI_N_AIH,
     Text(IDENT) AS _FI_IDENT,
     Text(ANO_CMPT) AS _FI_YEAR,
@@ -121,6 +122,7 @@ NOCONCATENATE LOAD
     Count(DISTINCT _FI_REG_SK) AS _FI_UNIQUE,
     Count(DISTINCT _FI_COMPETENCE) AS _FI_MONTHS,
     Count(DISTINCT _FI_SOURCE_FILE) AS _FI_FILES,
+    Sum(If(Left(Trim(_FI_RES_CODE),2)<>'25',1,0)) AS _FI_EXTERNAL,
     Sum(If(IsNull(_FI_REG_SK) OR IsNull(_FI_C) OR IsNull(_FI_Y)
         OR IsNull(_FI_R) OR IsNull(_FI_S) OR IsNull(_FI_E),1,0)) AS _FI_NULL_KEYS,
     Sum(_FI_REG) AS _FI_REG_TOTAL,
@@ -140,6 +142,7 @@ LET vFIRows=Peek('_FI_ROWS',0,'P5FI_SOURCE_TOTAL');
 LET vFIUnique=Peek('_FI_UNIQUE',0,'P5FI_SOURCE_TOTAL');
 LET vFIMonths=Peek('_FI_MONTHS',0,'P5FI_SOURCE_TOTAL');
 LET vFIFiles=Peek('_FI_FILES',0,'P5FI_SOURCE_TOTAL');
+LET vFIExternal=Peek('_FI_EXTERNAL',0,'P5FI_SOURCE_TOTAL');
 LET vFINull=Peek('_FI_NULL_KEYS',0,'P5FI_SOURCE_TOTAL');
 LET vFIReg=Peek('_FI_REG_TOTAL',0,'P5FI_SOURCE_TOTAL');
 LET vFINew=Peek('_FI_NEW_TOTAL',0,'P5FI_SOURCE_TOTAL');
@@ -149,8 +152,8 @@ LET vFIDeaths=Peek('_FI_DEATH_TOTAL',0,'P5FI_SOURCE_TOTAL');
 LET vFICents=Peek('_FI_CENTS_TOTAL',0,'P5FI_SOURCE_TOTAL');
 LET vFIInvalid=Peek('_FI_INVALID',0,'P5FI_SOURCE_TOTAL');
 DROP TABLE P5FI_SOURCE_TOTAL;
-TRACE [V5-FACT] SOURCE ROWS=$(vFIRows) UNIQUE=$(vFIUnique) MONTHS=$(vFIMonths) FILES=$(vFIFiles) NULL=$(vFINull) REG=$(vFIReg) NEW=$(vFINew) CONT=$(vFICont) DAYS=$(vFIDays) DEATHS=$(vFIDeaths) CENTS=$(vFICents) INVALID=$(vFIInvalid);
-IF ScriptErrorCount > $(vFIStartErrors) OR $(vFIRows)<>566672 OR $(vFIUnique)<>566672 OR $(vFIMonths)<>36 OR $(vFIFiles)<>36 OR $(vFINull)<>0 OR $(vFIReg)<>566672 OR $(vFINew)<>555089 OR $(vFICont)<>11583 OR $(vFIDays)<>3133578 OR $(vFIDeaths)<>26611 OR $(vFICents)<>65938464905 OR $(vFIInvalid)<>0 THEN
+TRACE [V5-FACT] SOURCE ROWS=$(vFIRows) UNIQUE=$(vFIUnique) MONTHS=$(vFIMonths) FILES=$(vFIFiles) EXTERNAL=$(vFIExternal) NULL=$(vFINull) REG=$(vFIReg) NEW=$(vFINew) CONT=$(vFICont) DAYS=$(vFIDays) DEATHS=$(vFIDeaths) CENTS=$(vFICents) INVALID=$(vFIInvalid);
+IF ScriptErrorCount > $(vFIStartErrors) OR $(vFIRows)<>566672 OR $(vFIUnique)<>566672 OR $(vFIMonths)<>36 OR $(vFIFiles)<>36 OR $(vFIExternal)<>5202 OR $(vFINull)<>0 OR $(vFIReg)<>566672 OR $(vFINew)<>555089 OR $(vFICont)<>11583 OR $(vFIDays)<>3133578 OR $(vFIDeaths)<>26611 OR $(vFICents)<>65938464905 OR $(vFIInvalid)<>0 THEN
     TRACE [V5-FACT] VERDICT=BLOCKED_SOURCE_RECONCILIATION;
     EXIT SCRIPT;
 ENDIF
