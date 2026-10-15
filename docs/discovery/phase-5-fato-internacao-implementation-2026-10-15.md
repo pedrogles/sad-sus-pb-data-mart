@@ -53,15 +53,15 @@ A última seção de `transf_main.qvs` define `SET vP5FatoInternacaoMode=OFF;`. 
 | Preservação | SHA dos QVDs de staging inalterado; verificação de arquivos de destino e QVDs dimensionais executados conforme modo |
 | QVD materializado | após `CREATE`, reabrir e auditar QVD independentemente; verificação em memória não basta |
 
-**Executor de gate isolado preparado (não executado):** \`tools/validar_fato_internacao_impl_qlik.ps1\`, baseado nos dois validadores QlikView R3 já integrados. Cria/reutiliza exclusivamente \`TRANSFORMACAO/V5_RD_FATO_INTERNACAO_PREFLIGHT.qvw\` e seu log, sem abrir \`TRANSF.qvw\` nem invocar \`transf_main.qvs\`. Injeta em memória os comandos \`SET ErrorMode=0;\` e \`SET vP5FatoInternacaoMode=PREFLIGHT;\`, mantendo integralmente o QVS factual versionado. O executor exige branch correta, arquivos de origem, script QVW compatível, hashes SHA-256 dos oito QVDs (staging + sete dimensões), integridade do possível QVD factual preexistente e marcadores QlikView nativos exatos. Não edita arquivos do repositório, nem gera qualquer QVD; apenas o QVW e log diagnósticos locais são escritos.
+**Executor de gate isolado preparado (não executado):** `tools/validar_fato_internacao_impl_qlik.ps1`, baseado nos dois validadores QlikView R3 já integrados. Cria/reutiliza exclusivamente `TRANSFORMACAO/V5_RD_FATO_INTERNACAO_PREFLIGHT.qvw` e seu log, sem abrir `TRANSF.qvw` nem invocar `transf_main.qvs`. Injeta em memória os comandos `SET ErrorMode=0;` e `SET vP5FatoInternacaoMode=PREFLIGHT;`, mantendo integralmente o QVS factual versionado. O executor exige branch correta, arquivos de origem, script QVW compatível, hashes SHA-256 dos oito QVDs (staging + sete dimensões), integridade do possível QVD factual preexistente e marcadores QlikView nativos exatos. Não edita arquivos do repositório, nem gera qualquer QVD; apenas o QVW e log diagnósticos locais são escritos.
 
-No Windows/PowerShell, a partir da raiz da branch \`feat/phase-5-fato-internacao-implementation\` com working tree rastreada limpa:
+No Windows/PowerShell, a partir da raiz da branch `feat/phase-5-fato-internacao-implementation` com working tree rastreada limpa:
 
-\`\`\`powershell
+```powershell
 git switch feat/phase-5-fato-internacao-implementation
 git pull --ff-only
 powershell.exe -NoProfile -File .\tools\validar_fato_internacao_impl_qlik.ps1 -Root (Get-Location).Path
-\`\`\`
+```
 
 **Executar somente uma vez neste gate**, com QlikView 12 interativo e todos os QVDs de staging/dimensão disponíveis. Em falha, enviar saída de console e último trecho do log. Não repetir o reload sem análise da causa.
 
