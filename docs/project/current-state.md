@@ -23,9 +23,9 @@ Fonte: [requisitos](../academic/requirements.md), [modelagem](../academic/chapte
 | Fase III — extração/staging | **PASS FINAL RECONCILED local** (10 QVDs, 107 campos, 36 competências RD/LT/ST; recarga 08/10) | [gate final](../discovery/phase-3-final-extraction-gate-2026-10-08.md) |
 | Fase IV — dimensões | **8/8 integradas na main**, PR #81 merge 09/10, testes QlikView locais | [DIM_TIPO_LEITO](../discovery/phase-4-dim-tipo-leito-discovery-2026-10-09.md) |
 | Fase V — SK do registro RD | **Aprovada com restrições de conteúdo+arquivo imutável**, PR #82 integrado | [pré-validação SK](../discovery/phase-5-fato-internacao-sk-preflight-2026-10-09.md) |
-| Fase V — 5 medidas e 11 papéis RD | **PASS local reportado no snapshot** (566.672 RD, 11/11 órfãos zero em duas recargas); **NÃO INTEGRADO À MAIN** | [PR #84 Draft](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/84) |
+| Fase V — 5 medidas e 11 papéis RD | **PASS local reportado no snapshot** (566.672 RD, 11/11 órfãos zero em duas recargas); **evidências e scripts INTEGRADOS À MAIN; fato ainda não implementada** | [PR #84 MERGED](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/84) |
 | Fase VI — `SAD-LINK-V1` / projeção associativa | **PASS experimental restrito; contrato final NÃO APROVADO** | [Discovery original do PR #83, §15 e posteriores](https://github.com/pedrogles/sad-sus-pb-data-mart/blob/26369052bd3f96de5f3eccf873c390053c20b561/docs/discovery/phase-6-link-key-cross-fact-discovery-2026-10-10.md) |
-| Contrato semântico de indicadores V2 | **Aprovado SOMENTE semanticamente pelo responsável em 14/10; versão documental ainda em Draft** | [PR #85](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/85) |
+| Contrato semântico de indicadores V2 | **Aprovado SOMENTE semanticamente pelo responsável em 14/10; documento INTEGRADO À MAIN** | [PR #85 MERGED](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/85) |
 | Fatos, `LINK_ANALISE.qvd`, PAINEL | **NOT_STARTED** em produção | [Boundary 7](../discovery/boundary-7-implementation-plan.md) |
 
 **Limites preservados:** `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`, `T29_HISTORICAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`. Testes F4/P5 e visualização em QVW descartável **não** aprovam indicadores e painéis definitivos.
@@ -39,13 +39,13 @@ Fonte: [requisitos](../academic/requirements.md), [modelagem](../academic/chapte
 - `TP_UNID` 2017–2019: ST/LT R2 teve auditoria independente **restrita** de logs/CSVs; R3 local reportou dez grupos em LT, mas o **log/stdout R3 ainda precisa de revisão**. Não presumir identificação de hospitais nem classificar `TP_UNID` histórico sem fonte por competência.
 - Filtros ano/competência e residência/serviço na projeção Qlik causaram exclusões associativas observadas; ausência de registros sob um filtro incompatível não significa leitos ou habitantes zero. Distinguir denominador por papel e ano, conforme semântica V2 apenas.
 
-## 4. PRs abertos e roteiro imediato
+## 4. PRs relevantes e roteiro imediato
 
 - [PR #83](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/83) — **Draft histórico**, 45 arquivos/209 commits. Congelar sem merge integral e sem apagar branch; só fechar após conferir salvamento e obter decisão do responsável.
-- [PR #84](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/84) — **Draft**, cinco scripts de pré-validação + evidência sintética da Fase V. Revisão estática realizada; execução nativa independente/merge ainda não aprovados.
-- [PR #85](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/85) — **Draft documental** da decisão semântica V2. Cópia integral auditada contra o #83; merge pendente.
-- **Higiene de contexto (este PR, quando aberto):** encurtar `AGENTS.md` e `current-state.md` sem mudar fatos/arquitetura.
+- [PR #84](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/84) — **MERGED via squash em `6e38594c205074d012a1704986338fc9f1959608`** (15/10/2026). Scripts e evidência Fase V versionados na `main`; nenhum novo teste nativo, CI ou QVD factual produzido.
+- [PR #85](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/85) — **MERGED via squash em `e8b4e848a6dfd2c9be1f93faa61c04f245cf2867`** (15/10/2026). Semântica V2 versionada na `main`, [documento específico](../discovery/phase-6-semantic-v2-approved-2026-10-14.md); expressões Qlik/denominadores físicos não aprovados.
+- [PR #86](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/86) — consolidação de instruções de agentes e snapshot operacional, sem mudança de fatos/modelagem; este próprio documento é sua proposta de conteúdo para revisão/merge.
 
-**Sequência de controle:** (1) revisar os drafts #84/#85 e decidir integração; (2) revisar a higiene do contexto, sem permitir alteração de modelagem; (3) analisar apenas o log/stdout CNES R3 existente (sem novo Reload) para identificar a pendência hospitalar; (4) definir gate físico mínimo para o próximo PR de implementação seguindo a ordem Fase V fatos → Fase VI Link Table → Fase VII painel técnico → Fase VIII indicadores → Fase IX dashboards. Não abrir automaticamente testes de UI/COM extras para preencher o PR #83.
+**Sequência de controle:** (1) #84 e #85 concluídos e integrados; (2) finalizar revisão/integração da higiene de contexto #86 sem alterar a modelagem; (3) examinar apenas o log/stdout CNES R3 existente (sem novo Reload) se necessário à decisão de escopo hospitalar; (4) definir gate físico mínimo para próximo PR de implementação seguindo Fase V fatos → Fase VI Link Table → Fase VII painel técnico → Fase VIII indicadores → Fase IX dashboards. Não abrir automaticamente testes de UI/COM extras para preencher o PR #83.
 
 **Sem autorização automática:** não marcar como PASS físico `%LINK_KEY`, não gerar `FATO_*.qvd`, `LINK_ANALISE.qvd` ou `PAINEL.qvw` em produção, e não executar merge/close/delete sem aceite explícito e revisão do HEAD.
