@@ -1,0 +1,82 @@
+// SAD PB — CNES/ST TP_UNID distribution restricted to LT-paired CNES+COMPETEN.
+// Empirical diagnostic only. NOT a hospital scope, measure, or approved fact.
+// No JOIN, STORE or modification of source QVDs.
+
+LET vR3PreErrors=ScriptErrorCount;
+
+R3_ST_TP_MAP:
+MAPPING LOAD
+    Text(CNES) & '|' & Text(COMPETEN),
+    If(IsNull(TP_UNID) OR Len(Trim(Text(TP_UNID)))=0,'(EMPTY_OR_NULL)',Text(TP_UNID))
+FROM [__ST_QVD_ABSOLUTE__] (qvd);
+
+R3_LT_TYPED:
+LOAD
+    Text(CNES) & '|' & Text(COMPETEN) AS R3_LT_PAIR,
+    Text(COMPETEN) AS R3_LT_MONTH,
+    ApplyMap('R3_ST_TP_MAP',Text(CNES) & '|' & Text(COMPETEN),'(NO_ST_MATCH)') AS R3_LT_TP,
+    Text(CNES) AS R3_LT_CNES
+FROM [__LT_QVD_ABSOLUTE__] (qvd);
+
+R3_TP_GROUP:
+NOCONCATENATE LOAD
+    R3_LT_TP AS R3_GROUP_CODE,
+    Count(R3_LT_CNES) AS R3_GROUP_LT_ROWS,
+    Count(DISTINCT R3_LT_PAIR) AS R3_GROUP_PAIRS
+RESIDENT R3_LT_TYPED
+GROUP BY R3_LT_TP;
+
+R3_MONTH_TP_GROUP:
+NOCONCATENATE LOAD
+    R3_LT_MONTH AS R3_GROUP_MONTH,
+    R3_LT_TP AS R3_GROUP_MONTH_CODE,
+    Count(R3_LT_CNES) AS R3_GROUP_MONTH_ROWS,
+    Count(DISTINCT R3_LT_PAIR) AS R3_GROUP_MONTH_PAIRS
+RESIDENT R3_LT_TYPED
+GROUP BY R3_LT_MONTH,R3_LT_TP;
+
+LET vR3Rows=NoOfRows('R3_LT_TYPED');
+LET vR3Codes=NoOfRows('R3_TP_GROUP');
+LET vR3MonthCodes=NoOfRows('R3_MONTH_TP_GROUP');
+LET vR3SumRows=0;
+LET vR3SumPairs=0;
+LET vR3Unmatched=0;
+
+IF ScriptErrorCount>$(vR3PreErrors) OR $(vR3Rows)<>35518 OR $(vR3Codes)<1 OR $(vR3MonthCodes)<36 THEN
+    TRACE [CNES-R3] VERDICT=BLOCKED_PRECONDITION;
+    EXIT SCRIPT;
+ENDIF
+
+FOR vR3i=0 TO $(vR3Codes)-1
+    LET vR3Code=Peek('R3_GROUP_CODE',$(vR3i),'R3_TP_GROUP');
+    LET vR3CodeRows=Peek('R3_GROUP_LT_ROWS',$(vR3i),'R3_TP_GROUP');
+    LET vR3CodePairs=Peek('R3_GROUP_PAIRS',$(vR3i),'R3_TP_GROUP');
+    LET vR3SumRows=$(vR3SumRows)+$(vR3CodeRows);
+    LET vR3SumPairs=$(vR3SumPairs)+$(vR3CodePairs);
+    IF '$(vR3Code)'='(NO_ST_MATCH)' THEN
+        LET vR3Unmatched=$(vR3Unmatched)+$(vR3CodeRows);
+    ENDIF
+    TRACE [CNES-R3] TP_RAW=$(vR3Code) LT_ROWS=$(vR3CodeRows) LT_PAIRS=$(vR3CodePairs);
+NEXT
+
+LET vR3MonthSumRows=0;
+LET vR3MonthSumPairs=0;
+FOR vR3i=0 TO $(vR3MonthCodes)-1
+    LET vR3Month=Peek('R3_GROUP_MONTH',$(vR3i),'R3_MONTH_TP_GROUP');
+    LET vR3Code=Peek('R3_GROUP_MONTH_CODE',$(vR3i),'R3_MONTH_TP_GROUP');
+    LET vR3MonthRows=Peek('R3_GROUP_MONTH_ROWS',$(vR3i),'R3_MONTH_TP_GROUP');
+    LET vR3MonthPairs=Peek('R3_GROUP_MONTH_PAIRS',$(vR3i),'R3_MONTH_TP_GROUP');
+    LET vR3MonthSumRows=$(vR3MonthSumRows)+$(vR3MonthRows);
+    LET vR3MonthSumPairs=$(vR3MonthSumPairs)+$(vR3MonthPairs);
+    TRACE [CNES-R3] MONTH=$(vR3Month) TP_RAW=$(vR3Code) LT_ROWS=$(vR3MonthRows) LT_PAIRS=$(vR3MonthPairs);
+NEXT
+
+TRACE [CNES-R3] TOTAL LT_ROWS=$(vR3Rows) GROUP_ROWS=$(vR3SumRows) PAIRS=$(vR3SumPairs) MONTH_ROWS=$(vR3MonthSumRows) MONTH_PAIRS=$(vR3MonthSumPairs) UNMATCHED_ROWS=$(vR3Unmatched) CODES=$(vR3Codes) MONTH_CODES=$(vR3MonthCodes);
+
+IF ScriptErrorCount>$(vR3PreErrors) OR $(vR3SumRows)<>35518 OR $(vR3MonthSumRows)<>35518 OR $(vR3SumPairs)<>7486 OR $(vR3MonthSumPairs)<>7486 OR $(vR3Unmatched)<>0 THEN
+    TRACE [CNES-R3] VERDICT=BLOCKED_CROSS_SOURCE_AGGREGATES;
+    EXIT SCRIPT;
+ENDIF
+
+TRACE [CNES-R3] VERDICT=PASS_LT_PAIRED_TP_RAW_EMPIRICAL_PROFILING_NOT_HOSPITAL_SCOPE;
+TRACE [CNES-R3] CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED T29_HISTORICAL=NOT_APPROVED;
