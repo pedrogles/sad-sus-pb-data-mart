@@ -138,8 +138,18 @@ try{
  $qv=New-Object -ComObject 'QlikTech.QlikView'
  $doc=$qv.OpenDoc($copy,'','')
  if($null -eq $doc){throw 'QVW_COM_OPEN_FAILED'}
- $sheet=$doc.ActiveSheet
- if($null -eq $sheet){throw 'ACTIVE_SHEET_ABSENT'}
+ # GetSheet(0) resolves the Sheet IDispatch; PowerShell exposed doc.ActiveSheet as PSMethod.
+ # Only a disposable QVW is open. Abort if the expected COM Sheet interface is unavailable.
+ $sheet=$doc.GetSheet(0)
+ if($null -eq $sheet -or -not [Runtime.InteropServices.Marshal]::IsComObject($sheet)){
+    throw 'COM_SHEET_OBJECT_NOT_RESOLVED'
+ }
+ Write-Output ('SHEET_COM_DISPATCH='+$sheet.GetType().FullName)
+ $sheetMethods=@($sheet | Get-Member -MemberType Method | Select-Object -ExpandProperty Name)
+ foreach($needed in @('CreateListBox','CreateTextObject')){
+    if($sheetMethods -cnotcontains $needed){throw ('COM_SHEET_METHOD_UNAVAILABLE='+$needed)}
+ }
+ Write-Output 'SHEET_CREATION_METHODS_AVAILABLE=True'
  [void]$doc.ClearAll()
  Expect 'RD_BASE' 'Count(F4_RD_IDENT)' '566672'
  Expect 'POP_BASE' 'Count(P6_POP_ROW_DEBUG)' '669'
