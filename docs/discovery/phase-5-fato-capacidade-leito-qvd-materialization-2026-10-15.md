@@ -2,7 +2,7 @@
 
 **Data:** 15/10/2026. **Branch:** feat/phase-v-capacidade-qvd-materialization, criada a partir do HEAD d80849293c957166336528d4d8699349399edb2f do PR #91. **Main:** 7abd1dc50c092e4235fc811fa63e4dd3a30344ac, sem alteracoes por este gate.
 
-**Autorizacao:** o responsavel autorizou especificamente a criacao de um unico QVD de capacidade no Windows com QlikView 12, seguido por auditoria fisica em segundo QVW isolado. Nao autorizou merge, alteracao academica ou outras fatos. **Estado antes de executar:** CAPACIDADE_QVD_CREATE=AUTHORIZED_NOT_EXECUTED, READBACK=NOT_EXECUTED.
+**Autorizacao:** o responsavel autorizou especificamente a criacao de um unico QVD de capacidade no Windows com QlikView 12, seguido por auditoria fisica em segundo QVW isolado. Nao autorizou merge, alteracao academica ou outras fatos. **Estado atualizado após execução local reportada:** CAPACIDADE_QVD_CREATE=PASS_LOCAL_REPORTED, READBACK=PASS_LOCAL_REPORTED; PR #92 permanece Draft, sem merge.
 
 ## Objetivo fechado e evidencias
 
@@ -27,7 +27,7 @@ Fontes: AGENTS.md, docs/project/current-state.md, docs/academic/requirements.md,
 
 **READBACK:** um segundo QVW reabre somente o QVD persistido, verifica 11 colunas com ordem exata, contagens, hashes de chaves recomputados, medidas, 3 anos, dominios, regressões e valores de origem; emite PASS_PHYSICAL_QVD_READBACK_CANDIDATE_ONLY. O runner verifica SHA do QVD recem-criado antes/depois da leitura.
 
-**Veredito final esperado, ainda NAO EXECUTADO:** VERDICT=PASS_QV_CAPACIDADE_QVD_MATERIALIZED_AND_REOPENED_CANDIDATE_ONLY. Sem aprovacao global de LINK_ANALISE, T29_HISTORICAL, escopo hospitalar por TP_UNID, indicadores, denominadores ou producao. Totais acima sao somas dos snapshots e nao capacidade anual/simultanea.
+**Veredito final atingido no Windows em 15/10/2026, segundo stdout e linhas do log nativo fornecidos pelo responsável:** VERDICT=PASS_QV_CAPACIDADE_QVD_MATERIALIZED_AND_REOPENED_CANDIDATE_ONLY. Sem aprovacao global de LINK_ANALISE, T29_HISTORICAL, escopo hospitalar por TP_UNID, indicadores, denominadores ou producao. Totais acima sao somas dos snapshots e nao capacidade anual/simultanea.
 
 ## Execucao local Windows (uma vez), na raiz do repositorio
 
@@ -40,4 +40,37 @@ Se houver BLOCKED: nao repetir, nao deletar ou corrigir o QVD parcial/QVW/log au
 
 **Dependencia:** este PR eh stacked e usa como base o PR #91, que permanece Draft e nao integrado a main. Qualquer merge exigira autorizacao separada e verificacao de ordem. Nao iniciar FATO_POPULACAO, Link Table ou painel em decorrencia.
 
-**Estado:** SCRIPTS_READY_FOR_ONE_SHOT_CREATE_AND_READBACK, PR_MERGED=False, PRODUCTION_APPROVED=False.
+**Estado pós-gate:** CAPACIDADE_QVD_CREATE_READBACK=PASS_LOCAL_REPORTED, PR_MERGED=False, PRODUCTION_APPROVED=False. O QVD já existe localmente; não reexecutar CREATE nem iniciar outra fase automaticamente.
+
+
+## Evidência recebida — QVD criado e reaberto (15/10/2026)
+
+**Origem:** saída integral do PowerShell e marcadores do log QlikView 12 fornecidos pelo responsável após execução local. Esta evidência comprova **PASS físico local reportado**, mas o agente não teve acesso direto ao QVD binário, QVWs ou aos logs originais para validação independente externa.
+
+| Controle | Resultado reportado |
+| --- | --- |
+| Branch executada | `feat/phase-v-capacidade-qvd-materialization`, atualizada com `git pull --ff-only` |
+| Executor | `tools/materializar_fato_capacidade_leito_qlik.ps1` |
+| Modo | `PHASE_V_CAPACIDADE_ONE_SHOT_CREATE_AND_READBACK` |
+| SHA-256 QVS factual **preservado** | `134BBD4E290FA22F6F5D728D4C080EDDF9C1C3FDE3D38448FD47FE5A0B1174D0` |
+| SHA-256 QVS STORE | `369052D225D949FB00AB2A6BD5F937F8947843EDFE07528B2BD199182A02638E` |
+| SHA-256 QVS auditor | `54B8D2A8FCDBC7405E727DE5741C3333A10BEBC1DD38DCE8B81FAF845A8DD844` |
+| QVD materializado | `TRANSFORMACAO/QVD/FATO_CAPACIDADE_LEITO.qvd` |
+| Tamanho físico | `1519007` bytes |
+| SHA-256 do QVD antes/depois do readback | `A6349BFBE5655579347DE7B554294A7EC694FBC98FAE9A77FF871062AED6E840` (**idêntico**) |
+| Inventário inicial | `EXISTING_QVD_INVENTORY_COUNT=19` |
+| Integridade no CREATE | `ALL_5_INPUT_QVD_SHA256_UNCHANGED=AFTER_CREATE`, `ALL_PREEXISTING_QVD_SHA256_UNCHANGED=AFTER_CREATE`, `ONLY_NEW_QVD_IS_FATO_CAPACIDADE_LEITO=AFTER_CREATE` |
+| Integridade após auditoria | `ALL_5_INPUT_QVD_SHA256_UNCHANGED=AFTER_AUDIT`, `ALL_PREEXISTING_QVD_SHA256_UNCHANGED=AFTER_AUDIT`, `ONLY_NEW_QVD_IS_FATO_CAPACIDADE_LEITO=AFTER_AUDIT` |
+| Qlik CREATE | `VERDICT=WRITTEN_PENDING_INDEPENDENT_QVD_AUDIT` às 22:18:16 |
+| Qlik readback | `HEADER ROWS=35518 FIELDS=11`; `SCHEMA_EXACT_11=True` às 22:18:17 |
+| Corpo persistido e reconciliado | `ROWS=35518 UNIQUE=35518 LINKS=7486 MONTHS=36 FILES=36 PAIRS=57 PAIR_MONTHS=2021 TYPE3_BED66=1480 TYPE7_BED70=5 NULL=0 SK_MISMATCH=0 DOMAIN_BAD=0 EXIST=337147 SUS=270076 NSUS=67071 INVALID=0` |
+| Auditoria anual | `ANNUAL YEARS=3 BAD=0` |
+| Qlik readback | `VERDICT=PASS_PHYSICAL_QVD_READBACK_CANDIDATE_ONLY` às 22:18:18 |
+| Runner final | `VERDICT=PASS_QV_CAPACIDADE_QVD_MATERIALIZED_AND_REOPENED_CANDIDATE_ONLY` |
+| Restrições explícitas | `LINK_ANALISE_QVD_GENERATED=False`; `PRODUCTION_APPROVED=False` |
+
+**Reconciliação:** os 35.518 registros físicos têm 35.518 identificadores únicos e 7.486 `%LINK_KEY` distintas **internamente à capacidade**. A auditoria recomputou as duas SKs persistidas (factual e tipo de leito), com `SK_MISMATCH=0`; validou 11 nomes de campos na ordem exata; preservou 36 competências/36 arquivos e as regressões históricas `3/66` e `7/70`. `337147`, `270076` e `67071` são **somatórios ao longo dos snapshots**, não quantidade de leitos simultâneos nem capacidade anual. Não foi testada a associação entre fatos, nem a aplicação temporal dos rótulos T29.
+
+**Conclusão do gate:** `CAPACIDADE_QVD_CREATE_READBACK=PASS_LOCAL_REPORTED`, `PRODUCTION_APPROVED=False`. As validações executadas num **segundo QVW** são independentes da projeção em memória do primeiro QVW; não representam auditoria externa dos binários pelo agente. O QVD e ambos os QVWs/logs continuam **exclusivamente no computador do responsável**.
+
+**STOP:** o executor `materializar_fato_capacidade_leito_qlik.ps1` é **one-shot e não deve ser executado novamente**. Preservar arquivo, hashes e logs. PR #92 continua Draft e empilhado sobre o PR #91, ambos não integrados. Próximo ato potencial: **revisão pré-merge dos PRs #91/#92 e autorização específica de integração**, mantendo contrato físico Link Table, escopo hospitalar e homologação de produção pendentes. Não iniciar `FATO_POPULACAO` automaticamente.
