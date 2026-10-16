@@ -2,7 +2,7 @@
 
 **Repositório:** `pedrogles/sad-sus-pb-data-mart`. **Base canônica desta implementação:** `main` em `7abd1dc50c092e4235fc811fa63e4dd3a30344ac`. **Branch separada:** `feat/phase-v-fato-capacidade-implementation`.
 
-**Estado:** `FATO_CAPACIDADE_LEITO_CODE=CANDIDATE_WRITTEN_STATIC_ONLY`; `FATO_CAPACIDADE_LEITO_NATIVE_QV_PREFLIGHT=NOT_RUN`; `FATO_CAPACIDADE_LEITO_QVD=NOT_GENERATED`; `PR_MERGED=False`; `PRODUCTION_APPROVED=False`. O responsável autorizou implementar **somente candidato e teste isolado em memória**; não autorizou escrita de QVD ou merge.
+**Estado após saída local do responsável:** `FATO_CAPACIDADE_LEITO_CODE=CANDIDATE_QVS_VERSIONED`; `FATO_CAPACIDADE_LEITO_NATIVE_QV_PREFLIGHT=PASS_LOCAL_REPORTED`; `FATO_CAPACIDADE_LEITO_QVD=NOT_GENERATED`; `PR_MERGED=False`; `PRODUCTION_APPROVED=False`. O responsável autorizou implementar **somente candidato e teste isolado em memória**; não autorizou escrita de QVD ou merge.
 
 ## Delimitação da execução
 
@@ -34,7 +34,7 @@ A projeção mantém **11 colunas** nesta ordem, sujeitas ao resultado Qlik e à
 
 **Regra de associação:** competência, ano, município de serviço e estabelecimento aparecem na projeção apenas embutidos na `%LINK_KEY` candidata, não como quatro chaves compartilhadas adicionais na fato. As dimensões conformadas serão associadas pela Link Table em fase própria, não neste gate. **É proposição explícita, não contrato físico aprovado.**
 
-**Validações implementadas no QVS candidato:** 35.518 linhas/35.518 `SK_REGISTRO_CAPACIDADE_LEITO` distintas, 36 competências/36 arquivos, 57 pares, 2.021 par-mês, regressões `3/66=1480` e `7/70=5`; zero chaves nulas/órfãs em `COMP`, `ANO`, `MUNICIPIO_SERVICO`, `ESTABELECIMENTO`, `TIPO_LEITO`; três medidas inteiras não negativas e saldo igual; três anos de 12 competências; a projeção de 11 colunas reconcilia novamente totais e unicidade, com `%LINK_KEY` não nula e distinta em algum número **ainda não medido**. Totais `337147,270076,67071` são **somatórios de snapshots** para diagnóstico, não oferta total de leitos ou denominador de indicador.
+**Validações implementadas no QVS candidato:** 35.518 linhas/35.518 `SK_REGISTRO_CAPACIDADE_LEITO` distintas, 36 competências/36 arquivos, 57 pares, 2.021 par-mês, regressões `3/66=1480` e `7/70=5`; zero chaves nulas/órfãs em `COMP`, `ANO`, `MUNICIPIO_SERVICO`, `ESTABELECIMENTO`, `TIPO_LEITO`; três medidas inteiras não negativas e saldo igual; três anos de 12 competências; a projeção de 11 colunas reconcilia novamente totais e unicidade, com `%LINK_KEY` não nula e **7.486 valores distintos na própria capacidade**, segundo a execução local reportada (sem validar associação entre fatos). Totais `337147,270076,67071` são **somatórios de snapshots** para diagnóstico, não oferta total de leitos ou denominador de indicador.
 
 ## Scripts e proteção operacional
 
@@ -51,12 +51,40 @@ git pull --ff-only
 powershell.exe -NoProfile -File .\tools\validar_fato_capacidade_impl_qlik.ps1 -Root (Get-Location).Path
 ```
 
-**Esperado, não executado:** `VERDICT=PASS_ISOLATED_CAPACIDADE_FACT_PREFLIGHT_CANDIDATE_ONLY`; marcadores `SOURCE`, `ROLES`, `SNAPSHOT_SUMS_UNSAFE_AS_PERIOD_TOTAL`, `YEARS=3 YEAR_BAD=0`, `OUTPUT ROWS=35518 UNIQUE=35518 LINKS=<medido pelo Qlik> NULL=0 EXIST=337147 SUS=270076 NSUS=67071 INVALID=0`; `ALL_PREEXISTING_QVD_SHA256_UNCHANGED=AFTER_RELOAD`; `FACT_CAPACIDADE_LEITO_QVD_GENERATED=False`. **Não antecipar PASS antes de log local.**
+**Executado e reportado pelo responsável (15/10/2026, 22:04):** `VERDICT=PASS_ISOLATED_CAPACIDADE_FACT_PREFLIGHT_CANDIDATE_ONLY`; marcadores `SOURCE`, `ROLES`, `SNAPSHOT_SUMS_UNSAFE_AS_PERIOD_TOTAL`, `YEARS=3 YEAR_BAD=0`, `OUTPUT ROWS=35518 UNIQUE=35518 LINKS=7486 NULL=0 EXIST=337147 SUS=270076 NSUS=67071 INVALID=0`; `ALL_PREEXISTING_QVD_SHA256_UNCHANGED=AFTER_RELOAD`; `FACT_CAPACIDADE_LEITO_QVD_GENERATED=False`. **PASS restrito à transcrição de stdout e marcadores de log local fornecida no chat; o agente não examinou os QVDs/QVW/log completos do computador.**
 
 **Fail-closed:** ao detectar QVD de entrada ausente/alterado, QVW/log anterior, QVD de destino, branch errada, erro Qlik ou marcador inválido, parar e preservar evidências. Não repetir comando, corrigir hashes/limpar arquivos por automatismo, nem executar `TRANSF.qvw` ou `STORE` para superar uma falha. Veredito `BLOCKED` exige análise do log antes de qualquer nova proposta de teste.
 
 ## Estado final do escopo e gates seguintes
 
-**Entrega atual:** código de candidato + runner + documentação submetidos como PR Draft, aguardando **uma recarga nativa isolada** no QlikView 12. A revisão estática não valida funcionamento nativo, cardinalidade de links entre as três fatos, filtros, indicadores ou QVD persistido. Depois de PASS local, haverá revisão separada do contrato de SK/Link candidato. A geração física de `FATO_CAPACIDADE_LEITO.qvd` é **outro gate, com autorização específica** e auditoria independente do QVD já persistido. Não integrar `main` nem iniciar `FATO_POPULACAO` por consequência desta execução.
+**Entrega atual:** código de candidato + runner + documentação submetidos como PR Draft; **uma recarga nativa isolada passou localmente e foi reportada pelo responsável**. Isso não valida cardinalidade/associações da Link Table entre fatos, estabilidade futura da SK, filtros, indicadores ou QVD persistido. A revisão separada do contrato de SK/Link candidato continua necessária. A geração física de `FATO_CAPACIDADE_LEITO.qvd` é **outro gate, com autorização específica** e auditoria independente do QVD já persistido. Não integrar `main` nem iniciar `FATO_POPULACAO` por consequência desta execução.
 
-**Condição de parada deste trabalho de autoria:** preparar candidata testável e entregar instrução de execução, preservando `main`. `FATO_CAPACIDADE_LEITO_CODE=READY_FOR_NATIVE_PREFLIGHT`, `FATO_CAPACIDADE_LEITO_QVD=NOT_GENERATED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PRODUCTION_APPROVED=False`.
+**Condição de parada do gate em memória:** script candidato validado em QlikView 12 **com PASS local reportado**, `FATO_CAPACIDADE_LEITO_NATIVE_QV_PREFLIGHT=PASS_LOCAL_REPORTED`, `FATO_CAPACIDADE_LEITO_QVD=NOT_GENERATED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `PRODUCTION_APPROVED=False`. Não repetir o runner: o QVW diagnóstico/log já existem no computador do responsável.
+
+
+## Evidência de QlikView 12 recebida — teste da implementação (15/10/2026)
+
+**Fonte da evidência:** stdout integral do runner e marcadores contemporâneos do log nativo colados pelo responsável. **Nível de prova:** `PASS_LOCAL_REPORTED`; os binários QVW/QVD e o log original não foram materializados ou inspecionados pelo agente. Inspeção estática e conferência de consistência com as regras do QVS versionado são complementares, não CI.
+
+| Controle | Evidência do Windows/QlikView |
+| --- | --- |
+| Branch | `feat/phase-v-fato-capacidade-implementation`, `git pull --ff-only`: atualizada |
+| Modo/isolamento | `PHASE_V_FATO_CAPACIDADE_LEITO_ISOLATED_IN_MEMORY_PREFLIGHT`, `START MODE=PREFLIGHT`, `TRANSF_MAIN_NOT_EXECUTED=True`, `FACT_QVD_STORE_REQUESTED=False` |
+| QVS SHA-256 | `134BBD4E290FA22F6F5D728D4C080EDDF9C1C3FDE3D38448FD47FE5A0B1174D0` |
+| QVW diagnóstico | `TRANSFORMACAO/V5_LT_FATO_CAPACIDADE_IMPL_PREFLIGHT.qvw` (local, não versionado) |
+| Execução Qlik | `RELOAD_STARTED=True`, `RELOAD_RETURNED=True`, `RELOAD_API_RETURN=` vazio; log com resultados específicos às 22:04:17–22:04:18 |
+| QVDs existentes | `QVD_INVENTORY_BEFORE=19`; `ALL_5_INPUT_QVD_SHA256_UNCHANGED=AFTER_RELOAD/AT_END`; `ALL_PREEXISTING_QVD_SHA256_UNCHANGED=AFTER_RELOAD/AT_END COUNT=19`; `NO_NEW_QVD_GENERATED=AFTER_RELOAD/AT_END` |
+| Fonte/validade | `ROWS=35518 UNIQUE=35518 MONTHS=36 FILES=36 PAIRS=57 PAIR_MONTHS=2021 TYPE3_BED66=1480 TYPE7_BED70=5 NULL=0 BAD_DOMAIN=0 BAD_MEASURE=0` |
+| Papéis dimensionais | `COMP=0 ANO=0 MUNICIPIO_SERVICO=0 ESTABELECIMENTO=0 TIPO_LEITO=0` |
+| Medidas diagnósticas dos 36 snapshots | `EXIST=337147 SUS=270076 NSUS=67071`; não constituem capacidade simultânea, anual ou indicador temporal |
+| Anos | `YEARS=3 YEAR_BAD=0` |
+| Projeção da fato | `OUTPUT ROWS=35518 UNIQUE=35518 LINKS=7486 NULL=0 EXIST=337147 SUS=270076 NSUS=67071 INVALID=0` |
+| Veredito Qlik | `VERDICT=PASS_IN_MEMORY_CANDIDATE_ONLY_NOT_PHYSICAL_APPROVAL` |
+| Veredito PowerShell | `VERDICT=PASS_ISOLATED_CAPACIDADE_FACT_PREFLIGHT_CANDIDATE_ONLY` |
+| Limites explícitos | `FACT_QVD_GENERATED=False`; `LINK_TABLE_NOT_TESTED=True`; `PRODUCTION_APPROVED=False` |
+
+**Conferência da coerência:** o PASS foi produzido pelo executor versionado após comparar os marcadores Qlik esperados com o log contemporâneo e as invariantes de preservação do inventário de QVDs. As 7.486 chaves `%LINK_KEY` são distintas **dentro desta fato apenas**; não provam cobertura, unicidade global, interseção ou cardinalidade entre `FATO_INTERNACAO`, `FATO_CAPACIDADE_LEITO` e `FATO_POPULACAO`. A candidata tem 11 campos de saída, cuja aprovação física depende de persistência e auditoria QVD em gate separado.
+
+**Revisão pós-execução sem editar scripts testados:** QVS factual com um único modo permitido `PREFLIGHT`, 0 `STORE`, 11 nomes/campos na projeção, 5 papéis dimensionais conferidos, medidas/saldo e os três grupos anuais reconciliados. PowerShell protege entradas com SHA-256 de todos os 19 QVDs, recusa QVW/log e destino factual preexistentes. `transf_main.qvs` e `FATO_INTERNACAO.qvd` intocados. Não há execução independente no ambiente do agente; `PROD_APPROVED=False`.
+
+**Condição de parada atingida:** gate em memória encerrado com `PASS_LOCAL_REPORTED`. **Não reexecutar** `validar_fato_capacidade_impl_qlik.ps1` nem apagar QVW/log de evidência. Eventual preparação de `STORE` para `FATO_CAPACIDADE_LEITO.qvd`, segundo QVW de leitura física e autorização de escrita constituem **novo gate com escopo, contrato e aprovação específicos**. Preservar todos os registros LT, política histórica A2/T29, semi-aditividade temporal e `LINK_KEY_CONTRACT=NOT_APPROVED`. **PR #91 permanece Draft, sem merge.**
