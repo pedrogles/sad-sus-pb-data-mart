@@ -92,3 +92,28 @@ powershell.exe -NoProfile -File .\tools\validar_fato_internacao_impl_qlik.ps1 -R
 - `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`, `T29_HISTORICAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`.
 - `LINK_ANALISE_QVD=NOT_STARTED`, `PAINEL=NOT_STARTED`; nenhuma lógica dos indicadores V2 foi implementada.
 - Encerrar este PR assim que o script da **primeira fato** e seu gate QVD estiverem revisados. Fatos CNES/IBGE, Link Table e painel são gates separados, obedecendo o Boundary 7.
+
+## Gate de criação física — autorizado, ainda não executado
+
+O responsável autorizou a materialização controlada e uma auditoria independente do QVD da primeira fato. A autorização não cobre merge, demais fatos, Link Table ou painel.
+
+- Executor: `tools/materializar_fato_internacao_qlik.ps1`.
+- Auditor independente: `TRANSFORMACAO/phase_v_fato_internacao_qvd_readback.qvs`.
+- Destino exclusivo: `TRANSFORMACAO/QVD/FATO_INTERNACAO.qvd`, obrigatoriamente ausente antes da execução.
+- Pré-condições: branch correta, worktree rastreada limpa, pré-validação documentada, mesmo SHA-256 do QVS factual, QVWs/logs de CREATE e auditoria novos.
+- Proteção: inventário e SHA-256 de todos os QVDs existentes de extração e transformação; somente um novo QVD permitido.
+- Auditoria: segunda recarga QlikView, lendo o QVD físico, 17 campos exatos, 566.672 linhas e SKs únicas, 77.550 chaves de ligação, medidas anuais e gerais reconciliadas.
+- Veredito esperado: `PASS_QV_FACT_QVD_MATERIALIZED_AND_REOPENED_CANDIDATE_ONLY`. Sem execução local, permanece PENDENTE.
+
+Execução única no PowerShell (na raiz da branch):
+
+```powershell
+git fetch origin
+git switch feat/phase-5-fato-internacao-implementation
+git pull --ff-only
+powershell.exe -NoProfile -File .\tools\materializar_fato_internacao_qlik.ps1 -Root (Get-Location).Path
+```
+
+**Não executar duas vezes.** Se ocorrer bloqueio, preservar o QVD eventual e os logs. Não apagar, substituir, reexecutar automaticamente ou chamar `TRANSF.qvw` para corrigir. Submeter a saída para revisão antes de qualquer merge.
+
+**Status:** `CREATE_AUTHORIZED_RUN_PENDING`, `QVD_PHYSICAL_GATE=NOT_RUN`, `PR_MERGED=False`, `PROD_APPROVED=False`.
