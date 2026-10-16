@@ -145,3 +145,25 @@ powershell.exe -NoProfile -File .\tools\materializar_fato_internacao_qlik.ps1 -R
 **Interpretação do resultado:** o segundo QVW abriu o QVD efetivamente escrito pelo primeiro, confirmou 17 colunas em ordem e reconciliou registros, unicidade, `%LINK_KEY` da própria fato, medidas e totais por ano. O hash antes/depois da segunda leitura coincidiu. O retorno COM `CREATE_RELOAD_API_RETURN=` e `AUDIT_RELOAD_API_RETURN=` ficou vazio, mas o runner observou logs contemporâneos e emitidos pelos QVWs de cada etapa. Os 18 QVDs prévios foram preservados segundo o inventário/hash feito no Windows.
 
 **Condição de parada atingida:** a primeira materialização factual está **fisicamente criada e reaberta no ambiente local reportado**; o objetivo do gate CREATE+READBACK foi alcançado. Não executar novamente o mesmo `STORE`, pois o script falha fechado se o arquivo de destino já existir. Não avançar automaticamente para `FATO_CAPACIDADE_LEITO`, `FATO_POPULACAO`, `LINK_ANALISE` ou painel. O PR #88 permanece Draft e não integrado à `main`; revisar a evidência e solicitar autorização específica antes de merge. `LINK_KEY_CONTRACT=NOT_APPROVED` e indicadores/denominadores/filtros continuam fora do gate.
+
+## Revisão pré-merge do PR #88 — 15/10/2026
+
+**Objetivo:** avaliar a integração **somente do código versionável da primeira fato**, sem aprovar produção, operação end-to-end ou contrato global da Link Table. Fontes: `main` (AGENTS, current-state, requirements, Boundaries 6/7, gates #82/#84), os seis arquivos originais da branch, a evidência Windows/QlikView 12 reportada e a comparação entre `main` e HEAD do PR. Nenhuma recarga QlikView adicional nem leitura do binário QVD original foi realizada nesta revisão.
+
+**Veredito de revisão:** `PR88_REVIEW=APPROVABLE_WITH_RESTRICTIONS`, sujeito a **autorização explícita do responsável para merge**; `MERGE_EXECUTED=False`, `PROD_APPROVED=False`.
+
+**Evidências favoráveis:**
+- O script físico da fato implementa 17 campos em ordem, sem ampliar grão/medidas, mantendo `IDENT=5` e cinco medidas como nos contratos RD.
+- O `TRANSF.qvw` mantém o caminho dimensional anterior; a inclusão da fato é `OFF` por padrão. Esta implementação **não é** um fluxo automático de recarga da fato em produção.
+- A criação QVD é *one-shot* e recusará destino preexistente; a auditoria usa segundo QVW isolado, sem `STORE`. O usuário relatou PASS nos dois reloads locais, SHA do arquivo estável, preservação dos 18 QVDs anteriores, contagem, 17/17 colunas e reconciliação anual.
+- O `.gitignore` da branch foi reforçado para bloquear `TRANSFORMACAO/V5_RD_FATO_INTERNACAO_*.qvw`. Os QVDs já eram ignorados. Correção de segurança de versionamento, sem mudança do QVS factual ou da evidência local.
+- Inspeção estática do PR: 17 campos correspondem em nome e ordem aos 17 campos do auditor; um `STORE` factual guardado; 0 `STORE` no auditor; não há código criando fatos CNES/IBGE nem `LINK_ANALISE`. Não há CI ou testes GitHub Actions associados ao HEAD consultado; os testes físicos foram reportados de Windows/QlikView.
+
+**Restrições para eventual merge:**
+1. Integrar **scripts, runner histórico one-shot, auditor, documentação e ignore**, nunca QVDs/QVWs locais. O QVD criado na máquina do responsável não é parte do Git.
+2. `FATO_INTERNACAO_QVD=PASS_LOCAL_REPORTED` no ambiente congelado 2017–2019; não declarar validação independente do artefato local pelo agente.
+3. `vP5FatoInternacaoMode=OFF` na integração. Não alterar silenciosamente para `CREATE`; o arquivo já existe no ambiente local. Os executores históricos estão presos à branch e aos hashes desse gate e **não** são rotinas gerais para execução na `main`.
+4. `LINK_KEY_CONTRACT=NOT_APPROVED`, associações inter-fatos, denominadores, filtros, `T29_HISTORICAL`, hospitalidade CNES e produção continuam em aberto; o PASS de 77.550 links é apenas dentro da fato RD.
+5. Antes do merge, revalidar `main`/HEAD do PR e solicitar autorização **específica de merge**. Não iniciar Fase V CNES/IBGE, Fase VI ou painel por decorrência desta revisão.
+
+**Condição de parada:** revisão delimitada concluída; nenhum retrabalho da fato, rerun `CREATE` ou expansão do escopo necessários. `PR88_READY_FOR_OWNER_MERGE_DECISION=True`; `PR88_MERGED=False`.
