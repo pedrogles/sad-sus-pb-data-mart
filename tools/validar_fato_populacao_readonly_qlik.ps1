@@ -1,4 +1,4 @@
-# Fase V population: isolated READ-ONLY QlikView Desktop 12 gate, once.
+# Fase V population: isolated READ-ONLY QlikView Desktop 12 R2 parser repair, once.
 # Creates ONLY a new diagnostic QVW/log; no QVD, TRANSF.qvw, STORE or merge.
 # Preserve all existing diagnostic QVWs (including untracked) and source QVDs.
 [CmdletBinding()]
@@ -8,8 +8,10 @@ $ErrorActionPreference = 'Stop'
 $Root = [IO.Path]::GetFullPath($Root)
 $expectedBranch = 'feat/phase-v-fato-populacao-readonly-preflight-20261015'
 $qvs = Join-Path $Root 'TRANSFORMACAO\phase_v_fato_populacao_readonly_preflight.qvs'
-$qvw = Join-Path $Root 'TRANSFORMACAO\V5_IBGE_FATO_POP_READONLY_PREFLIGHT.qvw'
+$qvw = Join-Path $Root 'TRANSFORMACAO\V5_IBGE_FATO_POP_READONLY_PREFLIGHT_R2.qvw'
 $log = "$qvw.log"
+$r1Qvw = Join-Path $Root 'TRANSFORMACAO\V5_IBGE_FATO_POP_READONLY_PREFLIGHT.qvw'
+$r1Log = "$r1Qvw.log"
 $inputs = @(
     (Join-Path $Root 'EXTRACAO\QVD\SRC_IBGE_POPULACAO.qvd'),
     (Join-Path $Root 'EXTRACAO\QVD\REF_MUNICIPIO_PB_DERIVADA.qvd'),
@@ -26,7 +28,7 @@ $required = @(
     (Join-Path $Root 'AGENTS.md'),
     (Join-Path $Root 'docs\project\current-state.md'),
     (Join-Path $Root 'docs\academic\requirements.md'),
-    $qvs
+    $qvs, $r1Qvw, $r1Log
 ) + $inputs + $existingFact
 foreach ($path in $required) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
@@ -51,6 +53,18 @@ if ($LASTEXITCODE -ne 0 -or $dirty.Count -gt 0) {
 }
 $source = [IO.File]::ReadAllText($qvs,[Text.Encoding]::UTF8)
 $sourceSha = (Get-FileHash -LiteralPath $qvs -Algorithm SHA256).Hash
+# R1 Qlik syntax fault observed on 2026-10-15; prove existing failed log, then R2.
+$r1Text = Get-Content -LiteralPath $r1Log -Raw -ErrorAction Stop
+if (-not $r1Text.Contains('Erro: Comando desconhecido') -or
+    -not $r1Text.Contains('NoOfRows(''P5P_BRIDGE'')<>223') -or
+    -not $r1Text.Contains('[V5-POP-PREFLIGHT] START MODE=PREFLIGHT READ_ONLY=True')) {
+    throw 'VERDICT=BLOCKED_R1_PARSER_EVIDENCE_MISSING'
+}
+$multilineIfs = @([regex]::Matches($source,'(?im)^IF[ \t]+[^\r\n]*$') |
+    Where-Object { $_.Value.TrimEnd() -notmatch '(?i)\bTHEN$' })
+if ($multilineIfs.Count -ne 0) {
+    throw 'VERDICT=BLOCKED_R2_QVS_HAS_MULTILINE_IF'
+}
 if (-not $source.Contains("FROM [..\EXTRACAO\QVD\SRC_IBGE_POPULACAO.qvd] (qvd);") -or
     -not $source.Contains("FROM [..\EXTRACAO\QVD\REF_MUNICIPIO_PB_DERIVADA.qvd] (qvd);") -or
     -not $source.Contains("FROM [QVD\DIM_MUNICIPIO.qvd] (qvd)") -or
@@ -107,13 +121,16 @@ function Assert-QvdInventory([string]$stage) {
     Write-Output "ALL_20_PREEXISTING_QVD_SHA256_UNCHANGED=$stage"
     Write-Output "NO_NEW_QVD_GENERATED=$stage"
 }
-Write-Output 'MODE=PHASE_V_POPULATION_READ_ONLY_PREFLIGHT'
+Write-Output 'MODE=PHASE_V_POPULATION_READ_ONLY_PREFLIGHT_R2_PARSER_REPAIR'
+Write-Output 'R1_PARSER_ERROR=CONFIRMED_R1_DIAGNOSTICS_PRESERVED'
 Write-Output "BRANCH=$branch"
 Write-Output "SCRIPT_SHA256=$sourceSha"
 Write-Output "QVD_INVENTORY_BEFORE=$($baseline.Count)"
 Write-Output 'TRANSF_MAIN_NOT_EXECUTED=True'
 Write-Output 'FACT_POP_QVD_STORE_REQUESTED=False'
 Write-Output "DIAGNOSTIC_QVW=$qvw"
+Write-Output "PREVIOUS_R1_QVW=$r1Qvw"
+Write-Output "PREVIOUS_R1_LOG=$r1Log"
 $qv=$null;$doc=$null
 try {
     $qv=New-Object -ComObject 'QlikTech.QlikView'
