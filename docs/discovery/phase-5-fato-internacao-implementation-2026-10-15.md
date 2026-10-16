@@ -3,7 +3,7 @@
 **Data:** 15/10/2026  
 **Base revisada:** `main` no commit `d9cdf3eb81ad393b1ceaeb817152a94cc0ac13d0`.  
 **Branch:** `feat/phase-5-fato-internacao-implementation`.  
-**Gate:** `FATO_INTERNACAO_CODE=IMPLEMENTED_NOT_QV_VALIDATED`; `FATO_INTERNACAO_QVD=NOT_GENERATED`.  
+**Gate:** `FATO_INTERNACAO_CODE=IMPLEMENTED`; `FATO_INTERNACAO_PREFLIGHT=PASS_LOCAL_REPORTED`; `FATO_INTERNACAO_QVD=NOT_GENERATED_BY_PREFLIGHT`.  
 **Não afirmar:** `PHYSICAL_GATE_PASS`, `PROD_APPROVED` ou `PR_MERGED`.
 
 ## Contrato do objetivo
@@ -25,7 +25,7 @@
 
 As cinco coordenadas de competência, ano, residência, serviço e estabelecimento **não** são expostas como campos compartilhados adicionais na fato; somente formam `%LINK_KEY`. O hash usa literalmente `Hash128('SAD-LINK-V1', 'C=' & ..., 'Y=' & ..., 'R=' & ..., 'S=' & ..., 'E=' & ...)` e os tokens `N` ou `V<comprimento>:<Text(SK)>`. O contrato do algoritmo é restrito ao snapshot e não implica aprovação da Link Table. Os campos de proveniência são aliases de metadados existentes no staging, não novas entidades de negócio.
 
-`VAL_TOT` exige `Num#(Trim(Text(VAL_TOT)),'#','.',',')`: a conversão foi provada em pré-validação isolada R3, e seu uso dentro da transformação final **ainda exige validação nativa**. Dinheiro é reconciliado em centavos inteiros pela soma de `Round(VALOR_TOTAL*100,1)`; `VALOR_TOTAL` armazena reais.
+`VAL_TOT` exige `Num#(Trim(Text(VAL_TOT)),'#','.',',')`: a conversão foi provada em pré-validação isolada R3, e seu uso dentro da transformação final **ainda exige validação nativa**. Dinheiro é reconciliado em centavos inteiros pela soma de `Round(VALOR_TOTAL*100,1)`; `VALOR_TOTAL` armazena reais. **Atualização de evidência:** a execução local relatada em 15/10/2026 confirmou essa conversão também no QVS factual em memória (ver gate abaixo); o QVD factual ainda não foi gerado.
 
 ## Modo de execução e segurança
 
@@ -53,7 +53,7 @@ A última seção de `transf_main.qvs` define `SET vP5FatoInternacaoMode=OFF;`. 
 | Preservação | SHA dos QVDs de staging inalterado; verificação de arquivos de destino e QVDs dimensionais executados conforme modo |
 | QVD materializado | após `CREATE`, reabrir e auditar QVD independentemente; verificação em memória não basta |
 
-**Executor de gate isolado preparado (não executado):** `tools/validar_fato_internacao_impl_qlik.ps1`, baseado nos dois validadores QlikView R3 já integrados. Cria/reutiliza exclusivamente `TRANSFORMACAO/V5_RD_FATO_INTERNACAO_PREFLIGHT.qvw` e seu log, sem abrir `TRANSF.qvw` nem invocar `transf_main.qvs`. Injeta em memória os comandos `SET ErrorMode=0;` e `SET vP5FatoInternacaoMode=PREFLIGHT;`, mantendo integralmente o QVS factual versionado. O executor exige branch correta, arquivos de origem, script QVW compatível, hashes SHA-256 dos oito QVDs (staging + sete dimensões), integridade do possível QVD factual preexistente e marcadores QlikView nativos exatos. Não edita arquivos do repositório, nem gera qualquer QVD; apenas o QVW e log diagnósticos locais são escritos.
+**Executor de gate isolado executado uma vez no Windows, conforme transcrição do responsável:** `tools/validar_fato_internacao_impl_qlik.ps1`, baseado nos dois validadores QlikView R3 já integrados. Cria/reutiliza exclusivamente `TRANSFORMACAO/V5_RD_FATO_INTERNACAO_PREFLIGHT.qvw` e seu log, sem abrir `TRANSF.qvw` nem invocar `transf_main.qvs`. Injeta em memória os comandos `SET ErrorMode=0;` e `SET vP5FatoInternacaoMode=PREFLIGHT;`, mantendo integralmente o QVS factual versionado. O executor exige branch correta, arquivos de origem, script QVW compatível, hashes SHA-256 dos oito QVDs (staging + sete dimensões), integridade do possível QVD factual preexistente e marcadores QlikView nativos exatos. Não edita arquivos do repositório, nem gera qualquer QVD; apenas o QVW e log diagnósticos locais são escritos.
 
 No Windows/PowerShell, a partir da raiz da branch `feat/phase-5-fato-internacao-implementation` com working tree rastreada limpa:
 
@@ -63,7 +63,26 @@ git pull --ff-only
 powershell.exe -NoProfile -File .\tools\validar_fato_internacao_impl_qlik.ps1 -Root (Get-Location).Path
 ```
 
-**Executar somente uma vez neste gate**, com QlikView 12 interativo e todos os QVDs de staging/dimensão disponíveis. Em falha, enviar saída de console e último trecho do log. Não repetir o reload sem análise da causa.
+**Execução encerrada com PASS local reportado em 15/10/2026.** Não repetir o mesmo reload para ampliar escopo. Este comando fica documentado para rastreabilidade, não é uma instrução para executá-lo novamente.
+
+## Resultado do gate isolado — 15/10/2026 (evidência local reportada)
+
+**Proveniência:** saída de PowerShell e trechos do log nativo QlikView 12 **fornecidos pelo responsável no chat** após `git fetch`, `git switch` e `git pull --ff-only`. O arquivo `.qvw.log` binário/textual original e os oito QVDs locais **não foram coletados nem verificados independentemente** nesta revisão GitHub. Não equivale a CI.
+
+- **Runner:** `tools/validar_fato_internacao_impl_qlik.ps1`, QVW isolado **novo** (`DOCUMENT_REUSED=False`).
+- **SHA-256 QVS informado:** `5C599F1FCBF54E823A3FF82FAF14EA2176EE2BFAC7D5ABE33743CB4CEC9CC65D`.
+- **Log relatado:** `TRANSFORMACAO/V5_RD_FATO_INTERNACAO_PREFLIGHT.qvw.log`, eventos entre `2026-10-15 21:14:42` e `21:14:53` (horário de impressão local, sem metadado de fuso no trecho).
+- **Execução COM:** `RELOAD_STARTED=True`, `RELOAD_RETURNED=True`, `RELOAD_API_RETURN=` vazio. O resultado foi confirmado pelos TRACE contemporâneos e pelo veredito do runner, **não** pelo retorno COM.
+- **Integridade:** `ALL_8_INPUT_QVD_SHA256_UNCHANGED=True`, `FACT_QVD_UNCHANGED_OR_ABSENT=True`, `TRANSF_MAIN_NOT_EXECUTED=True`, `NO_FACT_QVD_STORE_REQUESTED=True`.
+- **Onze papéis:** `COMP=0 ANO=0 INTER=0 SAIDA=0 RES=0 SERV=0 EST=0 PROC=0 DIAG=0 CAR=0 MOT=0`.
+- **Fonte:** `ROWS=566672 UNIQUE=566672 MONTHS=36 FILES=36 EXTERNAL=5202 NULL=0 REG=566672 NEW=555089 CONT=11583 DAYS=3133578 DEATHS=26611 CENTS=65938464905 INVALID=0`.
+- **Ano:** `YEARS=3 YEAR_BAD=0`.
+- **Projeção em memória:** `OUTPUT UNIQUE=566672 NULL=0 LINKS=77550 ROWS=566672 NEW=555089 DAYS=3133578 DEATHS=26611 CENTS=65938464905`.
+- **Veredito emitido:** `VERDICT=PASS_ISOLATED_FACT_PREFLIGHT_NOT_QVD_APPROVAL`, `FACT_QVD_GENERATED=False`, `LINK_ANALISE_QVD_GENERATED=False`.
+
+**Interpretação:** `77.550` é a cardinalidade distinta de `%LINK_KEY` **dentro da FATO_INTERNACAO** testada; não é a cardinalidade da constelação de três fatos (`85.705` pares no ensaio histórico) nem evidência de aceitação definitiva da `LINK_ANALISE`. A pré-validação passou para o snapshot local informado. A presença de 11/11 SKs sem órfãos continua distinta da validação de associações físicas no painel.
+
+**Gate encerrado:** `FATO_INTERNACAO_PREFLIGHT=PASS_LOCAL_REPORTED` / `FATO_INTERNACAO_QVD=NOT_GENERATED_BY_PREFLIGHT`. **Próximo gate separado e ainda bloqueado por autorização específica:** materializar `FATO_INTERNACAO.qvd` **em destino novo**, sem executar `transf_main.qvs` ou regravar as dimensões, depois auditar o QVD lido de volta, sua cardinalidade, schema, medidas, SKs, `%LINK_KEY` e SHA dos oito QVDs de entrada. Não usar `PREFLIGHT` como prova de `QVD_PHYSICAL_PASS` nem de `PROD_APPROVED`.
 
 **Sequência mínima:** (1) assegurar árvore de trabalho limpa e identidade da branch/inputs; (2) revisar o QVS e executar primeiro o modo `PREFLIGHT` somente no ambiente QlikView 12 controlado, guardando log contemporâneo; (3) confirmar resultados e preservação; (4) deliberar sobre `CREATE` e, se autorizado, executar contra destino vazio; (5) auditar `FATO_INTERNACAO.qvd` gerado e registrar o resultado do gate sem declarar aprovação da Link Table. Em erro de parser, ScriptErrorCount, recarga, comparação ou SHA, interromper: **não** editar a fonte, ignorar linha ou executar o próximo modo.
 
