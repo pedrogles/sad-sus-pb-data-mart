@@ -50,9 +50,7 @@ NOCONCATENATE LOAD DISTINCT
     [%SK_TEMPO_ANO] AS _P5P_YSK
 FROM [QVD\DIM_TEMPO.qvd] (qvd)
 WHERE Match(Trim(Text(TEMPO_ANO)),'2017','2018','2019')>0;
-IF ScriptErrorCount > $(vP5PStartErrors) OR
-   NoOfRows('P5P_BRIDGE')<>223 OR NoOfRows('P5P_DIM_MUN')<>223 OR
-   NoOfRows('P5P_DIM_YEAR')<>3 THEN
+IF ScriptErrorCount > $(vP5PStartErrors) OR NoOfRows('P5P_BRIDGE')<>223 OR NoOfRows('P5P_DIM_MUN')<>223 OR NoOfRows('P5P_DIM_YEAR')<>3 THEN
     TRACE [V5-POP-PREFLIGHT] VERDICT=BLOCKED_REFERENCE_OR_DIM_LOAD;
     EXIT SCRIPT;
 ENDIF
@@ -108,13 +106,7 @@ LET vP5PYearUSK=Peek('_P5P_T_USK',0,'P5P_YEAR_PROFILE');
 LET vP5PYearBad=Peek('_P5P_T_BAD',0,'P5P_YEAR_PROFILE');
 DROP TABLE P5P_YEAR_PROFILE;
 TRACE [V5-POP-PREFLIGHT] REFERENCES BRIDGE=$(vP5PBridgeRows) BRIDGE_U7=$(vP5PBridgeU7) BRIDGE_U6=$(vP5PBridgeU6) BRIDGE_BAD=$(vP5PBridgeBad) DIM_MUN=$(vP5PDimRows) DIM_U7=$(vP5PDimU7) DIM_U6=$(vP5PDimU6) DIM_USK=$(vP5PDimUSK) DIM_BAD=$(vP5PDimBad) YEAR=$(vP5PYearRows) YEAR_U=$(vP5PYearUYear) YEAR_SK=$(vP5PYearUSK) YEAR_BAD=$(vP5PYearBad);
-IF ScriptErrorCount > $(vP5PStartErrors) OR
-   $(vP5PBridgeRows)<>223 OR $(vP5PBridgeU7)<>223 OR
-   $(vP5PBridgeU6)<>223 OR $(vP5PBridgeBad)<>0 OR
-   $(vP5PDimRows)<>223 OR $(vP5PDimU7)<>223 OR
-   $(vP5PDimU6)<>223 OR $(vP5PDimUSK)<>223 OR $(vP5PDimBad)<>0 OR
-   $(vP5PYearRows)<>3 OR $(vP5PYearUYear)<>3 OR
-   $(vP5PYearUSK)<>3 OR $(vP5PYearBad)<>0 THEN
+IF ScriptErrorCount > $(vP5PStartErrors) OR $(vP5PBridgeRows)<>223 OR $(vP5PBridgeU7)<>223 OR $(vP5PBridgeU6)<>223 OR $(vP5PBridgeBad)<>0 OR $(vP5PDimRows)<>223 OR $(vP5PDimU7)<>223 OR $(vP5PDimU6)<>223 OR $(vP5PDimUSK)<>223 OR $(vP5PDimBad)<>0 OR $(vP5PYearRows)<>3 OR $(vP5PYearUYear)<>3 OR $(vP5PYearUSK)<>3 OR $(vP5PYearBad)<>0 THEN
     TRACE [V5-POP-PREFLIGHT] VERDICT=BLOCKED_REFERENCE_PROFILES;
     EXIT SCRIPT;
 ENDIF
@@ -191,12 +183,7 @@ DROP TABLE P5P_FLAGS_PROFILE;
 DROP TABLE P5P_SOURCE_PROFILE;
 TRACE [V5-POP-PREFLIGHT] SOURCE ROWS=$(vP5PRows) GRAIN=$(vP5PGrain) IBGE7=$(vP5PU7) YEARS=$(vP5PYears) FILES=$(vP5PFiles) BAD_DOMAIN=$(vP5PSourceBad) BAD_MEASURE=$(vP5PPopBad);
 TRACE [V5-POP-PREFLIGHT] ROLES BRIDGE_MISS=$(vP5PBridgeMiss) DIM6_MISS=$(vP5PDim6Miss) DIM7_MISS=$(vP5PDim7Miss) YEAR_MISS=$(vP5PYearMiss) SK_BAD=$(vP5PRoleBad);
-IF ScriptErrorCount > $(vP5PStartErrors) OR
-   $(vP5PRows)<>669 OR $(vP5PGrain)<>669 OR
-   $(vP5PU7)<>223 OR $(vP5PYears)<>3 OR $(vP5PFiles)<>3 OR
-   $(vP5PBridgeMiss)<>0 OR $(vP5PDim6Miss)<>0 OR
-   $(vP5PDim7Miss)<>0 OR $(vP5PYearMiss)<>0 OR
-   $(vP5PRoleBad)<>0 OR $(vP5PSourceBad)<>0 OR $(vP5PPopBad)<>0 THEN
+IF ScriptErrorCount > $(vP5PStartErrors) OR $(vP5PRows)<>669 OR $(vP5PGrain)<>669 OR $(vP5PU7)<>223 OR $(vP5PYears)<>3 OR $(vP5PFiles)<>3 OR $(vP5PBridgeMiss)<>0 OR $(vP5PDim6Miss)<>0 OR $(vP5PDim7Miss)<>0 OR $(vP5PYearMiss)<>0 OR $(vP5PRoleBad)<>0 OR $(vP5PSourceBad)<>0 OR $(vP5PPopBad)<>0 THEN
     TRACE [V5-POP-PREFLIGHT] VERDICT=BLOCKED_SOURCE_OR_ROLES;
     EXIT SCRIPT;
 ENDIF
