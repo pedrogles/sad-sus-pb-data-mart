@@ -2,7 +2,7 @@
 // Never include in transf_main.qvs; exclusively a separately authorized one-shot.
 // All 20 earlier QVDs are inputs/read-only; this QVS stores only the new fact.
 TRACE [V5-POP-STORE] START_ONE_SHOT_ONLY;
-IF '$(vP5PopCreateAuthorization)' <> 'AUTHORIZED_ONE_SHOT_CREATE_POPULACAO_20261015' THEN
+IF '$(vP5PopCreateAuthorization)' <> 'AUTHORIZED_ONE_SHOT_CREATE_POPULACAO_20261016' THEN
     TRACE [V5-POP-STORE] VERDICT=BLOCKED_MISSING_CREATE_AUTHORIZATION;
     EXIT SCRIPT;
 ENDIF
