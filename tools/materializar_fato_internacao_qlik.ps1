@@ -31,12 +31,13 @@ $inputQvds = @(
 
 # Guard all outputs before any QVW creation/reload. Never replace a partial
 # or completed QVD; on failure preserve it for manual inspection.
-foreach ($path in @(
+$requiredFiles = @(
     (Join-Path $Root 'AGENTS.md'),
     (Join-Path $Root 'docs\project\current-state.md'),
     (Join-Path $Root 'docs\academic\requirements.md'),
     $factQvs, $auditQvs, $preflightLog
-) + $inputQvds) {
+) + $inputQvds
+foreach ($path in $requiredFiles) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "VERDICT=BLOCKED_MISSING_REQUIRED_INPUT path=$path"
     }
@@ -95,6 +96,19 @@ $inputHashes = @{}
 foreach ($path in $inputQvds) {
     $inputHashes[$path] = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
 }
+# Snapshot every existing QVD in both physical directories, not only the eight
+# inputs. The ONLY allowed inventory addition is FATO_INTERNACAO.qvd.
+$qvdDirs = @(
+    (Join-Path $Root 'EXTRACAO\QVD'),
+    (Join-Path $Root 'TRANSFORMACAO\QVD')
+)
+$initialQvdSha = @{}
+foreach ($dir in $qvdDirs) {
+    foreach ($qvd in @(Get-ChildItem -LiteralPath $dir -Filter '*.qvd' -File -ErrorAction Stop)) {
+        $initialQvdSha[$qvd.FullName] = (Get-FileHash -LiteralPath $qvd.FullName -Algorithm SHA256).Hash
+    }
+}
+Write-Output "EXISTING_QVD_INVENTORY_COUNT=$($initialQvdSha.Count)"
 
 function Same-QlikScript([string]$actual,[string]$expected) {
     return ($actual.Replace([string][char]13,'').TrimEnd() -ceq
@@ -155,6 +169,33 @@ function Assert-SourceHashes([string]$stage) {
     }
     Write-Output "ALL_8_INPUT_QVD_SHA256_UNCHANGED=$stage"
 }
+function Assert-QvdInventory([string]$stage) {
+    $seen = @{}
+    foreach ($dir in $qvdDirs) {
+        foreach ($qvd in @(Get-ChildItem -LiteralPath $dir -Filter '*.qvd' -File -ErrorAction Stop)) {
+            $name = $qvd.FullName
+            $seen[$name] = 1
+            if ($initialQvdSha.ContainsKey($name)) {
+                if ($initialQvdSha[$name] -cne
+                    (Get-FileHash -LiteralPath $name -Algorithm SHA256).Hash) {
+                    throw "VERDICT=BLOCKED_PREEXISTING_QVD_SHA_CHANGED stage=$stage path=$name"
+                }
+            } elseif ($name -cne $factQvd) {
+                throw "VERDICT=BLOCKED_UNEXPECTED_NEW_QVD stage=$stage path=$name"
+            }
+        }
+    }
+    foreach ($name in $initialQvdSha.Keys) {
+        if (-not $seen.ContainsKey($name)) {
+            throw "VERDICT=BLOCKED_EXISTING_QVD_MISSING stage=$stage path=$name"
+        }
+    }
+    if (-not $seen.ContainsKey($factQvd)) {
+        throw "VERDICT=BLOCKED_CREATED_FACT_QVD_NOT_IN_INVENTORY stage=$stage"
+    }
+    Write-Output "ALL_PREEXISTING_QVD_SHA256_UNCHANGED=$stage"
+    Write-Output "ONLY_NEW_QVD_IS_FATO_INTERNACAO=$stage"
+}
 
 $qv = $null
 $createDoc = $null
@@ -186,6 +227,7 @@ try {
         throw 'VERDICT=BLOCKED_NEW_QVD_MISSING_EMPTY_OR_NOT_CONTEMPORANEOUS'
     }
     Assert-SourceHashes 'AFTER_CREATE'
+    Assert-QvdInventory 'AFTER_CREATE'
     Read-NativeMarkers $createLog $createStart '[V5-FACT]' @(
         '[V5-FACT] ROLES COMP=0 ANO=0 INTER=0 SAIDA=0 RES=0 SERV=0 EST=0 PROC=0 DIAG=0 CAR=0 MOT=0',
         '[V5-FACT] SOURCE ROWS=566672 UNIQUE=566672 MONTHS=36 FILES=36 EXTERNAL=5202 NULL=0 REG=566672 NEW=555089 CONT=11583 DAYS=3133578 DEATHS=26611 CENTS=65938464905 INVALID=0',
@@ -206,6 +248,7 @@ try {
     Write-Output 'AUDIT_RELOAD_RETURNED=True'
     Write-Output "AUDIT_RELOAD_API_RETURN=$auditApi"
     Assert-SourceHashes 'AFTER_AUDIT'
+    Assert-QvdInventory 'AFTER_AUDIT'
     if ($factShaAfterCreate -cne (Get-FileHash -LiteralPath $factQvd -Algorithm SHA256).Hash) {
         throw 'VERDICT=BLOCKED_FACT_QVD_SHA_CHANGED_DURING_READBACK'
     }
