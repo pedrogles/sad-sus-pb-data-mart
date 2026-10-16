@@ -54,3 +54,6 @@ tools/readiness_failure_unexpected.csv
 
 # Temporary remote branch inventory (never versioned)
 branch-hygiene-preflight-*.txt
+
+# Fase V — test QlikView documents remain local; never version diagnostic binaries
+TRANSFORMACAO/V5_RD_FATO_INTERNACAO_*.qvw
