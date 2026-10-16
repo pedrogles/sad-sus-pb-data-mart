@@ -3,8 +3,8 @@
 **Data:** 15/10/2026  
 **Base revisada:** `main` no commit `d9cdf3eb81ad393b1ceaeb817152a94cc0ac13d0`.  
 **Branch:** `feat/phase-5-fato-internacao-implementation`.  
-**Gate:** `FATO_INTERNACAO_CODE=IMPLEMENTED`; `FATO_INTERNACAO_PREFLIGHT=PASS_LOCAL_REPORTED`; `FATO_INTERNACAO_QVD=NOT_GENERATED_BY_PREFLIGHT`.  
-**Não afirmar:** `PHYSICAL_GATE_PASS`, `PROD_APPROVED` ou `PR_MERGED`.
+**Gate:** `FATO_INTERNACAO_CODE=IMPLEMENTED`; `FATO_INTERNACAO_PREFLIGHT=PASS_LOCAL_REPORTED`; `FATO_INTERNACAO_QVD_CREATE_AND_READBACK=PASS_LOCAL_REPORTED` (somente artefato local; evidência reportada).  
+**Não afirmar:** aprovação física independente dos arquivos pelo agente, `PROD_APPROVED`, `LINK_KEY_CONTRACT=APPROVED` ou `PR_MERGED`. O gate físico controlado tem **PASS local reportado**, não uma homologação de produção.
 
 ## Contrato do objetivo
 
@@ -25,7 +25,7 @@
 
 As cinco coordenadas de competência, ano, residência, serviço e estabelecimento **não** são expostas como campos compartilhados adicionais na fato; somente formam `%LINK_KEY`. O hash usa literalmente `Hash128('SAD-LINK-V1', 'C=' & ..., 'Y=' & ..., 'R=' & ..., 'S=' & ..., 'E=' & ...)` e os tokens `N` ou `V<comprimento>:<Text(SK)>`. O contrato do algoritmo é restrito ao snapshot e não implica aprovação da Link Table. Os campos de proveniência são aliases de metadados existentes no staging, não novas entidades de negócio.
 
-`VAL_TOT` exige `Num#(Trim(Text(VAL_TOT)),'#','.',',')`: a conversão foi provada em pré-validação isolada R3, e seu uso dentro da transformação final **ainda exige validação nativa**. Dinheiro é reconciliado em centavos inteiros pela soma de `Round(VALOR_TOTAL*100,1)`; `VALOR_TOTAL` armazena reais. **Atualização de evidência:** a execução local relatada em 15/10/2026 confirmou essa conversão também no QVS factual em memória (ver gate abaixo); o QVD factual ainda não foi gerado.
+`VAL_TOT` exige `Num#(Trim(Text(VAL_TOT)),'#','.',',')`: a conversão foi provada em pré-validação isolada R3, e seu uso dentro da transformação final **ainda exige validação nativa**. Dinheiro é reconciliado em centavos inteiros pela soma de `Round(VALOR_TOTAL*100,1)`; `VALOR_TOTAL` armazena reais. **Atualização de evidência:** a execução local relatada em 15/10/2026 confirmou essa conversão no QVS factual em memória e, posteriormente, no QVD reaberto (ver gate de criação física).
 
 ## Modo de execução e segurança
 
@@ -82,7 +82,7 @@ powershell.exe -NoProfile -File .\tools\validar_fato_internacao_impl_qlik.ps1 -R
 
 **Interpretação:** `77.550` é a cardinalidade distinta de `%LINK_KEY` **dentro da FATO_INTERNACAO** testada; não é a cardinalidade da constelação de três fatos (`85.705` pares no ensaio histórico) nem evidência de aceitação definitiva da `LINK_ANALISE`. A pré-validação passou para o snapshot local informado. A presença de 11/11 SKs sem órfãos continua distinta da validação de associações físicas no painel.
 
-**Gate encerrado:** `FATO_INTERNACAO_PREFLIGHT=PASS_LOCAL_REPORTED` / `FATO_INTERNACAO_QVD=NOT_GENERATED_BY_PREFLIGHT`. **Próximo gate separado e ainda bloqueado por autorização específica:** materializar `FATO_INTERNACAO.qvd` **em destino novo**, sem executar `transf_main.qvs` ou regravar as dimensões, depois auditar o QVD lido de volta, sua cardinalidade, schema, medidas, SKs, `%LINK_KEY` e SHA dos oito QVDs de entrada. Não usar `PREFLIGHT` como prova de `QVD_PHYSICAL_PASS` nem de `PROD_APPROVED`.
+**Gate de pré-validação encerrado:** `FATO_INTERNACAO_PREFLIGHT=PASS_LOCAL_REPORTED` (ainda sem QVD naquele momento). **Gate seguinte, autorizado e executado localmente:** materializar `FATO_INTERNACAO.qvd` **em destino novo**, sem executar `transf_main.qvs` ou regravar as dimensões, depois auditar o QVD lido de volta, sua cardinalidade, schema, medidas, SKs, `%LINK_KEY` e SHA dos oito QVDs de entrada. Não usar `PREFLIGHT` como prova de `QVD_PHYSICAL_PASS` nem de `PROD_APPROVED`.
 
 **Sequência mínima:** (1) assegurar árvore de trabalho limpa e identidade da branch/inputs; (2) revisar o QVS e executar primeiro o modo `PREFLIGHT` somente no ambiente QlikView 12 controlado, guardando log contemporâneo; (3) confirmar resultados e preservação; (4) deliberar sobre `CREATE` e, se autorizado, executar contra destino vazio; (5) auditar `FATO_INTERNACAO.qvd` gerado e registrar o resultado do gate sem declarar aprovação da Link Table. Em erro de parser, ScriptErrorCount, recarga, comparação ou SHA, interromper: **não** editar a fonte, ignorar linha ou executar o próximo modo.
 
@@ -93,7 +93,7 @@ powershell.exe -NoProfile -File .\tools\validar_fato_internacao_impl_qlik.ps1 -R
 - `LINK_ANALISE_QVD=NOT_STARTED`, `PAINEL=NOT_STARTED`; nenhuma lógica dos indicadores V2 foi implementada.
 - Encerrar este PR assim que o script da **primeira fato** e seu gate QVD estiverem revisados. Fatos CNES/IBGE, Link Table e painel são gates separados, obedecendo o Boundary 7.
 
-## Gate de criação física — autorizado, ainda não executado
+## Gate de criação física — PASS local reportado em 15/10/2026
 
 O responsável autorizou a materialização controlada e uma auditoria independente do QVD da primeira fato. A autorização não cobre merge, demais fatos, Link Table ou painel.
 
@@ -103,7 +103,7 @@ O responsável autorizou a materialização controlada e uma auditoria independe
 - Pré-condições: branch correta, worktree rastreada limpa, pré-validação documentada, mesmo SHA-256 do QVS factual, QVWs/logs de CREATE e auditoria novos.
 - Proteção: inventário e SHA-256 de todos os QVDs existentes de extração e transformação; somente um novo QVD permitido.
 - Auditoria: segunda recarga QlikView, lendo o QVD físico, 17 campos exatos, 566.672 linhas e SKs únicas, 77.550 chaves de ligação, medidas anuais e gerais reconciliadas.
-- Veredito esperado: `PASS_QV_FACT_QVD_MATERIALIZED_AND_REOPENED_CANDIDATE_ONLY`. Sem execução local, permanece PENDENTE.
+- Veredito **recebido na transcrição local**: `PASS_QV_FACT_QVD_MATERIALIZED_AND_REOPENED_CANDIDATE_ONLY`. A inspeção independente dos arquivos binários e dos logs completos não foi realizada nesta sessão.
 
 Execução única no PowerShell (na raiz da branch):
 
@@ -116,4 +116,32 @@ powershell.exe -NoProfile -File .\tools\materializar_fato_internacao_qlik.ps1 -R
 
 **Não executar duas vezes.** Se ocorrer bloqueio, preservar o QVD eventual e os logs. Não apagar, substituir, reexecutar automaticamente ou chamar `TRANSF.qvw` para corrigir. Submeter a saída para revisão antes de qualquer merge.
 
-**Status:** `CREATE_AUTHORIZED_RUN_PENDING`, `QVD_PHYSICAL_GATE=NOT_RUN`, `PR_MERGED=False`, `PROD_APPROVED=False`.
+**Status:** `CREATE_AND_READBACK=PASS_LOCAL_REPORTED`, `QVD_PHYSICAL_GATE=PASS_LOCAL_REPORTED_SCOPE_ONLY`, `PR_MERGED=False`, `PROD_APPROVED=False`. Não repetir `CREATE`, pois o destino existe.
+
+### Evidência de execução da criação e leitura posterior — relato do responsável (15/10/2026)
+
+**Origem e abrangência:** saída integral de PowerShell e trechos dos dois logs nativos apresentados pelo responsável no chat, executados no Windows com QlikView Desktop 12. O agente conferiu coerência com os marcadores exigidos pelo executor versionado, mas **não obteve o QVD local nem os logs originais para auditoria independente fora do ambiente reportado**. Trata-se de PASS de execução física **local reportada**, não CI ou homologação de produção.
+
+| Controle | Evidência reportada |
+| --- | --- |
+| Branch carregada | `feat/phase-5-fato-internacao-implementation`, fast-forward até `6ade958` |
+| Inventário inicial | 18 QVDs existentes |
+| Modo | `PHASE_V_FATO_INTERNACAO_ONE_SHOT_CREATE_AND_READBACK` |
+| QVS factual SHA-256 | `5C599F1FCBF54E823A3FF82FAF14EA2176EE2BFAC7D5ABE33743CB4CEC9CC65D` (mesmo preflight) |
+| QVS de auditoria SHA-256 | `81C582F7C37C6E93487C555A97BAABD6045DF0EFAFD11C9B7E89CB1779125436` |
+| Destino gerado | `TRANSFORMACAO/QVD/FATO_INTERNACAO.qvd` |
+| Tamanho | 37.619.782 bytes |
+| SHA-256 do QVD físico antes e depois do readback | `A5D300F259FFC9A4E6835DB8E9E4664700EFAE46FB09D452C5DAE684376DF5B2` |
+| Proteção de entrada e do inventário | `ALL_8_INPUT_QVD_SHA256_UNCHANGED=AFTER_CREATE/AFTER_AUDIT`; `ALL_PREEXISTING_QVD_SHA256_UNCHANGED=AFTER_CREATE/AFTER_AUDIT`; `ONLY_NEW_QVD_IS_FATO_INTERNACAO=AFTER_CREATE/AFTER_AUDIT` |
+| Integridade de papeis dimensionais | onze papéis com `0` órfãos |
+| QVD reaberto | `HEADER ROWS=566672 FIELDS=17`; `SCHEMA_EXACT_17=True` |
+| Dados lidos do QVD | `ROWS=566672 UNIQUE=566672 LINKS=77550 MONTHS=36 FILES=36 NULL=0 REG=566672 NEW=555089 CONT=11583 DEATHS=26611 DAYS=3133578 CENTS=65938464905 INVALID=0` |
+| Anual | `ANNUAL YEARS=3 BAD=0` |
+| CREATE (21:27:13) | `VERDICT=WRITTEN_PENDING_INDEPENDENT_QVD_AUDIT` |
+| READBACK (21:27:18) | `VERDICT=PASS_PHYSICAL_QVD_READBACK_CANDIDATE_ONLY` |
+| Runner | `VERDICT=PASS_QV_FACT_QVD_MATERIALIZED_AND_REOPENED_CANDIDATE_ONLY` |
+| Escopo não realizado | `LINK_ANALISE_QVD_GENERATED=False`; `PRODUCTION_APPROVED=False` |
+
+**Interpretação do resultado:** o segundo QVW abriu o QVD efetivamente escrito pelo primeiro, confirmou 17 colunas em ordem e reconciliou registros, unicidade, `%LINK_KEY` da própria fato, medidas e totais por ano. O hash antes/depois da segunda leitura coincidiu. O retorno COM `CREATE_RELOAD_API_RETURN=` e `AUDIT_RELOAD_API_RETURN=` ficou vazio, mas o runner observou logs contemporâneos e emitidos pelos QVWs de cada etapa. Os 18 QVDs prévios foram preservados segundo o inventário/hash feito no Windows.
+
+**Condição de parada atingida:** a primeira materialização factual está **fisicamente criada e reaberta no ambiente local reportado**; o objetivo do gate CREATE+READBACK foi alcançado. Não executar novamente o mesmo `STORE`, pois o script falha fechado se o arquivo de destino já existir. Não avançar automaticamente para `FATO_CAPACIDADE_LEITO`, `FATO_POPULACAO`, `LINK_ANALISE` ou painel. O PR #88 permanece Draft e não integrado à `main`; revisar a evidência e solicitar autorização específica antes de merge. `LINK_KEY_CONTRACT=NOT_APPROVED` e indicadores/denominadores/filtros continuam fora do gate.
