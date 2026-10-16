@@ -1,0 +1,158 @@
+// FASE V — CNES/LT capacidade: preflight isolado READ-ONLY no QlikView 12.
+// Objetivo: confirmar medidas, grão e cinco papéis de SK, SEM FATO/QVD/Link Table.
+// Fonte: Boundary 7, dataset-validation, A2 DIM_TIPO_LEITO já integrado.
+// Não usar como aprovação de contrato LINK_KEY, hospitalar ou KPI temporal.
+SET ErrorMode=0;
+LET vP5CStartErrors=ScriptErrorCount;
+TRACE [V5-CAP] START MODE=READ_ONLY_PREFLIGHT;
+
+P5C_MAP_COMP:
+MAPPING LOAD DISTINCT [%SK_TEMPO_COMPETENCIA], 1
+FROM [QVD\DIM_TEMPO.qvd] (qvd);
+P5C_MAP_YEAR:
+MAPPING LOAD DISTINCT [%SK_TEMPO_ANO], 1
+FROM [QVD\DIM_TEMPO.qvd] (qvd);
+P5C_MAP_MUN:
+MAPPING LOAD DISTINCT [%SK_MUNICIPIO], 1
+FROM [QVD\DIM_MUNICIPIO.qvd] (qvd);
+P5C_MAP_EST:
+MAPPING LOAD DISTINCT [%SK_ESTABELECIMENTO], 1
+FROM [QVD\DIM_ESTABELECIMENTO.qvd] (qvd);
+P5C_MAP_LEITO:
+MAPPING LOAD DISTINCT [%SK_TIPO_LEITO], 1
+FROM [QVD\DIM_TIPO_LEITO.qvd] (qvd);
+
+IF ScriptErrorCount > $(vP5CStartErrors) THEN
+    TRACE [V5-CAP] VERDICT=BLOCKED_DIM_QVD;
+    EXIT SCRIPT;
+ENDIF
+
+// Exatamente os campos LT reais; não transformar ou corrigir dados originais.
+// TP_LEITO no QVD é "N" (ou permissível "N " em variante auditada).
+P5C_SOURCE:
+NOCONCATENATE LOAD
+    Text(CNES) AS _P5C_CNES,
+    Text(CODUFMUN) AS _P5C_MUN,
+    Text(COMPETEN) AS _P5C_COMP,
+    Text(_META_SOURCE_COMPETENCE) AS _P5C_META_COMP,
+    Text(_META_SOURCE_FILE) AS _P5C_FILE,
+    Text(TP_LEITO) AS _P5C_TP_QVD,
+    Left(Text(TP_LEITO),1) AS _P5C_TP,
+    Text(CODLEITO) AS _P5C_COD,
+    QT_EXIST AS _P5C_EXIST,
+    QT_SUS AS _P5C_SUS,
+    QT_NSUS AS _P5C_NSUS
+FROM [..\EXTRACAO\QVD\SRC_CNES_LT.qvd] (qvd);
+IF ScriptErrorCount > $(vP5CStartErrors) THEN
+    TRACE [V5-CAP] VERDICT=BLOCKED_LT_QVD_LOAD;
+    EXIT SCRIPT;
+ENDIF
+LET vP5CLTRows=NoOfRows('P5C_SOURCE');
+IF $(vP5CLTRows)<>35518 THEN
+    TRACE [V5-CAP] VERDICT=BLOCKED_LT_ROW_COUNT;
+    EXIT SCRIPT;
+ENDIF
+
+// Não criar SK de registro factual antes da validação do contrato.
+// Identidade de grão em memória: 3 componentes com tipo/código explícitos.
+P5C_FLAGS:
+NOCONCATENATE LOAD
+    Hash128('LT-GRAIN-PREFLIGHT',_P5C_CNES,_P5C_COMP,_P5C_COD) AS _P5C_GRAIN_SK,
+    _P5C_COMP,
+    _P5C_FILE,
+    _P5C_TP,
+    _P5C_COD,
+    _P5C_EXIST,
+    _P5C_SUS,
+    _P5C_NSUS,
+    If(ApplyMap('P5C_MAP_COMP',Hash128('MES',Text(Date(Date#(_P5C_COMP,'YYYYMM'),'YYYYMM'))),0)=1,0,1) AS _P5C_MISS_COMP,
+    If(ApplyMap('P5C_MAP_YEAR',Hash128('ANO',Num#(Left(_P5C_COMP,4),'####','.',',')),0)=1,0,1) AS _P5C_MISS_YEAR,
+    If(ApplyMap('P5C_MAP_MUN',Hash128('MUN',Trim(Text(_P5C_MUN))),0)=1,0,1) AS _P5C_MISS_MUN,
+    If(ApplyMap('P5C_MAP_EST',Hash128('ESTAB',Trim(Text(_P5C_CNES)),Trim(Text(_P5C_COMP))),0)=1,0,1) AS _P5C_MISS_EST,
+    If(ApplyMap('P5C_MAP_LEITO',Hash128('LEITO',_P5C_TP,_P5C_COD,_P5C_COMP),0)=1,0,1) AS _P5C_MISS_LEITO,
+    If(IsNull(_P5C_CNES) OR Len(Trim(_P5C_CNES))=0
+        OR IsNull(_P5C_MUN) OR Len(Trim(_P5C_MUN))=0
+        OR IsNull(_P5C_COMP) OR Len(_P5C_COMP)<>6
+        OR Len(KeepChar(_P5C_COMP,'0123456789'))<>6
+        OR _P5C_COMP<'201701' OR _P5C_COMP>'201912'
+        OR _P5C_COMP<>_P5C_META_COMP
+        OR IsNull(_P5C_COD) OR Len(_P5C_COD)<>2
+        OR Len(KeepChar(_P5C_COD,'0123456789'))<>2
+        OR IsNull(_P5C_TP_QVD)
+        OR Match(_P5C_TP,'1','2','3','4','5','6','7')=0
+        OR (Len(_P5C_TP_QVD)<>1
+            AND (Len(_P5C_TP_QVD)<>2 OR Right(_P5C_TP_QVD,1)<>' '))
+        OR IsNull(_P5C_FILE) OR Len(Trim(_P5C_FILE))=0,1,0) AS _P5C_BAD_DOMAIN,
+    If(NOT IsNum(_P5C_EXIST) OR NOT IsNum(_P5C_SUS)
+        OR NOT IsNum(_P5C_NSUS)
+        OR _P5C_EXIST<0 OR _P5C_SUS<0 OR _P5C_NSUS<0
+        OR _P5C_EXIST<>Round(_P5C_EXIST,1)
+        OR _P5C_SUS<>Round(_P5C_SUS,1)
+        OR _P5C_NSUS<>Round(_P5C_NSUS,1)
+        OR _P5C_SUS>_P5C_EXIST
+        OR _P5C_NSUS<>_P5C_EXIST-_P5C_SUS,1,0) AS _P5C_BAD_MEASURE
+RESIDENT P5C_SOURCE;
+IF ScriptErrorCount > $(vP5CStartErrors) OR NoOfRows('P5C_FLAGS')<>35518 THEN
+    TRACE [V5-CAP] VERDICT=BLOCKED_FACT_CANDIDATE_PROJECTION;
+    EXIT SCRIPT;
+ENDIF
+
+P5C_PROFILE:
+NOCONCATENATE LOAD
+    Count(*) AS _C_ROWS,
+    Count(DISTINCT _P5C_GRAIN_SK) AS _C_UNIQUE,
+    Count(DISTINCT _P5C_COMP) AS _C_MONTHS,
+    Count(DISTINCT _P5C_FILE) AS _C_FILES,
+    Count(DISTINCT _P5C_TP & '|' & _P5C_COD) AS _C_PAIRS,
+    Count(DISTINCT _P5C_TP & '|' & _P5C_COD & '|' & _P5C_COMP) AS _C_PAIRM,
+    Sum(If(_P5C_TP='3' AND _P5C_COD='66',1,0)) AS _C_3_66,
+    Sum(If(_P5C_TP='7' AND _P5C_COD='70',1,0)) AS _C_7_70,
+    Sum(_P5C_MISS_COMP) AS _C_MISS_COMP,
+    Sum(_P5C_MISS_YEAR) AS _C_MISS_YEAR,
+    Sum(_P5C_MISS_MUN) AS _C_MISS_MUN,
+    Sum(_P5C_MISS_EST) AS _C_MISS_EST,
+    Sum(_P5C_MISS_LEITO) AS _C_MISS_LEITO,
+    Sum(_P5C_BAD_DOMAIN) AS _C_BAD_DOMAIN,
+    Sum(_P5C_BAD_MEASURE) AS _C_BAD_MEASURE,
+    Sum(_P5C_EXIST) AS _C_EXIST_TOTAL_SNAPSHOTS,
+    Sum(_P5C_SUS) AS _C_SUS_TOTAL_SNAPSHOTS,
+    Sum(_P5C_NSUS) AS _C_NSUS_TOTAL_SNAPSHOTS
+RESIDENT P5C_FLAGS;
+LET vP5CRows=Peek('_C_ROWS',0,'P5C_PROFILE');
+LET vP5CUnique=Peek('_C_UNIQUE',0,'P5C_PROFILE');
+LET vP5CMonths=Peek('_C_MONTHS',0,'P5C_PROFILE');
+LET vP5CFiles=Peek('_C_FILES',0,'P5C_PROFILE');
+LET vP5CPairs=Peek('_C_PAIRS',0,'P5C_PROFILE');
+LET vP5CPairm=Peek('_C_PAIRM',0,'P5C_PROFILE');
+LET vP5C3_66=Peek('_C_3_66',0,'P5C_PROFILE');
+LET vP5C7_70=Peek('_C_7_70',0,'P5C_PROFILE');
+LET vP5CMissComp=Peek('_C_MISS_COMP',0,'P5C_PROFILE');
+LET vP5CMissYear=Peek('_C_MISS_YEAR',0,'P5C_PROFILE');
+LET vP5CMissMun=Peek('_C_MISS_MUN',0,'P5C_PROFILE');
+LET vP5CMissEst=Peek('_C_MISS_EST',0,'P5C_PROFILE');
+LET vP5CMissLeito=Peek('_C_MISS_LEITO',0,'P5C_PROFILE');
+LET vP5CBadDomain=Peek('_C_BAD_DOMAIN',0,'P5C_PROFILE');
+LET vP5CBadMeasure=Peek('_C_BAD_MEASURE',0,'P5C_PROFILE');
+LET vP5CExistSum=Peek('_C_EXIST_TOTAL_SNAPSHOTS',0,'P5C_PROFILE');
+LET vP5CSusSum=Peek('_C_SUS_TOTAL_SNAPSHOTS',0,'P5C_PROFILE');
+LET vP5CNsusSum=Peek('_C_NSUS_TOTAL_SNAPSHOTS',0,'P5C_PROFILE');
+DROP TABLE P5C_PROFILE;
+TRACE [V5-CAP] SOURCE ROWS=$(vP5CRows) UNIQUE_GRAIN=$(vP5CUnique) MONTHS=$(vP5CMonths) FILES=$(vP5CFiles) PAIRS=$(vP5CPairs) PAIR_MONTHS=$(vP5CPairm) TYPE3_BED66=$(vP5C3_66) TYPE7_BED70=$(vP5C7_70) DOMAIN_BAD=$(vP5CBadDomain) MEASURE_BAD=$(vP5CBadMeasure);
+TRACE [V5-CAP] ROLES COMP=$(vP5CMissComp) ANO=$(vP5CMissYear) MUNICIPIO_SERVICO=$(vP5CMissMun) ESTABELECIMENTO=$(vP5CMissEst) TIPO_LEITO=$(vP5CMissLeito);
+TRACE [V5-CAP] SNAPSHOT_SUMS_UNSAFE_AS_PERIOD_TOTAL EXIST=$(vP5CExistSum) SUS=$(vP5CSusSum) NSUS=$(vP5CNsusSum);
+IF ScriptErrorCount > $(vP5CStartErrors)
+    OR $(vP5CRows)<>35518 OR $(vP5CUnique)<>35518
+    OR $(vP5CMonths)<>36 OR $(vP5CFiles)<>36
+    OR $(vP5CPairs)<>57 OR $(vP5CPairm)<>2021
+    OR $(vP5C3_66)<>1480 OR $(vP5C7_70)<>5
+    OR $(vP5CBadDomain)<>0 OR $(vP5CBadMeasure)<>0
+    OR $(vP5CMissComp)<>0 OR $(vP5CMissYear)<>0
+    OR $(vP5CMissMun)<>0 OR $(vP5CMissEst)<>0
+    OR $(vP5CMissLeito)<>0 THEN
+    TRACE [V5-CAP] VERDICT=BLOCKED_CNEST_LT_PREFLIGHT;
+    EXIT SCRIPT;
+ENDIF
+DROP TABLE P5C_FLAGS;
+DROP TABLE P5C_SOURCE;
+TRACE [V5-CAP] VERDICT=PASS_QV_CNEST_LT_READ_ONLY_PREFLIGHT_CANDIDATE_ONLY;
+TRACE [V5-CAP] FACT_QVD_GENERATED=False LINK_TABLE_NOT_TESTED=True PRODUCTION_APPROVED=False;
