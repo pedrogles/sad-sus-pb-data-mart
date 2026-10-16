@@ -57,3 +57,6 @@ branch-hygiene-preflight-*.txt
 
 # Fase V — test QlikView documents remain local; never version diagnostic binaries
 TRANSFORMACAO/V5_RD_FATO_INTERNACAO_*.qvw
+
+# CNES/LT Phase V QlikView read-only preflight local document
+TRANSFORMACAO/V5_LT_CAPACIDADE_PREFLIGHT.qvw
