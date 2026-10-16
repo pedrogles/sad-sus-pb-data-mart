@@ -149,8 +149,8 @@ function Verify-Inventory([string]$stage) {
     Write-Output "ONLY_NEW_QVD_IS_FATO_CAPACIDADE_LEITO=$stage"
 }
 function Same-QlikScript([string]$a,[string]$b) {
-    return $a.Replace([string][char]13,'').TrimEnd() -ceq
-        $b.Replace([string][char]13,'').TrimEnd()
+    return ($a.Replace([string][char]13,'').TrimEnd() -ceq
+            $b.Replace([string][char]13,'').TrimEnd())
 }
 function Create-TestDoc($qv,[string]$path,[string]$text) {
     if (Test-Path -LiteralPath $path) {
