@@ -48,7 +48,7 @@ if ($LASTEXITCODE -ne 0 -or $dirty.Count -gt 0) {
 $source = [IO.File]::ReadAllText($qvs,[Text.Encoding]::UTF8)
 $sourceSha = (Get-FileHash -LiteralPath $qvs -Algorithm SHA256).Hash
 if (-not $source.Contains('[V5-CAP-FACT] VERDICT=PASS_IN_MEMORY_CANDIDATE_ONLY_NOT_PHYSICAL_APPROVAL') -or
-    -not $source.Contains("IF '$(vP5CapacidadeMode)' <> 'PREFLIGHT' THEN") -or
+    -not $source.Contains('IF ''$(vP5CapacidadeMode)'' <> ''PREFLIGHT'' THEN') -or
     -not $source.Contains("FROM [..\EXTRACAO\QVD\SRC_CNES_LT.qvd] (qvd);") -or
     -not $source.Contains("Hash128('SAD-LINK-V1',") -or
     @([regex]::Matches($source,'(?im)^\s*STORE\s+')).Count -ne 0 -or
