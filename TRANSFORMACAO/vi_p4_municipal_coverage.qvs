@@ -88,10 +88,13 @@ IF ScriptErrorCount>$(vP4ErrStart) OR $(vP4Rows)<>35518 OR $(vP4Unique)<>35518 O
 ENDIF
 DROP TABLE P4_FACT_KEYS;
 
+// Pair key is local to this disposable observability test, NOT %LINK_KEY.
+// Use explicit text from the two already validated administrative coordinates.
 P4_LT_MONTHLY:
 NOCONCATENATE LOAD
  MUNICIPIO_LT AS MUNICIPIO,
  COMPETENCIA_LT AS COMPETENCIA,
+ Hash128('P4-OBS',Trim(Text(MUNICIPIO_LT)),Trim(Text(COMPETENCIA_LT))) AS P4_PAIR_KEY,
  Count(*) AS LINHAS_LT,
  Sum(LT_QT_SUS) AS QT_SUS_OBSERVADO,
  Sum(LT_QT_EXIST) AS QT_EXIST_OBSERVADO
@@ -115,8 +118,49 @@ IF ScriptErrorCount>$(vP4ErrStart) OR $(vP4GridRows)<>8028 THEN
 ENDIF
 DROP TABLE P4_MUN;
 DROP TABLE P4_MONTH_LIST;
+
+// Fail-closed pre-join diagnostics: do not classify 8,028 cells as absent if
+// the two coordinates fail to match. This guards against Qlik dual/text
+// representations as well as future drift in the month/municipality grid.
+P4_GRID_KEYED:
+NOCONCATENATE LOAD
+ MUNICIPIO,
+ COMPETENCIA,
+ Hash128('P4-OBS',Trim(Text(MUNICIPIO)),Trim(Text(COMPETENCIA))) AS P4_PAIR_KEY
+RESIDENT P4_GRID;
+DROP TABLE P4_GRID;
+RENAME TABLE P4_GRID_KEYED TO P4_GRID;
+P4_GRID_MUN_MAP: MAPPING LOAD DISTINCT MUNICIPIO, 1 RESIDENT P4_GRID;
+P4_GRID_COMP_MAP: MAPPING LOAD DISTINCT COMPETENCIA, 1 RESIDENT P4_GRID;
+P4_GRID_KEY_MAP: MAPPING LOAD P4_PAIR_KEY, 1 RESIDENT P4_GRID;
+P4_PREJOIN_CHECK:
+NOCONCATENATE LOAD
+ Count(*) AS OBS_ROWS,
+ Count(DISTINCT P4_PAIR_KEY) AS OBS_UNIQUE,
+ Sum(If(ApplyMap('P4_GRID_MUN_MAP',MUNICIPIO,0)=1,1,0)) AS MUN_MATCHES,
+ Sum(If(ApplyMap('P4_GRID_COMP_MAP',COMPETENCIA,0)=1,1,0)) AS COMP_MATCHES,
+ Sum(If(ApplyMap('P4_GRID_KEY_MAP',P4_PAIR_KEY,0)=1,1,0)) AS PAIR_MATCHES
+RESIDENT P4_LT_MONTHLY;
+LET vP4ObsRows=Peek('OBS_ROWS',0,'P4_PREJOIN_CHECK');
+LET vP4ObsUnique=Peek('OBS_UNIQUE',0,'P4_PREJOIN_CHECK');
+LET vP4MunMatches=Peek('MUN_MATCHES',0,'P4_PREJOIN_CHECK');
+LET vP4CompMatches=Peek('COMP_MATCHES',0,'P4_PREJOIN_CHECK');
+LET vP4PairMatches=Peek('PAIR_MATCHES',0,'P4_PREJOIN_CHECK');
+LET vP4GridMunSample=Peek('MUNICIPIO',0,'P4_GRID');
+LET vP4GridCompSample=Peek('COMPETENCIA',0,'P4_GRID');
+LET vP4LtMunSample=Peek('MUNICIPIO',0,'P4_LT_MONTHLY');
+LET vP4LtCompSample=Peek('COMPETENCIA',0,'P4_LT_MONTHLY');
+DROP TABLE P4_PREJOIN_CHECK;
+TRACE [P4] PREJOIN OBS=$(vP4ObsRows) UNIQUE=$(vP4ObsUnique) MUN_MATCHES=$(vP4MunMatches) COMP_MATCHES=$(vP4CompMatches) PAIR_MATCHES=$(vP4PairMatches) GRID_SAMPLE=$(vP4GridMunSample)|$(vP4GridCompSample) LT_SAMPLE=$(vP4LtMunSample)|$(vP4LtCompSample);
+IF ScriptErrorCount>$(vP4ErrStart) OR $(vP4ObsRows)<>3561 OR $(vP4ObsUnique)<>3561 OR $(vP4MunMatches)<>3561 OR $(vP4CompMatches)<>3561 OR $(vP4PairMatches)<>3561 THEN
+ TRACE [P4] VERDICT=BLOCKED_PREJOIN_KEYS_WITH_AXIS_DIAGNOSTICS;
+ EXIT SCRIPT;
+ENDIF
+
+// Join only on the explicit text-normalized pair key; never rely on implicit
+// Qlik association across two fields with potentially different dual forms.
 LEFT JOIN (P4_GRID)
-LOAD MUNICIPIO,COMPETENCIA,LINHAS_LT,QT_SUS_OBSERVADO,QT_EXIST_OBSERVADO
+LOAD P4_PAIR_KEY,LINHAS_LT,QT_SUS_OBSERVADO,QT_EXIST_OBSERVADO
 RESIDENT P4_LT_MONTHLY;
 DROP TABLE P4_LT_MONTHLY;
 
