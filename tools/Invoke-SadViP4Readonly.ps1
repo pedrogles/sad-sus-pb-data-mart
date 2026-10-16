@@ -105,7 +105,7 @@ try {
   if(-not (Test-Path -LiteralPath $qvs -PathType Leaf)){throw "Missing QVS: $qvs"}
   $qvsSha=(Get-FileHash -Algorithm SHA256 -LiteralPath $qvs).Hash
   Write-Output ('QVS_SHA256='+$qvsSha)
-  if($qvsSha -cne 'DD0DE8742F714AEC0F9F9FB2D5910C17CADD93B374CB316EE4E1C2C00C78C2AB'){throw 'QVS differs from reviewed VI-P4 text'}
+  if($qvsSha -cne 'CA3CA2EDA0101D3E09471738B5B1C8281A2E25691B563D44FE157256535C3AC4'){throw 'QVS differs from reviewed VI-P4 text'}
   $src=[IO.File]::ReadAllText($qvs,[Text.Encoding]::UTF8)
   if([regex]::Matches($src,'(?im)^\s*STORE\s+\*\s+FROM\s+P4_\w+\s+INTO\s+\[__\w+__\]\s+\(txt, delimiter is ''\|''\);').Count -ne 3){throw 'Audit TXT STORE whitelist mismatch'}
   if([regex]::Matches($src,'(?im)^\s*STORE\b').Count -ne 3){throw 'Unexpected STORE command detected'}
