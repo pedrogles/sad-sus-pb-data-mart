@@ -2,10 +2,12 @@
 # Authorized target: only TRANSFORMACAO/QVD/FATO_POPULACAO.qvd (not yet authorized to run).
 # No TRANSF.qvw, no rewrite of 20 preexisting QVDs, no deletion/overwrite.
 [CmdletBinding()]
-param([string]$Root = (Get-Location).Path)
+param([string]$Root = (Get-Location).Path, [switch]$AuthorizeCreate)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $Root = [IO.Path]::GetFullPath($Root)
+# Preparing this PR never authorizes materialization; a separate opt-in is mandatory.
+if (-not $AuthorizeCreate) { throw 'VERDICT=BLOCKED_EXPLICIT_CREATE_OPT_IN_REQUIRED' }
 
 $branchExpected = 'feat/phase-v-fato-populacao-qvd-materialization-20261015'
 $factQvs = Join-Path $Root 'TRANSFORMACAO\transf_fato_populacao_inmemory.qvs'
@@ -76,7 +78,7 @@ if (-not $factScript.Contains('IF ''$(vP5PopImplMode)'' <> ''PREFLIGHT'' THEN') 
     $factScript -match '(?im)\bAS\s+\[%LINK_KEY\]') {
     throw 'VERDICT=BLOCKED_FACT_QVS_POLICY_MISMATCH'
 }
-if (-not $storeScript.Contains('AUTHORIZED_ONE_SHOT_CREATE_POPULACAO_20261015') -or
+if (-not $storeScript.Contains('AUTHORIZED_ONE_SHOT_CREATE_POPULACAO_20261016') -or
     -not $storeScript.Contains('VERDICT=WRITTEN_PENDING_INDEPENDENT_QVD_AUDIT') -or
     -not $storeScript.Contains('VERDICT=BLOCKED_TARGET_EXISTS_NO_OVERWRITE') -or
     @([regex]::Matches($storeScript,'(?im)^\s*STORE\s+')).Count -ne 1 -or
@@ -221,7 +223,7 @@ try {
     # The predecessor ends with an in-memory verdict; it has NO EXIT on success.
     $scriptCreate='SET ErrorMode=0;' + [Environment]::NewLine +
         'SET vP5PopImplMode=PREFLIGHT;' + [Environment]::NewLine +
-        'SET vP5PopCreateAuthorization=AUTHORIZED_ONE_SHOT_CREATE_POPULACAO_20261015;' +
+        'SET vP5PopCreateAuthorization=AUTHORIZED_ONE_SHOT_CREATE_POPULACAO_20261016;' +
         [Environment]::NewLine + $factScript + [Environment]::NewLine + $storeScript
     $docCreate=Create-TestDoc $qv $createQvw $scriptCreate
     $startedCreate=[DateTime]::UtcNow
