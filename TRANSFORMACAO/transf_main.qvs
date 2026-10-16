@@ -258,3 +258,15 @@ $(Must_Include=transf_dim_motivo_saida_permanencia.qvs);
 // Ressalva para futuros graficos: 1965/2021 pares-mes sem descricao historica.
 // T29 historico NOT_APPROVED; sem fatos, Link Table ou PAINEL.
 $(Must_Include=transf_dim_tipo_leito.qvs);
+
+
+// FASE V — FATO_INTERNACAO, opt-in rigoroso.
+// OFF por padrao: nao executar e nao criar QVD factual nos reloads existentes.
+// Para gate local controlado, em copia de trabalho, alterar para PREFLIGHT;
+// CREATE somente depois de PASS da validacao, snapshot de fontes e autorizacao.
+// ATENCAO: um reload do TRANSF.qvw tambem reexecuta a Fase IV acima.
+// Nunca executar CREATE se FATO_INTERNACAO.qvd ja existir.
+SET vP5FatoInternacaoMode=OFF;
+IF '$(vP5FatoInternacaoMode)' = 'PREFLIGHT' OR '$(vP5FatoInternacaoMode)' = 'CREATE' THEN
+    $(Must_Include=transf_fato_internacao.qvs);
+ENDIF
