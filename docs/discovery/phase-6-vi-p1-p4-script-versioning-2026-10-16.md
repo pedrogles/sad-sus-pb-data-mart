@@ -56,3 +56,18 @@ Precondicoes: Git no PATH, Windows com QlikView 12 COM, 21 QVDs locais previamen
 **Correcao delimitada proposta, versionada nesta mesma branch:** P4_PAIR_KEY=Hash128('P4-OBS', Trim(Text(MUNICIPIO)), Trim(Text(COMPETENCIA))) tanto para os pares de LT quanto para a grade; a LEFT JOIN passa a compartilhar apenas essa chave temporaria (nao e %LINK_KEY do Data Mart). Novo preflight obrigatorio verifica exatamente 3.561 pares LT distintos, correspondencia individual por municipio/competencia e **3.561 chaves de par presentes na grade**. Em falha, emite PREJOIN ... GRID_SAMPLE ... LT_SAMPLE e BLOCKED_PREJOIN_KEYS_WITH_AXIS_DIAGNOSTICS, antes do join e de qualquer exportacao; o PowerShell passa a mostrar tais mensagens com P4_NATIVE_DIAG. Guardas restantes continuam exigindo grade 8.028, 223/36, reconciliacao integral, tres TXT de evidencia somente em %TEMP% e hashes dos 21 QVDs inalterados. Os zeros continuam **nao comprovados**; a cobertura hospitalar continua **nao verificada**.
 
 **STATUS:** alteracao de QVS/PowerShell revisada estaticamente e commitada; sem recarga QlikView do novo commit. Uma unica nova execucao controlada no Windows e permitida para verificar esta correcao **somente apos git pull --ff-only e confirmacao de SHA-256/HEAD**. Se falhar, preservar logs e **PARAR**, sem novas iteracoes automaticas. Nao efetuar merge, modificar QVDs ou implementar LINK_ANALISE.qvd.
+
+## VI-P4 — diagnostico da segunda execucao versionada (16/10/2026)
+
+**Fonte de evidencia:** stdout da execucao Windows/QlikView 12 fornecido pelo responsavel, commit `7b33308853bf09892eaae059edaeec0d593d3e77`, QVS SHA-256 `DD0DE8742F714AEC0F9F9FB2D5910C17CADD93B374CB316EE4E1C2C00C78C2AB`. Pasta local: `%TEMP%/SAD_VI_P4_READONLY_20261016T154659455Z_e3f4c6049a17498e9bd82b66fabfcb11`. Resultado `VERDICT=BLOCKED_OR_INCONCLUSIVE`, com `BLOCKED_PREJOIN_KEYS_WITH_AXIS_DIAGNOSTICS`.
+
+- `OBS=3561`, `UNIQUE=3561`: observacoes LT agregadas por municipio e competencia, sem duplicatas de par detectadas.
+- `MUN_MATCHES=3561`: 100% dos codigos municipais encontraram correspondencia na grade pelo mapeamento individual.
+- `COMP_MATCHES=0`: nenhum dos valores de competencia encontrou correspondencia no `ApplyMap` individual da competencia.
+- `PAIR_MATCHES=3561`: **todas as chaves compostas** `Hash128('P4-OBS', Trim(Text(MUNICIPIO)), Trim(Text(COMPETENCIA)))` foram encontradas na grade.
+- `GRID_SAMPLE=251740|201701`, `LT_SAMPLE=250010|201701`: os exemplos exibem a mesma competencia textual, mas nao comprovam a representacao interna dual/numerica. Possivel incompatibilidade de representacao no mapeamento individual bruto de `COMPETENCIA` e uma **hipotese tecnica**, nao diagnostico de conteudo da fonte.
+- `ALL_21_QVD_SHA256_AND_HEADERS_UNCHANGED=True`: nenhum QVD modificado segundo auditor local; nenhum TXT final materializado, pois o QVS interrompeu antes dos tres `STORE`.
+
+**Conclusao do gate:** o `COMP_MATCHES=0` e a correspondencia composta de `3561/3561` coexistem; a falha ocorreu no **controle pre-join individual**, antes de testar efetivamente a junção e a classificacao final. Nao inferir que 8.028 pares estao ausentes e nao aprovar observabilidade/cobertura. A hipotese seguinte seria comparar competencias **por normalizacao textual/hashes em ambos os eixos**, em vez de `ApplyMap` de campo dual original; qualquer mudanca de codigo exige **novo escopo delimitado e aprovacao expressa**, commit e um teste posterior independente. Nao fazer terceira recarga automatica.
+
+**Status preservado:** `VI_P4=BLOCKED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `ZERO_PROOF=NOT_PROVEN`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PRODUCTION_APPROVED=False`. PR #98 continua **Draft**, sem merge.
