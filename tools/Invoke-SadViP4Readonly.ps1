@@ -105,7 +105,7 @@ try {
   if(-not (Test-Path -LiteralPath $qvs -PathType Leaf)){throw "Missing QVS: $qvs"}
   $qvsSha=(Get-FileHash -Algorithm SHA256 -LiteralPath $qvs).Hash
   Write-Output ('QVS_SHA256='+$qvsSha)
-  if($qvsSha -cne 'A2153E27E08CF2F236BCF07F6A7D7D99AE682446D7E37D3F3E5C0D609D734EE5'){throw 'QVS differs from reviewed VI-P4 text'}
+  if($qvsSha -cne 'DD0DE8742F714AEC0F9F9FB2D5910C17CADD93B374CB316EE4E1C2C00C78C2AB'){throw 'QVS differs from reviewed VI-P4 text'}
   $src=[IO.File]::ReadAllText($qvs,[Text.Encoding]::UTF8)
   if([regex]::Matches($src,'(?im)^\s*STORE\s+\*\s+FROM\s+P4_\w+\s+INTO\s+\[__\w+__\]\s+\(txt, delimiter is ''\|''\);').Count -ne 3){throw 'Audit TXT STORE whitelist mismatch'}
   if([regex]::Matches($src,'(?im)^\s*STORE\b').Count -ne 3){throw 'Unexpected STORE command detected'}
@@ -154,7 +154,12 @@ try {
     $executed=@(Get-Content -LiteralPath $log | Where-Object {$_ -notmatch '\bTRACE\b'})
     $pass=@($executed | Where-Object {$_.Contains('[P4] VERDICT=PASS_MUNICIPAL_MONTH_OBSERVABILITY_ONLY')})
     $block=@($executed | Where-Object {$_ -match '\[P4\] VERDICT=BLOCKED'})
-    if($pass.Count -ne 1 -or $block.Count -gt 0){throw 'P4 Qlik native PASS missing or blocked; inspect QVW log before retry'}
+    if($pass.Count -ne 1 -or $block.Count -gt 0){
+      foreach($line in @($executed | Where-Object {$_.Contains('[P4] PREJOIN ') -or $_.Contains('[P4] VERDICT=BLOCKED_')})){
+        Write-Output ('P4_NATIVE_DIAG='+([string]$line).Trim())
+      }
+      throw 'P4 Qlik native PASS missing or blocked; inspect QVW log before retry'
+    }
     $reference=@($executed | Where-Object {$_.Contains('[P4] GRID_ROWS=8028')})
     if($reference.Count -ne 1){throw 'P4 executed grid summary missing'}
     Write-Output ('P4_NATIVE_SUMMARY='+([string]$reference[0]).Trim())
