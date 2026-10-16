@@ -2,7 +2,7 @@
 
 **Data:** 15/10/2026. **Base:** `main` no squash do PR #88 (`7abd1dc50c092e4235fc811fa63e4dd3a30344ac`). **Branch:** `feat/phase-v-capacidade-leito-preflight-20261015`.
 
-**Estado:** `CAPACIDADE_PREFLIGHT=SCRIPT_READY_NOT_EXECUTED`; `FATO_CAPACIDADE_LEITO.qvd=NOT_GENERATED`. O PR desta etapa será Draft. **Este gate não implementa a fato** e não aprova `%LINK_KEY`, Link Table ou medidas para indicadores.
+**Estado atualizado após evidência local:** `CAPACIDADE_PREFLIGHT=PASS_LOCAL_QV_READ_ONLY_REPORTED`; `FATO_CAPACIDADE_LEITO.qvd=NOT_GENERATED`. O PR permanece Draft, sem merge. **Este gate não implementa a fato** e não aprova `%LINK_KEY`, Link Table, indicadores ou produção.
 
 ## Objetivo e escopo fechado
 
@@ -46,8 +46,35 @@ git pull --ff-only
 powershell.exe -NoProfile -File .\tools\validar_fato_capacidade_leito_preflight_qlik.ps1 -Root (Get-Location).Path
 ```
 
-**Somente após execução e log nativo:** `VERDICT=PASS_LOCAL_QV_CAPACIDADE_LT_PREFLIGHT_ONLY_NOT_QVD_APPROVAL`. O script **ainda não foi executado**; até lá, o estado é `PENDING_NATIVE_QV12`.
+**Execução concluída no Windows, segundo saída e log nativo apresentados pelo responsável:** `VERDICT=PASS_LOCAL_QV_CAPACIDADE_LT_PREFLIGHT_ONLY_NOT_QVD_APPROVAL` em 15/10/2026, 21:50:58–21:50:59. Não executar novamente o mesmo comando nem excluir QVW/log. A prova é **reportada**, não auditoria independente dos arquivos binários locais.
 
 **STOP/FAIL CLOSED:** diante de falha de script, contagem, papéis, medidas, domínio, SHA, log ou COM, interromper e enviar stdout/log. Não repetir, limpar arquivos, sobrescrever fontes, gerar `FATO_CAPACIDADE_LEITO.qvd` nem iniciar Link Table. O gate termina com um resultado PASS ou BLOCKED documentado. Depois de PASS, o contrato de grão/medidas pode ser usado como insumo de proposta da implementação factual **em PR próprio e mediante autorização específica**.
 
 **Separação:** atualização do estado pós-PR #88 está em outro PR documental (não será acoplada a este preflight).
+
+
+## Evidência local recebida — gate PRE-FLIGHT encerrado (15/10/2026)
+
+**Proveniência:** transcrição integral de stdout PowerShell e linhas de log nativo fornecidas pelo responsável no chat após execução em Windows/QlikView Desktop 12. Não houve acesso independente pelo agente aos QVDs, ao QVW ou ao log completo do disco local. A validade é restrita aos QVDs existentes naquele ambiente/snapshot; não equivale a aceite físico do QVD da fato (não criado).
+
+| Controle | Resultado reportado |
+| --- | --- |
+| Branch | `feat/phase-v-capacidade-leito-preflight-20261015` (atualizada) |
+| Runner | `tools/validar_fato_capacidade_leito_preflight_qlik.ps1` |
+| Modo | `PHASE_V_CAPACIDADE_LT_READ_ONLY_PREFLIGHT` |
+| SHA-256 QVS | `0E879AFB0DC2D6D487D17E8540106F89AF3AD6FA678A3BA6F70A5F5DD3ADA82E` |
+| QVDs no inventário antes/depois | `QVD_INVENTORY_BEFORE=19`; `ALL_EXISTING_QVDS_SHA256_UNCHANGED=True COUNT=19` (reportado duas vezes: execução e finalização) |
+| Recarga isolada | `TRANSF_MAIN_NOT_EXECUTED=True`; `RELOAD_STARTED=True`; `RELOAD_RETURNED=True`; `RELOAD_API_RETURN=` (COM vazio; log nativo contemporâneo presente) |
+| Grão, tempo, domínio | `ROWS=35518 UNIQUE_GRAIN=35518 MONTHS=36 FILES=36 PAIRS=57 PAIR_MONTHS=2021 TYPE3_BED66=1480 TYPE7_BED70=5 DOMAIN_BAD=0` |
+| Medidas | `MEASURE_BAD=0`: validações Qlik numéricas, não-negativas, inteiras, `QT_SUS<=QT_EXIST` e `QT_NSUS=QT_EXIST-QT_SUS` |
+| Cinco papéis dimensionais | `COMP=0 ANO=0 MUNICIPIO_SERVICO=0 ESTABELECIMENTO=0 TIPO_LEITO=0` órfãos |
+| Agregados diagnósticos dos 36 snapshots | `EXIST=337147 SUS=270076 NSUS=67071` (`337147-270076=67071`); **não** interpretar como leitos de uma competência ou capacidade anual |
+| Log Qlik, 21:50:59 | `VERDICT=PASS_QV_CNES_LT_READ_ONLY_PREFLIGHT_CANDIDATE_ONLY` |
+| Runner PowerShell | `VERDICT=PASS_LOCAL_QV_CAPACIDADE_LT_PREFLIGHT_ONLY_NOT_QVD_APPROVAL` |
+| Fora do escopo | `FACT_CAPACIDADE_QVD_GENERATED=False`; `LINK_TABLE_NOT_TESTED=True`; `PRODUCTION_APPROVED=False` |
+
+**FATO VERIFICADO pela transcrição e verificações implementadas no executor:** o QlikView carregou o QVD CNES/LT e as quatro dimensões existentes; o runner recebeu marcadores nativos exatos para as cardinalidades, medidas, cinco papéis e status; calculou hashes do inventário dos 19 QVDs antes/depois, sem observar criação ou mudança; não houve `STORE` no QVS.
+
+**Condição de parada atingida:** `CAPACIDADE_PREFLIGHT=PASS_LOCAL_REPORTED`. Não repetir o gate. O próximo passo, **ainda dependente de autorização distinta**, é propor o QVS da segunda fato e um novo `PREFLIGHT` de implementação isolado com critérios próprios, sem materializar QVD de capacidade antes de aprovação explícita do gate CREATE. Não alterar `transf_main.qvs` em modo automático; preservar `FATO_INTERNACAO.qvd`, os 19 QVDs atuais, `T29_HISTORICAL=NOT_APPROVED` e os contratos semânticos/associativos ainda pendentes.
+
+**PR de pré-validação:** #90 permanece Draft, não integrado à `main`. Revisão para eventual merge e autorização específica ficam para etapa separada. **`PR_MERGED=False`; `PROD_APPROVED=False`.**
