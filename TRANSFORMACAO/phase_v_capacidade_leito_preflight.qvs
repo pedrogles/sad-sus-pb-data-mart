@@ -140,7 +140,8 @@ DROP TABLE P5C_PROFILE;
 TRACE [V5-CAP] SOURCE ROWS=$(vP5CRows) UNIQUE_GRAIN=$(vP5CUnique) MONTHS=$(vP5CMonths) FILES=$(vP5CFiles) PAIRS=$(vP5CPairs) PAIR_MONTHS=$(vP5CPairm) TYPE3_BED66=$(vP5C3_66) TYPE7_BED70=$(vP5C7_70) DOMAIN_BAD=$(vP5CBadDomain) MEASURE_BAD=$(vP5CBadMeasure);
 TRACE [V5-CAP] ROLES COMP=$(vP5CMissComp) ANO=$(vP5CMissYear) MUNICIPIO_SERVICO=$(vP5CMissMun) ESTABELECIMENTO=$(vP5CMissEst) TIPO_LEITO=$(vP5CMissLeito);
 TRACE [V5-CAP] SNAPSHOT_SUMS_UNSAFE_AS_PERIOD_TOTAL EXIST=$(vP5CExistSum) SUS=$(vP5CSusSum) NSUS=$(vP5CNsusSum);
-IF ScriptErrorCount > $(vP5CStartErrors) OR $(vP5CRows)<>35518 OR $(vP5CUnique)<>35518 OR $(vP5CMonths)<>36 OR $(vP5CFiles)<>36 OR $(vP5CPairs)<>57 OR $(vP5CPairm)<>2021 OR $(vP5C3_66)<>1480 OR $(vP5C7_70)<>5 OR $(vP5CBadDomain)<>0 OR $(vP5CBadMeasure)<>0 OR $(vP5CMissComp)<>0 OR $(vP5CMissYear)<>0 OR $(vP5CMissMun)<>0 OR $(vP5CMissEst)<>0 OR $(vP5CMissLeito)<>0 THEN TRACE [V5-CAP] VERDICT=BLOCKED_CNES_LT_PREFLIGHT; 
+IF ScriptErrorCount > $(vP5CStartErrors) OR $(vP5CRows)<>35518 OR $(vP5CUnique)<>35518 OR $(vP5CMonths)<>36 OR $(vP5CFiles)<>36 OR $(vP5CPairs)<>57 OR $(vP5CPairm)<>2021 OR $(vP5C3_66)<>1480 OR $(vP5C7_70)<>5 OR $(vP5CBadDomain)<>0 OR $(vP5CBadMeasure)<>0 OR $(vP5CMissComp)<>0 OR $(vP5CMissYear)<>0 OR $(vP5CMissMun)<>0 OR $(vP5CMissEst)<>0 OR $(vP5CMissLeito)<>0 THEN
+    TRACE [V5-CAP] VERDICT=BLOCKED_CNES_LT_PREFLIGHT;
     EXIT SCRIPT;
 ENDIF
 DROP TABLE P5C_FLAGS;
