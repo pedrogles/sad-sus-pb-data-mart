@@ -16,9 +16,9 @@
 
 | Arquivo | Papel e guarda |
 | --- | --- |
-| `TRANSFORMACAO/phase_v_populacao_qvd_create.qvs` | Sufixo de STORE, executável somente após o QVS in-memory aprovado, via runner com token específico; verifica erro, 669 linhas/7 campos, 669 pares de SK, 3 anos, nenhum nulo e destino inexistente; **único STORE** em `TRANSFORMACAO/QVD/FATO_POPULACAO.qvd`; emite `WRITTEN_PENDING_INDEPENDENT_QVD_AUDIT` |
+| `TRANSFORMACAO/phase_v_populacao_qvd_create.qvs` | Sufixo de STORE, executável somente após o QVS in-memory aprovado, via runner com token específico datado de 16/10/2026; verifica erro, 669 linhas/7 campos, 669 pares de SK, 3 anos, nenhum nulo e destino inexistente; **único STORE** em `TRANSFORMACAO/QVD/FATO_POPULACAO.qvd`; emite `WRITTEN_PENDING_INDEPENDENT_QVD_AUDIT` |
 | `TRANSFORMACAO/phase_v_populacao_qvd_readback.qvs` | READBACK isolado: lê **apenas `QVD/FATO_POPULACAO.qvd`**, zero STORE, esquema/ordem exatos de 7 campos, 669 linhas, 669 combinações município×ano/SK, 223 municípios, 3 anos, 3 arquivos, domínio/SKs/medidas e totais anuais reconciliados |
-| `tools/materializar_fato_populacao_qlik.ps1` | Adapta executor CREATE+READBACK CNES/LT já comprovado em Windows; recusa branch errada/árvore rastreada suja, ausência de inputs/log PASS prévio, hash diferente do QVS previamente testado, destinos/QVWs/logs existentes e inventário diferente de 20; cria **dois QVWs novos exclusivos**, compara SHA-256 de todos os QVDs antigos e do novo QVD após READBACK; preserva arquivos em qualquer falha |
+| `tools/materializar_fato_populacao_qlik.ps1` | Adapta executor CREATE+READBACK CNES/LT já comprovado em Windows; exige `-AuthorizeCreate` somente após autorização futura; recusa branch errada/árvore rastreada suja, ausência de inputs/log PASS prévio, hash diferente do QVS previamente testado, destinos/QVWs/logs existentes e inventário diferente de 20; cria **dois QVWs novos exclusivos**, compara SHA-256 de todos os QVDs antigos e do novo QVD após READBACK; preserva arquivos em qualquer falha |
 | `.gitignore` | Ignora somente os dois novos QVWs de CREATE/READBACK; QVDs e logs continuam fora do Git conforme política existente |
 | Este documento | Escopo, aceitação, fontes, níveis de evidência, decisão futura e condição de parada |
 
@@ -26,7 +26,7 @@ O executor verifica no computador do responsável o log original `TRANSFORMACAO/
 
 ## Critérios físicos — AINDA NÃO EXECUTADOS
 
-**Pré-condições futuras obrigatórias:** autorização específica do responsável; branch de execução isolada correspondente; Git clean para rastreados; 20 QVDs anteriores presentes e congelados por SHA-256; quatro entradas da população válidas; fatos `FATO_INTERNACAO.qvd` e `FATO_CAPACIDADE_LEITO.qvd` presentes; `FATO_POPULACAO.qvd`, `LINK_ANALISE.qvd` e os dois novos QVWs/logs **inexistentes**; QVS de memória com SHA-256 idêntico ao PASS do PR #94.
+**Pré-condições futuras obrigatórias:** autorização específica do responsável; execução do PowerShell com opt-in obrigatório `-AuthorizeCreate` (sem a flag, o runner encerra antes de criar QVW ou QVD); branch de execução isolada correspondente; Git clean para rastreados; 20 QVDs anteriores presentes e congelados por SHA-256; quatro entradas da população válidas; fatos `FATO_INTERNACAO.qvd` e `FATO_CAPACIDADE_LEITO.qvd` presentes; `FATO_POPULACAO.qvd`, `LINK_ANALISE.qvd` e os dois novos QVWs/logs **inexistentes**; QVS de memória com SHA-256 idêntico ao PASS do PR #94.
 
 **CREATE esperado quando futuramente autorizado:** `V5_IBGE_FATO_POP_CREATE.qvw` carrega a candidata de memória com quatro QVDs somente leitura, valida marcadores `[V5-POP-FACT]` e executa um único `STORE` em destino novo mediante token. Só `FATO_POPULACAO.qvd` pode ser adicionada ao inventário (passando a **21 QVDs**); os 20 QVDs anteriores devem manter SHA-256. Log fresco deve conter:
 
