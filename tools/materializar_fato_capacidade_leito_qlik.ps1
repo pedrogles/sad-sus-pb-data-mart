@@ -65,7 +65,7 @@ $validatedFactSha = '134BBD4E290FA22F6F5D728D4C080EDDF9C1C3FDE3D38448FD47FE5A0B1
 if ($factSha -cne $validatedFactSha) {
     throw "VERDICT=BLOCKED_VALIDATED_FACT_SCRIPT_SHA_CHANGED actual=$factSha"
 }
-if (-not $factScript.Contains("IF '$(vP5CapacidadeMode)' <> 'PREFLIGHT' THEN") -or
+if (-not $factScript.Contains('IF ''$(vP5CapacidadeMode)'' <> ''PREFLIGHT'' THEN') -or
     -not $factScript.Contains('VERDICT=PASS_IN_MEMORY_CANDIDATE_ONLY_NOT_PHYSICAL_APPROVAL') -or
     -not $factScript.Contains("Hash128('SAD-LINK-V1',") -or
     @([regex]::Matches($factScript,'(?im)^\s*STORE\s+')).Count -ne 0 -or
