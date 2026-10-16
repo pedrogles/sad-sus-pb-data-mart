@@ -20,7 +20,7 @@ Os QVS dos pacotes finais foram copiados sem mudanca de conteudo. Os executores 
 | VI-P1 | `Invoke-SadViP1Readonly.ps1` | `vi_p1_readonly.qvs` | PASS local do pacote R2; layout Git ainda nao reexecutado |
 | VI-P2 | `Invoke-SadViP2Readonly.ps1` | `vi_p1_readonly.qvs` (reutilizado) | PASS local do pacote original; layout Git ainda nao reexecutado |
 | VI-P3 | `Invoke-SadViP3Readonly.ps1` | `vi_p3_source_reference.qvs` | PASS local do pacote R4; layout Git ainda nao reexecutado |
-| VI-P4 | `Invoke-SadViP4Readonly.ps1` | `vi_p4_municipal_coverage.qvs` | **BLOCKED local** na versao inicial; pre-join corrigido e nao executado |
+| VI-P4 | `Invoke-SadViP4Readonly.ps1` | `vi_p4_municipal_coverage.qvs` | **BLOCKED local** em duas execucoes; ultima correcao tecnica versionada, nao executada |
 
 ### SHA-256 exato dos QVS (congelado dos pacotes locais)
 
@@ -71,3 +71,17 @@ Precondicoes: Git no PATH, Windows com QlikView 12 COM, 21 QVDs locais previamen
 **Conclusao do gate:** o `COMP_MATCHES=0` e a correspondencia composta de `3561/3561` coexistem; a falha ocorreu no **controle pre-join individual**, antes de testar efetivamente a junção e a classificacao final. Nao inferir que 8.028 pares estao ausentes e nao aprovar observabilidade/cobertura. A hipotese seguinte seria comparar competencias **por normalizacao textual/hashes em ambos os eixos**, em vez de `ApplyMap` de campo dual original; qualquer mudanca de codigo exige **novo escopo delimitado e aprovacao expressa**, commit e um teste posterior independente. Nao fazer terceira recarga automatica.
 
 **Status preservado:** `VI_P4=BLOCKED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `ZERO_PROOF=NOT_PROVEN`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PRODUCTION_APPROVED=False`. PR #98 continua **Draft**, sem merge.
+
+## VI-P4 — ultima correcao autorizada do mapeamento individual (16/10/2026)
+
+**Autorizacao expressa:** o responsavel aprovou uma **ultima correcao delimitada** apenas no controle individual de `COMPETENCIA`, dentro do PR Draft #98 e sem merge. Nao ha autorizacao para expandir a investigacao, modificar fatos/dimensoes, recriar QVDs ou aprovar cobertura e indicadores.
+
+**Evidencia da segunda execucao Windows:** commit `7b33308853bf09892eaae059edaeec0d593d3e77`, QVS SHA-256 `DD0DE8742F714AEC0F9F9FB2D5910C17CADD93B374CB316EE4E1C2C00C78C2AB`; `OBS=3561`, `UNIQUE=3561`, `MUN_MATCHES=3561`, `COMP_MATCHES=0`, `PAIR_MATCHES=3561`. Os hashes/cabecalhos dos 21 QVDs ficaram inalterados segundo o executor. O controle individual reprova; **nao ha PASS da matriz**.
+
+**Mudanca minima:** as duas ocorrencias da chave de `P4_GRID_COMP_MAP` (criacao do mapping e argumento do ApplyMap em `COMP_MATCHES`) passam a usar exatamente `Hash128('P4-COMP',Trim(Text(COMPETENCIA)))` nos dois lados. A chave composta `P4_PAIR_KEY` permanece **identica** a que ja encontrou 3.561/3.561 matches. Mecanismos e criterios fail-closed, tres `STORE TXT` sob %TEMP%, zero imputado proibido, 21 QVDs em modo leitura e criterio `COMP_MATCHES=3561` permanecem inalterados. Trata-se de **hipotese tecnica dirigida pelo log** (sem prova independente do mecanismo dual).
+
+**Novo QVS SHA-256:** `CA3CA2EDA0101D3E09471738B5B1C8281A2E25691B563D44FE157256535C3AC4`, verificado offline com conteudo byte a byte identico ao blob Git `0d60b12d6217e9f86f504827d9df9c777c03235e`. O PowerShell foi atualizado para exigir o novo SHA. **Nao foi executado no Windows nem no QlikView 12 nesta revisao**; inspeção estatica apenas.
+
+**Criterios finais e STOP:** apos `git pull --ff-only`, conferir branch/HEAD, SHA-256 e executar somente uma recarga read-only. PASS somente se `COMP_MATCHES=3561`, `PAIR_MATCHES=3561`, grade 8.028, somatorios intactos, evidencias de tres TXT validadas e hashes de 21 QVDs identicos. Em qualquer BLOCKED/INCONCLUSIVE: **encerrar este ciclo sem novos patches automaticos**, preservar logs e propor revisao independente com escopo/autorizacao separados. Nem PASS restrito demonstra escopo hospitalar/zero real/Link Table/indicadores de producao.
+
+**Status:** `VI_P4=BLOCKED_UNTIL_NEW_LOCAL_VALIDATION`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `ZERO_PROOF=NOT_PROVEN`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PRODUCTION_APPROVED=False`; `PR_MERGED=False`.
