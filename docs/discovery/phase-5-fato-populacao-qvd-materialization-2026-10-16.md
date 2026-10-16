@@ -1,8 +1,8 @@
-# Fase V — FATO_POPULACAO: CREATE físico + READBACK (preparação; NÃO EXECUTADO)
+# Fase V — FATO_POPULACAO: CREATE físico + READBACK (PASS local reportado)
 
 **Data de preparação:** 16/10/2026. **Branch:** `feat/phase-v-fato-populacao-qvd-materialization-20261015`. **Base canônica:** `main=2f7bfe63efe1ab3602ae89695de032584c6f6e9c`.
 
-**Gate autorizado nesta execução:** somente **preparar código/documentação** de materialização candidata em branch e abrir PR Draft. **Não existe autorização de executar** `STORE`, criar qualquer QVD/QVW no Windows, rodar QlikView, fazer merge, alterar scripts anteriores ou excluir branches. **Estado:** `POP_QVD_CREATE_READBACK=READY_STATIC_ONLY_NOT_EXECUTED`.
+**Histórico da preparação:** este PR começou autorizado somente para preparar os scripts em branch, sem execução. **Execução posterior:** o responsável concedeu autorização separada para **uma execução única** de CREATE + READBACK e reportou o resultado do Windows/QlikView 12 em 16/10/2026 (00:17:47–00:17:50). **Estado atual:** `POP_QVD_CREATE_READBACK=PASS_LOCAL_REPORTED_PHYSICAL_CANDIDATE_ONLY`, sem merge. Nenhuma nova execução foi realizada pelo revisor.
 
 ## Fontes, contratos e justificativa
 
@@ -24,18 +24,18 @@
 
 O executor verifica no computador do responsável o log original `TRANSFORMACAO/V5_IBGE_FATO_POP_IMPL_PREFLIGHT.qvw.log`, que deve comprovar a execução única anterior com o mesmo perfil. **Não apagar ou reexecutar** os QVWs/logs do PR #94. `TRANSFORMACAO/transf_main.qvs` e `TRANSFORMACAO/TRANSF.qvw` não são executados/modificados.
 
-## Critérios físicos — AINDA NÃO EXECUTADOS
+## Critérios físicos — definidos antes da execução e atingidos no stdout local reportado
 
-**Pré-condições futuras obrigatórias:** autorização específica do responsável; execução do PowerShell com opt-in obrigatório `-AuthorizeCreate` (sem a flag, o runner encerra antes de criar QVW ou QVD); branch de execução isolada correspondente; Git clean para rastreados; 20 QVDs anteriores presentes e congelados por SHA-256; quatro entradas da população válidas; fatos `FATO_INTERNACAO.qvd` e `FATO_CAPACIDADE_LEITO.qvd` presentes; `FATO_POPULACAO.qvd`, `LINK_ANALISE.qvd` e os dois novos QVWs/logs **inexistentes**; QVS de memória com SHA-256 idêntico ao PASS do PR #94.
+**Pré-condições da execução realizada:** autorização específica do responsável; execução do PowerShell com opt-in obrigatório `-AuthorizeCreate` (sem a flag, o runner encerra antes de criar QVW ou QVD); branch de execução isolada correspondente; Git clean para rastreados; 20 QVDs anteriores presentes e congelados por SHA-256; quatro entradas da população válidas; fatos `FATO_INTERNACAO.qvd` e `FATO_CAPACIDADE_LEITO.qvd` presentes; `FATO_POPULACAO.qvd`, `LINK_ANALISE.qvd` e os dois novos QVWs/logs **inexistentes**; QVS de memória com SHA-256 idêntico ao PASS do PR #94.
 
-**CREATE esperado quando futuramente autorizado:** `V5_IBGE_FATO_POP_CREATE.qvw` carrega a candidata de memória com quatro QVDs somente leitura, valida marcadores `[V5-POP-FACT]` e executa um único `STORE` em destino novo mediante token. Só `FATO_POPULACAO.qvd` pode ser adicionada ao inventário (passando a **21 QVDs**); os 20 QVDs anteriores devem manter SHA-256. Log fresco deve conter:
+**CREATE esperado e observado na execução autorizada:** `V5_IBGE_FATO_POP_CREATE.qvw` carrega a candidata de memória com quatro QVDs somente leitura, valida marcadores `[V5-POP-FACT]` e executa um único `STORE` em destino novo mediante token. Só `FATO_POPULACAO.qvd` pode ser adicionada ao inventário (passando a **21 QVDs**); os 20 QVDs anteriores devem manter SHA-256. Log fresco deve conter:
 
 ```text
 [V5-POP-STORE] ROWS=669 GRAIN=669 SK_PAIRS=669 MUNICIPIOS=223 YEARS=3 FILES=3 NULL=0 BAD_SK=0 FIELDS=7
 [V5-POP-STORE] VERDICT=WRITTEN_PENDING_INDEPENDENT_QVD_AUDIT
 ```
 
-**READBACK esperado quando futuramente autorizado:** um **segundo** QVW `V5_IBGE_FATO_POP_QVD_READBACK.qvw` lê só o QVD recém-gravado; confere 7 campos **em ordem**: `%SK_MUNICIPIO`, `%SK_TEMPO_ANO`, `POPULACAO_ESTIMADA`, `FATO_POP_IBGE7_ORIGEM`, `FATO_POP_DATASUS6_REFERENCIA_PB`, `FATO_POP_ANO_ORIGEM`, `FATO_POP_ARQUIVO_ORIGEM`. Grão, SKs recomputadas, domínio, unicidade e soma por ano devem ser revalidados sem usar a projeção em RAM nem reler a origem IBGE. Novo QVD deve manter **o mesmo SHA-256** entre CREATE e READBACK; todos os 20 QVDs anteriores invariantes. Marcadores previstos:
+**READBACK esperado e observado na execução autorizada:** um **segundo** QVW `V5_IBGE_FATO_POP_QVD_READBACK.qvw` lê só o QVD recém-gravado; confere 7 campos **em ordem**: `%SK_MUNICIPIO`, `%SK_TEMPO_ANO`, `POPULACAO_ESTIMADA`, `FATO_POP_IBGE7_ORIGEM`, `FATO_POP_DATASUS6_REFERENCIA_PB`, `FATO_POP_ANO_ORIGEM`, `FATO_POP_ARQUIVO_ORIGEM`. Grão, SKs recomputadas, domínio, unicidade e soma por ano devem ser revalidados sem usar a projeção em RAM nem reler a origem IBGE. Novo QVD deve manter **o mesmo SHA-256** entre CREATE e READBACK; todos os 20 QVDs anteriores invariantes. Marcadores previstos:
 
 ```text
 [V5-POP-QVD-AUDIT] HEADER ROWS=669 FIELDS=7
@@ -45,10 +45,44 @@ O executor verifica no computador do responsável o log original `TRANSFORMACAO/
 [V5-POP-QVD-AUDIT] VERDICT=PASS_PHYSICAL_QVD_READBACK_CANDIDATE_ONLY
 ```
 
-**PASS somente no futuro:** `VERDICT=PASS_QV_POPULACAO_QVD_MATERIALIZED_AND_REOPENED_CANDIDATE_ONLY` no PowerShell **após execução REAL** e conferência do log, com `PRODUCTION_APPROVED=False`, `LINK_ANALISE_QVD_GENERATED=False`.
+**PASS local reportado após a execução:** `VERDICT=PASS_QV_POPULACAO_QVD_MATERIALIZED_AND_REOPENED_CANDIDATE_ONLY` no PowerShell **após execução REAL** e conferência do log, com `PRODUCTION_APPROVED=False`, `LINK_ANALISE_QVD_GENERATED=False`.
 
 **BLOCKED/INCONCLUSIVE:** sem autorização, QlikView indisponível, erro de script/log, qualquer diferença de schema/linhas/SK/medidas/hash, arquivo anterior modificado, novo QVD fora do destino, artefato já existente ou ausência do log anterior. Em erro, **não repetir o CREATE, não sobrescrever/renomear/excluir QVD parcial ou QVW/log**, preservar contexto e parar para análise; não criar R2 automaticamente.
 
 ## Encerramento da preparação
 
-**Estado ao encerrar:** `POP_QVD_CREATE_READBACK=READY_STATIC_ONLY_NOT_EXECUTED`; evidência **estática GitHub apenas**, **nenhum QVD físico gerado ou auditado** neste gate. PR Draft **sem merge**. **Próxima decisão separada:** aprovação/revisão pré-execução e autorização expressa para o one-shot em Windows/QlikView 12. Não iniciar Fase VI (`LINK_KEY_CONTRACT=NOT_APPROVED`), PAINEL, indicadores nem produção (`PRODUCTION_APPROVED=False`).
+**Estado ao encerrar:** `POP_QVD_CREATE_READBACK=PASS_LOCAL_REPORTED_PHYSICAL_CANDIDATE_ONLY`. Foi reportada uma execução única no QlikView 12 com criação do 21º QVD e READBACK em QVW distinto. A conferência GitHub examina scripts e evidências textuais informadas, **não** os binários nativos Windows. PR continua **Draft, sem merge**, até autorização independente. **Não reexecutar o CREATE** (o destino agora existe), não limpar nem alterar dados/artefatos locais; não iniciar Fase VI (`LINK_KEY_CONTRACT=NOT_APPROVED`), PAINEL, indicadores nem produção (`PRODUCTION_APPROVED=False`).
+
+
+## Evidência de execução física local — 16/10/2026, 00:17:47–00:17:50
+
+**Proveniência da evidência:** transcrição integral de stdout PowerShell e linhas do log QlikView emitidas pelo executor, fornecidas pelo responsável após **uma execução autorizada** em seu Windows. Este registro foi confrontado com as condições e marcadores dos três scripts versionados no PR #96. **Não houve inspeção independente dos QVDs/QVWs ou dos logs brutos binários**, nem CI/QlikView executado pelo revisor. Logo, o nível é **PASS LOCAL REPORTADO**, não homologação de produção nem aprovação inter-fatos.
+
+| Controle | Evidência reportada |
+| --- | --- |
+| Branch e árvore Git | `feat/phase-v-fato-populacao-qvd-materialization-20261015`, `git pull --ff-only` atualizado, sem arquivos rastreados alterados; 10 QVWs diagnósticos preexistentes não rastreados preservados |
+| Escopo do runner | `MODE=PHASE_V_POPULACAO_ONE_SHOT_CREATE_AND_READBACK`; `SOURCE_QVDS_READ_ONLY=True`; `TRANSF_MAIN_NOT_EXECUTED=True` |
+| SHA-256 do QVS fonte já validado em RAM | `FACT_QVS_SHA256=3E28DECB7539E90E5314A77E7DD4E2057FDE499899AB0B943A432F117D885ADE` |
+| SHA-256 dos novos scripts em Windows | `STORE_QVS_SHA256=1419FB626D6A0224CC154BA5E6D22271A79E9FC6D6C04EB091EC0FC2846D8DD2`; `AUDIT_QVS_SHA256=B0F594FF99ED89487A8354A549187EBC0176E2B94971FBDB41282D50D3D875C2` |
+| Base de integridade | `EXISTING_QVD_INVENTORY_COUNT=20` |
+| Criação | `CREATE_RELOAD_STARTED=True`; `CREATE_RELOAD_RETURNED=True` |
+| Perfil fonte in-memory dentro da recarga CREATE | `SOURCE ROWS=669 GRAIN=669 MUNICIPIOS=223 YEARS=3 FILES=3 MISS=0 BAD_DOMAIN=0 BAD_MEASURE=0 BAD_SK=0` |
+| Fato in-memory antes do STORE | `OUTPUT ROWS=669 GRAIN=669 SK_PAIRS=669 MUNICIPIOS=223 YEARS=3 FILES=3 NULL=0 BAD_SK=0 FIELDS=7` |
+| STORE | `[V5-POP-STORE] ROWS=669 GRAIN=669 SK_PAIRS=669 MUNICIPIOS=223 YEARS=3 FILES=3 NULL=0 BAD_SK=0 FIELDS=7`; `VERDICT=WRITTEN_PENDING_INDEPENDENT_QVD_AUDIT` |
+| Preservação após CREATE | `ALL_4_INPUT_QVD_SHA256_UNCHANGED=AFTER_CREATE`; `ALL_PREEXISTING_QVD_SHA256_UNCHANGED=AFTER_CREATE`; `ONLY_NEW_QVD_IS_FATO_POPULACAO=AFTER_CREATE` |
+| Artefato físico criado | `TRANSFORMACAO/QVD/FATO_POPULACAO.qvd`, `FACT_QVD_SIZE_BYTES=25696` |
+| SHA-256 após CREATE | `C0BD387E1F64E06DDABA49BF9D1534315F3AE90E13752EB478DFC63A0C12C311` |
+| READBACK nativo no segundo QVW | `AUDIT_RELOAD_STARTED=True`; `AUDIT_RELOAD_RETURNED=True`; `HEADER ROWS=669 FIELDS=7`; `SCHEMA_EXACT_7=True` |
+| Auditoria independente da projeção em RAM | `TOTAL ROWS=669 GRAIN=669 SK_PAIRS=669 MUNICIPIOS=223 YEARS=3 FILES=3 NULL=0 BAD_SK=0 BAD_DOMAIN=0 BAD_MEASURE=0` |
+| Reconciliação anual | `ANNUAL GROUPS=3 BAD=0 POP2017=4025558 POP2018=3996496 POP2019=4018127` |
+| Veredito do QlikView READBACK | `VERDICT=PASS_PHYSICAL_QVD_READBACK_CANDIDATE_ONLY` |
+| SHA-256 depois da reabertura | `FACT_QVD_SHA256_VERIFIED=C0BD387E1F64E06DDABA49BF9D1534315F3AE90E13752EB478DFC63A0C12C311` — idêntico ao pós-CREATE |
+| Preservação após auditoria | `ALL_4_INPUT_QVD_SHA256_UNCHANGED=AFTER_AUDIT`; `ALL_PREEXISTING_QVD_SHA256_UNCHANGED=AFTER_AUDIT`; `ONLY_NEW_QVD_IS_FATO_POPULACAO=AFTER_AUDIT` |
+| Veredito PowerShell final | `VERDICT=PASS_QV_POPULACAO_QVD_MATERIALIZED_AND_REOPENED_CANDIDATE_ONLY` |
+| Escopo ainda pendente | `LINK_ANALISE_QVD_GENERATED=False`; `LINK_TABLE_NOT_TESTED=True`; `PRODUCTION_APPROVED=False` |
+
+**Observação de interpretação de log:** o `TRACE FACT_POPULACAO_QVD_GENERATED=False` emitido pelo QVS **candidato em memória**, antes de executar seu sufixo STORE, não representa o estado final da mesma recarga. A criação está documentada pelo marcador posterior `[V5-POP-STORE]`, existência/tamanho/hash do QVD e READBACK físico. Os três totais anuais são **controles separados por ano**, não uma medida de população cumulativa entre anos.
+
+**Conclusão restrita:** as três fatos possuem QVD físico **conforme evidências locais reportadas**. O QVD populacional foi criado em destino inicialmente ausente, reaberto por QVW de auditoria separado, com todos os controles de esquema, grão, SK, domínio e totais alcançados. O runner reportou os 20 QVDs originais intactos e só `FATO_POPULACAO.qvd` adicionado (inventário derivado 21 QVDs). A compatibilidade da constelação de estrelas **não foi testada neste gate**.
+
+**STOP executado:** não repetir `tools/materializar_fato_populacao_qlik.ps1`; preservar `FATO_POPULACAO.qvd`, `V5_IBGE_FATO_POP_CREATE.qvw`, `V5_IBGE_FATO_POP_QVD_READBACK.qvw` e respectivos `.qvw.log`. Não excluir, sobrescrever ou regenerar arquivos, não criar `LINK_ANALISE.qvd`, não iniciar Fase VI. **PR #96 permanece Draft e aberto; merge requer autorização separada.** `LINK_KEY_CONTRACT=NOT_APPROVED`; `PRODUCTION_APPROVED=False`.
