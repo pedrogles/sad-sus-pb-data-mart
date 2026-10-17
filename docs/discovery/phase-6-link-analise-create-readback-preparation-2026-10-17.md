@@ -44,7 +44,7 @@ O runner falha se falta confirmação/commit, scripts dirty, 21 originais não r
 - Alvo inicialmente inexistente; único STORE permitido no arquivo novo.
 - Preflight P1 PASS com 85.705 tuplas; classe RD 77.550, LT 7.486 e POP 669, sem duplicidade de %LINK_KEY.
 - CREATE PASS no log nativo e QVD com **exatamente seis campos**.
-- READBACK em QVW distinto: 85.705 keys únicas, sem órfãs em cada fato, nulos de papéis corretos.
+- READBACK em QVW distinto: 85.705 keys únicas, **recálculo independente de Hash128 a partir das cinco coordenadas persistidas (85.705/85.705 correspondentes)**, sem órfãs em cada fato, nulos de papéis corretos.
 - Gate PASS restrito apenas se os marcadores de ambos os QVWs, headers, SHA256 e reconciliação concordarem. Falha/ausência de evidência = BLOCKED/INCONCLUSIVE e STOP.
 
 Números são referências **reportadas** de VI-P1–P4 nos arquivos atualmente conhecidos; qualquer drift na execução deve bloquear, ser diagnosticado e encaminhado a escopo próprio. Verificação estática não demonstra a sintaxe/compatibilidade final de QlikView 12 nem ausência de loops no painel completo.
