@@ -1,6 +1,6 @@
 # Current State — SAD Data Mart SUS PB
 
-**Snapshot:** 16/10/2026. **`main` conferida:** `f8215fb9c3f851ae5a0b9ac7c268e59afbe16022`, após squash merge do [PR #96](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/96).
+**Snapshot:** 17/10/2026. **`main` conferida:** `573405e3e66079a092607a4d24d3789f46da11f4`, após squash merge do [PR #99](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/99). Este snapshot registra fatos comprovados da `main`; a preparação física posterior existe apenas em branch/PR Draft até integração.
 
 ## Contrato acadêmico preservado
 
@@ -17,14 +17,14 @@ Data Mart SUS Paraíba, 2017–2019, com SIH/SUS RD, CNES/LT e IBGE/SIDRA; **Qli
 | `FATO_POPULACAO` | **QVD físico criado e reaberto**, CREATE + READBACK **PASS local reportado**: 669 linhas, 7 campos, 223 municípios × 3 anos, 669 pares SK distintos, zero erros. Código **MERGED #96**; preflight e RAM nos #93/#94 | [Evidência física](../discovery/phase-5-fato-populacao-qvd-materialization-2026-10-16.md) |
 | Inventário | **21 QVDs locais reportados**: 10 extração/referência, 8 dimensões, 3 fatos; os 20 anteriores mantiveram SHA-256 após CREATE e READBACK segundo o executor | Artefatos físicos somente no Windows; não versionados |
 | CNES/LT complementar | Preflight PASS local reportado, PR #90 ainda Draft e não integrado | [PR #90](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/90) |
-| Fase VI — Link Table | **PENDENTE**; `LINK_KEY_CONTRACT=NOT_APPROVED`, `LINK_ANALISE.qvd` não criado | [Boundary 7](../discovery/boundary-7-implementation-plan.md) |
+| Fase VI — Link Table | VI-P1–P4 scripts na `main` via [PR #98](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/98); VI-P4 PASS local restrito de observabilidade; VI-P5 contrato candidato/documentação integrado via [PR #99](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/99). **`LINK_KEY_CONTRACT=NOT_APPROVED`**; `LINK_ANALISE.qvd` não criado. | [VI-P5](../discovery/phase-6-vi-p5-sad-link-v1-physical-contract-2026-10-17.md) |
 | Fases VII–IX | Painel técnico, indicadores e dashboards físicos pendentes; semântica V2 aprovada apenas semanticamente | [Contrato V2](../discovery/phase-6-semantic-v2-approved-2026-10-14.md) |
 
 **Qualificação:** PASS significa **execução QlikView local reportada pelo responsável**, com stdout e marcadores de log confrontados com o código; os QVDs/QVWs binários não foram auditados independentemente. **Não é aprovação de produção**: `PRODUCTION_APPROVED=False`. A implementação de três fatos físicas não comprova associação completa da constelação ou execução do fluxo geral `TRANSF.qvw → PAINEL.qvw`.
 
 ## Bloqueios e invariantes
 
-- `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED`: não antecipar integração física, denominadores ou dashboards.
+- `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`: não antecipar integração física, denominadores ou dashboards. VI-P5 aprovou apenas o *modo de projeção POP em memória*, sem aceite do contrato físico final.
 - População anual e leitos mensais são **semi-aditivos no tempo**; não multiplicar população por competências nem somar snapshots de anos diferentes como população total. `internações/leito` não equivale automaticamente a taxa de ocupação.
 - `T29_HISTORICAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`: evitar legenda CNES retroativa e exclusão de LT válido por escopo não comprovado.
 - SIH/RD: `IDENT=1` (555.089) e `IDENT=5` (11.583) não significam o mesmo; `IDENT=5` não é internação nova. Há 5.202 residentes fora da PB sem denominador municipal PB apropriado. Ponte IBGE7↔DATASUS6 comprovada somente no escopo da PB.
@@ -32,6 +32,6 @@ Data Mart SUS Paraíba, 2017–2019, com SIH/SUS RD, CNES/LT e IBGE/SIDRA; **Qli
 
 ## Próximo gate — decisão pendente
 
-**Fase VI: preflight READ-ONLY do contrato de associação entre as três fatos.** Inspecionar os QVDs físicos e as coordenadas de tempo, município de residência, município de atendimento e estabelecimento; analisar valores inaplicáveis/nulos, cardinalidades, regras de serialização e riscos antes de aprovar qualquer `%LINK_KEY`. Reutilizar evidências já produzidas. **Sem geração de `LINK_ANALISE.qvd`, recarga de `TRANSF.qvw`, implementação de painéis ou alteração de fatos.** Requer autorização específica.
+**Fase VI: preparação controlada da materialização `LINK_ANALISE.qvd`.** Contrato estático VI-P5 na `main` e estratégia de projetar `%LINK_KEY` da população em memória aprovada apenas documentalmente. Preparar, em branch própria, QVS versionados, runner PowerShell com destination guard, reutilização do VI-P1 congelado, READBACK QlikView independente e manifesto SHA-256 dos 21 QVDs. **Sem executar CREATE/READBACK físico, recarregar `TRANSF.qvw`, modificar QVDs ou iniciar Fase VII.** Revisar PR Draft e solicitar autorização independente para qualquer execução física ou merge.
 
-**Limite desta atualização:** alterar somente este Markdown em branch de documentação, abrir PR Draft e **não realizar merge**.
+**Limite deste snapshot:** atualização operacional para acompanhar PRs #98/#99 e indicar o gate de preparação; código preparatório em PR Draft não prova testes locais nem modifica a `main` até merge.
