@@ -53,3 +53,9 @@ Antes de executar, registrar **objetivo**, **fontes**, **escopo tocável**, **in
 Não versionar QVDs, QVWs binários, datasets grandes, dados brutos, saídas locais e artefatos derivados automaticamente. Antes de publicar qualquer dado, conferir licença, tamanho, proveniência e finalidade. Para testes locais, usar QVW/QVD de origem somente leitura quando essa for a fronteira aprovada, verificando preservação por hash quando necessário.
 
 **Roteamento operacional vigente:** `docs/project/current-state.md`. Não reconstruir a situação presente a partir de seções cronológicas antigas, descrição acumulativa do PR #83 ou memória.
+
+## Versionamento obrigatorio dos scripts de implementacao e validacao
+
+Todo script executavel PowerShell, Python ou QVS utilizado para implementar, recarregar, auditar ou fundamentar um gate do SAD deve estar **commitado em branch do repositorio canonico antes da execucao local**. O executor deve informar o commit de origem e, para scripts criticos, conferir SHA-256 dos QVS/insumos. Correcao posterior requer novo commit e nova evidencia: nao herdar PASS automaticamente de uma revisao anterior.
+
+Pacotes ZIP podem apenas distribuir copias de scripts ja versionados, identificando branch e commit; **nao sao fonte de verdade do codigo**. Manter logs brutos, QVDs, QVWs de teste, dados e exportacoes locais fora do Git, registrando caminhos, hashes e resultados relevantes em documento de Discovery. Testes exploratorios descartaveis nao versionados sao permitidos apenas quando explicitamente rotulados `EXPERIMENTAL_NOT_GATE_EVIDENCE`; antes de sustentar PASS ou implantacao devem ser regularizados no Git e executados a partir do commit versionado. Nenhum merge ou alteracao estrutural e autorizado por esta regra.

@@ -1,0 +1,5 @@
+# VI read-only QVS tests depend on byte-identical SHA-256 across Windows checkouts.
+# Limit LF enforcement to the three approved preflight sources; no project-wide normalization.
+TRANSFORMACAO/vi_p1_readonly.qvs text eol=lf
+TRANSFORMACAO/vi_p3_source_reference.qvs text eol=lf
+TRANSFORMACAO/vi_p4_municipal_coverage.qvs text eol=lf
