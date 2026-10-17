@@ -48,7 +48,7 @@ NOCONCATENATE LOAD
  'Y=' & If(IsNull([%SK_TEMPO_ANO]),'N','V' & Len(Text([%SK_TEMPO_ANO])) & ':' & Text([%SK_TEMPO_ANO])),
  'R=' & If(IsNull([%SK_MUNICIPIO_RESIDENCIA]),'N','V' & Len(Text([%SK_MUNICIPIO_RESIDENCIA])) & ':' & Text([%SK_MUNICIPIO_RESIDENCIA])),
  'S=' & If(IsNull([%SK_MUNICIPIO_SERVICO]),'N','V' & Len(Text([%SK_MUNICIPIO_SERVICO])) & ':' & Text([%SK_MUNICIPIO_SERVICO])),
- 'E=' & If(IsNull([%SK_ESTABELECIMENTO]),'N','V' & Len(Text([%SK_ESTABELECIMENTO])) & ':' & Text([%SK_ESTABELECIMENTO])) ,1,0)) AS BAD_HASH
+ 'E=' & If(IsNull([%SK_ESTABELECIMENTO]),'N','V' & Len(Text([%SK_ESTABELECIMENTO])) & ':' & Text([%SK_ESTABELECIMENTO]))) ,1,0)) AS BAD_HASH
 RESIDENT VI_LINK_RB;
 LET vVRRows=Peek('ROWS',0,'VI_LINK_RB_STATS');
 LET vVRKeys=Peek('KEYS',0,'VI_LINK_RB_STATS');
