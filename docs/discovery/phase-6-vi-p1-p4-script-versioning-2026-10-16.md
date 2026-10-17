@@ -8,10 +8,10 @@
 - VI-P1: pacote final **R2**, PASS local read-only restrito reportado pelo responsavel.
 - VI-P2: pacote final original, PASS local read-only restrito reportado.
 - VI-P3: pacote final **R4**, PASS local de candidatos numericos T24-T26 limitado a Joao Pessoa/2018 e setembro/2018; previa discrepancia por `Aggr()` detectada e candidata reconciliada, **nao** homologada para cobertura generica.
-- VI-P4: executado **uma vez** a partir de 52721d4 no QlikView 12; **BLOCKED_GRID_RECONCILIATION**. A revisao estatica posterior da associacao possui novo commit, ainda sem execucao local. A matriz de 223 municipios × 36 competencias classifica observacoes, nunca comprova zero real ou cobertura hospitalar.
+- VI-P4: apos dois BLOCKED diagnosticos em 16/10, o commit final b54b2a3 foi executado no QlikView 12 em **17/10/2026**, com **PASS local restrito de observabilidade** (223 municipios x 36 competencias). Nao equivale a aprovacao da cobertura hospitalar ou zero real.
 - A auditoria de stdout/log relatada nas conversas precedentes **nao equivale** a auditoria independente dos QVDs binarios, do conjunto de evidencias local ou da aplicacao final.
 
-Os QVS dos pacotes finais foram copiados sem mudanca de conteudo. Os executores PS1 foram adaptados exclusivamente para ler o QVS versionado de `TRANSFORMACAO/`, e um preflight `VI-GOV` garante `HEAD` Git identificavel, dois arquivos tracked e sem alteracoes locais antes de executar; estes PS1 adaptados **nao foram executados em Windows**. Requer smoke de VI-P4 ao retomar; nao repetir VI-P1 a P3 apenas para alterar layout de arquivos.
+Os QVS dos pacotes finais foram copiados sem mudanca de conteudo. Os executores PS1 foram adaptados exclusivamente para ler o QVS versionado de `TRANSFORMACAO/`, e um preflight `VI-GOV` garante `HEAD` Git identificavel, dois arquivos tracked e sem alteracoes locais antes de executar; dos quais somente o executor VI-P4 adaptado foi executado no Windows (17/10/2026, PASS local restrito). VI-P1 a P3 nao foram reexecutados no layout Git; nao repetir VI-P1 a P3 apenas para alterar layout de arquivos.
 
 ## Arquivos e execucao
 
@@ -20,7 +20,7 @@ Os QVS dos pacotes finais foram copiados sem mudanca de conteudo. Os executores 
 | VI-P1 | `Invoke-SadViP1Readonly.ps1` | `vi_p1_readonly.qvs` | PASS local do pacote R2; layout Git ainda nao reexecutado |
 | VI-P2 | `Invoke-SadViP2Readonly.ps1` | `vi_p1_readonly.qvs` (reutilizado) | PASS local do pacote original; layout Git ainda nao reexecutado |
 | VI-P3 | `Invoke-SadViP3Readonly.ps1` | `vi_p3_source_reference.qvs` | PASS local do pacote R4; layout Git ainda nao reexecutado |
-| VI-P4 | `Invoke-SadViP4Readonly.ps1` | `vi_p4_municipal_coverage.qvs` | **BLOCKED local** em duas execucoes; ultima correcao tecnica versionada, nao executada |
+| VI-P4 | `Invoke-SadViP4Readonly.ps1` | `vi_p4_municipal_coverage.qvs` | **PASS local restrito 17/10/2026**, commit `b54b2a3`; sem aprovacao de cobertura |
 
 ### SHA-256 exato dos QVS (congelado dos pacotes locais)
 
@@ -41,7 +41,7 @@ Precondicoes: Git no PATH, Windows com QlikView 12 COM, 21 QVDs locais previamen
 ## Escopo de criterio de aceite e saida
 
 - PASS desta regularizacao: branch + PR Draft com os quatro PS1 e tres QVS textuais; QVS com SHA identico aos pacotes; preflight de Git; nenhuma mudanca em dimensoes/fatos ou QVD; regra de versionamento no `AGENTS.md` proposta; **sem merge**.
-- P4 experimental PASS futuro: 8.028 celulas municipio/competencia reconciliadas com staging e fato, observadas/ausentes sem imputacao de zero, 21 QVDs inalterados, tres TXT temporarios; nao certifica cobertura hospitalar.
+- P4 local PASS reportado em 17/10/2026: 8.028 celulas municipio/competencia reconciliadas com staging e fato, observadas/ausentes sem imputacao de zero, 21 QVDs inalterados conforme SHA local, tres TXT temporarios; **nao certifica cobertura hospitalar**.
 - P4 BLOCKED se QVD mudou, cardinalidade nao bate, Qlik falha, evidencia nao contemporanea ou reprovacao de semantica; nao repetir automaticamente.
 - `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PRODUCTION_APPROVED=False`.
 
@@ -85,3 +85,26 @@ Precondicoes: Git no PATH, Windows com QlikView 12 COM, 21 QVDs locais previamen
 **Criterios finais e STOP:** apos `git pull --ff-only`, conferir branch/HEAD, SHA-256 e executar somente uma recarga read-only. PASS somente se `COMP_MATCHES=3561`, `PAIR_MATCHES=3561`, grade 8.028, somatorios intactos, evidencias de tres TXT validadas e hashes de 21 QVDs identicos. Em qualquer BLOCKED/INCONCLUSIVE: **encerrar este ciclo sem novos patches automaticos**, preservar logs e propor revisao independente com escopo/autorizacao separados. Nem PASS restrito demonstra escopo hospitalar/zero real/Link Table/indicadores de producao.
 
 **Status:** `VI_P4=BLOCKED_UNTIL_NEW_LOCAL_VALIDATION`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `ZERO_PROOF=NOT_PROVEN`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PRODUCTION_APPROVED=False`; `PR_MERGED=False`.
+
+## VI-P4 — resultado final local de observabilidade (17/10/2026)
+
+**GATE PASS LOCAL RESTRITO, reportado pelo responsavel em stdout PowerShell/QlikView 12.** Ultima execucao autorizada do ciclo, QVS e runner versionados em `b54b2a3705e31d2c280947a0b37c97220345f928` da branch `chore/phase-vi-versionamento-preflights-20261016`; QVS SHA-256 `CA3CA2EDA0101D3E09471738B5B1C8281A2E25691B563D44FE157256535C3AC4`. `VERDICT=PASS_VI_P4_LOCAL_OBSERVABILITY_ONLY_NOT_COVERAGE_APPROVAL`.
+
+**Fonte:** stdout completo compartilhado pelo responsavel em 17/10/2026; diretorio de evidencia local `C:\Users\pedro\AppData\Local\Temp\SAD_VI_P4_READONLY_20261017T113406403Z_1d07495ccc97450d9d77e804a4bae21a`. Existem tres caminhos de exportacao TXT reportados: `municipio_mes_observabilidade.txt`, `municipio_ano_observabilidade.txt`, `competencia_observabilidade.txt`. A auditoria do executor importou e validou os TXT; estes TXT brutos e os QVDs fisicos nao foram examinados independentemente pelo agente. Nao incorporar binarios, CSVs/TXTs ou logs brutos ao Git.
+
+| Controle | Evidencia reportada | Limite |
+| --- | ---: | --- |
+| Matriz | 8.028 = 223 municipios x 36 competencias | Universo de referencia, nao cobertura comprovada |
+| `ABSENT_NOT_ZERO_PROVEN` | **4.467** | Sem linha LT, ausencia nao equivale a zero |
+| `OBSERVED_ZERO_QT_SUS_SCOPE_UNVERIFIED` | **97** | Soma de `QT_SUS` observada igual a zero, **zero real nao comprovado** |
+| `OBSERVED_POSITIVE_QT_SUS_SCOPE_UNVERIFIED` | **3.464** | Soma de leitos SUS positiva em registros observados; escopo hospitalar nao verificado |
+| Pares com pelo menos uma linha LT | 3.561 = 97 + 3.464 | Linhas LT reconciliadas com fato |
+| Municipio x ano com 12 meses de linhas | **290 de 669** | 12 meses observados nao prova completude de hospitais/leitos |
+| Reconciliação `SRC_CNES_LT` x `FATO_CAPACIDADE_LEITO` | 35.518 linhas | Fonte e fato coincidentes no controle executado |
+| Soma de snapshots `QT_SUS` | 270.076 | Soma de snapshots **somente para reconciliacao**; nao e leitos anuais |
+| Soma de snapshots `QT_EXIST` | 337.147 | Nao e capacidade anual |
+| Integridade QVDs | `ALL_21_QVD_SHA256_AND_HEADERS_UNCHANGED=True` | Comparacao local reportada de SHA/cabecalhos antes/depois |
+
+O log nativo foi lido automaticamente pelo PowerShell e a matriz reconciliada. **Nenhuma aprovacao de cobertura por municipio/competencia, escopo hospitalar, zero quantitativo real, T25/T26 gerais ou `%LINK_KEY` definitivo** decorre deste PASS. Mesmo a existencia de todos os meses nao comprova completude do universo de estabelecimentos. `EVIDENCE_ONLY_TXT_EXPORTS_TO_TEMP=True`, `TRANSF_QVW_NOT_RELOADED=True`, `LINK_ANALISE_QVD_GENERATED=False`, `PRODUCTION_APPROVED=False`.
+
+**ENCERRAMENTO:** `VI_P4=PASS_LOCAL_OBSERVABILITY_ONLY`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `ZERO_PROOF=NOT_PROVEN`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `PRODUCTION_APPROVED=False`. Nao executar nova revisao VI-P4 nem ampliar escopo automaticamente. O PR #98 permanece Draft e exige autorizacao explicita para merge. Novas perguntas de cobertura semantica/escopo hospitalar ou modelagem fisica devem ser tratadas como gates separados.
