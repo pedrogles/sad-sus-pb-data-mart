@@ -70,7 +70,7 @@ function Oracle([string]$folder,[string]$file,[string]$manifest){
   $v=[string]$m.output_sha256.$file
   $hash=(Get-FileHash -LiteralPath $csv -Algorithm SHA256).Hash
   if($v -notmatch '^[a-fA-F0-9]{64}$' -or $hash -cne $v.ToUpperInvariant()){throw ('BLOCKED: SHA oracle '+$file)}
-  Write-Output ('ORACLE_'+$file+'_SHA256='+$hash)
+  Write-Host ('ORACLE_'+$file+'_SHA256='+$hash)
   return $csv
 }
 function CountSelected([string]$field){
