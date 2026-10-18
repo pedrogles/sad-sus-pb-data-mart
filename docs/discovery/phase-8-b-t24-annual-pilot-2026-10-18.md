@@ -30,3 +30,20 @@ O runner exige branch própria e ambos os scripts versionados. Antes da execuç�
 **Fora do escopo:** T24 geral (mês parcial, multiano, seleção contraditória D2, P5 R/I/B, agregação regional), T25/T26, CNES histórico, Fase IX, homologação e produção. Estados preservados: `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `PRODUCTION_APPROVED=False`.
 
 Não modificar nem recarregar QVD/QVW original, realizar merge ou iniciar dashboards.
+
+
+## Tentativa local 1 — BLOCKED_RUNTIME_DECIMAL_ABS
+
+**Fonte:** stdout Windows PowerShell encaminhado pelo responsável. Teste executado da branch `feat/phase-viii-b-t24-annual-pilot-20261018`, commit `da3d5cf28f51fe4648df162e2e28822341353d90`; runner SHA-256 `939E11FD5C9F0CF74274819E08DFC2523B358893421307C6D61416A9D446C213`; QVS SHA-256 `DF9F35D5CB02D3192D60CEB832AA7177087813ED14DD0CD0BA203A116907CF1E`.
+
+**Parser:** `PARSER=PASS` reportado em sessão anterior à execução. **Evidência local:** `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_T24_c1bd6fa732604437b10383c71cfcece8`.
+
+**Resultado local reportado:** `INVENTORY_22_QVD=PASS_READ_ONLY`; `F3_ORACLE_SHA256=8B9AF93015D3B2574A2424D9241FDC42FB56E86CAFA52963811BCE9D485AF622`; `VERDICT=BLOCKED_OR_INCONCLUSIVE` por `System.Decimal` sem método estático `Abs`, erro na linha 282 em `$delta=[decimal]::Abs($actualRate-$expectedRate)`. Após a falha, `ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED=True` e `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`.
+
+**Diagnóstico restrito:** a implementação do piloto atingiu a etapa de comparação de taxa depois de criar/carregar o modelo Qlik em QVW temporário; a saída não comprova ainda reconciliação numérica de nenhum dos cinco casos. `Decimal.Abs` não é disponível no .NET Framework usado com Windows PowerShell 5.1. Não presumir erro na semântica Qlik, denominador F3, dados ou `LINK_ANALISE`. Não houve evidência de escrita nos arquivos de produção. Os arquivos temporários e logs devem permanecer preservados para auditoria se necessário.
+
+**Correção pontual versionada** nesta mesma branch: `$delta=[Math]::Abs([decimal]($actualRate-$expectedRate))` substitui unicamente a chamada incompatível, preservando o tipo decimal, fórmula candidata, tolerância `0.000001`, oráculos, seleção e integridade. Commit de correção: `ef3041a47ba7bc1c56131a26dd334318f0a44cfd`. Este commit é **somente revisão de código**, sem PASS de parser Windows ou execução numérica nova.
+
+**Próxima ação única:** `git pull --ff-only` na branch correta; verificar novo commit; rodar parser real do PowerShell, e **somente em `PARSER=PASS`** realizar **uma nova tentativa controlada** com `-F3Dir` e `-RunQlik`. Verificar os cinco registros e `t24_reconciliation.csv`, hash de 22 QVDs/QVWs e stdout/log nativo. Se houver nova falha, STOP, recuperar motivo e relatório; nenhuma repetição automática.
+
+**Estado:** `VIII_B_T24_ANNUAL_PILOT=BLOCKED_FIRST_RUNTIME_ATTEMPT_NEW_FIX_UNTESTED`; `T24_5_CASES=NOT_RECONCILED`; `T25_T26=NOT_TESTED`; `P5_D2=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `PRODUCTION_APPROVED=False`. PR #110 Draft, sem merge, sem fase IX.
