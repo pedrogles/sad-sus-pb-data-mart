@@ -159,7 +159,11 @@ try{
    '__MUN_QVD__'=(Join-Path $repo 'TRANSFORMACAO/QVD/DIM_MUNICIPIO.qvd')
    '__EST_QVD__'=(Join-Path $repo 'TRANSFORMACAO/QVD/DIM_ESTABELECIMENTO.qvd')
   }
-  if(@($dest,$stage | Where-Object {$_.Contains(']') -or $_.Contains("'") -or $_.Contains([char]10) -or $_.Contains([char]13)}).Count -gt 0){throw 'Invalid QVD output path'}
+  foreach($writePath in @($dest,$stage)){
+   if($writePath.Contains(']') -or $writePath.Contains("'") -or $writePath.Contains([char]10) -or $writePath.Contains([char]13)){
+    throw 'Invalid QVD output path'
+   }
+  }
   $body=WithPaths ($p1+[Environment]::NewLine+$producer.Replace('__LINK_DEST__',$stage)) $paths
   if((Test-Path -LiteralPath $dest) -or (Test-Path -LiteralPath $stage)){throw 'Output or staging appeared before reload; stop'}
   ReloadTemporary $body 'VI_LINK_CREATE' '[VI-LINK] VERDICT=PASS_STORE_ONLY_READBACK_REQUIRED' '[VI-LINK] VERDICT=BLOCKED'
