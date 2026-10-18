@@ -16,6 +16,9 @@ $tail='TRANSFORMACAO/vi_link_analise_create_tail.qvs'
 $rb='TRANSFORMACAO/vi_link_analise_readback.qvs'
 $trackedPaths=@($runner,$base,$tail,$rb)
 $dest=Join-Path $repo 'TRANSFORMACAO/QVD/LINK_ANALISE.qvd'
+# STAGE and destination are in the same directory/volume for no-clobber rename.
+# No existing/partial QVD is deleted or overwritten by this executor.
+$stage=Join-Path $repo ('TRANSFORMACAO/QVD/VI_LINK_STAGE_'+[Guid]::NewGuid().ToString('N')+'.qvd')
 $work=Join-Path ([IO.Path]::GetTempPath()) ('SAD_VI_LINK_'+[Guid]::NewGuid().ToString('N'))
 $null=New-Item -Path $work -ItemType Directory -ErrorAction Stop
 Write-Output ('EVIDENCE_DIR='+$work)
@@ -67,7 +70,9 @@ function SnapshotOriginals{
  $ext=Join-Path $repo 'EXTRACAO/QVD'
  $trans=Join-Path $repo 'TRANSFORMACAO/QVD'
  $a=@(Get-ChildItem -LiteralPath $ext -File -Filter '*.qvd')
- $b=@(Get-ChildItem -LiteralPath $trans -File -Filter '*.qvd' | Where-Object {$_.Name -ine 'LINK_ANALISE.qvd'})
+ $b=@(Get-ChildItem -LiteralPath $trans -File -Filter '*.qvd' | Where-Object {
+  $_.FullName -ine $dest -and $_.FullName -ine $stage
+ })
  if($a.Count -ne 10 -or $b.Count -ne 11){throw "Unexpected QVD inventory: $($a.Count) + $($b.Count)"}
  $rows=@()
  foreach($f in @($a)+@($b)){
@@ -128,6 +133,7 @@ try{
  $before=@(SnapshotOriginals)
  $before | Export-Csv -LiteralPath (Join-Path $work 'original_21_before.csv') -NoTypeInformation -Encoding UTF8
  if(Test-Path -LiteralPath $dest){throw 'LINK_ANALISE.qvd exists; overwrite prohibited'}
+ if(Test-Path -LiteralPath $stage){throw 'Unexpected pre-existing staging QVD; stop'}
  $p1=[IO.File]::ReadAllText((Join-Path $repo $base),[Text.Encoding]::UTF8)
  $producer=[IO.File]::ReadAllText((Join-Path $repo $tail),[Text.Encoding]::UTF8)
  $audit=[IO.File]::ReadAllText((Join-Path $repo $rb),[Text.Encoding]::UTF8)
@@ -153,25 +159,49 @@ try{
    '__MUN_QVD__'=(Join-Path $repo 'TRANSFORMACAO/QVD/DIM_MUNICIPIO.qvd')
    '__EST_QVD__'=(Join-Path $repo 'TRANSFORMACAO/QVD/DIM_ESTABELECIMENTO.qvd')
   }
-  if($dest.Contains(']') -or $dest.Contains("'") -or $dest.Contains([char]10) -or $dest.Contains([char]13)){throw 'Invalid output path'}
-  $body=WithPaths ($p1+[Environment]::NewLine+$producer.Replace('__LINK_DEST__',$dest)) $paths
-  if(Test-Path -LiteralPath $dest){throw 'Output appeared before reload; stop'}
+  foreach($writePath in @($dest,$stage)){
+   if($writePath.Contains(']') -or $writePath.Contains("'") -or $writePath.Contains([char]10) -or $writePath.Contains([char]13)){
+    throw 'Invalid QVD output path'
+   }
+  }
+  $body=WithPaths ($p1+[Environment]::NewLine+$producer.Replace('__LINK_DEST__',$stage)) $paths
+  if((Test-Path -LiteralPath $dest) -or (Test-Path -LiteralPath $stage)){throw 'Output or staging appeared before reload; stop'}
   ReloadTemporary $body 'VI_LINK_CREATE' '[VI-LINK] VERDICT=PASS_STORE_ONLY_READBACK_REQUIRED' '[VI-LINK] VERDICT=BLOCKED'
-  if(-not(Test-Path -LiteralPath $dest -PathType Leaf)){throw 'STORE returned PASS but QVD missing'}
-  $new=QvdHeader $dest
+  if(-not(Test-Path -LiteralPath $stage -PathType Leaf)){throw 'STORE returned PASS but staging QVD missing'}
+  $new=QvdHeader $stage
   $schema=@('%LINK_KEY','%SK_TEMPO_COMPETENCIA','%SK_TEMPO_ANO',
     '%SK_MUNICIPIO_RESIDENCIA','%SK_MUNICIPIO_SERVICO','%SK_ESTABELECIMENTO')
   if($new.Rows -ne 85705 -or ($new.Fields -join '|') -cne ($schema -join '|')){throw 'QVD physical header unexpected'}
-  Write-Output ('LINK_QVD_SHA256='+(Get-FileHash -Algorithm SHA256 -LiteralPath $dest).Hash)
+  $stageSha=(Get-FileHash -Algorithm SHA256 -LiteralPath $stage).Hash
+  Write-Output ('STAGING_LINK_QVD_SHA256='+$stageSha)
   $rbPaths=@{
-   '__LINK_DEST__'=$dest
+   '__LINK_DEST__'=$stage
    '__FI_QVD__'=$paths['__FI_QVD__']
    '__LT_FACT_QVD__'=$paths['__LT_FACT_QVD__']
    '__POP_QVD__'=$paths['__POP_QVD__']
   }
   $audit=WithPaths $audit $rbPaths
   ReloadTemporary $audit 'VI_LINK_READBACK' '[VI-LINK-RB] VERDICT=PASS_PHYSICAL_QVD_READBACK_CANDIDATE_ONLY' '[VI-LINK-RB] VERDICT=BLOCKED'
-  Write-Output 'VERDICT=PASS_LOCAL_CREATE_AND_READBACK_CANDIDATE_ONLY'
+  # Publish only after independent readback and original-QVD integrity gate.
+  $beforePublish=@(SnapshotOriginals)
+  if((ConvertTo-Json -InputObject $before -Depth 4 -Compress) -cne
+     (ConvertTo-Json -InputObject $beforePublish -Depth 4 -Compress)){
+   throw 'BLOCKED: original QVD hash/header drift before publication; retain stage and stop'
+  }
+  if(Test-Path -LiteralPath $dest){throw 'BLOCKED: final destination appeared before publication; retain stage'}
+  # System.IO.File.Move(source,destination) does NOT replace an existing file.
+  # Same-directory rename protects the final QVD against a concurrent creator.
+  [IO.File]::Move($stage,$dest)
+  if(-not(Test-Path -LiteralPath $dest -PathType Leaf)){throw 'BLOCKED: final QVD missing after publish'}
+  $final=QvdHeader $dest
+  if($final.Rows -ne 85705 -or ($final.Fields -join '|') -cne ($schema -join '|')){
+   throw 'BLOCKED: final QVD header differs after publication'
+  }
+  $finalSha=(Get-FileHash -Algorithm SHA256 -LiteralPath $dest).Hash
+  if($stageSha -cne $finalSha){throw 'BLOCKED: QVD changed across publication'}
+  Write-Output ('FINAL_LINK_QVD_SHA256='+$finalSha)
+  Write-Output 'PUBLISH_METHOD=SAME_DIRECTORY_NON_OVERWRITING_FILE_MOVE'
+  Write-Output 'VERDICT=PASS_LOCAL_CREATE_READBACK_AND_ATOMIC_PUBLISH_CANDIDATE_ONLY'
   Write-Output 'LINK_KEY_CONTRACT=NOT_APPROVED PANEL_NOT_TESTED=True'
  }
 } catch {
