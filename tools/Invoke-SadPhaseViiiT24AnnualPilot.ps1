@@ -23,6 +23,8 @@ if($LASTEXITCODE -ne 0 -or $gitBranch.Count -ne 1 -or $gitBranch[0] -cne $branch
    $gitHead.Count -ne 1 -or $gitHead[0] -notmatch '^[0-9a-f]{40}$'){
     throw 'Expected the specific phase-VII branch and a versioned Git HEAD'
 }
+$null=& git -C $repo merge-base --is-ancestor 337943d5c5b77067f842902fc679dbb68db87020 HEAD 2>$null
+if($LASTEXITCODE -ne 0){throw 'Branch does not descend from frozen main baseline'}
 $tracked=@(& git -C $repo ls-files --error-unmatch -- $selfRel $qvsRel 2>$null)
 if($LASTEXITCODE -ne 0 -or $tracked.Count -ne 2){throw 'Runner and QVS must both be committed'}
 $dirty=@(& git -C $repo status --porcelain -- $selfRel $qvsRel)
@@ -136,6 +138,7 @@ function Same-Snapshot($a,$b){
 }
 $before=$null
 $qvwBefore=$null
+$allCasesPassed=$false
 try{
     $before=@(Snapshot-Qvds)
     $qvwBefore=@(Snapshot-OriginalQvws)
@@ -242,6 +245,12 @@ try{
                     $expectedP += [long]::Parse([string]$r.denominador_populacao,$culture)
                 }
                 if($expectedP -le 0 -or $expectedN -lt 0){throw ('Invalid F3 denominator '+$c.Name)}
+                if($c.Mun -ceq ''){
+                    $historical=@{ '2017'=@(182069,4025558); '2018'=@(181673,3996496); '2019'=@(186280,4018127) }
+                    if($expectedN -ne $historical[$c.Year][0] -or $expectedP -ne $historical[$c.Year][1]){
+                        throw ('F3 state totals differ from historical independent reference '+$c.Name)
+                    }
+                }
                 $null=$doc.ClearAll()
                 $null=$doc.GetField('PERIODO_ANO').Select($c.Year)
                 if($c.Mun -ceq ''){
@@ -288,11 +297,12 @@ try{
                     ' ORACLE_POP='+$expectedP+' QLIK_POP='+$actualP)
                 if(-not $ok){throw ('Numeric mismatch in independent F3 vs Qlik '+$c.Name)}
             }
-            Write-Output 'T24_ANNUAL_5_CASES=PASS_NUMERIC_CANDIDATE_ONLY'
+            $allCasesPassed=$true
+            Write-Output 'T24_ANNUAL_5_CASES=PASS_NUMERIC_CANDIDATE_PENDING_SHA_RECHECK'
             $null=$doc.Save()
             Write-Output ('TEMP_QVW='+$testQvw)
             Write-Output ('NATIVE_LOG='+$testLog)
-            Write-Output 'VERDICT=PASS_LOCAL_T24_ANNUAL_5_CASES_CANDIDATE_ONLY'
+            Write-Output 'T24_PILOT_QVW_TEST=COMPLETE_PENDING_FINAL_HASHES'
             Write-Output 'LINK_KEY_CONTRACT=NOT_APPROVED MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED'
             Write-Output 'P5_D2_T25_T26=NOT_TESTED CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED'
         }finally{
@@ -319,4 +329,7 @@ try{
         }
         Write-Output 'ORIGINAL_CANONICAL_QVWS_UNCHANGED=True'
     }
+}
+if($RunQlik -and $allCasesPassed){
+    Write-Output 'VERDICT=PASS_LOCAL_T24_ANNUAL_5_CASES_CANDIDATE_ONLY'
 }
