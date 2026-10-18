@@ -101,3 +101,22 @@ A política P5 integral deve ser consumida **diretamente** de [V2 §62.6](phase-
 5. **STOP em `PASS_LOCAL_CANDIDATE_ONLY` para cenários comprovados ou `BLOCKED/INCONCLUSIVE`**, com hashes, logs e matriz. Não promover contratos globais, nem atualizar `current-state.md` na main sem integração documental específica. Não mergear automaticamente nem iniciar Fase IX.
 
 **Veredito persistido:** `VIII_A=DISCOVERY_STATIC_COMPLETED_WITH_GAPS`; `VIII_B=BLOCKED`; `T24_T26=NOT_RECONCILED`; `PRODUCTION_APPROVED=False`.
+
+
+## 7. Decisão posterior e preflight Windows reportado pelo responsável (18/10/2026)
+
+**DECISÃO EXPLÍCITA:** o responsável aprovou em conversa a utilização **exclusivamente experimental** do universo **CNES/LT observado** para investigar T25/T26, com fonte/competências/papel municipal identificados e ressalva de cobertura. Não há aprovação de universo hospitalar histórico, inclusão ou exclusão por `TP_UNID`, cobertura presumida de município×mês, aplicação retrospectiva de legenda 2019-09, nem de taxas gerais T25/T26. **Apenas recortes com cobertura e denominadores suficientemente demonstrados podem apresentar candidatos numéricos**, que não são KPIs homologados. Preservar todas as linhas LT válidas e a semântica V2.
+
+**Nova evidência reportada pelo responsável — runner versionado em PR #109 Draft:** `tools/Invoke-SadPhaseViiiReadiness.ps1` executado localmente sob branch `feat/phase-viii-readiness-20261018`, HEAD `e3e40cd1af6b69cc2ae350e8b3375425da24eb13`, SHA-256 do runner `51D4A537B79672BDA1D0C90AC0BBBDEB7B43924BC7089B7DABAF55CD28B459FB`. O stdout apresentado contém:
+
+- `INVENTORY_22_QVD=PASS_READ_ONLY_HEADERS_AND_HASHES`;
+- `WINDOWS=True`, `QLIKVIEW_EXE_PRESENT=True`, `QLIKVIEW_EXE_VERSION=12.0.20000.0`, `QLIKVIEW_COM_REGISTERED=True`;
+- `ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED=True` e `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`;
+- `F1F2=NOT_PROVIDED`, `F3=NOT_PROVIDED`, portanto `VERDICT=BLOCKED_READONLY_PREFLIGHT READINESS_ENVIRONMENT_OR_REFERENCES_NOT_READY`.
+
+**Interpretação estrita:** bloqueio esperado por **argumentos de caminho ausentes**, não por erro de QVD nem falha demonstrada no QlikView. A presença de `Qv.exe`/registro COM **não** comprova inicialização COM ou Reload real. A integridade foi medida no PC pelo executor, mas os CSVs de manifesto e binários locais não foram acessados independentemente nesta revisão. `EVIDENCE_DIR` reportado: `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_READINESS_d978b8fd0b4346099438530dcf4ea0c7`.
+
+**Estado deste checkpoint:** `VIII_READINESS_QVD_BASELINE=PASS_LOCAL_REPORTED_READ_ONLY`; `VIII_READINESS_REFERENCES=BLOCKED_MISSING_PATH_ARGUMENTS`; `VIII_B_QLIK_INDICATORS=NOT_EXECUTED`; `PRODUCTION_APPROVED=False`.
+
+**Próximo passo mínimo:** localizar, sem alterar arquivos, os diretórios com `manifest_F1_F2.json` (8 CSV) e `manifest_F3.json` (5 CSV), conferir manifestos/hashes e repetir **somente** readiness com ambos os caminhos; qualquer revisão do runner requer novo commit e nova evidência. Não limpar QVWs históricos não rastreados nem repetir Fases V–VII. Após veredicto positivo de readiness e revisão, abrir gate de implementação T24–T26 isolado; não antecipar Fase IX.
+
