@@ -1,6 +1,6 @@
 # Fase VIII-B — T24, exceções temporais, residentes externos e agregação regional
 
-**Estado:** `VERSIONED_NOT_RUN`; PR Draft independente, partindo de `main@337943d5c5b77067f842902fc679dbb68db87020`. **Sem validação Windows/QlikView deste script até o momento.**
+**Estado atual (ver seção final):** `VIII_B_T24_EDGE=PASS_LOCAL_CANDIDATE_ONLY`. Execução Windows/QlikView 12 reportada pelo responsável; PR Draft independente, partindo de `main@337943d5c5b77067f842902fc679dbb68db87020`. Sem homologação física integral de T24.
 
 ## Objetivo fechado e evidências reutilizadas
 
@@ -64,3 +64,26 @@ powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiT24EdgeCases.ps1 `
 **Não há PASS até receber execução real Windows**; após qualquer falha, STOP e diagnóstico. Não usar `git clean` sobre os QVWs históricos locais não rastreados.
 
 **Pendências inalteradas:** `T24_GENERAL=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `T29_HISTORICAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T25_T26=NOT_TESTED`; `PRODUCTION_APPROVED=False`. PR permanece Draft; sem merge, Fase IX fechada.
+
+## Encerramento da tentativa Windows — PASS local restrito (18/10/2026)
+
+**Evidência de execução reportada pelo responsável:** PowerShell `PARSER=PASS` antes da execução, branch `test/phase-viii-t24-edge-cases-20261018`, **commit do executor efetivamente testado** `4a9ff588355b6de654ea9f426f0d588d670120b4`; SHA-256 do script `812F310AB27FA88BC5679A6841ABA62EA27ABFE67CAEFD2A47D4117AAA0AFA1A`. QVW anual TEMP de origem conferido por SHA-256 `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E`. **Evidência local** (não anexada nem reaberta nesta sessão): `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_T24_EDGE_bd3dead678c943d3929d6585fb1e5fcf`.
+
+**Hash/manifesto F3 reportados como correspondentes:**
+- `F3_componentes_residencia_ano.csv`: `8B9AF93015D3B2574A2424D9241FDC42FB56E86CAFA52963811BCE9D485AF622`.
+- `F3_cenarios_multimunicipais.csv`: `3B7315A564666D43A43E60700B5ACC4E255FEF6535F53219EC3D8A08C74CBFF9`.
+- `F3_residentes_externos_ano.csv`: `B93CEC8518D2D35E61240B3691627BAA893754CDBDBF15E611B634D2166B519A`.
+
+**Teste regional:** `REFERENCE_F3_REGION_2018=PASS N=61616 POP=1207795`; `T24_REGION_CASE=JP_CG_RES_2018 RESULT=PASS_CANDIDATE ORACLE_N=61616 QLIK_N=61616 ORACLE_POP=1207795 QLIK_POP=1207795`. O runner fez internamente a reconciliação da razão `1000*N/POP` com tolerância de `0.000001` por 1.000; a taxa bruta do QlikView não aparece no stdout, mas consta no CSV de prova `t24_edge_region.csv`. É **PASS numérico local candidato**, não aceitação de KPI final.
+
+**Guarda de indisponibilidade:** 
+- `NO_PERIOD_POINT_KPI → UNAVAILABLE_NO_REFERENCE_PERIOD KPI_EVALUATED=False`;
+- `MULTI_YEAR_POINT_KPI → UNAVAILABLE_MULTI_YEAR KPI_EVALUATED=False`;
+- `EXTERNAL_RESIDENT_F3 → UNAVAILABLE_POP_EXTERNAL_PB ELIGIBLE=5067 KPI_EVALUATED=False`.
+- `REFERENCE_F3_EXTERNAL_NO_PB_POP=PASS ELIGIBLE=5067`.
+
+**Escopo das guardas:** os dois casos temporais demonstram seleção e rejeição de avaliação pelo wrapper do teste; **não são condições de cálculo instaladas em objetos do PAINEL**. O caso de residente externo comprova apenas que a referência independente F3 contém numeradores sem POP PB; **não houve seleção COM de município externo**. Nem esses três checks nem o sucesso regional abrangem todas as combinações da política P5.
+
+**Integridade final reportada:** `ORIGINAL_22_QVD_SHA256_UNCHANGED=True`; `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`; `SOURCE_T24_QVW_SHA256_UNCHANGED=True`; `MODE=TEMP_COPY_NO_RELOAD QVD_WRITES=0 CANONICAL_QVW_WRITES=0`. Veredito emitido **após** hash final: `VERDICT=PASS_LOCAL_T24_EDGE_REGION_1_AND_UNAVAILABLE_3_CANDIDATE_ONLY`. Observações correspondem ao stdout e ao código versionado executado; CSVs e QVW binário permanecem em disco local, sem auditoria independente nesta sessão.
+
+**Condição de parada alcançada:** `VIII_B_T24_EDGE=PASS_LOCAL_CANDIDATE_ONLY`. Não repetir esse gate ou os pilotos anuais/mensais sem drift. **Não alterar** `T24_GENERAL=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `T25_T26=NOT_TESTED` e `PRODUCTION_APPROVED=False`. O PR #112 segue Draft; nenhuma autorização de merge/produção/IX foi concedida.
