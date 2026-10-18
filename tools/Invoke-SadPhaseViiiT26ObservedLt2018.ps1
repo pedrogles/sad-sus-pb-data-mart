@@ -225,16 +225,16 @@ try{
       # Only audited twelve-month LT; never treat the snapshot sum as beds per year.
       $actualRatio=Numeric '12*Sum(QTD_INTERNACAO)/Sum(QTD_LEITOS_SUS)'
       $expectRatio=[decimal]12*[decimal]$c.Admissions/[decimal]$c.SusAuditSum
-      $error=[Math]::Abs([decimal]($actualRatio-$expectRatio))
+      $ratioError=[Math]::Abs([decimal]($actualRatio-$expectRatio))
       $passAnnual=($actualRD -eq $c.Admissions -and
                    $actualLT -eq $c.SusAuditSum -and
-                   $error -le [decimal]0.000001)
+                   $ratioError -le [decimal]0.000001)
       $casesOut += [pscustomobject]@{
         Case='T26_ANNUAL_SERVICE_2018';Municipality=$mun;Year=2018;Role='SERVICE'
         F1Eligible=$c.Admissions;QlikEligible=$actualRD
         F2SUSMonthlyAuditSum=$c.SusAuditSum;QlikSUSMonthlyAuditSum=$actualLT
         MeanSUSDenominator=([decimal]$c.SusAuditSum/[decimal]12)
-        OracleRatio=$expectRatio;QlikRatio=$actualRatio;AbsoluteError=$error
+        OracleRatio=$expectRatio;QlikRatio=$actualRatio;AbsoluteError=$ratioError
         Status=$(if($passAnnual){'PASS_CANDIDATE'}else{'BLOCKED_MISMATCH'})
       }
       $casesOut | Export-Csv -LiteralPath (Join-Path $work 't26_annual.csv') -NoTypeInformation -Encoding UTF8
