@@ -1,6 +1,6 @@
 # Fase VIII-B — piloto T25 para leitos SUS por 1.000 habitantes no universo CNES/LT observado (2018)
 
-**Estado:** `VERSIONED_NOT_EXECUTED`. Branch independente da `main@337943d5c5b77067f842902fc679dbb68db87020`. Sem merge, sem recarga física nesta etapa.
+**Estado:** `PARSER_BLOCKED_FIRST_ATTEMPT; SYNTAX_FIX_VERSIONED_PENDING_WINDOWS_PARSER_RECHECK`. Branch independente da `main@337943d5c5b77067f842902fc679dbb68db87020`. Sem merge, sem recarga física nesta etapa.
 
 ## 1. Objetivo e decisões preservadas
 
@@ -67,3 +67,17 @@ powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiT25ObservedLt2018.ps1
 ## 4. Limitações e gates não promovidos
 
 `T25_GENERAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `T26=NOT_TESTED`; `PRODUCTION_APPROVED=False`. Não comprova `Calculation Condition` visual, políticas de filtro P5 em objeto final, cobertura estadual nem interface completa. Fase IX permanece fechada. Não efetuar merge ou editar `main` sem autorização.
+
+## 5. Bloqueio de parser reportado e correção de sintaxe (18/10/2026)
+
+**Resultado observado no console Windows do responsável:** a branch `test/phase-viii-b-t25-observed-lt-2018-20261018` estava no HEAD `a27486d48dd2099f7d899af98414fe19e11f074a` quando `[System.Management.Automation.Language.Parser]::ParseFile(...)` devolveu erros, principalmente `É necessário fornecer uma expressão de valor após o operador '+'`, com token `mun+'/'+$period` inesperado nas linhas 236, 246 e 247. Foi emitido `PARSER=BLOCKED` por `throw`. A posterior linha `PARSER=PASS` foi executada manualmente, separada do bloco anterior, **sem executar outro parser**; não representa êxito. **Estado inequívoco do teste:** `PARSER=BLOCKED`; `T25_QV_COM=NOT_RUN`; `T25_ANNUAL_2_CASES=NOT_RUN`; `T25_MONTHLY_24_COMPONENTS=NOT_RUN`; `T25_PARTIAL_1_CASE=NOT_RUN`.
+
+**Causa identificada diretamente no script versão testada:** três concatenações PowerShell usam o texto `'+mun+'/'+$period` em vez de `'+$mun+'/'+$period`. As mensagens de falta de `}`, `catch` e `finally` são erros de recuperação do parser após os tokens inválidos, sem evidência de que esses blocos estejam realmente ausentes.
+
+**Correção mínima versionada** no commit `0e6db80441098f3990ca906a6c36067986ee6170`: substituídas as **3 ocorrências**, sem alterar os oráculos, a definição de T25, a seleção municipal, a taxa, a regra de 12 competências, o tratamento de zero/ausência, o inventário físico ou os guardrails SHA. O novo commit foi apenas inspecionado estaticamente, **não há `PARSER=PASS` real confirmado para ele**. O PowerShell 5.1/Windows QlikView não está disponível neste ambiente de revisão.
+
+**Integridade e escopo:** o script foi interrompido antes de iniciar; como só ocorreu validação sintática, `QVD_QVW_WRITE_BY_T25=False`. Nenhum SHA pós-execução foi produzido por este novo gate, portanto não registrar falsamente `ORIGINAL_22_QVD_SHA256_UNCHANGED=True` como resultado desta tentativa. Os testes anteriores são evidências históricas independentes.
+
+**Próximo passo único:** `git pull --ff-only` na mesma branch, confirmar HEAD e rodar novamente o **parser real**. Imprimir `PARSER=PASS` **apenas dentro do ramo de sucesso** e só então permitir exatamente uma execução `-RunQlik` usando os mesmos oráculos F2/F3 e QVW TEMP de origem. Se qualquer erro de parser reaparecer, STOP antes do QlikView. Se houver divergência em runtime, registrar stdout/evidências e parar, sem repetir automaticamente.
+
+**Gates preservados:** `T25_GENERAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `T26=NOT_TESTED`, `PRODUCTION_APPROVED=False`. PR #113 Draft, sem merge, Fase IX fechada.
