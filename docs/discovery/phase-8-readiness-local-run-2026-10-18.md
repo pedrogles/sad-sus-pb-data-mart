@@ -54,3 +54,35 @@ A chamada ao preflight retornou `ParserError` na **análise sintática**, antes 
 4. Registrar stdout, commit, novo hash do runner, hashes antes/depois, manifesto de evidência. Se qualquer vínculo/arquivo não satisfizer o contrato, `BLOCKED` e investigar sem recriar os oráculos.
 
 **Estado após a correção:** `VIII_READINESS_PARSER=UNTESTED_NEW_COMMIT`; `VIII_READINESS_MANIFESTS=UNTESTED_NEW_COMMIT`; `VIII_B_QLIK_INDICATORS=NOT_EXECUTED`; `PRODUCTION_APPROVED=False`. Nenhum merge, QVD/QVW original modificado, nem Fase IX.
+
+
+## 5. Gate de prontidão local concluído (18/10/2026)
+
+**Origem da evidência:** stdout transmitido pelo responsável após execução real no Windows PowerShell. **Script executado:** `tools/Invoke-SadPhaseViiiReadiness.ps1` na branch `feat/phase-viii-readiness-20261018` no commit `0dbb23f29673f6ea0d4965905397ba3800c840c6`. **Hash SHA-256 reportado do script:** `02CFADBE68AED611E15B59850166726820C49821978685E938FB72A32ED7F2C4`.
+
+**Parser independente pré-execução (reportado):** `[System.Management.Automation.Language.Parser]::ParseFile()` sem erros, `PARSER=PASS`. O runner de readiness foi executado **uma vez após essa validação**, com diretórios de F1/F2 e F3.
+
+**Manifestos e baseline reportados:**
+- `INVENTORY_22_QVD=PASS_READ_ONLY_HEADERS_AND_HASHES`.
+- `F1F2=PASS_MANIFEST_SHA256_MATCH_8_OF_8`.
+- `F3=PASS_MANIFEST_SHA256_MATCH_5_OF_5`.
+- `F3_F1F2_CROSS_MANIFEST_LINK=PASS_9_OF_9`.
+- `WINDOWS=True`, `QLIKVIEW_EXE_PRESENT=True`, `QLIKVIEW_EXE_VERSION=12.0.20000.0`, `QLIKVIEW_COM_REGISTERED=True`.
+- `ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED=True` e `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`.
+- `QLIKVIEW_RELOAD=False COM_INSTANTIATION=False QVD_WRITES=0 QVW_WRITES=0`.
+- **Veredito emitido:** `VERDICT=PASS_READONLY_ENTRY_INVENTORY_CANDIDATE_ONLY_NOT_INDICATOR_APPROVAL`.
+
+**Artefatos reportados, não anexados nesta revisão:** `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_READINESS_a3be084f2a0741c3847334f8e1484d62`. O conteúdo real dos manifestos CSV em disco não foi revisado independentemente nesta sessão. O sucesso é **PASS de execução local reportada** para a verificação READ-ONLY de entrada, não homologação do código em CI, não revalidação física de F1/F2/F3 por ferramenta independente e não PASS do QVW experimental.
+
+**Critério de encerramento do subgate:** a prontidão da entrada **atingiu o PASS local candidato**, com referência explícita à revisão executada. Não repetir esse preflight sem gatilho de integridade; se houver outra revisão de script, ela exigirá nova prova. O erro `ParserError` na revisão anterior permanece registrado como tentativa falha, não foi apagado retrospectivamente.
+
+**Próxima etapa separada:** Fase VIII-B, sob **branch independente**, QVS/runner commitados antes de executar, QVW descartável apenas em `%TEMP%`, oráculos independentes F1/F2/F3 e cenários T24–T26, preservando decisões de escopo LT observado e indisponibilidade. Não usar estes PASS para afirmar denominador final, cobertura hospitalar, comportamento P5/D2 ou aprovação da produção.
+
+**Estados:**
+- `VIII_READINESS_PARSER=PASS_LOCAL_REPORTED`.
+- `VIII_READINESS_QVD_AND_REFERENCE_MANIFESTS=PASS_LOCAL_CANDIDATE_ONLY`.
+- `VIII_B_INDICATORS=NOT_EXECUTED`.
+- `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`.
+- `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `T29_HISTORICAL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`.
+
+**Governança:** PR #109 continua Draft, `main` não alterada por esta escrita documental, merge não autorizado, Fase IX não iniciada.
