@@ -3,7 +3,7 @@
 **Data de preparação:** 18/10/2026  
 **Base congelada:** `main@dfc02527b3791a19bcf9d9db29cb3979061dea81`  
 **Branch isolada:** `feat/phase-vii-technical-panel-gate-20261018`  
-**Status:** `CODE_COMMITTED_STATIC_REVIEW_ONLY / QLIK_LOCAL_NOT_RUN`. Não afirmar PASS físico.  
+**Status operacional deste gate:** `PASS_LOCAL_ASSOCIATIVE_CANDIDATE_PENDING_TABLE_VIEWER` **reportado pelo responsável via stdout em 18/10/2026**. O log nativo completo e o binário QVW de teste não foram analisados independentemente; `TABLE_VIEWER_REVIEW=PENDING`. Não afirmar aprovação final.  
 **Autorização:** implementar e versionar antes de executar; inventariar 22 QVDs read-only; usar exclusivamente QVW descartável. **Sem merge, QVD/QVW original modificado, Fases VIII–IX ou KPIs.**
 
 ## Objetivo, fontes, invariantes e condição de parada
@@ -70,8 +70,8 @@ Coletar todo o stdout, caminho `EVIDENCE_DIR`, `TEMP_QVW`, log nativo, SHA-256 d
 - `BRANCH_CREATED=True`.
 - `IMPLEMENTATION_SCRIPTS_VERSIONED=True` (confirmar SHA de commit exato antes da execução local).
 - `STATIC_REVIEW=PERFORMED_CANDIDATE_ONLY`.
-- `INVENTORY_22_QVD=NOT_RUN_LOCAL`.
-- `QLIKVIEW_12_RELOAD=NOT_RUN_LOCAL`.
+- `INVENTORY_22_QVD=PASS_LOCAL_REPORTED_READ_ONLY`.
+- `QLIKVIEW_12_RELOAD=PASS_LOCAL_ASSOCIATIVE_CANDIDATE_PENDING_TABLE_VIEWER`.
 - `T17_T23_FINAL=NOT_APPROVED`.
 - `TABLE_VIEWER_REVIEW=PENDING`.
 - `LINK_KEY_CONTRACT=NOT_APPROVED`.
@@ -80,3 +80,34 @@ Coletar todo o stdout, caminho `EVIDENCE_DIR`, `TEMP_QVW`, log nativo, SHA-256 d
 - `PR_MERGED=False`.
 
 Nenhuma atualização operacional da `main` é autorizada nesta preparação. Para encerramento físico, o responsável deve fornecer as evidências nativas e decidir separadamente qualquer revisão/merge.
+
+## Execução física reportada — 18/10/2026 (sem reexecução pelo agente)
+
+**Fonte:** stdout integral da execução no PowerShell/Windows fornecido diretamente pelo responsável nesta conversa. O agente leu o stdout e conferiu o HEAD/scripts versionados no GitHub; **não** recebeu/inspecionou os bytes do QVW nem o log nativo completo. Nenhuma nova recarga foi executada remotamente. Não tratar marcadores do runner como aprovação independente/visual.
+
+### Identidade rastreável
+
+- Branch local reportada: `feat/phase-vii-technical-panel-gate-20261018`.
+- Commit executado: `973a2ad2ac245841ff9e56c591ab269754cdc450` (PR #106 Draft).
+- SHA-256 `PAINEL/phase_vii_technical_model.qvs`: `20DD0F551478D567489434A360723427125F7C1850DBC4093A4C8E1CADA7D8E8`.
+- SHA-256 `tools/Invoke-SadPhaseViiTechnicalPanel.ps1`: `334B5A8A4942716D416EC8C6682938C59603E18138DB9D5F789C4D538C12A5F7`.
+- Comando: `powershell.exe -NoProfile -File .\\tools\\Invoke-SadPhaseViiTechnicalPanel.ps1 -Root (Get-Location).Path -RunQlik`.
+- Diretório local da evidência: `C:\\Users\\pedro\\AppData\\Local\\Temp\\SAD_VII_PANEL_b3d3374b847c4ed8b3f9e04f311b6bdc`.
+- QVW temporário: `C:\\Users\\pedro\\AppData\\Local\\Temp\\SAD_VII_PANEL_b3d3374b847c4ed8b3f9e04f311b6bdc\\SAD_VII_TECHNICAL_PANEL_TEST.qvw`.
+- Log nativo: `C:\\Users\\pedro\\AppData\\Local\\Temp\\SAD_VII_PANEL_b3d3374b847c4ed8b3f9e04f311b6bdc\\SAD_VII_TECHNICAL_PANEL_TEST.qvw.log`.
+
+### Marcadores reportados e limites
+
+| Item | Stdout reportado | Qualificação |
+| --- | --- | --- |
+| Preflight QVD | `INVENTORY_22_QVD=PASS_READ_ONLY` | Reportado por runner; não auditoria independente dos binários |
+| T17/T18/T19/T20/T22/T23 | `T17_T18_T19_T20_T22_T23=SCRIPT_CHECKED` | Controles automatizados no script versionado; ainda sem revisão gráfica completa |
+| T21 | `T21=NO_LOG_WARNING_TABLE_VIEWER_PENDING` | Sem aviso identificado pelo runner; ausência de loop NÃO confirmada visualmente |
+| Resultado candidato | `VERDICT=PASS_LOCAL_ASSOCIATIVE_CANDIDATE_PENDING_TABLE_VIEWER` | PASS restrito ao reload do QVW temporário, reportado localmente |
+| QVDs originais | `ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED=True` | Reportado antes/depois pelo runner |
+| QVWs canônicos | `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True` | Reportado antes/depois pelo runner |
+| Aprovação de produção | `PRODUCTION_APPROVED=False` | Invariante, sem alterações de Fase VIII/IX |
+
+**Condição de parada atingida para a tentativa automatizada:** não repetir `-RunQlik` sem motivo novo e autorização delimitada. Próximo passo **sem recarga**: abrir somente o `TEMP_QVW` indicado, inspecionar o Table Viewer e registrar screenshot ou relatório: 16 tabelas previstas, zero `$Syn`, ausência de circular references/loosely coupled tables, `FATO_INTERNACAO`, `FATO_CAPACIDADE_LEITO` e `FATO_POPULACAO` conectadas à `LINK_ANALISE` exclusivamente por `%LINK_KEY`; dimensões de papel ligadas apenas pelas SKs próprias. O QVW de teste deverá estar salvo e carregar seu modelo ao abrir, sem nova recarga.
+
+**Pendências:** `TABLE_VIEWER_REVIEW=PENDING`, `T21_FINAL=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PR_MERGED=False`, `PRODUCTION_APPROVED=False`. Não implementar KPIs ou dashboards. Após conferência visual, registrar evidência/resultado em revisão separada antes de fechar o gate.
