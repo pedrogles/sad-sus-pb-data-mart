@@ -134,7 +134,6 @@ try{
       throw 'BLOCKED: QVW script not from the phase VIII-B T24 pilot'
     }
     $setPop='Sum({$<PERIODO_COMPETENCIA=>} POPULACAO_ESTIMADA)'
-    $rate='1000*Sum(QTD_INTERNACAO)/('.($setPop)+')'
     # The dynamic expression below is assembled without changing the selected monthly window.
     $rate='1000*Sum(QTD_INTERNACAO)/('+$setPop+')'
     foreach($c in @(
