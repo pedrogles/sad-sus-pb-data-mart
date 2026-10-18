@@ -127,30 +127,32 @@ function Same-SadSnapshot($a, $b) {
 
 function Get-ReferenceFolderStatus([string]$path, [string]$label) {
     if ([string]::IsNullOrWhiteSpace($path)) {
-        Write-Output ($label + '=NOT_PROVIDED')
+        Write-Host ($label + '=NOT_PROVIDED')
         return $false
     }
     if (-not (Test-Path -LiteralPath $path -PathType Container)) {
-        Write-Output ($label + '=MISSING_DIRECTORY')
+        Write-Host ($label + '=MISSING_DIRECTORY')
         return $false
     }
     $files = @(Get-ChildItem -LiteralPath $path -File)
     $manifests = @($files | Where-Object { $_.Extension -ieq '.json' -and $_.Name -match 'manifest' })
-    if ($manifests.Count -ne 1) {
-        Write-Output ($label + '=MANIFEST_NOT_UNIQUE')
+    $csvs = @($files | Where-Object { $_.Extension -ieq '.csv' })
+    $expectedCsv = if ($label -eq 'F1F2') { 8 } else { 5 }
+    if ($manifests.Count -ne 1 -or $csvs.Count -ne $expectedCsv) {
+        Write-Host ($label + '=EXPECTED_MANIFEST_1_AND_CSV_' + $expectedCsv +
+            '_FOUND_' + $manifests.Count + '_AND_' + $csvs.Count)
         return $false
     }
-    $files | ForEach-Object {
+    (@($manifests) + @($csvs)) | ForEach-Object {
         [pscustomobject]@{
             Group = $label
             Name = $_.Name
             SHA256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
         }
     } | Export-Csv -LiteralPath (Join-Path $evidence ($label + '_file_hashes.csv')) -NoTypeInformation -Encoding UTF8
-    Write-Output ($label + '=PRESENT_HASHED_NOT_CONTENT_AUDITED FILES=' + $files.Count)
+    Write-Host ($label + '=PRESENT_HASHED_NOT_CONTENT_AUDITED CSV=' + $csvs.Count)
     return $true
 }
-
 $before = $null
 $qvwBefore = $null
 try {
@@ -207,7 +209,7 @@ try {
     Write-Output ('QLIKVIEW_COM_REGISTERED=' + ($null -ne $comType))
     Write-Output 'QLIKVIEW_RELOAD=False COM_INSTANTIATION=False QVD_WRITES=0 QVW_WRITES=0'
     if (-not $windows -or $qv.Count -eq 0 -or $null -eq $comType -or -not $f1Present -or -not $f3Present) {
-        Write-Output 'VERDICT=BLOCKED_READINESS_ENVIRONMENT_OR_REFERENCES'
+        throw 'READINESS_ENVIRONMENT_OR_REFERENCES_NOT_READY'
     } else {
         Write-Output 'VERDICT=PASS_READONLY_ENTRY_INVENTORY_CANDIDATE_ONLY_NOT_INDICATOR_APPROVAL'
     }
