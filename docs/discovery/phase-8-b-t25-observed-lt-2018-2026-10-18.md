@@ -1,6 +1,6 @@
 # Fase VIII-B — piloto T25 para leitos SUS por 1.000 habitantes no universo CNES/LT observado (2018)
 
-**Estado:** `PARSER_BLOCKED_FIRST_ATTEMPT; SYNTAX_FIX_VERSIONED_PENDING_WINDOWS_PARSER_RECHECK`. Branch independente da `main@337943d5c5b77067f842902fc679dbb68db87020`. Sem merge, sem recarga física nesta etapa.
+**Estado atual:** `VIII_B_T25_OBSERVED_2018=PASS_LOCAL_CANDIDATE_ONLY` (evidência Windows/QlikView 12 reportada pelo responsável; ver seção 6). Branch independente da `main@337943d5c5b77067f842902fc679dbb68db87020`. Sem merge, sem recarga física de QVD nesta etapa.
 
 ## 1. Objetivo e decisões preservadas
 
@@ -81,3 +81,30 @@ powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiT25ObservedLt2018.ps1
 **Próximo passo único:** `git pull --ff-only` na mesma branch, confirmar HEAD e rodar novamente o **parser real**. Imprimir `PARSER=PASS` **apenas dentro do ramo de sucesso** e só então permitir exatamente uma execução `-RunQlik` usando os mesmos oráculos F2/F3 e QVW TEMP de origem. Se qualquer erro de parser reaparecer, STOP antes do QlikView. Se houver divergência em runtime, registrar stdout/evidências e parar, sem repetir automaticamente.
 
 **Gates preservados:** `T25_GENERAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `T26=NOT_TESTED`, `PRODUCTION_APPROVED=False`. PR #113 Draft, sem merge, Fase IX fechada.
+
+
+## 6. Encerramento do piloto T25 — PASS local restrito (18/10/2026)
+
+**Proveniência e commit efetivamente executado:** responsável forneceu stdout real do Windows PowerShell e QlikView 12, em branch `test/phase-viii-b-t25-observed-lt-2018-20261018`, HEAD `2c8c182d009d94de69784502e6e40668ed75054a`. A checagem embutida no mesmo bloco PowerShell verificou o HEAD exato após `git pull --ff-only`; parser retornou `PARSER=PASS` antes da execução do novo código. O runner reportou SHA-256 `FE133C595FCE012B6B2FADEACB2FC127549FF55BF00F58786D8D5908CA756094`. Fonte QVW T24 anual TEMP (reutilizada somente em cópia) SHA-256 `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E`.
+
+**Evidências locais, não reabertas nesta sessão:** `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_T25_OBS_4f8f4e64e44b4bc8b08214fe3c119189`. O stdout demonstra o veredito do executor. Não houve inspeção independente do QVW binário, dos CSVs derivados ou das 24 linhas mensais detalhadas.
+
+**Oráculos F2/F3 hashados com os manifestos locais:**
+- `F2_lt_municipio_competencia_observado.csv`: `DC0FAE8646F6570F5DEEAF8A1597EA5ED90A5BD9A881A40B4DCA0E30380E953D`;
+- `F2_lt_municipio_ano_cobertura_candidata.csv`: `97EB032F3A7E444B436349608A2B73F61D597E83DBB7576E47BB5ABBCC82512D`;
+- `F3_componentes_servico_ano.csv`: `6AE088266F4CCABC885FE04E890FD99921A8076BAEB930AA6FF518816137257D`.
+
+| Cidade, papel serviço, 2018 | F2 soma auditável dos 12 snapshots | Qlik soma auditável | F3 POP anual | Qlik POP anual | Competências F2×Qlik | Resultado |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| João Pessoa (250750) | 28.106 | 28.106 | 800.323 | 800.323 | 12/12 | `PASS_CANDIDATE` |
+| Campina Grande (250400) | 16.592 | 16.592 | 407.472 | 407.472 | 12/12 | `PASS_CANDIDATE` |
+
+A razão T25 anual foi calculada pelo executor como `1000 * (soma dos 12 snapshots QT_SUS / 12) / POP anual por município de serviço`, comparada com F2/F3 com erro absoluto máximo de `0.000001` por 1.000. **A soma dos 12 snapshots é somente um componente de auditoria para a média**, nunca apresentada como leitos existentes no ano. O stdout reportou `T25_ANNUAL_2_CASES=PASS_CANDIDATE_PENDING_SHA` e `T25_MONTHLY_24_COMPONENTS=PASS_CANDIDATE_PENDING_SHA` após as comparações internas dos 24 totais mensais; os detalhes completos encontram-se em `t25_monthly_components.csv` no diretório local.
+
+**Janela parcial João Pessoa, competência 201801:** `F2_SUS=2386`, `QLIK_SUS=2386`, `POP_F3=800323`, `POP_QLIK=800323`, status `PASS_CANDIDATE`. O executor usou o denominador anual de serviço recuperado sob seleção mensal, não anualizou o numerador e comparou a razão parcial com a tolerância numérica definida. Etiqueta `PARTIAL_SINGLE_MONTH_NOT_ANNUAL`. Saída `T25_PARTIAL_1_CASE=PASS_CANDIDATE_PENDING_SHA`.
+
+**Integridade final, reportada após a execução:** `ORIGINAL_22_QVD_SHA256_UNCHANGED=True`; `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`; `SOURCE_T24_QVW_SHA256_UNCHANGED=True`. Modo `TEMP_COPY_NO_RELOAD QVD_WRITES=0 CANONICAL_QVW_WRITES=0`. **Veredito final do executor**: `VERDICT=PASS_LOCAL_T25_OBSERVED_LT_2_ANNUAL_24_MONTHS_1_PARTIAL_CANDIDATE_ONLY`. Não repetir este ensaio sem revisão material de código/oráculos.
+
+**Qualificação essencial:** 12 competências com linhas LT para duas cidades **não atestam** cobertura hospitalar plena, escopo CNES hospitalar historicamente classificado ou indicador T25 estadual. O executor foi explicitamente restrito a `LT_TODOS_REGISTROS_VALIDOS_RN21`, com `HOSPITAL_SCOPE=NOT_VERIFIED`; a tabela de quantidade de leitos é de LT observado, não de estabelecimentos classificados como hospitais. Não validar retroativamente as descrições datadas de 201909. A primeira tentativa da seção 5 continua registrada como `PARSER=BLOCKED`, sem PASS herdado; apenas a execução no commit corrigido fundamenta este resultado.
+
+**Condição de parada atingida:** `VIII_B_T25_OBSERVED_2018=PASS_LOCAL_CANDIDATE_ONLY`; não generalizar ou homologar `T25_GENERAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `T26=NOT_TESTED`; `PRODUCTION_APPROVED=False`. PR #113 permanece Draft, sem merge; Fase IX fechada. T26, se iniciado, exige gate próprio e contrato delimitado.
