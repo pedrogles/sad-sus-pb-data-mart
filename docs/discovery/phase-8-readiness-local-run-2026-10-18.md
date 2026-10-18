@@ -41,16 +41,16 @@ O responsável aprovou nesta sequência a análise de T25/T26 **somente no unive
 
 ## 4. Falha de parser na segunda tentativa e correção delimitada (18/10/2026)
 
-**Fonte:** saída PowerShell apresentada pelo responsável após \`git pull --ff-only\` até o commit \`6a9a1e4401d6f85aab68da5e9b090393fe79c675\`. Os dois caminhos históricos \`%TEMP%\sad-f1-f2-20261014-191743\manifest_F1_F2.json\` e \`%TEMP%\sad-f3-20261014-194242\manifest_F3.json\` retornaram \`True\` em \`Test-Path\`.
+**Fonte:** saída PowerShell apresentada pelo responsável após `git pull --ff-only` até o commit `6a9a1e4401d6f85aab68da5e9b090393fe79c675`. Os dois caminhos históricos `%TEMP%\sad-f1-f2-20261014-191743\manifest_F1_F2.json` e `%TEMP%\sad-f3-20261014-194242\manifest_F3.json` retornaram `True` em `Test-Path`.
 
-A chamada ao preflight retornou \`ParserError\` na **análise sintática**, antes do início do corpo do script. O erro localizado na branch era a condição de SHA-256 da linha 239 truncada em \`'^[A-Fa-f0-9]{64}\`, com o restante do programa inserido equivocadamente nesse ponto e um segundo bloco duplicado após \`finally\`. O apontamento do PowerShell na linha 244 (\`Get-Command 'Qv.exe'\`) era efeito colateral dessa string não terminada; **não** comprova erro do QlikView ou das evidências F1/F2/F3. Nenhuma linha de output operacional \`EVIDENCE_DIR=\` foi emitida na segunda tentativa, portanto **nenhum inventário, validação de hashes ou escrita do próprio runner ocorreu nessa tentativa**.
+A chamada ao preflight retornou `ParserError` na **análise sintática**, antes do início do corpo do script. O erro localizado na branch era a condição de SHA-256 da linha 239 truncada em `'^[A-Fa-f0-9]{64}`, com o restante do programa inserido equivocadamente nesse ponto e um segundo bloco duplicado após `finally`. O apontamento do PowerShell na linha 244 (`Get-Command 'Qv.exe'`) era efeito colateral dessa string não terminada; **não** comprova erro do QlikView ou das evidências F1/F2/F3. Nenhuma linha de output operacional `EVIDENCE_DIR=` foi emitida na segunda tentativa, portanto **nenhum inventário, validação de hashes ou escrita do próprio runner ocorreu nessa tentativa**.
 
-**Correção delimitada:** commit \`f3358188398c69457b1079e517f15aa4d801e180\` na mesma branch/PR #109, reconstitui integralmente o bloco de vínculo F3↔F1/F2 e remove a duplicação; preserva as verificações anteriores e invariantes de READ-ONLY. Inspeção estática do texto corrigido: 301 linhas, zero desequilíbrios brutos de parênteses/chaves, presença única de \`F3_F1F2_CROSS_MANIFEST_LINK\` e do veredito de sucesso. **Isso ainda não é validação de parser PowerShell nem execução no Windows.**
+**Correção delimitada:** commit `f3358188398c69457b1079e517f15aa4d801e180` na mesma branch/PR #109, reconstitui integralmente o bloco de vínculo F3↔F1/F2 e remove a duplicação; preserva as verificações anteriores e invariantes de READ-ONLY. Inspeção estática do texto corrigido: 301 linhas, zero desequilíbrios brutos de parênteses/chaves, presença única de `F3_F1F2_CROSS_MANIFEST_LINK` e do veredito de sucesso. **Isso ainda não é validação de parser PowerShell nem execução no Windows.**
 
 **Próximo gate único:**
-1. \`git pull --ff-only\` na branch \`feat/phase-viii-readiness-20261018\`.
-2. Usar \`[System.Management.Automation.Language.Parser]::ParseFile()\` no arquivo versionado, sem executar a rotina. \`PARSER=PASS\` exige lista de erros vazia; se houver erro, parar e compartilhar linhas do erro.
-3. **Somente com parser PASS**, executar uma vez o preflight READ-ONLY com \`-F1F2Dir\` e \`-F3Dir\` já localizados.
-4. Registrar stdout, commit, novo hash do runner, hashes antes/depois, manifesto de evidência. Se qualquer vínculo/arquivo não satisfizer o contrato, \`BLOCKED\` e investigar sem recriar os oráculos.
+1. `git pull --ff-only` na branch `feat/phase-viii-readiness-20261018`.
+2. Usar `[System.Management.Automation.Language.Parser]::ParseFile()` no arquivo versionado, sem executar a rotina. `PARSER=PASS` exige lista de erros vazia; se houver erro, parar e compartilhar linhas do erro.
+3. **Somente com parser PASS**, executar uma vez o preflight READ-ONLY com `-F1F2Dir` e `-F3Dir` já localizados.
+4. Registrar stdout, commit, novo hash do runner, hashes antes/depois, manifesto de evidência. Se qualquer vínculo/arquivo não satisfizer o contrato, `BLOCKED` e investigar sem recriar os oráculos.
 
-**Estado após a correção:** \`VIII_READINESS_PARSER=UNTESTED_NEW_COMMIT\`; \`VIII_READINESS_MANIFESTS=UNTESTED_NEW_COMMIT\`; \`VIII_B_QLIK_INDICATORS=NOT_EXECUTED\`; \`PRODUCTION_APPROVED=False\`. Nenhum merge, QVD/QVW original modificado, nem Fase IX.
+**Estado após a correção:** `VIII_READINESS_PARSER=UNTESTED_NEW_COMMIT`; `VIII_READINESS_MANIFESTS=UNTESTED_NEW_COMMIT`; `VIII_B_QLIK_INDICATORS=NOT_EXECUTED`; `PRODUCTION_APPROVED=False`. Nenhum merge, QVD/QVW original modificado, nem Fase IX.
