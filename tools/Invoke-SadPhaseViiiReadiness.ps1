@@ -134,23 +134,61 @@ function Get-ReferenceFolderStatus([string]$path, [string]$label) {
         Write-Host ($label + '=MISSING_DIRECTORY')
         return $false
     }
-    $files = @(Get-ChildItem -LiteralPath $path -File)
-    $manifests = @($files | Where-Object { $_.Extension -ieq '.json' -and $_.Name -match 'manifest' })
-    $csvs = @($files | Where-Object { $_.Extension -ieq '.csv' })
-    $expectedCsv = if ($label -eq 'F1F2') { 8 } else { 5 }
-    if ($manifests.Count -ne 1 -or $csvs.Count -ne $expectedCsv) {
-        Write-Host ($label + '=EXPECTED_MANIFEST_1_AND_CSV_' + $expectedCsv +
-            '_FOUND_' + $manifests.Count + '_AND_' + $csvs.Count)
-        return $false
+    $expectedNames = if ($label -eq 'F1F2') {
+        @('F1_fluxo_ano.csv', 'F1_fluxo_competencia.csv',
+          'F1_residencia_ano.csv', 'F1_residencia_competencia.csv',
+          'F1_servico_ano.csv', 'F1_servico_competencia.csv',
+          'F2_lt_municipio_ano_cobertura_candidata.csv',
+          'F2_lt_municipio_competencia_observado.csv')
+    } else {
+        @('F3_pop_municipio_ano.csv',
+          'F3_componentes_residencia_ano.csv',
+          'F3_componentes_servico_ano.csv',
+          'F3_residentes_externos_ano.csv',
+          'F3_cenarios_multimunicipais.csv')
     }
-    (@($manifests) + @($csvs)) | ForEach-Object {
-        [pscustomobject]@{
-            Group = $label
-            Name = $_.Name
-            SHA256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash
+    $manifestName = if ($label -eq 'F1F2') { 'manifest_F1_F2.json' } else { 'manifest_F3.json' }
+    $manifestPath = Join-Path $path $manifestName
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+        throw ($label + ': missing expected manifest ' + $manifestName)
+    }
+    $files = @(Get-ChildItem -LiteralPath $path -File)
+    $csvs = @($files | Where-Object { $_.Extension -ieq '.csv' })
+    if ($csvs.Count -ne $expectedNames.Count) {
+        throw ($label + ': CSV count mismatch, expected ' + $expectedNames.Count + ', found ' + $csvs.Count)
+    }
+    foreach ($name in $expectedNames) {
+        if (@($csvs | Where-Object { $_.Name -ceq $name }).Count -ne 1) {
+            throw ($label + ': missing or nonunique source reference ' + $name)
         }
-    } | Export-Csv -LiteralPath (Join-Path $evidence ($label + '_file_hashes.csv')) -NoTypeInformation -Encoding UTF8
-    Write-Host ($label + '=PRESENT_HASHED_NOT_CONTENT_AUDITED CSV=' + $csvs.Count)
+    }
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    if ($null -eq $manifest -or $null -eq $manifest.output_sha256) {
+        throw ($label + ': malformed reference manifest')
+    }
+    $declared = @($manifest.output_sha256.PSObject.Properties)
+    if ($declared.Count -ne $expectedNames.Count) {
+        throw ($label + ': manifest output SHA count mismatch')
+    }
+    $results = @()
+    foreach ($name in $expectedNames) {
+        $match = @($declared | Where-Object { $_.Name -ceq $name })
+        if ($match.Count -ne 1 -or [string]$match[0].Value -notmatch '^[A-Fa-f0-9]{64}$') {
+            throw ($label + ': invalid manifest checksum declaration for ' + $name)
+        }
+        $file = Join-Path $path $name
+        $actual = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash
+        if ($actual -cne ([string]$match[0].Value).ToUpperInvariant()) {
+            throw ($label + ': manifest SHA256 mismatch for ' + $name)
+        }
+        $results += [pscustomobject]@{ Group=$label; Name=$name; SHA256=$actual }
+    }
+    $results += [pscustomobject]@{
+        Group=$label; Name=$manifestName
+        SHA256=(Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash
+    }
+    $results | Export-Csv -LiteralPath (Join-Path $evidence ($label + '_file_hashes.csv')) -NoTypeInformation -Encoding UTF8
+    Write-Host ($label + '=PASS_MANIFEST_SHA256_MATCH_' + $expectedNames.Count + '_OF_' + $expectedNames.Count)
     return $true
 }
 $before = $null
@@ -186,6 +224,77 @@ try {
     Write-Output 'INVENTORY_22_QVD=PASS_READ_ONLY_HEADERS_AND_HASHES'
     $f1Present = Get-ReferenceFolderStatus -path $F1F2Dir -label 'F1F2'
     $f3Present = Get-ReferenceFolderStatus -path $F3Dir -label 'F3'
+
+    if ($f1Present -and $f3Present) {
+        $f3Manifest = Get-Content -LiteralPath (Join-Path $F3Dir 'manifest_F3.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ($null -eq $f3Manifest.input_sha256) {
+            throw 'F3 manifest missing input_sha256'
+        }
+        $inputs = @($f3Manifest.input_sha256.PSObject.Properties)
+        $f1ActualFiles = @(Get-ChildItem -LiteralPath $F1F2Dir -File |
+            Where-Object { $_.Extension -ieq '.csv' -or $_.Name -ceq 'manifest_F1_F2.json' })
+        if ($f1ActualFiles.Count -ne 9) { throw 'F1F2 input cross-check expects exactly 9 files' }
+        foreach ($f in $f1ActualFiles) {
+            $matching = @($inputs | Where-Object { [IO.Path]::GetFileName($_.Name) -ceq $f.Name })
+            if ($matching.Count -ne 1 -or [string]$matching[0].Value -notmatch '^[A-Fa-f0-9]{64}
+
+    $windows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
+    $qvCandidates = @()
+    if ($env:QLIKVIEW_EXE) { $qvCandidates += $env:QLIKVIEW_EXE }
+    $cmd = Get-Command 'Qv.exe' -ErrorAction SilentlyContinue
+    if ($null -ne $cmd) { $qvCandidates += $cmd.Source }
+    foreach ($base in @([Environment]::GetFolderPath('ProgramFiles'), [Environment]::GetFolderPath('ProgramFilesX86'))) {
+        if ($base) { $qvCandidates += (Join-Path $base 'QlikView/Qv.exe') }
+    }
+    $qv = @($qvCandidates | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) } | Select-Object -Unique)
+    $comType = $null
+    if ($windows) {
+        try { $comType = [Type]::GetTypeFromProgID('QlikTech.QlikView') } catch { $comType = $null }
+    }
+    Write-Output ('WINDOWS=' + $windows)
+    Write-Output ('QLIKVIEW_EXE_PRESENT=' + ($qv.Count -gt 0))
+    if ($qv.Count -gt 0) {
+        $info = (Get-Item -LiteralPath $qv[0]).VersionInfo
+        Write-Output ('QLIKVIEW_EXE_VERSION=' + $info.FileVersion)
+    }
+    Write-Output ('QLIKVIEW_COM_REGISTERED=' + ($null -ne $comType))
+    Write-Output 'QLIKVIEW_RELOAD=False COM_INSTANTIATION=False QVD_WRITES=0 QVW_WRITES=0'
+    if (-not $windows -or $qv.Count -eq 0 -or $null -eq $comType -or -not $f1Present -or -not $f3Present) {
+        throw 'READINESS_ENVIRONMENT_OR_REFERENCES_NOT_READY'
+    } else {
+        Write-Output 'VERDICT=PASS_READONLY_ENTRY_INVENTORY_CANDIDATE_ONLY_NOT_INDICATOR_APPROVAL'
+    }
+} catch {
+    Write-Output ('VERDICT=BLOCKED_READONLY_PREFLIGHT ' + $_.Exception.Message)
+    throw
+} finally {
+    if ($null -ne $before) {
+        $after = @(Get-SadQvdSnapshot)
+        $after | Export-Csv -LiteralPath (Join-Path $evidence 'qvd_22_after.csv') -NoTypeInformation -Encoding UTF8
+        if (-not (Same-SadSnapshot $before $after)) {
+            throw 'CRITICAL: protected QVD metadata/hash drift; stop and preserve evidence'
+        }
+        Write-Output 'ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED=True'
+    }
+    if ($null -ne $qvwBefore) {
+        $qvwAfter = @(Get-SadCanonicalQvwSnapshot)
+        $qvwAfter | Export-Csv -LiteralPath (Join-Path $evidence 'canonical_qvw_after.csv') -NoTypeInformation -Encoding UTF8
+        if (-not (Same-SadSnapshot $qvwBefore $qvwAfter)) {
+            throw 'CRITICAL: canonical QVW hash drift; stop and preserve evidence'
+        }
+        Write-Output 'ORIGINAL_CANONICAL_QVWS_UNCHANGED=True'
+    }
+}
+) {
+                throw ('F3 manifest does not link uniquely to F1F2 file ' + $f.Name)
+            }
+            $actual = (Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash
+            if ($actual -cne ([string]$matching[0].Value).ToUpperInvariant()) {
+                throw ('F3 input SHA256 differs from F1F2 source for ' + $f.Name)
+            }
+        }
+        Write-Output 'F3_F1F2_CROSS_MANIFEST_LINK=PASS_9_OF_9'
+    }
 
     $windows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
     $qvCandidates = @()
