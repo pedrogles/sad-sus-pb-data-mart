@@ -233,59 +233,14 @@ try {
         $inputs = @($f3Manifest.input_sha256.PSObject.Properties)
         $f1ActualFiles = @(Get-ChildItem -LiteralPath $F1F2Dir -File |
             Where-Object { $_.Extension -ieq '.csv' -or $_.Name -ceq 'manifest_F1_F2.json' })
-        if ($f1ActualFiles.Count -ne 9) { throw 'F1F2 input cross-check expects exactly 9 files' }
+        if ($f1ActualFiles.Count -ne 9) {
+            throw 'F1F2 cross-check expects exactly 8 CSV and manifest'
+        }
         foreach ($f in $f1ActualFiles) {
-            $matching = @($inputs | Where-Object { [IO.Path]::GetFileName($_.Name) -ceq $f.Name })
-            if ($matching.Count -ne 1 -or [string]$matching[0].Value -notmatch '^[A-Fa-f0-9]{64}
-
-    $windows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
-    $qvCandidates = @()
-    if ($env:QLIKVIEW_EXE) { $qvCandidates += $env:QLIKVIEW_EXE }
-    $cmd = Get-Command 'Qv.exe' -ErrorAction SilentlyContinue
-    if ($null -ne $cmd) { $qvCandidates += $cmd.Source }
-    foreach ($base in @([Environment]::GetFolderPath('ProgramFiles'), [Environment]::GetFolderPath('ProgramFilesX86'))) {
-        if ($base) { $qvCandidates += (Join-Path $base 'QlikView/Qv.exe') }
-    }
-    $qv = @($qvCandidates | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) } | Select-Object -Unique)
-    $comType = $null
-    if ($windows) {
-        try { $comType = [Type]::GetTypeFromProgID('QlikTech.QlikView') } catch { $comType = $null }
-    }
-    Write-Output ('WINDOWS=' + $windows)
-    Write-Output ('QLIKVIEW_EXE_PRESENT=' + ($qv.Count -gt 0))
-    if ($qv.Count -gt 0) {
-        $info = (Get-Item -LiteralPath $qv[0]).VersionInfo
-        Write-Output ('QLIKVIEW_EXE_VERSION=' + $info.FileVersion)
-    }
-    Write-Output ('QLIKVIEW_COM_REGISTERED=' + ($null -ne $comType))
-    Write-Output 'QLIKVIEW_RELOAD=False COM_INSTANTIATION=False QVD_WRITES=0 QVW_WRITES=0'
-    if (-not $windows -or $qv.Count -eq 0 -or $null -eq $comType -or -not $f1Present -or -not $f3Present) {
-        throw 'READINESS_ENVIRONMENT_OR_REFERENCES_NOT_READY'
-    } else {
-        Write-Output 'VERDICT=PASS_READONLY_ENTRY_INVENTORY_CANDIDATE_ONLY_NOT_INDICATOR_APPROVAL'
-    }
-} catch {
-    Write-Output ('VERDICT=BLOCKED_READONLY_PREFLIGHT ' + $_.Exception.Message)
-    throw
-} finally {
-    if ($null -ne $before) {
-        $after = @(Get-SadQvdSnapshot)
-        $after | Export-Csv -LiteralPath (Join-Path $evidence 'qvd_22_after.csv') -NoTypeInformation -Encoding UTF8
-        if (-not (Same-SadSnapshot $before $after)) {
-            throw 'CRITICAL: protected QVD metadata/hash drift; stop and preserve evidence'
-        }
-        Write-Output 'ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED=True'
-    }
-    if ($null -ne $qvwBefore) {
-        $qvwAfter = @(Get-SadCanonicalQvwSnapshot)
-        $qvwAfter | Export-Csv -LiteralPath (Join-Path $evidence 'canonical_qvw_after.csv') -NoTypeInformation -Encoding UTF8
-        if (-not (Same-SadSnapshot $qvwBefore $qvwAfter)) {
-            throw 'CRITICAL: canonical QVW hash drift; stop and preserve evidence'
-        }
-        Write-Output 'ORIGINAL_CANONICAL_QVWS_UNCHANGED=True'
-    }
-}
-) {
+            $matching = @($inputs | Where-Object {
+                [IO.Path]::GetFileName($_.Name) -ceq $f.Name
+            })
+            if ($matching.Count -ne 1 -or [string]$matching[0].Value -notmatch '^[A-Fa-f0-9]{64}$') {
                 throw ('F3 manifest does not link uniquely to F1F2 file ' + $f.Name)
             }
             $actual = (Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash
