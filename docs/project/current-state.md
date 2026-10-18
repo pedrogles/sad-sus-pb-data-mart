@@ -1,6 +1,6 @@
 # Current State — SAD Data Mart SUS PB
 
-**Snapshot:** 17/10/2026. **`main` conferida:** `573405e3e66079a092607a4d24d3789f46da11f4`, após squash merge do [PR #99](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/99). Este snapshot registra fatos comprovados da `main`; a preparação física posterior existe apenas em branch/PR Draft até integração.
+**Snapshot:** 18/10/2026. **`main` conferida:** `b1b0c200e5ce75670ea5d9c656ec94761fc0a37b`, após squash merge do [PR #100](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/100). O código de preparação está na `main`, porém nenhuma execução física QlikView/Windows foi demonstrada nesta etapa; revisão do risco de publicação é proposta em PR Draft separado.
 
 ## Contrato acadêmico preservado
 
@@ -17,7 +17,7 @@ Data Mart SUS Paraíba, 2017–2019, com SIH/SUS RD, CNES/LT e IBGE/SIDRA; **Qli
 | `FATO_POPULACAO` | **QVD físico criado e reaberto**, CREATE + READBACK **PASS local reportado**: 669 linhas, 7 campos, 223 municípios × 3 anos, 669 pares SK distintos, zero erros. Código **MERGED #96**; preflight e RAM nos #93/#94 | [Evidência física](../discovery/phase-5-fato-populacao-qvd-materialization-2026-10-16.md) |
 | Inventário | **21 QVDs locais reportados**: 10 extração/referência, 8 dimensões, 3 fatos; os 20 anteriores mantiveram SHA-256 após CREATE e READBACK segundo o executor | Artefatos físicos somente no Windows; não versionados |
 | CNES/LT complementar | Preflight PASS local reportado, PR #90 ainda Draft e não integrado | [PR #90](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/90) |
-| Fase VI — Link Table | VI-P1–P4 scripts na `main` via [PR #98](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/98); VI-P4 PASS local restrito de observabilidade; VI-P5 contrato candidato/documentação integrado via [PR #99](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/99). **`LINK_KEY_CONTRACT=NOT_APPROVED`**; `LINK_ANALISE.qvd` não criado. | [VI-P5](../discovery/phase-6-vi-p5-sad-link-v1-physical-contract-2026-10-17.md) |
+| Fase VI — Link Table | VI-P1–P4 versionados na `main` via [PR #98](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/98), VI-P4 PASS local restrito; VI-P5 estático via [PR #99](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/99); scripts CREATE/READBACK e executor preparados via [PR #100](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/100), **sem execução física**. Revisão da publicação não sobrescrevente em PR Draft. **`LINK_KEY_CONTRACT=NOT_APPROVED`**; `LINK_ANALISE.qvd` não criado conforme último estado reportado. | [Preparação](../discovery/phase-6-link-analise-create-readback-preparation-2026-10-17.md) |
 | Fases VII–IX | Painel técnico, indicadores e dashboards físicos pendentes; semântica V2 aprovada apenas semanticamente | [Contrato V2](../discovery/phase-6-semantic-v2-approved-2026-10-14.md) |
 
 **Qualificação:** PASS significa **execução QlikView local reportada pelo responsável**, com stdout e marcadores de log confrontados com o código; os QVDs/QVWs binários não foram auditados independentemente. **Não é aprovação de produção**: `PRODUCTION_APPROVED=False`. A implementação de três fatos físicas não comprova associação completa da constelação ou execução do fluxo geral `TRANSF.qvw → PAINEL.qvw`.
@@ -32,6 +32,6 @@ Data Mart SUS Paraíba, 2017–2019, com SIH/SUS RD, CNES/LT e IBGE/SIDRA; **Qli
 
 ## Próximo gate — decisão pendente
 
-**Fase VI: preparação controlada da materialização `LINK_ANALISE.qvd`.** Contrato estático VI-P5 na `main` e estratégia de projetar `%LINK_KEY` da população em memória aprovada apenas documentalmente. Preparar, em branch própria, QVS versionados, runner PowerShell com destination guard, reutilização do VI-P1 congelado, READBACK QlikView independente e manifesto SHA-256 dos 21 QVDs. **Sem executar CREATE/READBACK físico, recarregar `TRANSF.qvw`, modificar QVDs ou iniciar Fase VII.** Revisar PR Draft e solicitar autorização independente para qualquer execução física ou merge.
+**Fase VI: verificação local não mutante do executor e fechamento da publicação sem sobrescrita.** O PR #100 já integrou os scripts de preparação. O executor da `main` ainda contém risco de concorrência entre checagem de destino e `STORE` diretamente no arquivo final; a proposta em PR Draft grava em staging exclusivo, confirma READBACK/hashes e usa `File.Move` sem overwrite no mesmo diretório. **Aguardar revisão/merge separado dessa correção e execução de inventário no Windows, inicialmente sem `-ExecutePhysical`.** Sem CREATE físico, alterações nos 21 QVDs, recarga de `TRANSF.qvw` ou Fase VII até autorização separada.
 
-**Limite deste snapshot:** atualização operacional para acompanhar PRs #98/#99 e indicar o gate de preparação; código preparatório em PR Draft não prova testes locais nem modifica a `main` até merge.
+**Limite desta atualização:** apenas roteamento do gate e referência de código candidato, sem declarar teste local, homologação QlikView ou produção.
