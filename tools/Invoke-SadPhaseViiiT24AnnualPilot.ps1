@@ -279,7 +279,7 @@ try{
                 $actualP=[long]::Parse($rawP,$culture)
                 $actualRate=[decimal]::Parse($rawRate,[Globalization.NumberStyles]::AllowDecimalPoint,$culture)
                 $expectedRate=[decimal]1000*[decimal]$expectedN/[decimal]$expectedP
-                $delta=[decimal]::Abs($actualRate-$expectedRate)
+                $delta=[Math]::Abs([decimal]($actualRate-$expectedRate))
                 $ok=($actualN -eq $expectedN -and $actualP -eq $expectedP -and
                     $delta -le [decimal]0.000001)
                 $resultRows += [pscustomobject]@{
