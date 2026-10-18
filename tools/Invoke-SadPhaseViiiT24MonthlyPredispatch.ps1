@@ -130,7 +130,7 @@ try{
     $qv=New-Object -ComObject 'QlikTech.QlikView'
     $script:doc=$qv.OpenDoc($copy,'','')
     if($null -eq $script:doc){throw 'BLOCKED: QlikView COM OpenDoc returned null'}
-    if(-not ([string]$script:doc.GetProperties().Script).Contains('[VIII-B-T24] VERDICT=PASS_RELOAD_STRUCTURE_ONLY_NOT_T24')){
+    if(-not ([string]($script:doc.GetProperties().Script)).Contains('[VIII-B-T24] VERDICT=PASS_RELOAD_STRUCTURE_ONLY_NOT_T24')){
       throw 'BLOCKED: QVW script not from the phase VIII-B T24 pilot'
     }
     $setPop='Sum({$<PERIODO_COMPETENCIA=>} POPULACAO_ESTIMADA)'
@@ -158,7 +158,7 @@ try{
           $wantN += [long]$r.internacoes_elegiveis
         }
       }
-      [long]$wantPop=if($c.Mun -ceq 'PB'){$pbPop}else{[long]$jp[0].denominador_populacao}
+      [long]$wantPop=if($c.Mun -ceq 'PB'){$pbPop}else{[long]($jp[0].denominador_populacao)}
       if($wantN -le 0){throw ('BLOCKED: no F1 monthly admissions for '+$c.Name)}
       $observedN=Numeric 'Sum(QTD_INTERNACAO)'
       $observedPop=Numeric $setPop
@@ -167,7 +167,7 @@ try{
       $delta=[Math]::Abs([decimal]($observedRate-$expectRate))
       $ok=($observedN -eq $wantN -and $observedPop -eq $wantPop -and $delta -le [decimal]0.000001)
       $casesOut += [pscustomobject]@{
-        Case=$c.Name;Months=($c.Months -join ',');Window='PARTIAL_NOT_ANNUALIZED_POP_ANNUAL'
+        Case=$c.Name;Months=($c.Months -join ',');Window=$(if($c.Months.Count -eq 2){'DISCONTIGUOUS_PARTIAL_ANNUAL_POP'}else{'PARTIAL_NOT_ANNUALIZED_POP_ANNUAL'})
         F1Admissions=$wantN;QlikAdmissions=$observedN;F3AnnualPop=$wantPop;QlikAnnualPop=$observedPop
         F1F3Rate=$expectRate;QlikRate=$observedRate;AbsoluteError=$delta
         Status=$(if($ok){'PASS_CANDIDATE'}else{'BLOCKED_MISMATCH'})
