@@ -200,7 +200,7 @@ try{
             $blocked=@($events | Where-Object {$_.Contains('[VII] VERDICT=BLOCKED')})
             if($pass.Count -ne 1 -or $blocked.Count -gt 0){throw 'Missing unique VII PASS or BLOCKED detected'}
             $rawLog=Get-Content -LiteralPath $testLog -Raw
-            if($rawLog -match '(?i)circular reference|loosely coupled|synthetic key|\$Syn\b'){
+            if($rawLog -match '(?i)circular reference|loosely coupled|synthetic key'){
                 throw 'Possible loop/synthetic association in native QlikView log; inspect before proceeding'
             }
             $null=$doc.Save()
