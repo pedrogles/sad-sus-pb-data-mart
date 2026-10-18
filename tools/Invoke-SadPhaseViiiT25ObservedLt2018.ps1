@@ -161,7 +161,7 @@ try{
       $month=('2018'+'{0:D2}' -f $i)
       if(-not $byComp.ContainsKey($month)){throw ('BLOCKED: missing monthly LT observation '+$mun+'/'+$month)}
     }
-    if($total -le 0 -or
+    if($total -lt 0 -or
        [long]$annual[0].qt_sus_soma_snapshots_auditoria -ne $total -or
        [long]$annual[0].media_sus_numerador_exato -ne $total -or
        $annual[0].media_sus_divisor_exato -cne '12' -or
@@ -193,6 +193,10 @@ try{
       $null=$script:doc.ClearAll()
       SelectOne 'PERIODO_ANO' '2018'
       SelectOne 'SERV_COD_DATASUS_6' $mun
+      if((CountSelected 'RES_COD_DATASUS_6') -ne 0 -or
+         (CountSelected 'COD_PROCEDIMENTO') -ne 0){
+        throw ('BLOCKED: incompatible residence/procedure filter under T25 '+$mun)
+      }
       if((CountSelected 'PERIODO_COMPETENCIA') -ne 0){
         throw ('BLOCKED: no-month annual selection expected '+$mun)
       }
