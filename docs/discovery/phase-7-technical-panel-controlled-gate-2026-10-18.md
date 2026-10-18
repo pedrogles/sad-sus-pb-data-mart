@@ -3,7 +3,7 @@
 **Data de preparação:** 18/10/2026  
 **Base congelada:** `main@dfc02527b3791a19bcf9d9db29cb3979061dea81`  
 **Branch isolada:** `feat/phase-vii-technical-panel-gate-20261018`  
-**Status operacional deste gate:** `PASS_LOCAL_ASSOCIATIVE_CANDIDATE_PENDING_TABLE_VIEWER` **reportado pelo responsável via stdout em 18/10/2026**. O log nativo completo e o binário QVW de teste não foram analisados independentemente; `TABLE_VIEWER_REVIEW=PENDING`. Não afirmar aprovação final.  
+**Status operacional deste gate:** `PASS_LOCAL_REPORTED_AND_VISUAL_ASSOCIATIVE_CANDIDATE_ONLY` (18/10/2026). O stdout reportado do QlikView 12 e a captura de tela do Table Viewer do QVW temporário sustentam o encerramento **do gate técnico candidato**. O log nativo completo e o binário QVW não foram auditados independentemente. Não é homologação de produção, aprovação semântica da link key nem de medidas.  
 **Autorização:** implementar e versionar antes de executar; inventariar 22 QVDs read-only; usar exclusivamente QVW descartável. **Sem merge, QVD/QVW original modificado, Fases VIII–IX ou KPIs.**
 
 ## Objetivo, fontes, invariantes e condição de parada
@@ -71,9 +71,11 @@ Coletar todo o stdout, caminho `EVIDENCE_DIR`, `TEMP_QVW`, log nativo, SHA-256 d
 - `IMPLEMENTATION_SCRIPTS_VERSIONED=True` (confirmar SHA de commit exato antes da execução local).
 - `STATIC_REVIEW=PERFORMED_CANDIDATE_ONLY`.
 - `INVENTORY_22_QVD=PASS_LOCAL_REPORTED_READ_ONLY`.
-- `QLIKVIEW_12_RELOAD=PASS_LOCAL_ASSOCIATIVE_CANDIDATE_PENDING_TABLE_VIEWER`.
-- `T17_T23_FINAL=NOT_APPROVED`.
-- `TABLE_VIEWER_REVIEW=PENDING`.
+- `QLIKVIEW_12_RELOAD=PASS_LOCAL_REPORTED_CANDIDATE_ONLY`.
+- `T17_T19_T22_T23=PASS_LOCAL_REPORTED_CANDIDATE_ONLY`.
+- `T20_T21=PASS_VISUAL_REVIEWED_CAPTURE`.
+- `TABLE_VIEWER_REVIEW=PASS_CAPTURE_REVIEW_CANDIDATE_ONLY`.
+- `PHASE_VII_TECHNICAL_GATE=GATE_PASS_CANDIDATE_ONLY`.
 - `LINK_KEY_CONTRACT=NOT_APPROVED`.
 - `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`.
 - `PRODUCTION_APPROVED=False`.
@@ -110,4 +112,27 @@ Nenhuma atualização operacional da `main` é autorizada nesta preparação. Pa
 
 **Condição de parada atingida para a tentativa automatizada:** não repetir `-RunQlik` sem motivo novo e autorização delimitada. Próximo passo **sem recarga**: abrir somente o `TEMP_QVW` indicado, inspecionar o Table Viewer e registrar screenshot ou relatório: 16 tabelas previstas, zero `$Syn`, ausência de circular references/loosely coupled tables, `FATO_INTERNACAO`, `FATO_CAPACIDADE_LEITO` e `FATO_POPULACAO` conectadas à `LINK_ANALISE` exclusivamente por `%LINK_KEY`; dimensões de papel ligadas apenas pelas SKs próprias. O QVW de teste deverá estar salvo e carregar seu modelo ao abrir, sem nova recarga.
 
-**Pendências:** `TABLE_VIEWER_REVIEW=PENDING`, `T21_FINAL=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PR_MERGED=False`, `PRODUCTION_APPROVED=False`. Não implementar KPIs ou dashboards. Após conferência visual, registrar evidência/resultado em revisão separada antes de fechar o gate.
+**Pendências após a execução local:** a inspeção visual foi posteriormente recebida e avaliada (seção seguinte). Os contratos `LINK_KEY_CONTRACT=NOT_APPROVED` e `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED` continuam fora deste gate; `PR_MERGED=False`, `PRODUCTION_APPROVED=False`. Não implementar KPIs ou dashboards.
+
+## Revisão da captura de Table Viewer — 18/10/2026
+
+**FATO VERIFICADO NA IMAGEM FORNECIDA:** o usuário compartilhou PNG do Table Viewer com o título do arquivo `SAD_VII_TECHNICAL_PANEL_TEST.qvw` no diretório temporário da tentativa reportada. A captura foi analisada diretamente nesta conversa; não representa inspeção do binário QVW nem execução independente dos dados.
+
+**Identidade do PNG compartilhado (fora do Git):** `image(20261018-150947).png`; dimensão `1663 × 989`; SHA-256 calculado do anexo `521372AA1BB83920F58EF5972CED521C32D205BB813C8F9BE08A43C283427F83`. Preservar o PNG como evidência de conversa/artefato local; não versionar binários no repositório.
+
+**Resultado visual:** 16 tabelas identificáveis: `LINK_ANALISE`; as 3 fatos; `DIM_TEMPO_COMPETENCIA`, `DIM_TEMPO_ANO`, `DIM_TEMPO_INTERNACAO`, `DIM_TEMPO_SAIDA`; `DIM_MUNICIPIO_RESIDENCIA`, `DIM_MUNICIPIO_SERVICO`; `DIM_ESTABELECIMENTO`; `DIM_PROCEDIMENTO`; `DIM_DIAGNOSTICO`; `DIM_CARATER_ATENDIMENTO`; `DIM_MOTIVO_SAIDA_PERMANENCIA`; `DIM_TIPO_LEITO`.
+
+Os conectores visíveis representam **15 associações planejadas**: as três fatos compartilham unicamente `%LINK_KEY` com a Link; esta conecta às cinco SKs conformadas; a internação conecta a seis dimensões exclusivas (procedimento, diagnóstico, caráter, motivo, entrada, saída); a capacidade conecta a tipo de leito. A população não expõe suas SKs anuais/municipais originais como segundo campo de associação. Os campos descritivos possuem aliases que não aparecem ligados indevidamente.
+
+| Teste | Veredito delimitado | Base |
+| --- | --- | --- |
+| T17–T19 | `PASS_LOCAL_REPORTED_CANDIDATE_ONLY` | stdout/QVS do runner e recarga da tentativa em QVW temporário |
+| T20 | `PASS_VISUAL_CAPTURE` | 16 tabelas esperadas, nenhuma `$Syn` exibida, conexões por chaves nomeadas |
+| T21 | `PASS_VISUAL_CAPTURE` | grafo desenhado em árvore sem caminho circular aparente; runner reportou nenhum aviso de loop |
+| T22–T23 | `PASS_LOCAL_REPORTED_CANDIDATE_ONLY` | verificações do QVS e stdout reportados, não reauditoria independente de ST/arquivos |
+| Integridade física | `PASS_LOCAL_REPORTED` | 22 QVDs e QVWs canônicos inalterados segundo executor |
+| Modelo final/semântica/produção | `NOT_APPROVED` | fora deste gate |
+
+**Encerramento restrito:** `PHASE_VII_TECHNICAL_GATE=GATE_PASS_CANDIDATE_ONLY`, `TABLE_VIEWER_REVIEW=PASS_CAPTURE_REVIEW_CANDIDATE_ONLY`. Evidências suficientes para concluir o escopo técnico *candidato* de T17–T23 **sem recarregar novamente**. A imagem não prova resultados de KPIs, Set Analysis, semântica completa da relação entre fatos ou ausência de qualquer erro não representado na captura.
+
+**Roteamento e autorização:** manter PR #106 Draft, **sem merge**, manter `PAINEL/painel_main.qvs` intocado, preservar os 22 QVDs, QVWs e evidências; `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PRODUCTION_APPROVED=False`. Encerrar o gate técnico aqui. Avanço à implementação definitiva, indicadores/Fase VIII e dashboards/Fase IX requer decisões e autorizações separadas.
