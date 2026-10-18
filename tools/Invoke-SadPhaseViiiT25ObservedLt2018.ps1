@@ -233,7 +233,7 @@ try{
         if((CountSelected 'PERIODO_ANO') -ne 1 -or
            (CountSelected 'SERV_COD_DATASUS_6') -ne 1 -or
            (CountSelected 'PERIODO_COMPETENCIA') -ne 1){
-          throw ('BLOCKED: monthly selection lost '+mun+'/'+$period)
+          throw ('BLOCKED: monthly selection lost '+$mun+'/'+$period)
         }
         $actual=Numeric 'Sum(QTD_LEITOS_SUS)'
         $expected=[decimal]$c.MonthTotal[$period]
@@ -243,8 +243,8 @@ try{
         }
         $monthlyResults | Export-Csv -LiteralPath (Join-Path $work 't25_monthly_components.csv') -Encoding UTF8 -NoTypeInformation
         if($expected -ne $actual){
-          Write-Output ('T25_MONTH='+mun+'/'+$period+' RESULT=BLOCKED_MISMATCH F2='+$expected+' QLIK='+$actual)
-          throw ('BLOCKED: monthly LT component mismatch '+mun+'/'+$period)
+          Write-Output ('T25_MONTH='+$mun+'/'+$period+' RESULT=BLOCKED_MISMATCH F2='+$expected+' QLIK='+$actual)
+          throw ('BLOCKED: monthly LT component mismatch '+$mun+'/'+$period)
         }
         $checkedSum += [long]$actual
       }
