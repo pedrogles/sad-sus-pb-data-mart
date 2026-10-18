@@ -95,7 +95,6 @@ $script:doc=$null
 $pass=$false
 $casesOut=@()
 $guardsOut=@()
-$regionExpected=$null
 try{
   $oldQvd=@(Snapshot 'QVD')
   $oldQvw=@(Snapshot 'QVW')
