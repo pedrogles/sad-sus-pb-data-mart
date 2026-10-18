@@ -118,9 +118,11 @@ O material também apresenta os conceitos:
 
 Há um exercício específico da Aula 7 que solicita Star Schema. Isso deve ser tratado como requisito desse exercício, não como substituição automática do requisito geral do projeto de escolher e justificar Star ou Snowflake.
 
-## Prioridade atual do projeto
+## Prioridade histórica até a primeira entrega (encerrada em 13/10/2026)
 
-Até a primeira entrega, decisões de aquisição, modelagem e documentação devem priorizar a capacidade de produzir de forma defensável:
+**Registro histórico, não roteamento operacional vigente.** A primeira entrega foi reportada como realizada em 13/10/2026; a avaliação do professor permanece pendente. Os requisitos acadêmicos acima não são alterados. Para o próximo gate, consultar [o estado operacional](../project/current-state.md) e [o Boundary 7](../discovery/boundary-7-implementation-plan.md).
+
+Até a primeira entrega, decisões de aquisição, modelagem e documentação deveriam priorizar a capacidade de produzir de forma defensável:
 
 1. regras de negócio;
 2. entidades e relacionamentos;

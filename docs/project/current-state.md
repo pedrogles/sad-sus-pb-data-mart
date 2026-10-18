@@ -1,6 +1,6 @@
 # Current State — SAD Data Mart SUS PB
 
-**Snapshot:** 18/10/2026. **`main` de código conferida:** `9c2905c0e67e2bfde9a0db941e35ffd2ed75289a`, após integração do [PR #103](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/103). A materialização candidata de `LINK_ANALISE.qvd` alcançou **PASS físico local reportado** de CREATE + READBACK + publicação sem sobrescrita; o QVD e os logs nativos completos da execução R2 não foram auditados independentemente. [Evidência Fase VI](../discovery/phase-6-link-analise-physical-r2-2026-10-18.md).
+**Snapshot operacional:** 18/10/2026. **Base da auditoria documental:** `main@a88da069c037d193118f38ba214494354e294c3e`, após merge do [PR #104](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/104). **Commit da execução física R2 (não o HEAD documental):** `9c2905c0e67e2bfde9a0db941e35ffd2ed75289a` ([PR #103](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/103)). A materialização candidata de `LINK_ANALISE.qvd` alcançou **PASS físico local reportado** de CREATE + READBACK + publicação sem sobrescrita; o QVD e os logs nativos completos da execução R2 não foram auditados independentemente. [Evidência Fase VI](../discovery/phase-6-link-analise-physical-r2-2026-10-18.md).
 
 ## Contrato acadêmico preservado
 
@@ -32,6 +32,6 @@ Data Mart SUS Paraíba, 2017–2019, com SIH/SUS RD, CNES/LT e IBGE/SIDRA; **Qli
 
 ## Próximo gate — decisão pendente
 
-**Fase VI — gate físico candidato encerrado com PASS local reportado.** Preservar `LINK_ANALISE.qvd`, o SHA-256 registrado e as evidências locais [R1/R2](../discovery/phase-6-link-analise-physical-r2-2026-10-18.md); não repetir CREATE. Esta atualização documental exige revisão e merge próprios, sem novas execuções.
+**Fase VI — gate físico candidato encerrado com PASS local reportado e documentação integrada pelo PR #104.** Preservar `LINK_ANALISE.qvd`, SHA-256 e evidências locais [R1/R2](../discovery/phase-6-link-analise-physical-r2-2026-10-18.md); não repetir CREATE/READBACK. O PR #90 permanece Draft e independente deste encerramento.
 
-**Próxima decisão independente:** após a integração documental, avaliar autorização específica para iniciar a **Fase VII — painel técnico**, respeitando Boundary 7, a projeção POP em memória e as pendências `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`. Não iniciar Fase VII, recarregar `TRANSF.qvw`/`PAINEL.qvw` ou aprovar produção nesta atualização.
+**Próximo objetivo delimitado:** iniciar **Fase VII — Discovery READ-ONLY do Painel Técnico**, seguindo o [Boundary 7](../discovery/boundary-7-implementation-plan.md), [Boundary 6](../discovery/boundary-6-qlikview-physical-architecture.md), [VI-P5](../discovery/phase-6-vi-p5-sad-link-v1-physical-contract-2026-10-17.md) e contrato [V2 semântico](../discovery/phase-6-semantic-v2-approved-2026-10-14.md). Identificar associações/aliases, projeção POP em memória, riscos de múltiplos campos comuns, plano de T20–T23 e gate físico posterior. **`PHASE_VII_IMPLEMENTATION=NOT_AUTHORIZED`**: não editar `PAINEL/painel_main.qvs`, não recarregar QVW, não gerar dashboards ou KPIs e não aprovar produção nesta Discovery.

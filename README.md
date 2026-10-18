@@ -23,36 +23,22 @@ A implementação acadêmica será realizada no **QlikView 12**.
 - CNES — ST / Estabelecimentos;
 - IBGE — estimativas populacionais municipais.
 
-## Estado atual
+## Estado acadêmico e implementação — resumo de 18/10/2026
 
-A Feasibility Discovery e a Dataset Validation / Modeling Discovery foram concluídas.
+A primeira entrega acadêmica dos **Capítulos 1 e 2** foi **reportada como realizada em 13/10/2026**. A avaliação do professor permanece pendente. A modelagem acadêmica entregue não foi alterada: **três fatos, oito dimensões**, Star Schema por processo factual e constelação de estrelas com dimensões conformadas.
 
-A primeira entrega acadêmica, correspondente aos **Capítulos 1 e 2**, está:
+O projeto já ultrapassou a Fase III:
+- **Fases I–III:** infraestrutura e conversão (108/108 DBC); extração/staging com dez QVDs locais reportados.
+- **Fase IV:** oito dimensões implementadas conforme evidências de gate locais.
+- **Fase V:** três fatos físicas com CREATE + READBACK local reportado.
+- **Fase VI:** `TRANSFORMACAO/QVD/LINK_ANALISE.qvd` materializado em execução QlikView 12 **local reportada**, com 85.705 chaves, seis campos e publicação candidata sem sobrescrita. **Não** há homologação semântica da chave nem aprovação de produção.
+- **Fase VII — Painel técnico:** ainda não implementada; primeiro passo proposto é **Discovery READ-ONLY** do contrato associativo e dos critérios de aceitação. As Fases VIII (indicadores) e IX (dashboards) permanecem pendentes.
 
-**FECHADA — PRONTA PARA IMPRESSÃO/ENTREGA**
+**Invariantes:** `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `T29_HISTORICAL=NOT_APPROVED`, `PRODUCTION_APPROVED=False`. A legenda CNES de setembro/2019 **não** está validada retroativamente em 2017–2019.
 
-Modelagem aprovada:
+Fluxo físico preservado: `BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
 
-- 3 tabelas fato;
-- 8 dimensões;
-- Star Schema por processo factual;
-- constelação de esquemas estrela com dimensões conformadas;
-- DER e modelo lógico relacional normalizado concluídos.
-
-## Estado de implementação — 08/10/2026
-
-- **Fase I — infraestrutura QlikView 12:** concluída.
-- **Fase II — conversão DBC:** concluída, 108/108 arquivos reconciliados.
-- **Fase III — EXTRAÇÃO / staging:** em andamento; RD/LT/ST, IBGE, referências normativas, CID-10 e SIGTAP aprovados nos checkpoints locais.
-- **CNES leitos / T29:** a Nota Técnica oficial de setembro/2019 cobre 57/57 pares e 35.518/35.518 ocorrências LT; **vigência de 2017–2019 não comprovada**, T29 integral não aprovado. Aprofundamento normativo suspenso até necessidade analítica/acadêmica demonstrada.
-- **Transformação e painéis:** ainda não iniciados; não antecipar fases.
-
-Próxima ação: revisar o fechamento controlado de III-C4/T29 com a ressalva temporal explicitada e verificar os gates restantes da Fase III antes de iniciar `TRANSFORMACAO`.
-
-Fluxo físico preservado:
-`BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
-
-Consulte `docs/project/current-state.md` para o estado atual, sem reconstruir decisões pelos chats.
+**Fonte de verdade do estado vigente:** [`docs/project/current-state.md`](docs/project/current-state.md). Para detalhes físicos da Fase VI, consulte [evidência R1/R2](docs/discovery/phase-6-link-analise-physical-r2-2026-10-18.md). Os registros antigos de fases anteriores permanecem históricos.
 
 ## Documentação principal
 
