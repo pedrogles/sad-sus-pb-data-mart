@@ -150,7 +150,7 @@ try{
     Write-Output 'VERDICT=PASS_REFERENCE_READONLY_ONLY_COM_NOT_RUN'
   }else{
     if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){throw 'BLOCKED: native Windows required'}
-    $copy=Join-Path $work 'T24_MONTHLY_DISPOSABLE.qvw'
+    $copy=Join-Path $work 'T24_EDGE_DISPOSABLE.qvw'
     Copy-Item -LiteralPath $src -Destination $copy -ErrorAction Stop
     if((Get-FileHash -LiteralPath $copy -Algorithm SHA256).Hash -cne $sourceHash){throw 'BLOCKED: QVW TEMP copy SHA drift'}
     $qv=New-Object -ComObject 'QlikTech.QlikView'
