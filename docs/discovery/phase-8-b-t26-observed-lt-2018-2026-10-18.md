@@ -1,6 +1,6 @@
 # Fase VIII-B — piloto experimental T26 2018: internações por leito SUS médio observado
 
-**Estado:** `VIII_B_T26_OBSERVED_2018=VERSIONED_NOT_EXECUTED`. Branch separada, originada de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge e sem modificação na `main`.
+**Estado:** `VIII_B_T26_OBSERVED_2018=BLOCKED_RUNTIME_RESERVED_ERROR_VARIABLE; FIX_VERSIONED_PENDING_WINDOWS_RETEST`. Branch separada, originada de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge e sem modificação na `main`.
 
 ## 1. Escopo, fonte de verdade e condição de parada
 
@@ -80,3 +80,31 @@ powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiT26ObservedLt2018.ps1
 ## 5. Estados preservados
 
 `T26_GENERAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `PRODUCTION_APPROVED=False`. O T25 anterior segue PASS **local candidato restrito**, T24 não é aprovado globalmente, Fase IX não foi iniciada. Sem merge/deleção de branches nem mudança estrutural sem autorização.
+
+## 6. Primeira execução local: bloqueio PowerShell após oráculos F1/F2/F3 (18/10/2026)
+
+**Evidência reportada pelo responsável:** Windows PowerShell e QlikView 12, branch `test/phase-viii-b-t26-observed-lt-2018-20261018`, **HEAD efetivamente executado** `2469fe8083b1a39b170743e9b4bd703cdf9eb39a`. No mesmo bloco fail-closed, após `git fetch` e `git switch --track`, `PARSER=PASS` foi realmente emitido. Executor: SHA-256 `669C3C5663218F3A57E36BC4F4E54C9979FD9FCC005B9A42CDCC0EF71D9A1970`. Fonte QVW T24 TEMP: SHA-256 `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E`. Evidências locais somente no PC (não reabertas aqui): `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_T26_OBS_52f9d052927e44e1981462b13fc5429e`.
+
+**Oráculos F1/F2/F3, hashes declarados no stdout do runner:**
+- `F1_servico_competencia.csv`: `A08A0812EC7E30D46014423C3C85B5B2846BD4E3451859D10FA6945D8E7763D1`.
+- `F1_servico_ano.csv`: `EDE0F700887262B47A510D931A459C6B712AC6B8464C777C387029FDABC12A00`.
+- `F2_lt_municipio_competencia_observado.csv`: `DC0FAE8646F6570F5DEEAF8A1597EA5ED90A5BD9A881A40B4DCA0E30380E953D`.
+- `F2_lt_municipio_ano_cobertura_candidata.csv`: `97EB032F3A7E444B436349608A2B73F61D597E83DBB7576E47BB5ABBCC82512D`.
+- `F3_componentes_servico_ano.csv`: `6AE088266F4CCABC885FE04E890FD99921A8076BAEB930AA6FF518816137257D`.
+
+**Referências confirmadas no preflight, não nos KPIs:**
+
+| Município de serviço, ano 2018 | F1 internações elegíveis | F2 soma de 12 snapshots para cálculo da média | Escopo |
+|---|---:|---:|---|
+| João Pessoa (`250750`) | 73.105 | 28.106 | `HOSPITAL_SCOPE=NOT_VERIFIED` |
+| Campina Grande (`250400`) | 46.752 | 16.592 | `HOSPITAL_SCOPE=NOT_VERIFIED` |
+
+**Bloqueio:** `VERDICT=BLOCKED_OR_INCONCLUSIVE Não é possível substituir a variável Error porque ela é somente leitura ou constante.` O erro é apontado na linha 228 do runner: `$error=[Math]::Abs([decimal]($actualRatio-$expectRatio))`. PowerShell interpreta `$error` como a variável automática reservada `$Error`, independentemente da capitalização. A tentativa falhou após conferir F1/F2/F3 e antes de reconciliar o primeiro caso anual e o caso parcial. **Não atribuir PASS às taxas T26**; `T26_ANNUAL_2_CASES=NOT_PASSED`; `T26_PARTIAL_1_CASE=NOT_RUN`.
+
+**Integridade reportada após bloqueio:** `ORIGINAL_22_QVD_SHA256_UNCHANGED=True`; `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`; `SOURCE_T24_QVW_SHA256_UNCHANGED=True`; `MODE=TEMP_COPY_NO_RELOAD QVD_WRITES=0 CANONICAL_QVW_WRITES=0`. O wrapper do usuário emitiu `T26_EXECUTION=BLOCKED` após falha do executor. CSVs e QVW binário de teste não foram inspecionados independentemente neste ambiente.
+
+**Correção pontual versionada:** commit `de26240ade3ec1b2a713842b1348fb21d6f06440`, substitui exclusivamente as **três referências** PowerShell `$error` por `$ratioError` (atribuição do erro absoluto; comparação de tolerância `1e-6`; campo de evidência `AbsoluteError`). Fórmulas T26, oráculos, janelas e hashes de QVD/QVW não foram alterados. A correção foi inspecionada no Git, **ainda não foi testada no Windows**.
+
+**Próximo passo delimitado:** conferir novo HEAD da mesma branch, validar parser real e tentar `-RunQlik` **uma vez** com o mesmo QVW TEMP original e os manifestos locais F1/F2/F3. Se outra falha ocorrer, preservar stdout/CSV e interromper antes de novo ajuste. Não repetir T24 ou T25, nem avançar para outro gate.
+
+**Estado após documentação:** `VIII_B_T26_OBSERVED_2018=FIX_VERSIONED_PENDING_WINDOWS_RETEST`; `T26_GENERAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `T29_HISTORICAL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`; PR #114 permanece Draft, sem merge e sem Fase IX.
