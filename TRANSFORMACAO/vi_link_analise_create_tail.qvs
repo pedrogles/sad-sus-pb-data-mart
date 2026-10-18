@@ -1,5 +1,6 @@
 // FASE VI — appended ONLY after versioned vi_p1_readonly.qvs has finished.
-// Creates one NEW Link Table QVD; cannot run standalone or overwrite an existing target.
+// Writes only to a unique staging QVD. The runner validates it, then publishes by
+// same-directory non-overwriting File.Move. Never STORE directly to LINK_ANALISE.qvd.
 // Execution requires separate approval, Windows/QlikView 12 and audited PowerShell.
 LET vVILStart=ScriptErrorCount;
 TRACE [VI-LINK] START_CREATE_TAIL;
