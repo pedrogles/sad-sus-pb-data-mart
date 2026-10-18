@@ -269,15 +269,19 @@ try{
                 }
                 $rawN=[string]$doc.Evaluate("Num(Sum(QTD_INTERNACAO),'0','.','')")
                 $rawP=[string]$doc.Evaluate("Num(Sum(POPULACAO_ESTIMADA),'0','.','')")
-                $rawRate=[string]$doc.Evaluate("Num(1000*Sum(QTD_INTERNACAO)/Sum(POPULACAO_ESTIMADA),'0.000000000','.','')")
+                # Num() is a locale-dependent dual formatting function. Do not format a rate before COM evaluation.
+                # Preserve the raw Qlik numeric expression; normalize only a single decimal separator.
+                $rawRate=[string]$doc.Evaluate('1000*Sum(QTD_INTERNACAO)/Sum(POPULACAO_ESTIMADA)')
+                Write-Output ('T24_RAW_QLIK_RATE_CASE='+$c.Name+' RAW='+$rawRate)
                 if($rawN -notmatch '^\d+$' -or $rawP -notmatch '^\d+$' -or
-                   $rawRate -notmatch '^\d+\.\d{9}$'){
+                   $rawRate.Trim() -notmatch '^\d+([.,]\d+)?$'){
                     throw ('Ambiguous Qlik number/POP denominator for '+$c.Name+
-                        ' NUM='+$rawN+' POP='+$rawP+' RATE='+$rawRate)
+                        ' NUM='+$rawN+' POP='+$rawP+' RAW_RATE='+$rawRate)
                 }
                 $actualN=[long]::Parse($rawN,$culture)
                 $actualP=[long]::Parse($rawP,$culture)
-                $actualRate=[decimal]::Parse($rawRate,[Globalization.NumberStyles]::AllowDecimalPoint,$culture)
+                $normalizedRate=$rawRate.Trim().Replace(',','.')
+                $actualRate=[decimal]::Parse($normalizedRate,[Globalization.NumberStyles]::AllowDecimalPoint,$culture)
                 $expectedRate=[decimal]1000*[decimal]$expectedN/[decimal]$expectedP
                 $delta=[Math]::Abs([decimal]($actualRate-$expectedRate))
                 $ok=($actualN -eq $expectedN -and $actualP -eq $expectedP -and
@@ -287,6 +291,7 @@ try{
                     OracleAdmissions=$expectedN; QlikAdmissions=$actualN
                     OraclePop=$expectedP; QlikPop=$actualP
                     OracleRate=$expectedRate.ToString($culture)
+                    QlikRateRaw=$rawRate
                     QlikRate=$actualRate.ToString($culture)
                     Error=$delta.ToString($culture)
                     Status=$(if($ok){'PASS_CANDIDATE'}else{'BLOCKED_MISMATCH'})
