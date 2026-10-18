@@ -1,6 +1,6 @@
 # Fase VIII-B — T24 em competências parciais + guardas pré-dispatch D2/P5
 
-**Estado:** `VERSIONED_NOT_EXECUTED`. Ensaio em branch independente da `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge. Nenhum PASS físico deste novo subgate.
+**Estado:** `BLOCKED_PRE_COM_FIRST_ATTEMPT; ORACLE_OUTPUT_FIX_VERSIONED_NOT_RETESTED`. Ensaio em branch independente da `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge. Nenhum PASS físico deste novo subgate.
 
 ## 1. Baseline, fontes e finalidade
 
@@ -64,3 +64,18 @@ powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiT24MonthlyPredispatch
 Somente `VERDICT=PASS_LOCAL_T24_PARTIAL_3_AND_WRAPPER_GUARDS_4_CANDIDATE_ONLY` emitido após **3 casos numéricos reconciliados, 4 guardas restritas de wrapper e SHA de 22 QVDs, QVWs canônicos e QVW T24 fonte preservados** autoriza encerrar o piloto delimitado como PASS candidato. Falha de Set Analysis mensal ou seleção incompatível = `BLOCKED_OR_INCONCLUSIVE`, sem apagar evidências.
 
 Não iniciar T25/T26; não tratar política D2/P5 visual como aprovada; não promover `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED` ou `PRODUCTION_APPROVED=False`. Nenhum merge sem autorização específica, nem alteração na `main` ou nos dados.
+
+
+## 5. Primeira tentativa local: bloqueio no retorno do caminho F1 (18/10/2026)
+
+**Evidência operacional reportada pelo responsável:** branch `test/phase-viii-t24-monthly-predispatch-20261018`, versão executada `3e7d089ffc8d616a69d6b970e0f63e1355e96adf`, parser `PASS`, SHA-256 do executor `8972764128CCCBA8CC712D549FD66360AE980DAEB3227BEB1358F8C0B8729E7F`, SHA-256 do QVW anual temporário de origem `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E`. Evidência local: `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_T24_MONTHLY_8c0b8009173f41eeb7292d3492971d0e`.
+
+**Falha exata:** `Import-Csv` na linha 108 tentou abrir um arquivo fictício com nome `ORACLE_F1_residencia_competencia.csv_SHA256=09263205778CB13F26FBE889131203D9FBD9324B733DFEB11D2D194C2ABF61D0`. No helper `Oracle`, a linha `Write-Output ('ORACLE_'+$file+'_SHA256='+$hash)` produzia uma **segunda saída no pipeline**, além do `return $csv`. Assim, `$f1=Oracle ...` recebeu **mensagem e caminho**, e o importador interpretou a mensagem como caminho. **Causa identificada em código:** contaminação do retorno PowerShell por log escrito em stdout. Não é erro demonstrado do CSV F1, oráculo F3, QVD, QVW, COM ou cálculo T24.
+
+**Garantias observadas:** `ORIGINAL_22_QVD_SHA256_UNCHANGED=True`, `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`, `SOURCE_T24_QVW_SHA256_UNCHANGED=True`. A tentativa parou **antes** de `Copy-Item`, `OpenDoc`, seleção COM ou cálculo mensal. `T24_PARTIAL_3_CASES=NOT_RUN`; `D2_P5_4_CASES=NOT_RUN`.
+
+**Correção pontual:** commit `850e947127b213826e87bfc1167c7341e35785be` substitui **somente no helper `Oracle`** o `Write-Output` de diagnóstico por `Write-Host`; o retorno no pipeline passa a ser exclusivamente `$csv`. Sem alteração de negócio, fórmula mensal, Set Analysis, tolerância, oráculos ou inventário. **Revisão estática, não PASS Windows**.
+
+**Única próxima tentativa autorizável:** atualizar para o HEAD do PR #111, validar o parser PowerShell real e executar uma vez com o mesmo QVW anual TEMP e diretórios F1/F3, sem regeneração. Se surgir nova falha, parar, preservar o diretório TEMP de evidência e diagnosticar antes de modificar novamente. Nada é transferido como PASS do commit anterior.
+
+**Estado após o commit documental:** `VIII_B_T24_MONTHLY=FIX_VERSIONED_PENDING_WINDOWS_RETEST`; `T24_PARTIAL_3_CASES=NOT_RUN`; `D2_P5_4_CASES=NOT_RUN`; `T24_GENERAL=NOT_APPROVED`; `P5_D2_UI=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR #111 Draft, sem merge, sem Fase IX.
