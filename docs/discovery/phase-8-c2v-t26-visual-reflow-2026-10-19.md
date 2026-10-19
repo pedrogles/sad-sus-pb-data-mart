@@ -1,6 +1,6 @@
 # Fase VIII — C2-V: correção visual restrita do gráfico T26 após BLOCKED_PRESENTATION (19/10/2026)
 
-**Estado atual:** `C2V_COM_GEOMETRY_LABEL_FORMAT_AND_CAPTURE=PASS_LOCAL_CANDIDATE_ONLY`; `C2V_VISUAL_AUDIT=PENDING_PNG_INSPECTION` (ver seção 7). **PR Draft; nenhuma aprovação visual de C2-V, C2/P5/D2, de indicador geral ou de produção.** Branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`. **PR Draft, sem merge ou alteração de dados e dashboards canônicos**.
+**Estado atual:** `C2V_COM_GEOMETRY_LABEL_FORMAT_AND_CAPTURE=PASS_LOCAL_CANDIDATE_ONLY`; `C2V_VISUAL_AUDIT=COMPLETED_WITH_BLOCKED_BASELINE_LAYOUT` (ver seção 8); `C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION`. **PR Draft; nenhuma aprovação visual completa de C2-V, C2/P5/D2, de indicador geral ou de produção.** Branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`. **PR Draft, sem merge ou alteração de dados e dashboards canônicos**.
 
 ## 1. Problema comprovado e objetivo limitado
 
@@ -124,3 +124,37 @@ Ajuste exclusivo no commit `1935a641ae5aca3afe49aa5676e114d750d6ad91`:
 **STOP técnico atingido; próximo passo exclusivamente de evidência:** não repetir execução QlikView. Receber somente `S0_ALLOWED.png`, `S1_BLOCK_PROCEDURE.png`, `S2_BLOCK_PROCEDURE_PLUS_RESIDENCE.png`, `S3_BLOCK_BED_TYPE.png`, `S4_PARTIAL_NOT_ANNUAL.png` do diretório TEMP em ZIP; conferir **os cinco hashes** e inspecionar efetivamente todos os painéis: cabeçalho/caveat íntegros, ratio 31,21 legível sem `#####`, mensagens B de procedimento, residência e leito completas, indisponibilidade anual sob mês parcial e ausências de recorte/sobreposição. Se visual ainda inadequado, `C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION` sem alterar PASS técnico. Não versionar binários no repositório.
 
 **Fronteiras mantidas:** `C2V_COM_GEOMETRY_LABEL_FORMAT_AND_CAPTURE=PASS_LOCAL_CANDIDATE_ONLY`, `C2V_VISUAL_AUDIT=PENDING_PNG_INSPECTION`, `C2_FULL=NOT_APPROVED`, `T26_GENERAL=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. PR #118 permanece Draft, sem merge.
+
+## 8. Auditoria independente do ZIP de cinco screenshots — apresentação parcialmente melhorada, S0 BLOQUEADO (19/10/2026)
+
+**Fonte efetivamente inspecionada:** anexo `C2V_VISUAL_EVIDENCE.zip` fornecido pelo responsável nesta conversa. O arquivo ZIP foi aberto diretamente, continha **exatamente os cinco PNGs esperados**, nenhum item adicional; cada PNG tinha resolução **1260 × 731 pixels, RGBA**. SHA-256 **recalculado sobre bytes de cada PNG** concorda com os cinco hashes do runner registrados na seção 7:
+
+| Arquivo inspecionado | SHA-256 recalculado | Veredito de integridade |
+| --- | --- | --- |
+| `S0_ALLOWED.png` | `2B1FC055F25D589EE1BEE1ACDB2DD2BAB180FC722E5ED227A381FE4A2566AFC2` | `MATCH` |
+| `S1_BLOCK_PROCEDURE.png` | `4A36DE0A78A6D4E4A8599CB81EF360136128D0615965BA12F06D1CE8CB9814B1` | `MATCH` |
+| `S2_BLOCK_PROCEDURE_PLUS_RESIDENCE.png` | `414E2BDF4B251259292E0D5022E91A49C651D899DC5E8ADDD7E52E0BB44C23CC` | `MATCH` |
+| `S3_BLOCK_BED_TYPE.png` | `7D33164123F6671C1ADA9974A5DB1B80E589986DB51AEC1EA9170E14A47F0DC5` | `MATCH` |
+| `S4_PARTIAL_NOT_ANNUAL.png` | `941AD81A1F2E71208DE0EFBC580F9DA43B625F03878D2AD72E706E37E20337EB` | `MATCH` |
+
+**Observação visual direta dos cinco arquivos, separada dos resultados COM reportados:**
+
+| Estado | Evidência visual | Decisão restrita |
+| --- | --- | --- |
+| `S0_ALLOWED` | A linha 2018 e **31,21** estão legíveis; nenhuma célula `#####`; título geral e aviso sobre escopo CNES/LT, não ocupação, estão íntegros. **Entretanto a tabela/gráfico aparece pequena, aproximadamente x=198..393, enquanto os estados bloqueados mostram tabela/gráfico até x≈958.** O título da tabela `Internacoes p...`, cabeçalhos `PERIODO...` e `Internacoes...` aparecem cortados, apesar do rótulo COM haver passado | `BLOCKED_BASELINE_LAYOUT` — não aceitar visual do objeto no contexto permitido |
+| `S1_BLOCK_PROCEDURE` | Gráfico ocupa área ampla; texto nativo `Condição de cálculo não satisfeita` aparece, com faixa P5 sobre procedimento **totalmente legível**. Procedimento selecionado aparece em verde | `PASS_VISUAL_RESTRICTED_BLOCK_WARNING` |
+| `S2_BLOCK_PROCEDURE_PLUS_RESIDENCE` | Mesma indisponibilidade visível; **duas** faixas completas de aviso P5, procedimento + residência, sem sobreposição; procedimento selecionado visível. O campo de residência selecionado não aparece em lista própria nesta captura; o estado combinado é atestado pelo COM reportado e pelo texto condicional | `PASS_VISUAL_RESTRICTED_BLOCK_WARNINGS` |
+| `S3_BLOCK_BED_TYPE` | Gráfico amplo com indisponibilidade e aviso completo de tipo de leito | `PASS_VISUAL_RESTRICTED_BLOCK_WARNING`; filtro tipo de leito em si não exibido na folha |
+| `S4_PARTIAL_NOT_ANNUAL` | Gráfico amplo com indisponibilidade e aviso integral sobre competência `201801` incompatível com o **gráfico anual** | `PASS_VISUAL_RESTRICTED_PARTIAL_WARNING`; lista de competência não aparece nesta folha |
+
+**Comparação com C2-A:** rótulo/aviso da parte superior, barras condicionais e formato **31,21** melhoraram e estão legíveis. **Persistem cabeçalhos de campos dos listboxes truncados** (por exemplo `SERV_COD_DA...` e `COD_PROCEDI...`). A principal falha material é a **diferença de geometria do gráfico entre estado permitido S0 e os quatro estados bloqueados**. O teste COM `FRAME_SET_READBACK=PASS_COM_ONLY` não explica por si só o comportamento renderizado; **nenhuma causa de baixo nível pode ser inferida com certeza apenas das imagens**. A comparação ocorreu em mesma resolução 1260×731. Não afirmar que o QVW está globalmente legível nem aprovado visualmente.
+
+**Veredito da auditoria dos arquivos (não do dashboard final):**
+- `C2V_PNG_SHA256=5_OF_5_MATCH_INDEPENDENT`.
+- `C2V_BLOCKING_VISUAL_STATES=4_OF_4_PASS_RESTRICTED` — visual das mensagens e indisponibilidade, **não prova interceptação de UI nem semântica P5 global**.
+- `C2V_ALLOWED_VALUE=31,21_VISIBLE_NO_HASHES`; `C2V_ALLOWED_LAYOUT=BLOCKED_SMALL_CHART_AND_TRUNCATED_HEADERS`.
+- **`C2V_VISUAL_AUDIT=COMPLETED_WITH_BLOCKED_BASELINE_LAYOUT`**; **`C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION`**. O `PASS_LOCAL_C2V_GEOMETRY_LABEL_COM_5_SCREENSHOTS_VISUAL_PENDING` da seção 7 continua histórico e válido exclusivamente como **PASS técnico local candidato**; não é convertido em PASS visual geral.
+
+**STOP alcançado para este gate de auditoria visual.** Não repetir a execução já realizada nem abrir novo script automaticamente. Se houver novo objetivo autorizado, propor **uma única correção de renderização restrita ao objeto permitido** (preservar largura efetiva ao avaliar a expressão, cabeçalho da tabela e títulos das listas) em **outro QVW descartável** com capturas comparativas S0 permitido versus S1 bloqueado. Não alterar formula, LT, F1/F2, denominador ou modelo. Antes de testar, investigar tecnicamente por que CH01 parece variar de largura ao passar de uma linha calculada para indisponibilidade, sem inventar solução. Uma correção de UI não pode avançar `P5_D2_UI=APPROVED` nem `PHASE_IX`.
+
+**Proteções/limites não alterados:** `C2_FULL=NOT_APPROVED`, `T26_GENERAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. Nenhum QVD, QVW ou dado foi modificado por esta auditoria de PNG. PR #118 Draft; nenhum merge ou edição na `main`.
