@@ -1,6 +1,6 @@
 # Fase VIII — C2-W: correção controlada de largura T26, com Size to Data manual (19/10/2026)
 
-**Status atual:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_SIZE_TO_DATA_GUI=UNCHECKED_VISIBLE`; `C2W_CHART_COLUMN_HEADERS=PASS_VISUAL_RESTRICTED` (seção 7, superando a falha da seção 6); `C2W_VISUAL_ACCEPTANCE=PARTIAL_FILTER_TITLE_GAP`; `PRODUCTION_APPROVED=False`. PR Draft em branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`; execução Windows reportada, imagens auditadas independentemente, binário QVW não aberto pelo agente.
+**Status atual:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_SIZE_TO_DATA_GUI=UNCHECKED_VISIBLE` (seção 6); `C2W_CHART_COLUMN_HEADERS=PASS_VISUAL_RESTRICTED` (seção 7); `C2W_SERVICE_LISTBOX_TITLE_WRAP=PASS_VISUAL_RESTRICTED` (seção 8); `C2W_S0_VISUAL_ACCEPTANCE=PASS_RESTRICTED_AFTER_MANUAL_ADJUSTMENTS`; `C2W_S1_WRAP_COPY=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`; imagens revisadas, execução COM local reportada e QVWs binários não auditados independentemente.
 
 ## 1. Evidências e objetivo delimitado
 
@@ -127,3 +127,25 @@
 **STOP preservado:** o objetivo delimitado de corrigir e inspecionar colunas chegou a evidência visual suficiente para **fechar o problema de cabeçalhos da tabela**, mantendo o título do filtro como **gap residual documentado**; não executar novamente PowerShell, não iniciar novos patches GUI/COM automaticamente e não versionar binários. Se a legibilidade integral dos filtros for exigida em etapa futura, tratá-la como objetivo próprio, sem alterar medidas, chaves, QVDs, QVWs canônicos ou condições P5.
 
 **Gates de produção ainda indisponíveis:** `C2_FULL=NOT_APPROVED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `P5_D2_UI=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `T26_GENERAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR #120 permanece Draft, sem merge.
+
+## 8. Confirmação do retorno de texto no título da listbox — último gap S0 resolvido
+
+**Novas capturas inspecionadas nesta conversa** (bytes PNG analisados diretamente, sem examinar conteúdo binário dos QVWs no Windows):
+
+| Evidência | Resolução | SHA-256 independente | Resultado |
+| --- | --- | --- | --- |
+| `image(20261019-142656).png` | 1357×802, RGBA | `69F1CBF13610005C6E37C8030B0B4917DC1FBE3FB027A07760226B814D5696A5` | QlikView aberto sobre `SAD_C2W_T26_COLUNAS_AJUSTADAS_WRAP.qvw`; título do filtro de serviço exibe `SERV_COD_DATASUS_` na primeira linha e `6` na segunda, formando **`SERV_COD_DATASUS_6` completo**, com `250750` selecionado; `PERIODO_ANO=2018`, medida `31,21`, cabeçalhos integrais e gráfico largo; ressalva metodológica legível |
+| `image(20261019-142710).png` | 1389×707, RGBA | `6FFC005B600735C7CFDB132200AD2CA70F7075C17A6721DFF3650F59C7C12ED8` | Explorador de Arquivos mostra na pasta `SAD_VIII_C2W_04f58b85152b4794b0bf4809b4e10f3c` três QVWs distintos: `SAD_C2W_T26_LAYOUT_TEST`, `SAD_C2W_T26_COLUNAS_AJUSTADAS`, `SAD_C2W_T26_COLUNAS_AJUSTADAS_WRAP`; comprova **presença aparente dos nomes no Explorer**, não valida hashes nem conteúdo de cada QVW |
+
+**Procedimento GUI relatado pelo responsável:** em Propriedades da Lista `SERV_COD_DATASUS_6` → Título → `Título de Multi-Linha` / `Retorno do Texto` com altura 2 linhas, e depois salvar como cópia `SAD_C2W_T26_COLUNAS_AJUSTADAS_WRAP.qvw`. A captura anterior da aba Título mostrou a caixa marcada e o título envolvido; a captura atual demonstra o resultado renderizado. **A quebra após o sublinhado é pouco elegante, mas todo o nome técnico está visível.** Não traduzir isso em aprovação de novo nome de campo, semântica ou critério de UI geral.
+
+**Observação visual independente e classificação:**
+- `C2W_SERVICE_LISTBOX_TITLE_WRAP=PASS_VISUAL_RESTRICTED`: título completo, dividido em duas linhas; gap `TRUNCATED` das seções 6–7 **superado por esta cópia**.
+- `C2W_CHART_COLUMN_HEADERS=PASS_VISUAL_RESTRICTED`: `PERIODO_ANO` e `Internacoes por leito SUS medio` íntegros.
+- `C2W_S0_ALLOWED_WRAP_COPY=PASS_VISUAL_RESTRICTED`: ano 2018, município 250750, **31,21** e ressalva sem taxa de ocupação, sem mensagem de bloqueio ou `#####`; frame largo.
+- **`C2W_S1_WRAP_COPY=NOT_TESTED`**: não há print S1 após esta última alteração. O S1 com procedimento bloqueado/aviso P5 completo **já foi visualmente testado na cópia `SAD_C2W_T26_LAYOUT_TEST.qvw`**, seção 6; não atribuir automaticamente o mesmo teste à nova cópia `WRAP`. Não repetir o teste sem novo objetivo, pois as alterações reportadas foram visuais e o gate se encerra no S0.
+- O título do QlikView na primeira captura termina em `WRAP.qvw` **sem asterisco**, e o arquivo consta no Explorer; isso é consistente com um arquivo salvo mas **não comprova persistência interna de todas as propriedades, nem igualdade bit a bit com a evidência-base**. Nenhum QVW foi aberto independentemente pelo agente.
+
+**Veredito restrito de encerramento:** `C2W_S0_VISUAL_ACCEPTANCE=PASS_RESTRICTED_AFTER_MANUAL_ADJUSTMENTS`; `C2W_S1_PRIOR_COPY=PASS_VISUAL_RESTRICTED`; `C2W_S1_WRAP_COPY=NOT_TESTED`. A pendência de legibilidade **do S0 experimental** foi resolvida por três operações distintas: (1) desmarcar `Ajustar o tamanho aos dados` para impedir contração, (2) comando `Ajustar Colunas aos Dados` para evitar truncamento na tabela, e (3) retorno do texto/multilinha no título da listbox de município. **Não há aprovação do C2 completo ou do painel final.**
+
+**STOP:** não há necessidade de outros comandos QlikView neste gate. Nenhuma alteração adicional de script foi feita neste PR em resposta às capturas, nenhum QVD/QVW canônico foi modificado pela revisão de imagens; o escopo validado é só visual e experimental. `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `P5_D2_UI=NOT_TESTED`; `T26_GENERAL=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR #120 Draft; `main` intocada.
