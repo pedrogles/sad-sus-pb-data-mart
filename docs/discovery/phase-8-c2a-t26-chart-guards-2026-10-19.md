@@ -1,6 +1,6 @@
 # Fase VIII — C2-A: condição de cálculo real em gráfico T26, avisos P5 e D2 pré-despacho (19/10/2026)
 
-**Estado atual:** `C2A_COM_AND_SCREENSHOTS=PASS_LOCAL_CANDIDATE_ONLY`; `C2A_VISUAL_AUDIT=PENDING` (ver seção 6); `C2_FULL=NOT_APPROVED`; `P5_D2_UI=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. **PR Draft, não integrado à main.**
+**Estado atual:** `C2A_COM_AND_SCREENSHOTS=PASS_LOCAL_CANDIDATE_ONLY`; `C2A_VISUAL_AUDIT=BLOCKED_PRESENTATION` (ver seções 6–7); `C2_FULL=NOT_APPROVED`; `P5_D2_UI=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. **PR Draft, não integrado à main.**
 
 ## Objetivo / baseline / evidências autorizadas
 
@@ -105,3 +105,30 @@ powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiC2aT26ChartGuards.ps1
 **Integridade reportada após a execução:** `ORIGINAL_22_QVD_SHA256_UNCHANGED=True`; `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`; `SOURCE_T24_QVW_SHA256_UNCHANGED=True`. Veredito do executável, **após esses checks**: `VERDICT=PASS_LOCAL_C2A_T26_CHART_COM_5_SCREENSHOTS_D2_WRAPPER_2_CANDIDATE_ONLY`.
 
 **STOP alcançado para o subgate COM/captura:** `C2A_COM_AND_SCREENSHOTS=PASS_LOCAL_CANDIDATE_ONLY`; `C2A_VISUAL_AUDIT=PENDING`; `C2_FULL=NOT_APPROVED`. Não repetir o QlikView nem desenvolver sequencialmente novos gates por esse PASS. `P5_D2_UI=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `T26_GENERAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. **PR #117 permanece Draft, sem merge**, e `main` continua intocada.
+
+## 7. Auditoria independente das cinco capturas — BLOQUEIO DE APRESENTAÇÃO (19/10/2026)
+
+**Material realmente inspecionado neste gate:** arquivo anexado pelo responsável `C2A_VISUAL_EVIDENCE.zip`, extraído e aberto visualmente nesta sessão. Contém **exatamente cinco PNGs**, cada um com dimensões **1260×731 pixels**. Seus SHA-256 foram **recalculados sobre os bytes extraídos** e coincidiram exatamente com os cinco valores do stdout listados na seção 6 (S0–S4). A presente evidência comprova **a integridade dos PNGs recebidos e o conteúdo visual visível neles**; não reabre o QVW binário, o log COM ou os oráculos F1/F2.
+
+### Matriz de observação visual independente
+
+| PNG | Condição visível | Alertas e legibilidade | Veredito visual |
+| --- | --- | --- | --- |
+| `S0_ALLOWED.png` | Gráfico anual exibe uma linha de 2018 com valor numérico aproximado `31,21...`; não mostra bloqueio | Cabeçalhos técnicos `12*Sum(QTD_...)` truncados, uma célula de resumo/total como `#####`, título e ressalva metodológica cortados | `BLOCKED_PRESENTATION` |
+| `S1_BLOCK_PROCEDURE.png` | Gráfico mostra **“Condição de cálculo não satisfeita”** sob procedimento selecionado | Texto visível `P5 B: PROCEDIMENTO - KPI GERAL INDISPO...`, cortado; motivo completo não pode ser lido | `BLOCKED_PRESENTATION` |
+| `S2_BLOCK_PROCEDURE_PLUS_RESIDENCE.png` | Mesmo bloqueio visível com procedimento e município de residência selecionados | Duas mensagens P5 B aparecem, mas **ambas estão truncadas**, inclusive `P5 B: RESIDENCIA - KPI DE SERVICO INDISP...` | `BLOCKED_PRESENTATION` |
+| `S3_BLOCK_BED_TYPE.png` | Bloqueio visível sob filtro de tipo de leito | `P5 B: TIPO DE LEITO - RELACAO GERAL INDI...` cortado; motivo completo não visível | `BLOCKED_PRESENTATION` |
+| `S4_PARTIAL_NOT_ANNUAL.png` | Bloqueio visível sob período parcial `201801` | Alerta `PERIODO PARCIAL: ESTE OBJETO E SOMEN...` truncado; faltam detalhes do vínculo com KPI anual | `BLOCKED_PRESENTATION` |
+
+**Observação adicional consistente nos cinco quadros:** o gráfico e as caixas de texto são muito estreitos e ficam concentrados na região superior esquerda da folha, com grande área vazia. O layout em 1260×731 não aproveita a largura disponível, e títulos/listas apresentam abreviações involuntárias. As capturas suportam **bloqueio visual de cálculo nos quatro casos e restauração numérica apenas reportada via COM no S5 (não capturado)**. Não permitem concluir que todas as mensagens sejam legíveis, que o KPI esteja apresentado adequadamente ou que a interação manual D2 já esteja impedida pela UI.
+
+### Veredito separado e critérios de correção futura
+
+- `C2A_HASHED_PNGS=5_OF_5_VERIFIED_INDEPENDENTLY`.
+- `C2A_VISUAL_BLOCK_STATES=4_OF_4_VISIBLE_WITH_DEFAULT_QLIK_CONDITION_MESSAGE` — **efeito de bloqueio demonstrado**, sem conferir interceptação de filtro na interface.
+- `C2A_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION` — **não é PASS visual restrito**: textos e cabeçalhos truncados; saída numérica apresenta `#####`.
+- `C2A_COM_AND_SCREENSHOTS=PASS_LOCAL_CANDIDATE_ONLY` permanece válido para as asserções já executadas; nenhuma promoção para `C2_FULL=APPROVED`, `P5_D2_UI=APPROVED` ou `PRODUCTION_APPROVED=True`.
+
+**Decisão de STOP:** concluir **esta revisão visual** no bloqueio identificado. **Não repetir** execução C2-A/QlikView sem novo escopo. Correção possível somente em **gate visual delimitado e autorizado**: ajustar largura/posição física das caixas e colunas no **QVW novo descartável**, fornecer cabeçalho legível para o indicador T26 e rótulo/unidade, formatar linha numérica/total sem `#####`, exibir integralmente cada aviso P5 e a indisponibilidade de período parcial e então gerar **novas capturas para reauditoria**. A edição de estilo não altera a regra V2, a fórmula, a capacidade observada nem os oráculos. Se o objeto não permitir posicionamento via COM, marcar `BLOCKED` em vez de assumir que `SetFrameDef` garante pixels renderizados; exigir comprovação na imagem real.
+
+**Gates preservados:** `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `P5_D2_UI=NOT_TESTED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. `main` e os 22 QVDs não foram alterados por esta auditoria de arquivos PNG. PR #117 continua Draft, sem merge.
