@@ -257,7 +257,7 @@ try{
     $script:chart=$script:sheet.CreateStraightTable()
     if($null -eq $script:chart){throw 'BLOCKED_CHART_CREATION'}
     [void]$script:chart.AddDimension('PERIODO_ANO')
-    [void]$script:chart.AddExpression("Num(12*Sum(QTD_INTERNACAO)/Sum(QTD_LEITOS_SUS),'0.00',',','.')")
+    [void]$script:chart.AddExpression("Num(12*Sum(QTD_INTERNACAO)/Sum(QTD_LEITOS_SUS),'0,00',',','.')")
     $p=$script:chart.GetProperties()
     if($null -eq $p -or $null -eq $p.EvaluationCondition){throw 'BLOCKED_CHART_CONDITION_PROPERTY_ABSENT'}
     $p.EvaluationCondition.v=$script:calc
@@ -290,7 +290,7 @@ try{
     $ratio=N '12*Sum(QTD_INTERNACAO)/Sum(QTD_LEITOS_SUS)'
     $want=[decimal]12*[decimal]73105/[decimal]28106
     if($n -ne 73105 -or $lt -ne 28106 -or [Math]::Abs([decimal]($ratio-$want)) -gt [decimal]0.000001){throw 'BLOCKED_T26_C2_BASELINE_NUMERIC'}
-    $visible=Q "Num(12*Sum(QTD_INTERNACAO)/Sum(QTD_LEITOS_SUS),'0.00',',','.')"
+    $visible=Q "Num(12*Sum(QTD_INTERNACAO)/Sum(QTD_LEITOS_SUS),'0,00',',','.')"
     if($visible -cne '31,21'){throw ('BLOCKED_DISPLAY_FORMAT_QV_VIEW='+$visible)}
     Write-Output ('C2V_DISPLAY_FORMAT_QV=PASS_DISPLAY_'+$visible)
     Write-Output ('T26_BASELINE_F1=73105 QLIK='+$n+' LT_F2_SUM12=28106 QLIK='+$lt+' RATE=PASS_CANDIDATE')
