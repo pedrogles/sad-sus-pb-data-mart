@@ -1,6 +1,6 @@
 # Fase VIII — C2-D1: prova controlada de pré-seleção D2 por botões QlikView 12
 
-**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_D2_2=OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` (seção 10); `C2D1_FOUR_CASES=IN_PROGRESS_2_COMPLETE_1_PARTIAL_OF_4`; `D2_3_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`; `D2_4=OBSERVED_BOTH_SELECTED_ORIGIN_UNCONFIRMED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
+**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_D2_2=OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` (seção 10); `C2D1_FOUR_CASES=FOUR_EXERCISED_2_PAIRED_2_SINGLE_FRAME_OPERATOR_REPORTED`; `D2_3_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`; `D2_4=POSTCLICK_VISUAL_CONSISTENT_OPERATOR_REPORTED_SINGLE_IMAGE`; `C2D1_EXPERIMENTAL_COLLECTION=CLOSED_PARTIAL_EVIDENCE`; `C2D1_FOUR_CASE_GATE=NOT_FULLY_APPROVED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
 
 ## 1. Contrato de objetivo único e fontes
 
@@ -205,7 +205,7 @@ O executor indicou:
 **Próximo teste isolado D2-4:** na cópia QVW C2-D1, `Limpar` e selecionar **apenas `PERIODO_COMPETENCIA=201901`**; `PERIODO_ANO` sem seleção explícita. Antes de qualquer clique, capturar folha mostrando `BU02 — Propor ano 2019` **azul/habilitado**. Não executar o botão até revisar a captura. Se BU02 ficar desabilitado, STOP. Preservar PR Draft e fontes imutáveis; `D2_4=NOT_TESTED`, `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`.
 
 
-## 13. D2-4 — captura mostra ambas as seleções; origem da ação não confirmada (19/10/2026)
+## 13. D2-4 — captura inicial com origem não confirmada à época (esclarecimento posterior na seção 14)
 
 **Evidência visual diretamente inspecionada:** `image(20261019-185639).png`, **1905×1068 pixels, RGBA**, SHA-256 **`3A50095F9A8E5F57E0AA43818A9A9E9EC80B1B5729840C5EC809B26055B9C1B3`**, calculado localmente a partir do anexo recebido. A captura veio em resposta ao pedido de **imagem pré-clique**. Não há, na mensagem, declaração de que o operador clicou em BU02, nem imagem anterior com apenas a competência selecionada.
 
@@ -214,3 +214,25 @@ O executor indicou:
 **DECISÃO DE EVIDÊNCIA:** `D2_4_BOTH_SELECTED=PASS_VISUAL_STATE_ONLY`; `D2_4_BUTTON_CLICK=NOT_CONFIRMED`; `D2_4_PRECLICK=NOT_CAPTURED`; **`D2_4=OBSERVED_BOTH_SELECTED_ORIGIN_UNCONFIRMED`**, sem emitir PASS de rota ou de despacho. Manter contador anterior de casos encerrados (D2-1/D2-3 PASS visual restrito; D2-2 parcial). `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`.
 
 **Única pendência necessária:** perguntar ao responsável **como 2019 ficou verde**: se clicou em BU02 depois de selecionar 201901 ou selecionou manualmente 2019 pela lista. Se foi BU02, a imagem pode ser qualificada como pós-clique relatado, ainda sem captura pré-clique; se foi lista, não serve como evidência da execução de BU02 e requer retomar o teste controlado. Não repetir outras Discovery/COM/UIA, sem merge na `main`.
+
+
+## 14. D2-4 — confirmação posterior do clique no BU02 e encerramento restrito C2-D1 (19/10/2026)
+
+**Nova evidência de procedência:** em resposta direta à pergunta sobre a origem da seleção do ano `2019`, o responsável afirmou nesta conversa: **“cliquei no botão papai”**. O referente é explicitamente o **Botão 2 — Propor ano 2019**, e não a lista de anos. Esta confirmação é **relato do operador**, sem telemetria do despacho de ação do QlikView. Não é uma nova captura e não acrescenta uma observação pré-clique.
+
+**Reconciliação com a captura da seção 13:** após a ação relatada no BU02, a imagem inspecionada mostra `PERIODO_COMPETENCIA=201901` e `PERIODO_ANO=2019` em verde simultaneamente; BU02 continua azul/habilitado e BU01 cinza/desabilitado. Isso é **compatível com o resultado esperado para D2-4**, selecionando ano 2019 sem descartar a competência 201901. A imagem não mostra o estado anterior do campo ano e, isoladamente, não demonstra a transição nem garante `DISPATCHED=True` medido; a atribuição ao botão vem do relato direto do responsável.
+
+**Veredito atualizado de D2-4:** `D2_4_BUTTON_CLICK=OPERATOR_CONFIRMED_BU02`; `D2_4_POSTCLICK=PASS_VISUAL_RESTRICTED`; `D2_4_PRECLICK=NOT_CAPTURED`; **`D2_4=POSTCLICK_VISUAL_CONSISTENT_OPERATOR_REPORTED_SINGLE_IMAGE`**. Não converter em `PASS_TWO_FRAME_AUDITED` ou aprovação de rota genérica; manter a incerteza de pré-clique explicitamente registrada.
+
+**Balanço de quatro casos e condição de parada:**
+
+| Caso | Resultado qualificado | Limite da prova |
+| --- | --- | --- |
+| D2-1 | `PASS_VISUAL_RESTRICTED` | Screenshots pré e pós; não instrumenta dispatch interno |
+| D2-2 | `OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` | BU02 cinza e competência 201801 preservada, um único frame e clique relatado |
+| D2-3 | `PASS_VISUAL_RESTRICTED` | Screenshots pré e pós; ano 2018 e competência 201801 em verde após BU01 |
+| D2-4 | `POSTCLICK_VISUAL_CONSISTENT_OPERATOR_REPORTED_SINGLE_IMAGE` | BU02 confirmado pelo operador e dois filtros compatíveis selecionados no pós-clique, porém pré ausente |
+
+**Encerramento operacional delimitado:** quatro cenários percorridos/relatados, **dois com pares de capturas** e **dois com captura única e relato de clique**. `C2D1_EXPERIMENTAL_COLLECTION=CLOSED_PARTIAL_EVIDENCE` e `C2D1_FOUR_CASE_GATE=NOT_FULLY_APPROVED`. Evitar repetir testes concluídos para elevar artificialmente evidência; uma exigência posterior de duas capturas em D2-2/D2-4 será uma decisão de escopo, e não uma inferência a partir deste material.
+
+**Invariantes:** o caminho de dois botões fixos não impede seleção via listbox, busca, favoritos ou qualquer outro objeto. Não existe demonstração de D2 global nem proteção do conjunto 2017–2019. `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. **PR #122 Draft**, sem merge ou alteração de `main`, nenhum QVD/QVW canônico alterado nesta edição documental.
