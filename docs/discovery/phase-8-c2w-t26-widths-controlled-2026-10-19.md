@@ -1,6 +1,6 @@
 # Fase VIII — C2-W: correção controlada de largura T26, com Size to Data manual (19/10/2026)
 
-**Status atual:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_SIZE_TO_DATA_GUI=UNCHECKED_VISIBLE`; `C2W_S0_S1_VISUAL_BEHAVIOR=PASS_RESTRICTED`; `C2W_VISUAL_ACCEPTANCE=BLOCKED_COLUMN_HEADERS` (ver seção 6); `PRODUCTION_APPROVED=False`. PR Draft em branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`; execução Windows reportada, imagens auditadas independentemente, binário QVW não aberto pelo agente.
+**Status atual:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_SIZE_TO_DATA_GUI=UNCHECKED_VISIBLE`; `C2W_CHART_COLUMN_HEADERS=PASS_VISUAL_RESTRICTED` (seção 7, superando a falha da seção 6); `C2W_VISUAL_ACCEPTANCE=PARTIAL_FILTER_TITLE_GAP`; `PRODUCTION_APPROVED=False`. PR Draft em branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`; execução Windows reportada, imagens auditadas independentemente, binário QVW não aberto pelo agente.
 
 ## 1. Evidências e objetivo delimitado
 
@@ -103,3 +103,27 @@
 **STOP do gate C2-W atingido:** o objetivo deste gate incluía uma execução COM, uma edição manual em **nova cópia** e evidência visual de S0/S1. As evidências chegaram e a auditoria foi concluída **com apresentação bloqueada**; não reexecutar PowerShell/QlikView nem abrir um novo gate de modo automático. Uma eventual correção futura deve ter escopo independente e **verificar largura efetiva/rotulagem das colunas** em vez de assumir que a propriedade `ColWidth` foi aplicada visualmente; opção possível a examinar em outra Discovery restrita é largura na GUI ou rótulos menores, sem alterar a medida. Não editar modelos, QVDs, QVWs canônicos nem mudar regras P5.
 
 **Estados finais preservados:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_VISUAL_ACCEPTANCE=BLOCKED_COLUMN_HEADERS`; `C2_FULL=NOT_APPROVED`; `T26_GENERAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR #120 Draft, sem merge, `main` inalterada.
+
+## 7. Reauditoria visual após comando de ajustar colunas aos dados — cabeçalhos RESOLVIDOS
+
+**Nova evidência anexada nesta conversa:** `image(20261019-141253).png`, **1303×768 RGBA**, tamanho **58.387 bytes**, SHA-256 **`DF8E088EB24F28B220ADB86F56B62A145518442B462BEA0FB107928C89E47386`**, calculado independentemente sobre bytes do arquivo. Imagem inspecionada diretamente. Não foi recebido, aberto ou comparado binariamente um novo QVW.
+
+**Contexto:** o responsável mostrou anteriormente o comando GUI da Straight Table **“Ajustar Colunas aos Dados”** e informou/solicitou testar a mudança sem alterar a expressão. O PNG posterior mostra o título `SAD_C2W_T26_COLUNAS_AJUSTADAS.qvw` na **pasta TEMP de C2-W**, **sem `*` visível**. Trata-se de nome distinto de `SAD_C2W_T26_LAYOUT_TEST.qvw`, compatível com um arquivo de cópia salva; a imagem **não comprova independentemente o conteúdo persistido/hash do QVW nem a configuração interna exata modificada pelo comando GUI**. Em particular, o comando do menu é ação pontual de ajuste das colunas e não a opção checkbox **“Ajustar o tamanho aos dados”** da aba Layout, já inspecionada/desmarcada no gate anterior.
+
+**Fatos visuais verificados na nova imagem S0 (ano 2018 / serviço `250750`):**
+- Campo/cabeçalho **`PERIODO_ANO` integral** e rótulo **`Internacoes por leito SUS medio` integral** na Straight Table, sem `...` e sem sobreposição.
+- Linha `2018`, medida **`31,21`**, total `31,21`, sem `#####` e sem mensagem de bloqueio. Nenhuma alteração da fórmula T26 foi mostrada/solicitada.
+- Frame do gráfico permanece estável e largo; cabeçalho/título do gráfico e ressalva metodológica (CNES/LT observado, escopo hospitalar não verificado, não é taxa de ocupação) legíveis.
+- `COD_PROCEDIMENTO` integral no título da lista; **`SERV_COD_DATASUS...` ainda abreviado** no título do filtro de município de serviço. Este título de listbox é problema **separado** das colunas da Straight Table.
+- Esta imagem contém somente **S0 permitido** da cópia com novo nome; não contém cenário S1 bloqueado **após** o ajuste de colunas. O teste S1 com bloqueio P5/aviso completo permanece evidência válida **da cópia C2-W anterior**, seção 6, **não um teste pós-ajuste desta derivação**.
+
+**Avaliação incremental sobre a seção 6:**
+- `C2W_CHART_COLUMN_HEADERS=PASS_VISUAL_RESTRICTED` — a falha `BLOCKED_COLUMN_HEADERS` do S0 original foi **resolvida na imagem atual**, sem reexecutar cálculo/oráculos.
+- `C2W_ALLOWED_S0_AFTER_COLUMN_ADJUST=PASS_VISUAL_RESTRICTED` — 2018 + 250750 e 31,21 íntegros.
+- `C2W_S1_PRIOR_COPY=PASS_VISUAL_RESTRICTED`; `C2W_S1_ADJUSTED_COPY=NOT_RETESTED` — não promover a teste pós-ajuste.
+- `C2W_SERVICE_LISTBOX_TITLE=TRUNCATED` e **`C2W_VISUAL_ACCEPTANCE=PARTIAL_FILTER_TITLE_GAP`**. A apresentação da tabela em si está adequada ao protótipo, mas **não** há aprovação visual integral de todos os títulos/objetos.
+- O resultado é **visual independente**, não validação de persistência do QVW derivado, nem prova de capacidade de automação COM de `Ajustar Colunas aos Dados`.
+
+**STOP preservado:** o objetivo delimitado de corrigir e inspecionar colunas chegou a evidência visual suficiente para **fechar o problema de cabeçalhos da tabela**, mantendo o título do filtro como **gap residual documentado**; não executar novamente PowerShell, não iniciar novos patches GUI/COM automaticamente e não versionar binários. Se a legibilidade integral dos filtros for exigida em etapa futura, tratá-la como objetivo próprio, sem alterar medidas, chaves, QVDs, QVWs canônicos ou condições P5.
+
+**Gates de produção ainda indisponíveis:** `C2_FULL=NOT_APPROVED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `P5_D2_UI=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `T26_GENERAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR #120 permanece Draft, sem merge.
