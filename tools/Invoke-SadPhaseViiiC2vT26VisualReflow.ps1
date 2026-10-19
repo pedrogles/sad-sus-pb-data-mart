@@ -176,7 +176,7 @@ function Capture([string]$label){
   $windowCandidates=@(Get-Process | Where-Object {
     $_.MainWindowHandle -ne [IntPtr]::Zero -and
     $_.ProcessName -match '^(qv|qlikview)$' -and
-    $_.MainWindowTitle -like '*SAD_C2A_T26_DISPOSABLE*'
+    $_.MainWindowTitle -like '*SAD_C2V_T26_DISPOSABLE*'
   })
   if($windowCandidates.Count -ne 1){throw ('BLOCKED_QVW_WINDOW_NOT_UNIQUE_'+$windowCandidates.Count)}
   $win=$windowCandidates[0].MainWindowHandle
