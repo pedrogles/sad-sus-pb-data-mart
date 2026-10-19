@@ -1,6 +1,6 @@
 # Fase VIII — C2-D1: prova controlada de pré-seleção D2 por botões QlikView 12
 
-**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_D2_2=OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` (seção 10); `C2D1_FOUR_CASES=IN_PROGRESS_1_COMPLETE_1_PARTIAL_OF_4`; `D2_3=NOT_TESTED`; `D2_4=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
+**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_D2_2=OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` (seção 10); `C2D1_FOUR_CASES=IN_PROGRESS_1_COMPLETE_1_PARTIAL_1_PRECLICK_OF_4`; `D2_3_PRECLICK=PASS_VISUAL_RESTRICTED`; `D2_3_POSTCLICK=NOT_TESTED`; `D2_4=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
 
 ## 1. Contrato de objetivo único e fontes
 
@@ -179,3 +179,16 @@ O executor indicou:
 **Encaminhamento delimitado:** sem repetir automatização C2-D2/C2-D3 (ambos encerrados com NO-GO), iniciar D2-3 na **mesma cópia QVW**: `Limpar`, escolher **somente `PERIODO_ANO=2018`**, deixar competência sem seleção verde, conferir `BU01` habilitado/azul; obter screenshot **antes de clicar**, para validação; só depois testar proposta compatível `201801`. Se BU01 não ficar habilitado, **STOP**. A conclusão dos quatro cenários e D2 global permanecem pendentes.
 
 **Gates preservados:** `P5_D2_UI=NOT_TESTED`, `C2_FULL=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `PRODUCTION_APPROVED=False`. PR #122 Draft; `main` inalterada; sem merge.
+
+
+## 11. D2-3 — pré-clique de ano 2018 com proposta de competência 201801 (19/10/2026)
+
+**Evidência visual inspecionada:** `image(20261019-185133).png`, **1907×1068 RGBA**, SHA-256 **`ADF6F7E7B4F4C2C90D1EA7D25D777DF8A58E5176A5855511FCB9D84A1AB8E3C0`**, obtido com `sha256sum` sobre o arquivo PNG anexado. Esta é a **captura anterior ao clique**; nenhuma tentativa no BU01 foi reportada para este estado.
+
+**FATOS VISUAIS:** `PERIODO_ANO=2018` aparece verde/selecionado; `PERIODO_COMPETENCIA` apresenta `201801` como valor possível, **sem competência explicitamente verde**; `BU01 — Propor competência 201801` aparece azul/habilitado; `BU02 — Propor ano 2019` também azul/habilitado, coerente com a condição de BU02 que depende da seleção de competência, ainda vazia. `Condição de cálculo não satisfeita` permanece no gráfico T26, que possui gate próprio e não serve como oráculo D2. O título T26 é estático e não prova seleções.
+
+**Veredito estrito:** `D2_3_PRECLICK=PASS_VISUAL_RESTRICTED`. O botão estava disponível sob proposta compatível antes de aplicar a ação. **Ainda não há evidência de que um clique em BU01 selecione efetivamente `201801` preservando `PERIODO_ANO=2018`**, nem de que o botão exerça sua única ação sem efeitos colaterais: `D2_3_POSTCLICK=NOT_TESTED`; `D2_3_FULL=NOT_APPROVED`.
+
+**Próximo passo único:** sem limpar ou modificar outras seleções, clicar **uma vez normalmente** em `Botão 1 — Propor competência 201801`. Tirar captura da folha completa **depois do clique**, com `PERIODO_ANO=2018` e `PERIODO_COMPETENCIA=201801` em verde; se algum desses valores não for preservado, **STOP** e não iniciar D2-4. Sem automação UIA, COM, reload, scripts nem QVW/QVD canônico alterados.
+
+**Gates:** `P5_D2_UI=NOT_TESTED`, `C2_FULL=NOT_APPROVED`, `PRODUCTION_APPROVED=False`, PR #122 Draft e `main` inalterada.
