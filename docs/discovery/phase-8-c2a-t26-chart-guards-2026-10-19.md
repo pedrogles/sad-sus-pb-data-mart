@@ -1,6 +1,6 @@
 # Fase VIII — C2-A: condição de cálculo real em gráfico T26, avisos P5 e D2 pré-despacho (19/10/2026)
 
-**Estado:** `C2A_VERSIONED_NOT_EXECUTED`; `C2_FULL=NOT_APPROVED`; `P5_D2_UI=NOT_APPROVED`; `VISUAL_AUDIT=PENDING`; `PRODUCTION_APPROVED=False`. **PR Draft, não integrado à main.**
+**Estado atual:** `C2A_COM_AND_SCREENSHOTS=PASS_LOCAL_CANDIDATE_ONLY`; `C2A_VISUAL_AUDIT=PENDING` (ver seção 6); `C2_FULL=NOT_APPROVED`; `P5_D2_UI=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. **PR Draft, não integrado à main.**
 
 ## Objetivo / baseline / evidências autorizadas
 
@@ -17,7 +17,7 @@
 
 **Código versionado:** `tools/Invoke-SadPhaseViiiC2aT26ChartGuards.ps1`. A origem precisa ser exatamente o QVW temporário `SAD_VIII_T24_75a70372567b46bc9bd9cb070e6c4bac/SAD_VIII_T24_ANNUAL_TEST.qvw` do gate T24, SHA-256 `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E`. Nunca abrir esse QVW como destino de escrita; o executor cria **nova cópia** em `%TEMP%/SAD_VIII_C2A_<GUID>/SAD_C2A_T26_DISPOSABLE.qvw`. **Único `Save()` permitido** é no QVW novo, com gráfico, textos e listas. Não há `Reload()`, `STORE`, edição de QVS, QVD ou QVW canônico. SHA-256 dos **22 QVDs**, dos QVWs canônicos existentes e do QVW TEMP fonte devem permanecer idênticos antes/depois. O `LINK_ANALISE.qvd` exige SHA-256 congelado do gate VI.
 
-**COM utilizado, já experimentado no #83:** `GetSheet(0)`, `CreateStraightTable()`, `AddDimension()`, `AddExpression()`, `EvaluationCondition.v`, `CreateTextObject()`, `Layout.Frame.Show.Expression.v` e `CreateListBox()`. **O novo runner não foi validado no Windows**: funcionalidade real, compilação C#, captura de janela e renderização precisam ser medidas, não presumidas. Falha COM de método, mensagem, foco, janela ou hash => STOP.
+**COM utilizado, já experimentado no #83:** `GetSheet(0)`, `CreateStraightTable()`, `AddDimension()`, `AddExpression()`, `EvaluationCondition.v`, `CreateTextObject()`, `Layout.Frame.Show.Expression.v` e `CreateListBox()`. **Nota histórica da preparação:** antes da primeira execução, o runner não havia sido validado no Windows. A execução COM/captura posteriormente reportada está registrada na seção 6; o conteúdo e a legibilidade das capturas permanecem sem inspeção visual nesta revisão. Falha COM de método, mensagem, foco, janela ou hash => STOP.
 
 ### Matriz contratada
 
@@ -64,3 +64,44 @@ powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiC2aT26ChartGuards.ps1
 ## Estados não modificados
 
 `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `T26_GENERAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. **PR Draft; nenhum merge, nem modificação na main.**
+
+## 6. Execução local reportada — PASS técnico candidato; auditoria visual pendente (19/10/2026)
+
+**Proveniência:** stdout Windows PowerShell / QlikView Desktop 12 fornecido pelo responsável, **não reprodução independente**. O comando combinado executou `git fetch`, `git switch --track`, comparação de HEAD, parser `PARSER=PASS` e o script em `-RunQlik` (somente uma tentativa). Branch: `test/phase-viii-c2a-t26-chart-guards-20261019`; **commit exatamente executado** `8a71179cba195d4314307858f5045bffb864a6b0`; runner SHA-256 reportado `6B75536D595D52D2D6D2DDEB964D4C2ABB5EA5B9252F3DE6AB9C14332CB640D6`. QVW TEMP de origem SHA-256 `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E`.
+
+**Diretório exclusivamente no Windows, não acessado diretamente nesta sessão:** `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_C2A_a0cfc47061ce412b8bfd6b271204921d`. QVW de teste `SAD_C2A_T26_DISPOSABLE.qvw` foi salvo **somente como cópia descartável**, conforme `TEMP_QVW_SAVED_ONLY_DISPOSABLE=True`; `MODE=TEMP_COPY_NO_RELOAD_CANONICAL_WRITE QVD_WRITES=0`.
+
+**Oráculos com SHA verificado pelo runner:**
+- `F1_servico_ano.csv` SHA-256 `EDE0F700887262B47A510D931A459C6B712AC6B8464C777C387029FDABC12A00`.
+- `F2_lt_municipio_ano_cobertura_candidata.csv` SHA-256 `97EB032F3A7E444B436349608A2B73F61D597E83DBB7576E47BB5ABBCC82512D`.
+
+**Resultado técnico numérico/COM:** `ORACLES_F1_F2_JP_2018=PASS_RD_73105_LT_SNAPSHOT_SUM_28106_HOSPITAL_NOT_VERIFIED`; `T26_BASELINE_F1=73105 QLIK=73105 LT_F2_SUM12=28106 QLIK=28106 RATE=PASS_CANDIDATE`. Expressão experimental para o **objeto anual restrito**: `12*Sum(QTD_INTERNACAO)/Sum(QTD_LEITOS_SUS)`, com tolerância do teste até `0.000001`; soma LT=28.106 representa **soma auditável de snapshots**, não estoque anual de leitos. O valor da razão não foi transcrito no stdout; seu PASS deriva da asserção executada no código versionado.
+
+**Propriedades criadas e lidas de volta:** `TEXT=HEADER/CAVEAT/BLOCK_PROC/BLOCK_RES/BLOCK_BED/BLOCK_MONTH PROPERTY_READBACK=PASS_COM_ONLY`; gráfico com `EvaluationCondition` igualmente relida em cada cenário. Estado do gráfico (expressão da condição, **não observação visual**):
+
+| Caso | Resultado da condição | Fonte do veredito |
+| --- | --- | --- |
+| `S0_ALLOWED` | `EVAL=1 EXPECTED=1` | `P5_C_YEAR_AND_SERVICE` |
+| `S1_BLOCK_PROCEDURE` | `EVAL=0 EXPECTED=0` | `P5_B_PROCEDURE` |
+| `S2_BLOCK_PROCEDURE_PLUS_RESIDENCE` | `EVAL=0 EXPECTED=0` | `P5_B_B_PAIR` |
+| `S3_BLOCK_BED_TYPE` | `EVAL=0 EXPECTED=0` | `P5_B_BED_TYPE` |
+| `S4_PARTIAL_NOT_ANNUAL` | `EVAL=0 EXPECTED=0` | `D1_PARTIAL_ANNUAL_OBJECT_UNAVAILABLE` |
+| `S5_RESTORED` | `EVAL=1 EXPECTED=1` | `P5_C_RESTORED` |
+
+**Cinco capturas realizadas, mas ainda sem auditoria visual de seu conteúdo:** os hashes no stdout são:
+
+| Imagem no EVIDENCE_DIR | SHA-256 |
+| --- | --- |
+| `S0_ALLOWED.png` | `B16CD8BE50D0852CC077EBAA3CEE6F0A7D7BD7114DCE5FB114F4908B36DC71AA` |
+| `S1_BLOCK_PROCEDURE.png` | `128C9AC5220EEA72ADBE23EDDFCF9AB6F96C0C3E70F0E03E63E72D27D6159AAC` |
+| `S2_BLOCK_PROCEDURE_PLUS_RESIDENCE.png` | `FC43511DC348E082A9ED86E95883C8E0416C13E82BC2CF07A8B8F040A40E458D` |
+| `S3_BLOCK_BED_TYPE.png` | `959D114C177CF5C9056C952EF69D4A24034926AFFB8C67FE3E0102379AA1833A` |
+| `S4_PARTIAL_NOT_ANNUAL.png` | `7687AC6476655A15205547DFD1ABC532CC747F8620E17673E4AAAAE04F1CBDC2` |
+
+`SCREENSHOTS_5_CAPTURED_PIXEL_TRANSITION=PASS_NOT_VISUAL_AUDIT` demonstra somente que os arquivos existem, são hashados e ao menos dois contrastes têm pixels diferentes. **Não atesta legibilidade, bloqueio visível, ausência de erro gráfico nem aprovação UX**. A próxima etapa limitada é **receber apenas os cinco PNGs, sem QVW/QVD**, e inspecioná-los contra a matriz contratada. **Não executar outro runner QlikView agora.**
+
+**D2 estritamente externo à UI:** dois casos de contradição ano×competência resultaram em `PREVENT_BEFORE_COM_DISPATCH DISPATCHED=False UI_INTERCEPTION=NOT_TESTED`. Não há interceptação de cliques/seleções manuais implementada no QVW.
+
+**Integridade reportada após a execução:** `ORIGINAL_22_QVD_SHA256_UNCHANGED=True`; `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`; `SOURCE_T24_QVW_SHA256_UNCHANGED=True`. Veredito do executável, **após esses checks**: `VERDICT=PASS_LOCAL_C2A_T26_CHART_COM_5_SCREENSHOTS_D2_WRAPPER_2_CANDIDATE_ONLY`.
+
+**STOP alcançado para o subgate COM/captura:** `C2A_COM_AND_SCREENSHOTS=PASS_LOCAL_CANDIDATE_ONLY`; `C2A_VISUAL_AUDIT=PENDING`; `C2_FULL=NOT_APPROVED`. Não repetir o QlikView nem desenvolver sequencialmente novos gates por esse PASS. `P5_D2_UI=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `T26_GENERAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. **PR #117 permanece Draft, sem merge**, e `main` continua intocada.
