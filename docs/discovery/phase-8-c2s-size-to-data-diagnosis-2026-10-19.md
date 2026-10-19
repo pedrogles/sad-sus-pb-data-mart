@@ -1,6 +1,6 @@
 # Fase VIII — C2-S: diagnóstico READ-ONLY do encolhimento S0 da Straight Table (19/10/2026)
 
-**Status:** `C2S_ROOT_CAUSE=STRONG_SIZE_TO_DATA_HYPOTHESIS_NOT_CONFIRMED_IN_QVW`; `C2S_REVIEW=READONLY_COMPLETED`; `C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR **somente documental/Draft**, sem merge e sem QVD/QVW modificado.
+**Status atual:** `C2S_SIZE_TO_DATA_ENABLED=CONFIRMED_GUI_BEFORE_CHANGE`; `C2S_SIZE_TO_DATA_UNCHECKED=CONFIRMED_GUI_UNSAVED`; `C2S_CAUSAL_EFFECT_ALLOWED_S0=NOT_TESTED` (ver seção 5); `C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR **somente documental/Draft**, sem merge, sem alterações em scripts ou QVD/QVW neste PR.
 
 ## 1. Objetivo, fontes e condição de parada
 
@@ -44,3 +44,26 @@
 Somente se a checkbox estiver **confirmadamente marcada**, definir o menor gate subsequente: **configurar `Size to Data=False` em QVW temporário** via COM **apenas depois de obter o nome de propriedade real por inspeção segura** ou via GUI manual com prova explícita, e conferir uma captura do S0 + uma de S1. Não inventar nomes como `p.Layout.SizeToData`, `p.SizeToData` sem introspecção do objeto real no QlikView 12. Se o modo COM não permitir atribuição, registrar limitação em vez de forçar.
 
 **Demais gates inalterados:** `C2V_COM_GEOMETRY_LABEL_FORMAT_AND_CAPTURE=PASS_LOCAL_CANDIDATE_ONLY`; `C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `P5_D2_UI=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `T26_GENERAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR Draft, `main` não alterada.
+
+## 5. Evidência GUI enviada pelo responsável — checkbox ativada; efeito causal S0 ainda pendente
+
+**Origem:** quatro capturas PNG anexadas pelo responsável após o PR #119. A inspeção visual foi feita diretamente nos arquivos recebidos; suas propriedades e SHA-256 foram computadas apenas para rastreabilidade, sem commit de imagens e sem abrir o QVW binário. Os PNGs não são evidência de alteração persistida na origem.
+
+| Arquivo de entrada | Resolução | SHA-256 dos bytes recebidos | Evidência observada |
+| --- | --- | --- | --- |
+| `image(20261019-043557).png` | 1293×744 | `6BBF247AEFD9F8FF6AD4A8B91A8FC9C63E8C416648341EE0E1C8016CB25F9164` | Janela QlikView com T26 largo mas **condição de cálculo não satisfeita**; texto P5 B de município de residência selecionado; `PERIODO_ANO=2018` verde |
+| `image(20261019-043609).png` | 1285×765 | `4AB161749456F873425955B0604A26633C2F83EDF532A9FEAA30367C700C8C2C` | Aba **Layout** de Propriedades do Gráfico; checkbox **“Ajustar o tamanho aos dados” marcada** |
+| `image(20261019-043622).png` | 1321×770 | `D77137B0C997C3B9820873B1F157C6E727946E1ADE2BE5BEF4D8EABE1A243589` | Mesma opção **desmarcada**; título do QVW exibe marcador `*` de modificação em memória/não salva |
+| `image(20261019-043630).png` | 1382×773 | `FC066A2445351DADD6AA38B191B8248FF9201FEFD93AA84B6703E54A1CD52167` | Retorno à folha, gráfico **largo**, porém ainda com **“Condição de cálculo não satisfeita”** e **aviso de residência selecionada**; estado de cálculo permitido e linha T26 `31,21` **não** demonstrados |
+
+**FATO VERIFICADO visualmente:** no QVW visualizado, a opção `Ajustar o tamanho aos dados` estava marcada e passou a desmarcada antes de fechar o diálogo. O QlikView exibiu o frame grande posteriormente, mas **sob bloqueio P5 de residência**; o frame já era grande sob bloqueio antes da mudança (S1–S4 do PR #118). Portanto, esse último print **não demonstra a eliminação do encolhimento da tabela quando o cálculo está permitido**.
+
+**IMPORTANTE — risco à evidência:** o título dos quatro prints indica a pasta do **QVW TEMP evidencial do gate C2-V**, `...\SAD_VIII_C2V_83cc8d984d9e438eb76a71d1ff8f6d0f\SAD_C2V_T26_DISPOSABLE.qvw`; não aparece um nome separado de cópia, e no print posterior à alteração há `*` (modificação ainda não salva). Não se pode afirmar que o QVW tenha sido persistido/alterado, mas **a atividade de inspeção ocorreu aparentemente no próprio QVW de evidência**, contrariando a precaução de inspecionar uma cópia. **Ação imediata segura:** fechar a janela sem salvar; preservar esse QVW evidencial, os QVDs e QVWs canônicos. Qualquer continuação manual, se necessária, deve ocorrer em uma **cópia distinta** do arquivo TEMP, sem salvar/alterar o original.
+
+**Confirmação S0 mínima ainda necessária — não automatizada:**
+1. Fechar o QVW evidencial atual com **“Não salvar”**. Duplicar o QVW TEMP de referência para uma pasta/nome novo em `%TEMP%`, sem sobrescrever e sem recarga.
+2. Abrir somente a **cópia**, desmarcar `Ajustar o tamanho aos dados` novamente nela (o original foi preservado).
+3. Limpar seleções prévias (`Limpar`); depois selecionar somente `PERIODO_ANO=2018` e `SERV_COD_DATASUS_6=250750` (João Pessoa), como no cenário `S0_ALLOWED` do runner. Verificar que **não há seleção de residência, procedimento, tipo de leito ou competência**. A captura anterior estava bloqueada por residência, por isso é insuficiente.
+4. Tirar **uma captura da folha inteira após aplicar**, mostrando valor formatado **31,21**, cabeçalhos e largura real da Straight Table. Se continuar pequena ou indisponível, registrar a divergência como tal. Fechar a cópia **sem salvar**. Não tentar corrigir largura de colunas antes dessa prova.
+
+**Status documentado:** `C2S_SIZE_TO_DATA_ENABLED=CONFIRMED_GUI_BEFORE_CHANGE`, `C2S_SIZE_TO_DATA_UNCHECKED=CONFIRMED_GUI_UNSAVED`, `C2S_CAUSAL_EFFECT_ALLOWED_S0=NOT_TESTED`. A opção marcada era a hipótese mais provável e agora foi confirmada como **configuração ativa**, mas seu **papel causal sobre o S0 ainda é hipótese**. Não declarar `C2S_SIZE_TO_DATA=CAUSAL_CONFIRMED` sem a captura do S0 liberado. Nenhuma medida, semântica, filtro P5, interceptação D2 ou gate de produção foi homologado. `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`; PR #119 permanece Draft.
