@@ -1,6 +1,6 @@
 # Fase VIII — C2-D1: prova controlada de pré-seleção D2 por botões QlikView 12
 
-**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_FOUR_CASES=IN_PROGRESS_1_OF_4_COMPLETE`; `C2D1_D2_2=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
+**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_D2_2=OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` (seção 10); `C2D1_FOUR_CASES=IN_PROGRESS_1_COMPLETE_1_PARTIAL_OF_4`; `D2_3=NOT_TESTED`; `D2_4=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
 
 ## 1. Contrato de objetivo único e fontes
 
@@ -166,3 +166,16 @@ O executor indicou:
 **Veredito restrito:** `C2D1_D2_1_PRECLICK=PASS_VISUAL_RESTRICTED` e `C2D1_D2_1_POSTCLICK=PASS_VISUAL_RESTRICTED`. Assim, **`C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`**, exclusivamente para o BU01 controlado 201801 × ano 2019. O agente não fez medição COM de disparo de ação; **`DISPATCH_INFERRED_ONLY_NOT_INSTRUMENTED`**. Não inferir bloqueio em outras seleções diretas, bookmarks, buscas ou todo o período 2017–2019.
 
 **Próximo caso, sem alterar script/SQL/QVD/QVW canônico:** na **mesma cópia C2-D1**, `Limpar` todas as seleções, escolher **apenas `PERIODO_COMPETENCIA=201801`** na listbox, deixando `PERIODO_ANO` sem seleção explicitamente verde. Antes de qualquer clique, capturar estado com `BU02 — Propor ano 2019` desabilitado/cinza. **Se BU02 permanecer habilitado, STOP** e não testar botão. Somente após a inspeção da imagem pré-clique haverá autorização sequencial para a tentativa. `C2D1_D2_2=NOT_TESTED`; `C2D1_FOUR_CASES=IN_PROGRESS_1_OF_4_COMPLETE`, `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`. PR #122 Draft, `main` inalterada.
+
+
+## 10. D2-2 — mês 201801 selecionado e proposta de ano 2019 bloqueada (19/10/2026)
+
+**Fonte primária e qualificação:** `image(20261019-184806).png` recebida diretamente nesta conversa, inspeção visual; resolução **1904×1066, RGBA**, SHA-256 **`177DF017AA4690F6CF4335C6D2E9EACFDFE363EEF66F6E50331A5474BE92EAEF`** calculado independentemente sobre o PNG recebido. O responsável declarou na mesma mensagem: **“o clique tbm nao acontece”**, referindo-se à tentativa no botão cinza. É um relato de interação feito pelo operador, não telemetria de ação. A imagem isolada não distingue estado antes/depois.
+
+**FATOS VISUAIS OBSERVADOS:** `PERIODO_COMPETENCIA=201801` aparece verde; `PERIODO_ANO` não tem nenhum valor verde selecionado, embora `2018` esteja branco/possível por associação; `BU02 — Propor ano 2019` está cinza, desabilitado; `BU01 — Propor competência 201801` está azul, habilitado. Não se vê ano 2019 selecionado nem perda de competência 201801. O gráfico T26 apresenta `Condição de cálculo não satisfeita` e texto metodológico de período parcial; isso não é prova de falha de D2, pois gráfico é condicionado separadamente. O título superior 2018 João Pessoa é estático no protótipo e não deve ser usado como prova de seleções.
+
+**Interpretação estrita:** `D2_2_DISABLED_STATE=PASS_VISUAL_RESTRICTED`; `D2_2_POSTCLICK_NO_EFFECT=OPERATOR_REPORTED_SINGLE_FRAME_CONSISTENT`. A condição D2-2 é **visualmente consistente** com o comportamento exigido, sem indício de modificação indevida. Entretanto, o protocolo da seção 4 prevê duas capturas separadas, antes e depois, e aqui foi fornecida **uma única imagem com relato**. Assim, `C2D1_D2_2=OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` e **não** `D2_2=PASS_TWO_FRAME_AUDITED`. Não alterar a contagem de casos plenamente documentados: `C2D1_FOUR_CASES=IN_PROGRESS_1_COMPLETE_1_PARTIAL_OF_4`.
+
+**Encaminhamento delimitado:** sem repetir automatização C2-D2/C2-D3 (ambos encerrados com NO-GO), iniciar D2-3 na **mesma cópia QVW**: `Limpar`, escolher **somente `PERIODO_ANO=2018`**, deixar competência sem seleção verde, conferir `BU01` habilitado/azul; obter screenshot **antes de clicar**, para validação; só depois testar proposta compatível `201801`. Se BU01 não ficar habilitado, **STOP**. A conclusão dos quatro cenários e D2 global permanecem pendentes.
+
+**Gates preservados:** `P5_D2_UI=NOT_TESTED`, `C2_FULL=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `PRODUCTION_APPROVED=False`. PR #122 Draft; `main` inalterada; sem merge.
