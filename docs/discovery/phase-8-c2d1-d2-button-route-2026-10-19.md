@@ -1,0 +1,101 @@
+# Fase VIII — C2-D1: prova controlada de pré-seleção D2 por botões QlikView 12
+
+**Estado:** `C2D1_PREPARATION_VERSIONED_NOT_EXECUTED`; `C2D1_BUTTON_UI=NOT_CONFIGURED`; `C2D1_FOUR_CASES=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft, branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
+
+## 1. Contrato de objetivo único e fontes
+
+**Objetivo delimitado:** testar, em **caminho de interface controlado por dois botões**, se uma proposta de período conflitante é recusada **antes** de qualquer ação de seleção e se duas propostas compatíveis são aplicadas sem perder o período já selecionado. Não é teste de política P5 global, de bloqueio de todo o campo ou do painel final.
+
+**Fontes verificadas:** em ordem, `AGENTS.md` → `docs/project/current-state.md` → `docs/academic/requirements.md` da `main`. Específicas: `docs/discovery/boundary-7-implementation-plan.md`, contrato semântico V2 `62 (D2 e P5), `docs/project/qlikview-powershell-automation.md`, diagnóstico C2-D [PR #121](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/121), evidência visual C2-W [PR #120](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/120), pré-despacho wrapper D2 [PR #111](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/111). PRs Draft não representam integração na `main`.
+
+**FATO DOCUMENTADO em fonte oficial QlikView:**
+- [Botão — Condição para Habilitar](https://help.qlik.com/pt-BR/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Button2.htm): resultado `0` desabilita, resultado `1` habilita o botão.
+- A mesma página descreve a ação **Selecionar no Campo**: recebe campo e caracteres de busca, podendo selecionar valores numéricos sem aspas.
+- [Seleção de valores nos campos](https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Select_field_values.htm) explica que clicar um valor excluído pode cancelar seleção conflitante. Portanto, acionar diretamente listboxes/buscas **não garante D2**.
+- Triggers `OnSelect` e `OnAnySelect` são pós-seleção: **não aprovados como guarda pré-despacho**, conforme PR #121.
+
+**HIPÓTESE FÍSICA:** dois botões nativos poderão usar `Condição para Habilitar` com `GetSelectedCount` e `GetFieldSelections`, oferecendo apenas **uma ação única de Selecionar no Campo** por botão. Sua eficácia nesta instalação QlikView 12 Personal Edition **ainda não foi medida**. Expressões a seguir são **candidatas**; são avaliadas na GUI, não inventadas como membro de automação COM.
+
+## 2. Limites e preparação segura
+
+**Executor versionado antes do teste:** `tools/Prepare-SadPhaseViiiC2d1D2ButtonRoute.ps1`. Exclusivamente cria **uma cópia** do QVW de prova:
+- Origem TEMP existente: `%TEMP%\SAD_VIII_C2W_04f58b85152b4794b0bf4809b4e10f3c\SAD_C2W_T26_COLUNAS_AJUSTADAS_WRAP.qvw`.
+- Saída nova em `%TEMP%\SAD_VIII_C2D1_<GUID>\SAD_C2D1_D2_BUTTON_TEST.qvw`, registrada como `COPY_FOR_GUI` no stdout. Manifesto `prepare_manifest.json` com HEAD/sha de script e arquivo/oráculos de integridade.
+- **Pré-condição:** fechar a origem C2-W na UI antes de rodar. O script recusa fonte ausente ou janela da origem aberta; exige branch, HEAD versionado e script limpo.
+- Exige inventário **10 QVDs de extração + 12 de transformação** e registra SHA-256 antes/depois; compara também QVWs canônicos encontrados e QVW TEMP de origem. Em caso de divergência, lançar erro crítico. **Sem COM, Reload, STORE, escrita de dados, PDF ou dashboard canônico.**
+- Resultado `PASS_LOCAL_C2D1_QVW_COPY_ONLY_UI_BUTTONS_NOT_CONFIGURED` atesta **somente a preparação da cópia**; não configura botões e **não** é prova D2.
+
+**Confirmação de interface obrigatória:** a cópia deve abrir na própria estação sem reload, com os campos já observados `PERIODO_ANO` e `PERIODO_COMPETENCIA` disponíveis. Se `PERIODO_COMPETENCIA` não puder ser exibido como listbox para montar estado inicial, **STOP**. Não modificar QVW de origem.
+
+## 3. Dois botões candidatos (configuração manual somente na cópia C2-D1)
+
+Criar no QlikView Desktop via **Objeto/Novo Objeto de Pasta → Botão** (nome/posição do menu podem variar) os objetos:
+
+### BU — Propor competência 201801
+
+- Texto do botão: **Propor competência 201801**.
+- `Condição para Habilitar`, expressão proposta:
+
+~~~qlik
+=If(
+  GetSelectedCount(PERIODO_ANO)=0,
+  1,
+  If(
+    GetSelectedCount(PERIODO_ANO)=1
+    and GetFieldSelections(PERIODO_ANO)='2018',
+    1, 0
+  )
+)
+~~~
+
+- Aba **Ações → Adicionar → Seleção → Selecionar no Campo**. Campo: `PERIODO_COMPETENCIA`; caracteres de busca: `201801`. **Somente essa ação.** Não adicionar `Limpar Campo`, `Limpar Tudo`, triggers, macros nem ações de exportação.
+- A condição esperada é `0` sob ano `2019`, `1` sob ano `2018`, e `0` com múltiplos anos selecionados.
+
+### BU — Propor ano 2019
+
+- Texto do botão: **Propor ano 2019**.
+- `Condição para Habilitar`, expressão proposta:
+
+~~~qlik
+=If(
+  GetSelectedCount(PERIODO_COMPETENCIA)=0,
+  1,
+  If(
+    GetSelectedCount(PERIODO_COMPETENCIA)=1
+    and Left(GetFieldSelections(PERIODO_COMPETENCIA),4)='2019',
+    1, 0
+  )
+)
+~~~
+
+- **Uma ação:** `Seleção → Selecionar no Campo`. Campo: `PERIODO_ANO`; busca: `2019`.
+- Condição esperada `0` sob competência `201801`, `1` sob `201901`, `0` se múltiplas competências selecionadas.
+
+**Atenção:** essas condições são candidatas. Se ao abrir a interface o valor da condição não resultar no estado habilitado/desabilitado esperado, **BLOCKED**, não supor que o controle funcione. O separador de argumentos na instalação anterior do QlikView foi vírgula nas expressões testadas; não converter sintaxe sem inspeção. Antes de clicar em um botão **desabilitado**, registrar screenshot; não tentar forçar execução por macro/COM.
+
+## 4. Matriz de quatro casos — uma tentativa controlada
+
+Apenas na cópia C2-D1: adicionar **uma lista de teste** para `PERIODO_COMPETENCIA` se necessário e um objeto **Seleções Atuais** para documentar ambas as seleções. A lista nativa é **instrumento de montagem do estado**, não rota D2 aprovada. Em cada caso, **Limpar** e montar estado inicial diretamente nos campos, antes de avaliar os botões. Para valores excluídos ou configurações de seleção inconsistentes na montagem, STOP; não inferir que os botões consertaram conflitos.
+
+| Caso | Estado inicial | Proposta via botão | Esperado ANTES e DEPOIS do clique |
+| --- | --- | --- | --- |
+| **D2-1** | `PERIODO_ANO=2019`; competência não selecionada | Botão mês `201801` | **Desabilitado**; ano 2019 preservado; mês continua sem seleção; clicar no botão desabilitado não aplica ação |
+| **D2-2** | `PERIODO_COMPETENCIA=201801`; ano não selecionado | Botão ano `2019` | **Desabilitado**; mês 201801 preservado; ano continua sem seleção |
+| **D2-3** | `PERIODO_ANO=2018`; mês não selecionado | Botão mês `201801` | **Habilitado**; após clicar, mês 201801 e ano 2018 permanecem selecionados |
+| **D2-4** | `PERIODO_COMPETENCIA=201901`; ano não selecionado | Botão ano `2019` | **Habilitado**; após clicar, ano 2019 e mês 201901 permanecem selecionados |
+
+**Capturas exigidas:** uma imagem **antes** e outra **depois** para cada caso, com ambos os botões e seleções atuais visíveis (**8 PNGs no máximo**), mais uma imagem da configuração de condição/ação de **cada botão** (seis imagens adicionais no máximo quando úteis). O QlikView pode alterar/descartar seleção ao clicar em valor excluído diretamente na listbox; evitar esse clique durante a proposta. Provar que o **botão** recusou a proposta, não que uma lista excluiu valores por associação.
+
+**Evidência de ação despachada ou não:** capturas devem demonstrar que o botão já aparecia desabilitado **antes do clique** e que as seleções preservaram seus valores **depois do clique**. Isso é evidência visual e de estado, não telemetria de despacho interno; não declarar `DISPATCHED=False` medido por interceptação quando houve apenas screenshot. Se não houver prova objetiva de dispatch, registrar `DISPATCH_INFERRED_ONLY_NOT_INSTRUMENTED`.
+
+**Critério PASS estritamente candidato:** todos os 4 estados esperados no caminho do botão, com legibilidade e seleção preservada onde exigida, sem ação secundária inesperada; conferir screenshots independentemente antes de fechar `C2D1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`. Caso falhe o primeiro, **STOP** sem repetir variações nem permitir que trigger pós-seleção substitua controle.
+
+## 5. Limitações, guardas e STOP
+
+1. A interface permite escolhas fora dos botões por listas, buscas, bookmarks e outros objetos. Portanto, mesmo 4/4 PASS **não demonstram proteção D2 para o campo inteiro**. O caminho do botão pode ser comprovado, mas `C2D_COMPLETE_UI=NOT_APPROVED`.
+2. Botões só propõem ano 2019 e mês 201801. Não existe seletor dinâmico homologado de quaisquer anos/meses; rejeitar generalização para 2017–2019, períodos múltiplos ou todos os filtros P5.
+3. O gráfico T26 continua contendo ressalva CNES/LT (cobertura hospitalar histórica não verificada e **não é taxa de ocupação**); isso não é validação de novos indicadores.
+4. **Parada desta execução:** após script de cópia versionado + uma configuração manual dos dois botões + **quatro cenários ou primeira falha**. Não implementar novos scripts por falha de COM, não repetir T24–T26, C2-W, C1, C3, C4, nem promover Fase IX.
+5. Nenhum merge ou modificação na `main` sem autorização. Não salvar a origem C2-W; qualquer alteração visual para o experimento deve ficar **somente na cópia C2-D1**.
+
+**Gates preservados:** `C2_FULL=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
