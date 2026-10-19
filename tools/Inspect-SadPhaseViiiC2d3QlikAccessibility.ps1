@@ -141,7 +141,7 @@ function RawSnapshot([IntPtr]$hwnd){
         ClassName='';FrameworkId='';NativeHandle=0;Enabled=$false;Offscreen=$true;X=0;Y=0;Width=0;Height=0}
       continue
     }
-    if($depth -ge $maxDepth){continue}
+    if($depth -ge $maxDepth){$truncated=$true;continue}
     try{
       $child=$walker.GetFirstChild($n);$number=0
       while($null -ne $child){
