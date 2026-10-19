@@ -1,6 +1,6 @@
 # Fase VIII — C2-D2: automação restrita de botões nativos D2 (QlikView 12)
 
-**Status inicial:** `C2D2_RUNNER=VERSIONED_NOT_EXECUTED`, `C2D2_UIA_EXPOSURE=NOT_TESTED`, `C2D2_PILOT=NOT_TESTED`, `C2D2_COMPLETE=NOT_TESTED`, `P5_D2_UI=NOT_TESTED`, `C2_FULL=NOT_APPROVED`, `PRODUCTION_APPROVED=False`. PR Draft, sem merge.
+**Status atualizado (execução Windows reportada):** `C2D2_PROBE=BLOCKED_UIA_EXACT_BUTTONS_NOT_EXPOSED_FOUND_0`, `C2D2_UIA_EXPOSURE=NO_GO_FOR_CURRENT_DISCOVERY_STRATEGY`, `C2D2_PILOT=NOT_EXECUTED`, `C2D2_COMPLETE=NOT_EXECUTED`, `C2D2_GATE=STOPPED_WITH_EVIDENCE`, `P5_D2_UI=NOT_TESTED`, `C2_FULL=NOT_APPROVED`, `PRODUCTION_APPROVED=False`. Evidência e limitação na seção 5; PR Draft, sem merge.
 
 ## 1. Objetivo, fundamento e estado anterior
 
@@ -44,3 +44,36 @@ Invariantes de cada execução:
 Preservar `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `T26_GENERAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `C2_FULL=NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`.
 
 Este gate **não** integra Phase IX, não reabre modelagem e não representa implantação homologada da interface de prevenção D2.
+
+## 5. Resultado local do Probe — BLOQUEADO com preservação das fontes (19/10/2026)
+
+**Proveniência:** saída completa do PowerShell fornecida pelo responsável nesta conversa, **não reexecutada independentemente pelo agente**. O resultado documenta um **bloqueio esperado pelo contrato de proteção**, e não falha comprovada dos botões ou da semântica D2.
+
+**Preflight executado e reportado:**
+
+- `git fetch origin`, `git switch --track origin/test/phase-viii-c2d2-ui-automation-pilot-20261019` e verificação de `HEAD=5a7d1eccc4d8fabe063ce9a043c14fe9c3f99bcf`, correspondente ao runner versionado deste PR.
+- `PARSER=PASS`, `VERSIONED_GIT_HEAD=5a7d1eccc4d8fabe063ce9a043c14fe9c3f99bcf`.
+- `SCRIPT_SHA256=78E91189182F77D5ADC2AF559B7732725F2A3D4EB4D6EBE02A514ABE7D94130A`.
+- `D2_SOURCE_QVW_SHA256=31B1DD3FD3D5D100104D5B3F80118B7725E16CB76F13676A6678E5E9B31AF087`.
+- `STAGE=Probe NO_RELOAD=True QVD_WRITES=0`.
+- Diretório de evidência local: `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_C2D2_PROBE_3623cd10e1b24b5093c58f9496ab5405`.
+- Manifesto local reportado: `...\result_manifest.json`, ainda **não acessado/inspecionado diretamente** nesta revisão.
+
+**Primeiro bloqueio efetivamente observado:**
+
+```text
+EXECUTION_BLOCKED=BLOCKED_UIA_EXACT_BUTTONS_NOT_EXPOSED_FOUND_0
+ORIGINAL_SOURCES_INTEGRITY=PASS
+C2D2_BLOCKED_BLOCKED_UIA_EXACT_BUTTONS_NOT_EXPOSED_FOUND_0
+C2D2_PROBE=BLOCKED
+```
+
+**Interpretação técnica precisa:** o algoritmo `AccessibleButtons` percorreu descendentes da janela QlikView via UIAutomation e filtrou apenas `ControlType.Button` cujo `Current.Name` contenha exatamente os nomes de `BU01`/`BU02` definidos pelo gate; **nenhum elemento correspondeu ao filtro**. Isso **não comprova ausência de qualquer estrutura acessível no QlikView**, nem que os objetos BU01/BU02 inexistam visualmente. Eles foram mostrados e o BU01 respondeu corretamente no D2-1 **manual** do PR #122. A falha limita-se à estratégia **UIA com tipo Button e nome identificável** implementada neste script e na instalação testada.
+
+**Proteção confirmada pelo stdout:** `ORIGINAL_SOURCES_INTEGRITY=PASS`, sem mutação detectada de QVW de origem, dos **22 QVDs** ou dos QVWs canônicos no teste. A função de descoberta lança exceção antes de `Capture`, então **nenhum `probe.png` ou captura do botão está confirmado no log**; não declarar `PASS_CAPTURE`. O script gravou manifesto de resultado e retornou erro ao chamador, conforme a política STOP.
+
+**Estado D2 após o bloqueio:** `C2D2_PROBE=BLOCKED_UIA_EXACT_BUTTONS_NOT_EXPOSED_FOUND_0`; `C2D2_PILOT=NOT_EXECUTED` (D2-2); `C2D2_COMPLETE=NOT_EXECUTED` (D2-1, D2-3, D2-4 automatizados); `C2D2_GATE=STOPPED_WITH_EVIDENCE`; `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` **continua válido somente como evidência manual anterior**; `C2_FULL=NOT_APPROVED`; `P5_D2_UI=NOT_TESTED`; `PRODUCTION_APPROVED=False`.
+
+**STOP deste gate:** não executar `-Stage Pilot` nem `-Stage Complete` contra o executor atual; não desabilitar as verificações, não forçar clique por coordenadas baseadas em screenshot e não repetir Probe em cascata. **Não criar patch R2, runner alternativo ou novo gate automaticamente**. Se a automação visual permanecer necessária, uma **futura autorização separada** deve delimitar uma investigação **READ-ONLY** da árvore UIA RawView e/ou interfaces Win32 dos objetos QlikView, determinando em **uma única sondagem** se existem identificadores estáveis antes de autorizar novos cliques físicos. Outra via, já operacionalmente viável para parte dos checks, é **validar condições e seleções exclusivamente por COM**, explicitamente rotulado `COM_ONLY_NOT_UI_CLICK`, sem declarar D2 visual ou pré-despacho aprovado. Enquanto não houver automação estável, continuar D2-2/3/4 manualmente é opção, porém **não necessário para encerrar este gate de viabilidade UIA**.
+
+**Gates inalterados:** `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `T26_GENERAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`. Nenhum merge, alteração de `main`, QVD ou QVW canônico.
