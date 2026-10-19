@@ -121,7 +121,7 @@ function ListObj([string]$name,[int]$top){
   if([string]$obj.GetProperties().Def.Name -cne $name){throw ('BLOCKED_LISTBOX_READBACK_'+$name)}
 }
 function Check([string]$label,[int]$expected,[string]$reason){
-  $got=N $script:calc
+  $got=N ($script:calc.Substring(1))
   VerifyChart
   if($got -ne [decimal]$expected){throw ('BLOCKED_CALC_CONDITION_'+$label+'_EXPECTED_'+$expected+'_GOT_'+$got)}
   $script:states += [pscustomobject]@{scenario=$label;expected=$expected;actual=$got;reason=$reason;screenshot='PENDING_VISUAL_REVIEW'}
@@ -169,7 +169,7 @@ function Capture([string]$label){
   $bmp=New-Object System.Drawing.Bitmap($width,$height)
   try{
     $graphics=[System.Drawing.Graphics]::FromImage($bmp)
-    try{$graphics.CopyFromScreen($rect.Left,$rect.Top,0,0,(New-Object System.Drawing.Size($width,$height)))}
+    try{$graphics.CopyFromScreen($rect.Left,$rect.Top,0,0,([System.Drawing.Size]::new($width,$height)))}
     finally{$graphics.Dispose()}
     $png=Join-Path $work ($label+'.png')
     $bmp.Save($png,[System.Drawing.Imaging.ImageFormat]::Png)
