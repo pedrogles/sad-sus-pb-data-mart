@@ -148,20 +148,20 @@ public static class SadC2Capture {
 }
 '@
 function Capture([string]$label){
-  $matches=@(Get-Process | Where-Object {
+  $windowCandidates=@(Get-Process | Where-Object {
     $_.MainWindowHandle -ne [IntPtr]::Zero -and
     $_.ProcessName -match '^(qv|qlikview)$' -and
     $_.MainWindowTitle -like '*SAD_C2A_T26_DISPOSABLE*'
   })
-  if($matches.Count -ne 1){throw ('BLOCKED_QVW_WINDOW_NOT_UNIQUE_'+$matches.Count)}
-  $win=$matches[0].MainWindowHandle
+  if($windowCandidates.Count -ne 1){throw ('BLOCKED_QVW_WINDOW_NOT_UNIQUE_'+$windowCandidates.Count)}
+  $win=$windowCandidates[0].MainWindowHandle
   if([SadC2Capture]::IsIconic($win)){[void][SadC2Capture]::ShowWindow($win,9)}
   [void][SadC2Capture]::SetForegroundWindow($win)
   Start-Sleep -Milliseconds 750
   $front=[SadC2Capture]::GetForegroundWindow()
   $pidValue=[uint32]0
   [void][SadC2Capture]::GetWindowThreadProcessId($front,[ref]$pidValue)
-  if($front -ne $win -or $pidValue -ne [uint32]$matches[0].Id){throw 'BLOCKED_WRONG_FOREGROUND_WINDOW'}
+  if($front -ne $win -or $pidValue -ne [uint32]$windowCandidates[0].Id){throw 'BLOCKED_WRONG_FOREGROUND_WINDOW'}
   $rect=New-Object SadC2Capture+RECT
   if(-not [SadC2Capture]::GetWindowRect($win,[ref]$rect)){throw 'BLOCKED_WINDOW_RECT'}
   $width=$rect.Right-$rect.Left;$height=$rect.Bottom-$rect.Top
