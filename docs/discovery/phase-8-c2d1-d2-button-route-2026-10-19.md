@@ -1,6 +1,6 @@
 # Fase VIII — C2-D1: prova controlada de pré-seleção D2 por botões QlikView 12
 
-**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_PRECLICK=PASS_VISUAL_RESTRICTED` (seção 8); `C2D1_D2_1_POSTCLICK=NOT_TESTED`; `C2D1_FOUR_CASES=IN_PROGRESS_0_OF_4_COMPLETE`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
+**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_FOUR_CASES=IN_PROGRESS_1_OF_4_COMPLETE`; `C2D1_D2_2=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
 
 ## 1. Contrato de objetivo único e fontes
 
@@ -151,3 +151,18 @@ O executor indicou:
 **Conclusão restrita:** o estado **anterior** à proposta incompatível corresponde a D2-1: `C2D1_D2_1_PRECLICK=PASS_VISUAL_RESTRICTED`. A imagem demonstra desabilitação visual preventiva do **botão específico**, não comprova que o evento de clique seja ignorado, não instrumenta `DISPATCHED=False`, não mostra a preservação de seleção após tentativa e não impede mudanças por listbox/busca/bookmark. Portanto `C2D1_D2_1_POSTCLICK=NOT_TESTED` e nenhum dos quatro casos está totalmente concluído.
 
 **Único próximo passo, sem PowerShell:** na mesma cópia TEMP e mantendo 2019 selecionado, tentar um clique **normal** no botão cinza BU01 (sem invocar macro ou outra rota); capturar a folha inteira após, mostrando ano 2019 ainda selecionado, nenhuma competência selecionada e BU01 ainda cinza. Se qualquer seleção mudar, **STOP**; não executar D2-2/3/4. Se permanecer estável, a observação sustentará no máximo `D2_1_BUTTON_ROUTE_PRESELECT=PASS_VISUAL_RESTRICTED` após auditoria da nova imagem, sem afirmar telemetria interna de dispatch. **PR Draft, nenhum merge,** `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`.
+
+
+## 9. Pós-tentativa D2-1 — ano preservado e competência não selecionada
+
+**Evidência independente da imagem:** `image(20261019-175726).png`, resolução **1907×1068 RGBA**, SHA-256 **`1CDAAE9353BE93FEE277194D8376B47048D705439771D5DFF7771BB6174A3433`**, calculado sobre o arquivo recebido. Captura enviada pelo responsável **em resposta ao procedimento de clicar normalmente uma vez no BU01 desabilitado**. A imagem, por si, não grava o evento físico de clique; a tentativa é **relato contextual do operador**.
+
+**Comparação visual com o pré-clique, seção 8:**
+- `PERIODO_ANO=2019` continua selecionado em verde na lista.
+- `PERIODO_COMPETENCIA` continua sem destaque verde/seleção explícita; os meses de 2019 são possíveis, 200801 permanece excluído/cinza.
+- `BU01 — Propor competência 201801` continua cinza/desabilitado; `BU02 — Propor ano 2019` permanece azul/habilitado.
+- Não se observa efeito da proposta incompatível nem descarte de ano. A mensagem T26 `Condição de cálculo não satisfeita` já existia antes, sem relação demonstrada com dispatch D2.
+
+**Veredito restrito:** `C2D1_D2_1_PRECLICK=PASS_VISUAL_RESTRICTED` e `C2D1_D2_1_POSTCLICK=PASS_VISUAL_RESTRICTED`. Assim, **`C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`**, exclusivamente para o BU01 controlado 201801 × ano 2019. O agente não fez medição COM de disparo de ação; **`DISPATCH_INFERRED_ONLY_NOT_INSTRUMENTED`**. Não inferir bloqueio em outras seleções diretas, bookmarks, buscas ou todo o período 2017–2019.
+
+**Próximo caso, sem alterar script/SQL/QVD/QVW canônico:** na **mesma cópia C2-D1**, `Limpar` todas as seleções, escolher **apenas `PERIODO_COMPETENCIA=201801`** na listbox, deixando `PERIODO_ANO` sem seleção explicitamente verde. Antes de qualquer clique, capturar estado com `BU02 — Propor ano 2019` desabilitado/cinza. **Se BU02 permanecer habilitado, STOP** e não testar botão. Somente após a inspeção da imagem pré-clique haverá autorização sequencial para a tentativa. `C2D1_D2_2=NOT_TESTED`; `C2D1_FOUR_CASES=IN_PROGRESS_1_OF_4_COMPLETE`, `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`. PR #122 Draft, `main` inalterada.
