@@ -1,6 +1,6 @@
 # Fase VIII — C2-D1: prova controlada de pré-seleção D2 por botões QlikView 12
 
-**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (ver seção 7); `C2D1_FOUR_CASES=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
+**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_PRECLICK=PASS_VISUAL_RESTRICTED` (seção 8); `C2D1_D2_1_POSTCLICK=NOT_TESTED`; `C2D1_FOUR_CASES=IN_PROGRESS_0_OF_4_COMPLETE`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
 
 ## 1. Contrato de objetivo único e fontes
 
@@ -140,3 +140,14 @@ O executor indicou:
 **Classificação:** `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY`; `C2D1_BUTTON_ACTIONS=VISUALLY_CONFIGURED_NOT_TRIGGERED`; `C2D1_FOUR_CASES=NOT_TESTED`; `C2D1_PRESELECT_DISPATCH=NOT_INSTRUMENTED`; `P5_D2_UI=NOT_TESTED`. `C2D_COMPLETE_UI=NOT_APPROVED` e `PRODUCTION_APPROVED=False`; PR #122 Draft, nenhum merge ou alteração de `main`.
 
 **Próximo passo único (sem PowerShell):** fechar as propriedades confirmando em OK, mover BU02 para não bloquear a listbox de ano, salvar **somente** a cópia C2-D1 e iniciar D2-1: `Limpar` → selecionar **exclusivamente** `PERIODO_ANO=2019`, sem competência → obter um PNG com botão de competência `201801` visualmente desabilitado e ano preservado. Antes de avançar, enviar screenshot para revisão. **Se o botão não ficar desabilitado, STOP**; não clicar nem iterar outros casos. Em eventual confirmação de estado desabilitado, a segunda captura (depois de tentativa normal de clique, sem forçar) deverá mostrar ano 2019 ainda selecionado e nenhuma competência; isso não é instrumentação interna de `DISPATCHED=False`. Não reexecutar D2 wrapper nem outros gates.
+
+
+## 8. Pré-clique D2-1 — botão de competência 201801 desabilitado sob ano 2019 (19/10/2026)
+
+**Evidência visual diretamente inspecionada:** screenshot anexado `image(20261019-174343).png`, **1907×1068 pixels, RGBA**, SHA-256 **`808F196450E93078B26FA8CBBCF6C63B6B3007143216F9448997ED0A77751050`**, calculado independentemente sobre os bytes da imagem recebida. Não houve acesso ao binário QVW nem leitura COM dos campos pelo agente.
+
+**Fatos no quadro:** `PERIODO_ANO=2019` em verde, `PERIODO_COMPETENCIA` sem seleção verde visível, lista de meses com valores de 2019 possíveis; `BU01 — Propor competência 201801` aparece **cinza/desabilitado antes de qualquer clique**; `BU02 — Propor ano 2019` aparece azul/habilitado. Botão 2 agora está em área livre e não sobrepõe a lista de ano. O gráfico T26 está `Condição de cálculo não satisfeita` nesta seleção; isso **não representa falha D2**, pois não houve seleção de serviço neste recorte e o T26 tem sua própria condição de cálculo.
+
+**Conclusão restrita:** o estado **anterior** à proposta incompatível corresponde a D2-1: `C2D1_D2_1_PRECLICK=PASS_VISUAL_RESTRICTED`. A imagem demonstra desabilitação visual preventiva do **botão específico**, não comprova que o evento de clique seja ignorado, não instrumenta `DISPATCHED=False`, não mostra a preservação de seleção após tentativa e não impede mudanças por listbox/busca/bookmark. Portanto `C2D1_D2_1_POSTCLICK=NOT_TESTED` e nenhum dos quatro casos está totalmente concluído.
+
+**Único próximo passo, sem PowerShell:** na mesma cópia TEMP e mantendo 2019 selecionado, tentar um clique **normal** no botão cinza BU01 (sem invocar macro ou outra rota); capturar a folha inteira após, mostrando ano 2019 ainda selecionado, nenhuma competência selecionada e BU01 ainda cinza. Se qualquer seleção mudar, **STOP**; não executar D2-2/3/4. Se permanecer estável, a observação sustentará no máximo `D2_1_BUTTON_ROUTE_PRESELECT=PASS_VISUAL_RESTRICTED` após auditoria da nova imagem, sem afirmar telemetria interna de dispatch. **PR Draft, nenhum merge,** `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`.
