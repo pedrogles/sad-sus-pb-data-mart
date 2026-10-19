@@ -166,7 +166,7 @@ function Capture([string]$label){
   if(-not [SadC2Capture]::GetWindowRect($win,[ref]$rect)){throw 'BLOCKED_WINDOW_RECT'}
   $width=$rect.Right-$rect.Left;$height=$rect.Bottom-$rect.Top
   if($width -lt 650 -or $height -lt 560 -or $width -gt 5000 -or $height -gt 3500){throw 'BLOCKED_CAPTURE_DIMENSIONS'}
-  $bmp=New-Object System.Drawing.Bitmap($width,$height)
+  $bmp=[System.Drawing.Bitmap]::new($width,$height)
   try{
     $graphics=[System.Drawing.Graphics]::FromImage($bmp)
     try{$graphics.CopyFromScreen($rect.Left,$rect.Top,0,0,([System.Drawing.Size]::new($width,$height)))}
