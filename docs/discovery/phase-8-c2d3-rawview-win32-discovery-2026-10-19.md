@@ -1,6 +1,6 @@
 # Fase VIII — C2-D3: Discovery READ-ONLY de acessibilidade RawView/Win32 (19/10/2026)
 
-**Status:** `C2D3_READONLY_PROBE=VERSIONED_NOT_EXECUTED`; `C2D3_RAWVIEW_IDENTIFIERS=UNKNOWN`; `C2D3_WIN32_IDENTIFIERS=UNKNOWN`; `C2D3_UI_CLICK_GO=NOT_APPROVED`; `P5_D2_UI=NOT_TESTED`; `PRODUCTION_APPROVED=False`. Gate novo e independente; PR Draft, sem merge.
+**Status atualizado — execução Windows reportada:** `C2D3_READONLY_PROBE=COMPLETED_LOCAL_WITH_NO_GO`; `C2D3_RAWVIEW_COUNTS=1_1`; `C2D3_WIN32_COUNTS=45_45`; `C2D3_BU01_BU02_IDENTIFIERS=NOT_FOUND_BY_NAME_OR_ID`; `C2D3_UI_CLICK_GO=NOT_APPROVED`; `C2D3_GATE=STOPPED_WITH_EVIDENCE`; `P5_D2_UI=NOT_TESTED`; `PRODUCTION_APPROVED=False`. Ver seção 5; PR Draft, sem merge.
 
 ## 1. Objetivo, baseline e evidência de entrada
 
@@ -55,3 +55,31 @@ O `GO_CANDIDATE` requer identificadores coincidentes nas duas leituras **do mesm
 **STOP:** uma sondagem bem delimitada, nenhum rerun da mesma árvore sob parâmetros crescentes, nenhuma edição nos QVWs originais, e nenhum merge sem autorização. Revisar stdout/manifesto/CSV uma vez para classificar; não iniciar automaticamente novo executor UIA, MSAA ou COM.
 
 **Ainda pendente:** `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (anterior), `D2_2=NOT_TESTED`, `D2_3=NOT_TESTED`, `D2_4=NOT_TESTED`, `C2_FULL=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+## 5. Resultado local C2-D3 — NO-GO de identificadores acessíveis por nome/ID (19/10/2026)
+
+**Origem e qualificação:** stdout Windows PowerShell fornecido pelo responsável nesta conversa; revisão documental feita a partir dessa saída. **Não** houve acesso independente do agente ao QVW, ao manifesto ou aos quatro CSVs no diretório temporário. O runner foi versionado no PR #124 e executado após `PARSER=PASS` e verificação de HEAD pelo wrapper.
+
+**Identidade da execução reportada:**
+
+- `VERSIONED_GIT_HEAD=314205733af067013fe19017a9e15c971d114ebf`.
+- `SCRIPT_SHA256=124B89E7CCEA13689FED1AB61E689A4F6D660DD25DC2823C7F2130C9DEB0AA93`.
+- `SOURCE_QVW_SHA256=31B1DD3FD3D5D100104D5B3F80118B7725E16CB76F13676A6678E5E9B31AF087`.
+- `EVIDENCE_DIR=C:\\Users\\pedro\\AppData\\Local\\Temp\\SAD_VIII_C2D3_36c004764087499d812ba14c206ea655` (local ao Windows; não lido por este agente).
+- `WINDOW_PID=16972`; `INPUT_EVENTS=0 QVD_WRITES=0 QVW_WRITES=0` conforme stdout.
+- `RAW_VIEW_COUNTS=1,1`, `RAW_VIEW_TRUNCATED=False,False`; as duas enumerações RawView retornaram **somente um elemento**, sem evidência de objetos-filhos acessíveis nesse percurso.
+- `WIN32_CHILD_COUNTS=45,45`; enumeração de **45 janelas-filhas por leitura**, sem esgotar o teto de 260. A contagem repetida não demonstra que os 45 HWNDs individualmente permaneceram estáveis; não foi auditada correspondência elemento a elemento.
+- `IDENTIFIER=BU01 RAW_MATCHES=0,0 RAW_STABLE=False WIN32_MATCHES=0,0 WIN32_STABLE=False`.
+- `IDENTIFIER=BU02 RAW_MATCHES=0,0 RAW_STABLE=False WIN32_MATCHES=0,0 WIN32_STABLE=False`.
+- `ORIGINAL_22_QVD_AND_QVWS_AND_SOURCE_SHA256_UNCHANGED=True`, **integridade local reportada**.
+- `EVIDENCE_MANIFEST=...\\discovery_manifest.json` — escrito pelo runner, **não auditado independentemente**.
+
+**Veredito literal do runner:** `DISCOVERY_VERDICT=NO_GO_STABLE_BU01_BU02_IDENTIFIERS_NOT_FOUND_IN_THIS_PROBE`, `UI_CLICK_AUTOMATION=NOT_AUTHORIZED`, `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`.
+
+**FATO VERIFICADO pelo stdout:** nenhuma das duas estratégias de identificação alcançou **um match visível por nome ou AutomationId para cada BU01/BU02** nas duas leituras. Na RawView não houve descendentes expostos (1 elemento por leitura), e o Win32 retornou 45 HWNDs sem nomes correspondentes ao texto previsto dos dois botões. Essa busca nomeada não demonstra que os elementos visualmente existentes não estejam dentro de um HWND contêiner, nem que inexistam identificadores puramente geométricos ou proprietários. Os CSVs não foram inspecionados diretamente; **não atribuir classe/handle a BU01/BU02** a partir da contagem.
+
+**DECISÃO OPERACIONAL DO GATE:** `C2D3_READONLY_PROBE=COMPLETED_LOCAL_WITH_NO_GO` e `C2D3_UI_CLICK_GO=NOT_APPROVED`. Encerra-se a investigação combinada UIAutomation/Win32 **pelo contrato estabelecido**. Não iniciar `Pilot`/`Complete` do PR #123, não reexecutar ou ampliar sondagens, e não clicar por coordenadas presumidas. O resultado `NO_GO` vale para o pareamento por nome/ID dos botões **nesta cópia e neste ambiente**; não declara impossibilidade absoluta de automação QlikView.
+
+**Próximo caminho seguro, sujeito a escopo independente:** preservar `D2-1=PASS_VISUAL_RESTRICTED` e executar D2-2/D2-3/D2-4 manualmente na **cópia C2-D1**, se o responsável quiser concluir a matriz física de botões. Seleções/expressões podem ser analisadas por COM como apoio sem simular clique (`COM_ONLY_NOT_UI_CLICK`). Evitar nova cadeia de descoberta UIA/Win32 sem exigência acadêmica explícita. Mesmo um PASS dos quatro botões não cobre listas/buscas/bookmarks e **não** equivale a D2 aprovado globalmente.
+
+**Gates preservados:** `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`, `D2_2=NOT_TESTED`, `D2_3=NOT_TESTED`, `D2_4=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`, `C2_FULL=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. PR #124 permanece Draft, `main` inalterada; sem autorização de merge.
