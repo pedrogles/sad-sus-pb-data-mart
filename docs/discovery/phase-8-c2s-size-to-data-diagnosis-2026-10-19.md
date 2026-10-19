@@ -1,6 +1,6 @@
 # Fase VIII — C2-S: diagnóstico READ-ONLY do encolhimento S0 da Straight Table (19/10/2026)
 
-**Status atual:** `C2S_SIZE_TO_DATA_ENABLED=CONFIRMED_GUI_BEFORE_CHANGE`; `C2S_SIZE_TO_DATA_UNCHECKED=CONFIRMED_GUI_UNSAVED`; `C2S_CAUSAL_EFFECT_ALLOWED_S0=NOT_TESTED` (ver seção 5); `C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR **somente documental/Draft**, sem merge, sem alterações em scripts ou QVD/QVW neste PR.
+**Status atual:** `C2S_SIZE_TO_DATA_CAUSAL_EFFECT_ALLOWED_S0=CONFIRMED_GUI_EXPERIMENTAL`; `C2S_REVIEW=COMPLETED_WITH_COLUMN_LAYOUT_GAP` (ver seção 6); `C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION` para o artefato versionado/executado, pois o experimento visual não foi aplicado a ele de maneira auditada; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR **somente documental/Draft**, sem merge, sem alterações em scripts ou QVD/QVW neste PR.
 
 ## 1. Objetivo, fontes e condição de parada
 
@@ -67,3 +67,23 @@ Somente se a checkbox estiver **confirmadamente marcada**, definir o menor gate 
 4. Tirar **uma captura da folha inteira após aplicar**, mostrando valor formatado **31,21**, cabeçalhos e largura real da Straight Table. Se continuar pequena ou indisponível, registrar a divergência como tal. Fechar a cópia **sem salvar**. Não tentar corrigir largura de colunas antes dessa prova.
 
 **Status documentado:** `C2S_SIZE_TO_DATA_ENABLED=CONFIRMED_GUI_BEFORE_CHANGE`, `C2S_SIZE_TO_DATA_UNCHECKED=CONFIRMED_GUI_UNSAVED`, `C2S_CAUSAL_EFFECT_ALLOWED_S0=NOT_TESTED`. A opção marcada era a hipótese mais provável e agora foi confirmada como **configuração ativa**, mas seu **papel causal sobre o S0 ainda é hipótese**. Não declarar `C2S_SIZE_TO_DATA=CAUSAL_CONFIRMED` sem a captura do S0 liberado. Nenhuma medida, semântica, filtro P5, interceptação D2 ou gate de produção foi homologado. `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`; PR #119 permanece Draft.
+
+
+## 6. Confirmação experimental GUI do S0 permitido após desmarcar Size to Data
+
+**Fonte visual nova:** imagem anexada pelo responsável como `image(20261019-044108).png`, resolução **1283×771 RGBA** e SHA-256 **F13F6CE279F942FFF6D88CCEE388341A73FAC2AA7055BC95724036C890F98584**, recalculado a partir do arquivo fornecido nesta conversa. A imagem foi inspecionada visualmente; o QVW binário não foi aberto pelo agente.
+
+**Fatos diretamente observados:**
+- A folha continua no QlikView 12 x64 Personal Edition; `PERIODO_ANO=2018` e `SERV_COD_DATASUS_6=250750` selecionados em **verde**.
+- O painel apresenta `Internacoes por leito SUS medio`, tabela com 2018 e **31,21** (valor e total visualizados), **sem** `#####` e **sem** a mensagem `Condição de cálculo não satisfeita`.
+- O gráfico mantém a largura disponível, aproximadamente da coluna `x=211` até `x=970`, embora os dados ocupem poucas colunas à esquerda. Nas capturas originais de S0 do C2-V, a tabela se contraía à largura do conteúdo.
+- O alerta P5 de município de residência que aparecia na captura anterior não está visível. Os cabeçalhos da coluna de período, da expressão T26 e dos filtros `SERV_COD_DA...` e `COD_PROCEDI...` permanecem **visualmente abreviados/truncados**.
+- A barra de título mantém o sufixo **`*`** e exibe o caminho `C:\\Users\\pedro\\AppData\\Local\\Temp\\SAD_VIII_C2V_83cc8d984d9e438eb76a71d1ff8f6d0f\\SAD_C2V_T26_DISPOSABLE.qvw`, ou seja, **ainda parece ser o QVW de evidência original aberto com alterações não salvas**, e não há comprovação de cópia física independente. Não afirmar que o original foi salvo ou preservado por hash pós-interação.
+
+**Conclusão causal estritamente experimental:** nas capturas anteriores, `Ajustar o tamanho aos dados` estava **marcada**, depois ficou **desmarcada**; sob as seleções compatíveis de 2018/João Pessoa, a nova imagem mostra a **mesma Straight Table com frame amplo e valor 31,21 correto**. A combinação de intervenção isolada relatada pelo usuário, comparação com as capturas anteriores e resultado visual confirma **`C2S_SIZE_TO_DATA_CAUSAL_EFFECT_ALLOWED_S0=CONFIRMED_GUI_EXPERIMENTAL`**. Não é prova de correção versionada/permanente, nem garante dimensões adequadas das colunas e filtros, nem constitui aceitação visual final de C2-V.
+
+**Estado residual e STOP:** `C2S_REVIEW=COMPLETED_WITH_COLUMN_LAYOUT_GAP`; sem novos scripts ou QVD/QVW, sem rerun automático de T24–T26, sem replay de C2-A ou D2. O próximo gate, somente se explicitamente autorizado, seria uma **correção única e controlada** em QVW descartável, que desative `Size to Data` para a Straight Table e aumente largura dos títulos das colunas e nomes das listboxes, sem alterar cálculo ou filtros P5; é preciso descobrir por introspecção/GUI os nomes reais das propriedades COM, não inventá-los.
+
+**Preservação imediata recomendada:** como o `*` no título sugere alterações não salvas no QVW evidencial, encerrar essa janela com **Não salvar** e evitar qualquer edição adicional no arquivo evidencial. Em uma eventual etapa posterior, operar numa **cópia distinta** de `SAD_C2V_T26_DISPOSABLE.qvw` sob `%TEMP%`, com SHA pré/pós do original; preservar QVDs e QVWs canônicos.
+
+**Gates imutáveis:** `C2V_COM_GEOMETRY_LABEL_FORMAT_AND_CAPTURE=PASS_LOCAL_CANDIDATE_ONLY`, `C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION` no gate físico já executado, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`, `T26_GENERAL=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. **PR #119 Draft; main e scripts de produção intocados.**
