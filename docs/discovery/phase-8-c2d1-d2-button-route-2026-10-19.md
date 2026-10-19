@@ -1,6 +1,6 @@
 # Fase VIII — C2-D1: prova controlada de pré-seleção D2 por botões QlikView 12
 
-**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTON_UI=NOT_CONFIGURED`; `C2D1_FOUR_CASES=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. Ver seção 6; PR Draft, branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
+**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (ver seção 7); `C2D1_FOUR_CASES=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
 
 ## 1. Contrato de objetivo único e fontes
 
@@ -120,3 +120,23 @@ O executor indicou:
 **Próximo passo, sem rerun PowerShell:** abrir **somente a nova cópia QVW**, não a origem `WRAP`; no QlikView Desktop 12 testar inicialmente se os controles **Condição para Habilitar** e **Selecionar no Campo** estão disponíveis. Configurar somente os dois botões documentados na seção 3, com as expressões e **uma ação cada**, e montar um objeto observacional de seleções para confirmar estados. Se indisponíveis ou se o botão não respeitar condição, **STOP**. Capturar configuração dos botões e depois, se validada, os quatro casos da seção 4. O `PR #122` permanece Draft; o comando de preparação **não precisa ser repetido**.
 
 **Gates inalterados:** `C2D1_BUTTON_UI=NOT_CONFIGURED`, `C2D1_FOUR_CASES=NOT_TESTED`, `C2D_COMPLETE_UI=NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `T26_GENERAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. `main` não alterada.
+
+
+## 7. Conferência independente de seis capturas GUI — dois botões configurados, D2 não testado
+
+**Fonte e qualificação:** seis PNGs enviados diretamente nesta conversa e inspecionados visualmente; resoluções e hashes SHA-256 calculados **sobre os arquivos anexados**, não os screenshots C2-W anteriores. Não houve abertura independente do QVW binário nem leitura COM das propriedades persistidas. A barra do QlikView identifica a cópia `SAD_C2D1_D2_BUTTON_TEST.qvw` em `%TEMP%/SAD_VIII_C2D1_a3f6cfc1aab84e8c8f2a4e0681e21dfe`, com `*` visível no título, indicando trabalho ainda não salvo na captura.
+
+| PNG anexado | Dimensões | SHA-256 calculado | Evidência limitada |
+| --- | --- | --- | --- |
+| `image(20261019-162331).png` | 1670×1041 | `9C72D22469D07E7E4A5ADD707ED8A691AB239C81ADC989D69033C1419B535BB0` | Propriedades gerais de `BU01`, campo `Condição para Habilitar` preenchido |
+| `image(20261019-162348).png` | 1665×1021 | `2D9744B8AD3E684300B4E14A44844861171C5D5F9B7967CBCFBBF41423E555DB` | Editor da condição BU01: `GetSelectedCount(PERIODO_ANO)=0` ou um ano selecionado igual a `2018`; editor indica `Expression OK` |
+| `image(20261019-162401).png` | 1667×995 | `E06D23EE8E276408B1FC6B9B53A5BE23A6FD56E7A26A897B59B7A5EB669D61FF` | BU01, única ação `Selecionar no Campo` com `PERIODO_COMPETENCIA` e `Pesquisar Caracteres=201801` |
+| `image(20261019-162413).png` | 1666×1017 | `718303AC6AB5BA9501B757AA1E737E07FFD193CF7FF1E1F26E16A61662A42347` | Propriedades gerais de `BU02`, campo `Condição para Habilitar` preenchido |
+| `image(20261019-162531).png` | 1668×1041 | `C5762DCEE056CEE2D129DF3DF0D4DD4368289E8B62F95EC64E5770D286754E85` | Editor da condição BU02: `GetSelectedCount(PERIODO_COMPETENCIA)=0` ou uma competência cujo ano é `2019`; editor indica `Expression OK` |
+| `image(20261019-162559).png` | 1667×1036 | `D809A626F8A4EA5EF8F28DE90C74880D57EBAEC5A565A6367C141B0B7E87A216` | BU02, única ação `Selecionar no Campo` com `PERIODO_ANO` e `Pesquisar Caracteres=2019` |
+
+**Constatação visual:** configuração das duas ações e expressões **consistente com a proposta da seção 3**; as propriedades do editor indicam apenas **validade sintática**, não valor 0/1 avaliado, interceptação da seleção, execução ou persistência final. Há listbox `PERIODO_COMPETENCIA` visível, assim como `PERIODO_ANO`. **O BU02 está visualmente sobreposto à lista de anos**, então recomenda-se reposicioná-lo em área livre **somente na cópia C2-D1**, sem alterar expressão ou ação, para possibilitar montar o estado inicial. O componente `Seleções Atuais` não está visível; usar listboxes ou adicioná-lo no protótipo antes de fotografar os estados.
+
+**Classificação:** `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY`; `C2D1_BUTTON_ACTIONS=VISUALLY_CONFIGURED_NOT_TRIGGERED`; `C2D1_FOUR_CASES=NOT_TESTED`; `C2D1_PRESELECT_DISPATCH=NOT_INSTRUMENTED`; `P5_D2_UI=NOT_TESTED`. `C2D_COMPLETE_UI=NOT_APPROVED` e `PRODUCTION_APPROVED=False`; PR #122 Draft, nenhum merge ou alteração de `main`.
+
+**Próximo passo único (sem PowerShell):** fechar as propriedades confirmando em OK, mover BU02 para não bloquear a listbox de ano, salvar **somente** a cópia C2-D1 e iniciar D2-1: `Limpar` → selecionar **exclusivamente** `PERIODO_ANO=2019`, sem competência → obter um PNG com botão de competência `201801` visualmente desabilitado e ano preservado. Antes de avançar, enviar screenshot para revisão. **Se o botão não ficar desabilitado, STOP**; não clicar nem iterar outros casos. Em eventual confirmação de estado desabilitado, a segunda captura (depois de tentativa normal de clique, sem forçar) deverá mostrar ano 2019 ainda selecionado e nenhuma competência; isso não é instrumentação interna de `DISPATCHED=False`. Não reexecutar D2 wrapper nem outros gates.
