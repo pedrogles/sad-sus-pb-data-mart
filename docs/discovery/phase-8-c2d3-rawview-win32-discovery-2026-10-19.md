@@ -50,7 +50,7 @@ O `GO_CANDIDATE` requer identificadores coincidentes nas duas leituras **do mesm
 
 ## 4. Critérios de aceitação, STOP e gates preservados
 
-**Aceite do gate:** script Python/PowerShell? **Somente PowerShell versionado**, revisão estática e uma execução Windows com parser PASS e SHA/HEAD. O objetivo é **classificar identificadores**, não executar quatro cenários de seleção. O script pode retornar NO-GO e ainda assim **a Discovery ter sido concluída com evidência**. Se não houver execução local, o estado é `C2D3_READONLY_PROBE=VERSIONED_NOT_EXECUTED`, nunca PASS.
+**Aceite do gate:** um **único script PowerShell versionado**, revisão estática e uma execução Windows com parser PASS e SHA/HEAD. O objetivo é **classificar identificadores**, não executar quatro cenários de seleção. O script pode retornar NO-GO e ainda assim **a Discovery ter sido concluída com evidência**. Se não houver execução local, o estado é `C2D3_READONLY_PROBE=VERSIONED_NOT_EXECUTED`, nunca PASS.
 
 **STOP:** uma sondagem bem delimitada, nenhum rerun da mesma árvore sob parâmetros crescentes, nenhuma edição nos QVWs originais, e nenhum merge sem autorização. Revisar stdout/manifesto/CSV uma vez para classificar; não iniciar automaticamente novo executor UIA, MSAA ou COM.
 
