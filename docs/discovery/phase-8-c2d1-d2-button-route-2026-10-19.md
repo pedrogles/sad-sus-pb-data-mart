@@ -1,6 +1,6 @@
 # Fase VIII — C2-D1: prova controlada de pré-seleção D2 por botões QlikView 12
 
-**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_D2_2=OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` (seção 10); `C2D1_FOUR_CASES=IN_PROGRESS_1_COMPLETE_1_PARTIAL_1_PRECLICK_OF_4`; `D2_3_PRECLICK=PASS_VISUAL_RESTRICTED`; `D2_3_POSTCLICK=NOT_TESTED`; `D2_4=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
+**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_D2_2=OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` (seção 10); `C2D1_FOUR_CASES=IN_PROGRESS_2_COMPLETE_1_PARTIAL_OF_4`; `D2_3_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`; `D2_4=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
 
 ## 1. Contrato de objetivo único e fontes
 
@@ -192,3 +192,14 @@ O executor indicou:
 **Próximo passo único:** sem limpar ou modificar outras seleções, clicar **uma vez normalmente** em `Botão 1 — Propor competência 201801`. Tirar captura da folha completa **depois do clique**, com `PERIODO_ANO=2018` e `PERIODO_COMPETENCIA=201801` em verde; se algum desses valores não for preservado, **STOP** e não iniciar D2-4. Sem automação UIA, COM, reload, scripts nem QVW/QVD canônico alterados.
 
 **Gates:** `P5_D2_UI=NOT_TESTED`, `C2_FULL=NOT_APPROVED`, `PRODUCTION_APPROVED=False`, PR #122 Draft e `main` inalterada.
+
+
+## 12. D2-3 — pós-clique compatível: ano 2018 preservado e competência 201801 selecionada (19/10/2026)
+
+**Evidência anexa conferida:** `image(20261019-185338).png`, **1907×1060 pixels, RGBA**, SHA-256 **`972D66582EFF3A252AC8521E73DF14765058768F24DB1019F253F8E2F3B977FD`** calculado independentemente com `sha256sum` no arquivo PNG fornecido. Trata-se da captura enviada em resposta à instrução de clicar **uma vez normalmente no BU01**. Essa correspondência de ação é proveniente do fluxo contextual do operador; uma imagem estática não instrumenta o evento físico nem a ordem de despacho.
+
+**FATOS VISUAIS do pós-clique comparados à captura anterior (§11):** `PERIODO_ANO=2018` aparece verde e continua selecionado; `PERIODO_COMPETENCIA=201801` passou a verde; `BU01` continua azul/habilitado e `BU02 — Propor ano 2019` passou a cinza/desabilitado, consistente com a nova seleção de competência de 2018. A mensagem `Condição de cálculo não satisfeita` e o aviso de período parcial pertencem ao objeto T26 e não mudam o veredito de seleção D2.
+
+**Veredito restrito:** `D2_3_PRECLICK=PASS_VISUAL_RESTRICTED`, `D2_3_POSTCLICK=PASS_VISUAL_RESTRICTED`, portanto **`D2_3_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`**, somente para o percurso controlado `ano 2018 → proposta de competência 201801`. **Sem instrumentação interna de despacho**, sem aprovação global da UI e sem teste do indicador T26. Na matriz atualmente há **2 casos com pré/pós capturas auditadas restritamente (D2-1 e D2-3), 1 com captura única mais relato de clique (D2-2) e 1 não iniciado (D2-4)**; não tratar D2-2 como 2-frame auditado.
+
+**Próximo teste isolado D2-4:** na cópia QVW C2-D1, `Limpar` e selecionar **apenas `PERIODO_COMPETENCIA=201901`**; `PERIODO_ANO` sem seleção explícita. Antes de qualquer clique, capturar folha mostrando `BU02 — Propor ano 2019` **azul/habilitado**. Não executar o botão até revisar a captura. Se BU02 ficar desabilitado, STOP. Preservar PR Draft e fontes imutáveis; `D2_4=NOT_TESTED`, `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`.
