@@ -261,16 +261,22 @@ try{
     $p=$script:chart.GetProperties()
     if($null -eq $p -or $null -eq $p.EvaluationCondition){throw 'BLOCKED_CHART_CONDITION_PROPERTY_ABSENT'}
     $p.EvaluationCondition.v=$script:calc
-    # QV11/12 COM: label lives under the expression visual, not its raw formula.
-    # Fail closed if this API branch is unavailable rather than assuming a title.
+    # QlikView 12 candidate COM path: Expressions.Item(0).Item(0).Data.ExpressionVisual.
+    # Fail closed if unsupported; verified only in documentation, not on this host.
     $visual=$null
-    try{$visual=$p.ExpressionVisuals(0)}catch{throw ('BLOCKED_EXPRESSION_VISUAL_COM_'+$_.Exception.Message)}
+    try{$visual=$p.Expressions.Item(0).Item(0).Data.ExpressionVisual}catch{
+      throw ('BLOCKED_EXPRESSION_VISUAL_COM_PATH_'+$_.Exception.Message)
+    }
     if($null -eq $visual -or $null -eq $visual.Label){throw 'BLOCKED_EXPRESSION_LABEL_PROPERTY_ABSENT'}
     $visual.Label.v='Internacoes por leito SUS medio'
     $visual.LabelAdjust=2
     [void]$script:chart.SetProperties($p)
     VerifyChart
-    $labelBack=$script:chart.GetProperties().ExpressionVisuals(0)
+    $labelBack=$null
+    try{$labelBack=$script:chart.GetProperties().Expressions.Item(0).Item(0).Data.ExpressionVisual}catch{
+      throw ('BLOCKED_EXPRESSION_LABEL_READBACK_COM_PATH_'+$_.Exception.Message)
+    }
+    if($null -eq $labelBack -or $null -eq $labelBack.Label){throw 'BLOCKED_EXPRESSION_LABEL_READBACK_MISSING'}
     if([string]$labelBack.Label.v -cne 'Internacoes por leito SUS medio'){
       throw 'BLOCKED_EXPRESSION_LABEL_READBACK'
     }
@@ -342,7 +348,7 @@ try{
   if((Get-FileHash -LiteralPath $src -Algorithm SHA256).Hash -cne $sourceHash){throw 'CRITICAL_SOURCE_QVW_CHANGED'}
   Write-Output 'SOURCE_T24_QVW_SHA256_UNCHANGED=True'
 }
-if($hadFailure){throw ('C2A_EXECUTION_BLOCKED_'+$failReason)}
+if($hadFailure){throw ('C2V_EXECUTION_BLOCKED_'+$failReason)}
 if($RunQlik -and $script:success){
   Write-Output 'VERDICT=PASS_LOCAL_C2V_GEOMETRY_LABEL_COM_5_SCREENSHOTS_VISUAL_PENDING'
   Write-Output 'VISUAL_AUDIT=PENDING_REVIEW PRESENTATION_ACCEPTANCE=NOT_YET_APPROVED D2_UI_INTERCEPTION=NOT_TESTED P5_FULL_UI=NOT_APPROVED T26_GENERAL=NOT_APPROVED PRODUCTION_APPROVED=False'
