@@ -1,6 +1,6 @@
 # Fase VIII — C2-D1: prova controlada de pré-seleção D2 por botões QlikView 12
 
-**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_D2_2=OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` (seção 10); `C2D1_FOUR_CASES=IN_PROGRESS_2_COMPLETE_1_PARTIAL_OF_4`; `D2_3_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`; `D2_4=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
+**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTONS_CONFIGURATION=VISIBLE_IN_GUI_CANDIDATE_ONLY` (seção 7); `C2D1_D2_1_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED` (seções 8–9); `C2D1_D2_2=OBSERVED_DISABLED_POSTCLICK_OPERATOR_REPORTED_SINGLE_IMAGE` (seção 10); `C2D1_FOUR_CASES=IN_PROGRESS_2_COMPLETE_1_PARTIAL_OF_4`; `D2_3_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`; `D2_4=OBSERVED_BOTH_SELECTED_ORIGIN_UNCONFIRMED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft originado de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
 
 ## 1. Contrato de objetivo único e fontes
 
@@ -203,3 +203,14 @@ O executor indicou:
 **Veredito restrito:** `D2_3_PRECLICK=PASS_VISUAL_RESTRICTED`, `D2_3_POSTCLICK=PASS_VISUAL_RESTRICTED`, portanto **`D2_3_BUTTON_ROUTE=PASS_VISUAL_RESTRICTED`**, somente para o percurso controlado `ano 2018 → proposta de competência 201801`. **Sem instrumentação interna de despacho**, sem aprovação global da UI e sem teste do indicador T26. Na matriz atualmente há **2 casos com pré/pós capturas auditadas restritamente (D2-1 e D2-3), 1 com captura única mais relato de clique (D2-2) e 1 não iniciado (D2-4)**; não tratar D2-2 como 2-frame auditado.
 
 **Próximo teste isolado D2-4:** na cópia QVW C2-D1, `Limpar` e selecionar **apenas `PERIODO_COMPETENCIA=201901`**; `PERIODO_ANO` sem seleção explícita. Antes de qualquer clique, capturar folha mostrando `BU02 — Propor ano 2019` **azul/habilitado**. Não executar o botão até revisar a captura. Se BU02 ficar desabilitado, STOP. Preservar PR Draft e fontes imutáveis; `D2_4=NOT_TESTED`, `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`.
+
+
+## 13. D2-4 — captura mostra ambas as seleções; origem da ação não confirmada (19/10/2026)
+
+**Evidência visual diretamente inspecionada:** `image(20261019-185639).png`, **1905×1068 pixels, RGBA**, SHA-256 **`3A50095F9A8E5F57E0AA43818A9A9E9EC80B1B5729840C5EC809B26055B9C1B3`**, calculado localmente a partir do anexo recebido. A captura veio em resposta ao pedido de **imagem pré-clique**. Não há, na mensagem, declaração de que o operador clicou em BU02, nem imagem anterior com apenas a competência selecionada.
+
+**FATO VISUAL VERIFICADO:** `PERIODO_COMPETENCIA=201901` aparece verde e `PERIODO_ANO=2019` também aparece verde, simultaneamente; `BU02 — Propor ano 2019` está azul/habilitado e `BU01 — Propor competência 201801` cinza/desabilitado. O estado é **consistente com um resultado pós-clique de BU02**, mas também poderia resultar de seleção direta do ano na listbox. O título T26 de 2018/João Pessoa e o aviso de período parcial 201801 são conteúdos fixos/condicionados independentes das seleções e não validam D2-4.
+
+**DECISÃO DE EVIDÊNCIA:** `D2_4_BOTH_SELECTED=PASS_VISUAL_STATE_ONLY`; `D2_4_BUTTON_CLICK=NOT_CONFIRMED`; `D2_4_PRECLICK=NOT_CAPTURED`; **`D2_4=OBSERVED_BOTH_SELECTED_ORIGIN_UNCONFIRMED`**, sem emitir PASS de rota ou de despacho. Manter contador anterior de casos encerrados (D2-1/D2-3 PASS visual restrito; D2-2 parcial). `P5_D2_UI=NOT_TESTED`, `PRODUCTION_APPROVED=False`.
+
+**Única pendência necessária:** perguntar ao responsável **como 2019 ficou verde**: se clicou em BU02 depois de selecionar 201901 ou selecionou manualmente 2019 pela lista. Se foi BU02, a imagem pode ser qualificada como pós-clique relatado, ainda sem captura pré-clique; se foi lista, não serve como evidência da execução de BU02 e requer retomar o teste controlado. Não repetir outras Discovery/COM/UIA, sem merge na `main`.
