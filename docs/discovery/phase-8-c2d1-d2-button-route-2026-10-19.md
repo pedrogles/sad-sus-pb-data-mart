@@ -1,6 +1,6 @@
 # Fase VIII — C2-D1: prova controlada de pré-seleção D2 por botões QlikView 12
 
-**Estado:** `C2D1_PREPARATION_VERSIONED_NOT_EXECUTED`; `C2D1_BUTTON_UI=NOT_CONFIGURED`; `C2D1_FOUR_CASES=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR Draft, branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
+**Estado atual:** `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED`; `C2D1_BUTTON_UI=NOT_CONFIGURED`; `C2D1_FOUR_CASES=NOT_TESTED`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. Ver seção 6; PR Draft, branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`, sem merge.
 
 ## 1. Contrato de objetivo único e fontes
 
@@ -99,3 +99,24 @@ Apenas na cópia C2-D1: adicionar **uma lista de teste** para `PERIODO_COMPETENC
 5. Nenhum merge ou modificação na `main` sem autorização. Não salvar a origem C2-W; qualquer alteração visual para o experimento deve ficar **somente na cópia C2-D1**.
 
 **Gates preservados:** `C2_FULL=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+## 6. Execução local reportada — PASS apenas da cópia temporária (19/10/2026)
+
+**Proveniência:** stdout Windows PowerShell fornecido pelo responsável; **não foi aberta nem conferida independentemente** a cópia de QVW nem o manifesto local. O wrapper executou `git fetch origin`, criou a branch local rastreando `origin/test/phase-viii-c2d1-d2-button-route-20261019`, confirmou o HEAD e emitiu `PARSER=PASS` antes do `-Prepare`.
+
+**Commit que foi realmente executado:** `f578106467ed01856425b496f777d520c88e6762`. **Script SHA-256 do stdout:** `463B9ED3DA6F045552A9F24E8AF1BD931C3C4F6B297AEE5304F1DC15B365AE02`. **QVW de origem, SHA-256 preflight:** `4B17498BB506273E3BABF211E96B3FDBE833D5F3365479971CCD3FA68DD89A8C`.
+
+**Diretório somente Windows, não acessado pelo agente:** `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_C2D1_a3f6cfc1aab84e8c8f2a4e0681e21dfe`. **Nova cópia exclusivamente temporária:** `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_C2D1_a3f6cfc1aab84e8c8f2a4e0681e21dfe\SAD_C2D1_D2_BUTTON_TEST.qvw`.
+
+O executor indicou:
+- `MODE=TEMP_COPY_NO_COM_NO_RELOAD_NO_QVD_WRITE`;
+- `SOURCE_WRAP_QVW_SHA256_UNCHANGED=True`;
+- `ORIGINAL_22_QVD_SHA256_UNCHANGED=True`;
+- `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`;
+- `VERDICT=PASS_LOCAL_C2D1_QVW_COPY_ONLY_UI_BUTTONS_NOT_CONFIGURED`.
+
+**Interpretação estrita:** o resultado reporta cópia com SHA conferido e preservação das fontes antes/depois no Windows. **Nenhum botão foi criado, nenhuma ação foi testada, nenhuma seleção conflitante foi proposta via UI e nenhum screenshot D2 foi recebido**. O runner não abriu QlikView e não aferiu propriedades COM de Button nem configuração de `Enable Condition`. `C2D1_QVW_COPY=PASS_LOCAL_PREPARATION_REPORTED` não significa `C2D1_BUTTON_ROUTE=PASS`.
+
+**Próximo passo, sem rerun PowerShell:** abrir **somente a nova cópia QVW**, não a origem `WRAP`; no QlikView Desktop 12 testar inicialmente se os controles **Condição para Habilitar** e **Selecionar no Campo** estão disponíveis. Configurar somente os dois botões documentados na seção 3, com as expressões e **uma ação cada**, e montar um objeto observacional de seleções para confirmar estados. Se indisponíveis ou se o botão não respeitar condição, **STOP**. Capturar configuração dos botões e depois, se validada, os quatro casos da seção 4. O `PR #122` permanece Draft; o comando de preparação **não precisa ser repetido**.
+
+**Gates inalterados:** `C2D1_BUTTON_UI=NOT_CONFIGURED`, `C2D1_FOUR_CASES=NOT_TESTED`, `C2D_COMPLETE_UI=NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `T26_GENERAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. `main` não alterada.
