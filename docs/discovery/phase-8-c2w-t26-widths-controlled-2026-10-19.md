@@ -1,6 +1,6 @@
 # Fase VIII — C2-W: correção controlada de largura T26, com Size to Data manual (19/10/2026)
 
-**Status atual:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_SIZE_TO_DATA_GUI=PENDING`; `C2W_VISUAL_REVIEW=PENDING` (ver seção 5); `PRODUCTION_APPROVED=False`. PR Draft em branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`; execução Windows reportada, não reexecutada independentemente.
+**Status atual:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_SIZE_TO_DATA_GUI=UNCHECKED_VISIBLE`; `C2W_S0_S1_VISUAL_BEHAVIOR=PASS_RESTRICTED`; `C2W_VISUAL_ACCEPTANCE=BLOCKED_COLUMN_HEADERS` (ver seção 6); `PRODUCTION_APPROVED=False`. PR Draft em branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`; execução Windows reportada, imagens auditadas independentemente, binário QVW não aberto pelo agente.
 
 ## 1. Evidências e objetivo delimitado
 
@@ -78,3 +78,28 @@
 **Condição de parada:** após duas capturas e auditoria, `C2W_VISUAL_ACCEPTANCE` será `PASS_RESTRICTED` apenas se todas as evidências estiverem legíveis, ou `BLOCKED/INCONCLUSIVE` caso contrário. A configuração não é adotada automaticamente no dashboard final.
 
 **Estados mantidos:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_SIZE_TO_DATA_GUI=PENDING`; `C2W_VISUAL_REVIEW=PENDING`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `P5_D2_UI=NOT_TESTED`; `T26_GENERAL=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR #120 Draft, sem merge, main inalterada.
+
+## 6. Auditoria independente da apresentação C2-W — S0/S1 funcionais, cabeçalhos BLOQUEADOS
+
+**Fonte da evidência:** três capturas enviadas diretamente nesta conversa pelo responsável, referentes ao novo arquivo `SAD_C2W_T26_LAYOUT_TEST.qvw` sob `%TEMP%/SAD_VIII_C2W_04f58b85152b4794b0bf4809b4e10f3c`. Imagens efetivamente inspecionadas, com metadados e SHA-256 recalculados sobre **seus próprios bytes**; não houve leitura do QVW binário nem recarga independente:
+
+| Evidência enviada | Dimensões (pixels) | SHA-256 independente | Observação |
+| --- | --- | --- | --- |
+| `image(20261019-125138).png` — S0 permitido | 1272×747 | `441D716FC42A678447187A867C8F5A5AE362584675011E3A693277081488A4D4` | Ano `2018` + serviço `250750` selecionados; `31,21` e linha 2018 visíveis, sem `#####`; objeto continua largo; cabeçalhos de colunas ainda mostram `...` e `Internacoes ...` |
+| `image(20261019-125156).png` — propriedade | 1299×768 | `3488E8CAFC11DB2E01E98572944B22B884964A7608ACC845BB365D2F329DFCBD` | Aba Layout/Opções do gráfico com `Ajustar o tamanho aos dados` **desmarcado** na cópia C2-W; título exibe `*`, indicando alterações em memória quando fotografado |
+| `image(20261019-125346).png` — S1 bloqueado | 1277×750 | `40EDE78AA884C106E620297F951EFC99725BA793B4F74B28938B98207DC61BD0` | Ano `2018`, serviço `250750` e um procedimento em verde; condição não satisfeita; aviso **completo** de filtro P5 B; gráfico largo |
+
+**FATO VISUAL VERIFICADO:** o gráfico **não encolheu no S0**, exibiu `31,21` e deixou de calcular corretamente no S1, com aviso integral. A caixa `Ajustar o tamanho aos dados` está visualmente desmarcada **na cópia C2-W**, confirmada por screenshot. O título do QVW em S1 não apresenta o `*`; isso é **compatível** com a aplicação/salvamento da alteração, mas **não substitui SHA/readback em disco após intervenção manual**, nem prova configuração de qualquer QVW canônico.
+
+**PENDÊNCIA DE APRESENTAÇÃO REPRODUZÍVEL:** na linha de cabeçalhos da Straight Table S0, o campo de tempo continua `...` e a medida aparece como `Internacoes ...`, mesmo tendo sido atribuído `ColWidth=155` e `ColWidth=285` com `PASS_COM_READBACK` no executor local. O resultado COM não equivale à **largura efetiva/renderizada** de cada coluna no QlikView. A lista de procedimento está legível como `COD_PROCEDIMENTO`, mas o nome do município de serviço permanece truncado (`SERV_COD_DATASUS...`). **Não afirmar que as larguras de colunas foram visualmente homologadas**, ainda que a largura externa do gráfico tenha sido corrigida.
+
+**Classificação por capacidade:**
+- `C2W_SIZE_TO_DATA_GUI=UNCHECKED_VISIBLE` — checkbox desmarcada verificada por screenshot em cópia separada.
+- `C2W_S0_FUNCTIONAL_VISUAL=PASS_RESTRICTED` — ano/serviço, 31,21, largura do objeto estável.
+- `C2W_S1_BLOCK_WARNING_VISUAL=PASS_RESTRICTED` — filtro P5 B procedimento bloqueia com mensagem integral.
+- **`C2W_VISUAL_ACCEPTANCE=BLOCKED_COLUMN_HEADERS`** — sem aprovação integral do layout, devido aos cabeçalhos truncados em S0 e título incompleto da lista de município.
+- `C2_FULL=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`; os outros cenários P5 já ensaiados não são reaprovados globalmente por estas duas capturas.
+
+**STOP do gate C2-W atingido:** o objetivo deste gate incluía uma execução COM, uma edição manual em **nova cópia** e evidência visual de S0/S1. As evidências chegaram e a auditoria foi concluída **com apresentação bloqueada**; não reexecutar PowerShell/QlikView nem abrir um novo gate de modo automático. Uma eventual correção futura deve ter escopo independente e **verificar largura efetiva/rotulagem das colunas** em vez de assumir que a propriedade `ColWidth` foi aplicada visualmente; opção possível a examinar em outra Discovery restrita é largura na GUI ou rótulos menores, sem alterar a medida. Não editar modelos, QVDs, QVWs canônicos nem mudar regras P5.
+
+**Estados finais preservados:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_VISUAL_ACCEPTANCE=BLOCKED_COLUMN_HEADERS`; `C2_FULL=NOT_APPROVED`; `T26_GENERAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR #120 Draft, sem merge, `main` inalterada.
