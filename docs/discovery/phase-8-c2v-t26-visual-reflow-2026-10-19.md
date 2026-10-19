@@ -1,6 +1,6 @@
 # Fase VIII — C2-V: correção visual restrita do gráfico T26 após BLOCKED_PRESENTATION (19/10/2026)
 
-**Estado atual:** `C2V_VISUAL_REFLOW=BLOCKED_DISPLAY_MASK_SECOND_RUN; MASK_FIX_VERSIONED_PENDING_WINDOWS_RETEST` (ver seção 6). Correções COM/geometria têm PASS de readback local reportado; a apresentação numérica corrigida e as novas capturas ainda **não** foram testadas no Windows. Branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`. **PR Draft, sem merge ou alteração de dados e dashboards canônicos**.
+**Estado atual:** `C2V_COM_GEOMETRY_LABEL_FORMAT_AND_CAPTURE=PASS_LOCAL_CANDIDATE_ONLY`; `C2V_VISUAL_AUDIT=PENDING_PNG_INSPECTION` (ver seção 7). **PR Draft; nenhuma aprovação visual de C2-V, C2/P5/D2, de indicador geral ou de produção.** Branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`. **PR Draft, sem merge ou alteração de dados e dashboards canônicos**.
 
 ## 1. Problema comprovado e objetivo limitado
 
@@ -93,3 +93,34 @@ Ajuste exclusivo no commit `1935a641ae5aca3afe49aa5676e114d750d6ad91`:
 **STOP e revalidação futura:** na mesma branch, obter HEAD atualizado, executar parser Windows em bloco fail-closed; uma **única execução** do runner corrigido usando QVW TEMP fonte original e mesmos oráculos. Se novo erro de valor `Num()`, COM, captura ou geometria, STOP e registrar; não afrouxar asserções automaticamente nem repetir outros gates. **Se** produzir cinco PNGs, solicitar inspeção visual independente de todos os avisos e do valor formatado antes de qualquer aceite de layout.
 
 **Estado:** `C2V_VISUAL_REFLOW=MASK_FIX_VERSIONED_PENDING_WINDOWS_RETEST`; `C2V_VISUAL_ACCEPTANCE=NOT_APPROVED`; `C2_FULL=NOT_APPROVED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `P5_D2_UI=NOT_TESTED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `T26_GENERAL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR #118 permanece Draft, `main` inalterada, nenhuma recarga ou merge.
+
+## 7. Terceira execução C2-V — PASS técnico candidato, cinco PNGs aguardam auditoria visual (19/10/2026)
+
+**Origem da evidência:** stdout PowerShell e QlikView 12 fornecido pelo responsável. A execução fez `git pull --ff-only`, HEAD completo conferido, `PARSER=PASS` e uma chamada `-RunQlik` no **commit realmente testado** `02215f687160a6c9cf90a238a4d62023e0e36330`. SHA-256 **do executor testado** `C81CD88F36A536550337D5865A2EED44430FE04AD0192AFD4E42DAA03D65F547`. O documento agora atualizado num commit posterior **não é o commit executado** e não altera o runner.
+
+**Diretório da evidência local (não aberto nesta sessão):** `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_C2V_83cc8d984d9e438eb76a71d1ff8f6d0f`. QVW de origem T24 SHA-256 `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E`. Modo declarado pelo runner `TEMP_COPY_NO_RELOAD_CANONICAL_WRITE QVD_WRITES=0`; somente `SAD_C2V_T26_DISPOSABLE.qvw` salvo no diretório TEMP (`TEMP_QVW_SAVED_ONLY_DISPOSABLE=True`).
+
+**Oráculos F1/F2 já congelados e checados por SHA no runner:**
+- `F1_servico_ano.csv` = `EDE0F700887262B47A510D931A459C6B712AC6B8464C777C387029FDABC12A00`.
+- `F2_lt_municipio_ano_cobertura_candidata.csv` = `97EB032F3A7E444B436349608A2B73F61D597E83DBB7576E47BB5ABBCC82512D`.
+
+**Provas numéricas locais reportadas, limitadas ao mesmo recorte anterior:** `ORACLES_F1_F2_JP_2018=PASS_RD_73105_LT_SNAPSHOT_SUM_28106_HOSPITAL_NOT_VERIFIED`. `T26_BASELINE_F1=73105 QLIK=73105 LT_F2_SUM12=28106 QLIK=28106 RATE=PASS_CANDIDATE`. Essa soma dos 12 snapshots LT serve apenas para média anual, **não é estoque anual**; internações por leito SUS médio **não equivalem a taxa de ocupação**. Máscara corrigida `'0,00'` confirmou no QlikView local `C2V_DISPLAY_FORMAT_QV=PASS_DISPLAY_31,21`. O PASS do número/mascara **não garante que esse texto apareça completo na célula visual**.
+
+**Propriedades COM:** três listboxes, seis objetos de texto e um gráfico retornaram `FRAME_SET_READBACK=PASS_COM_ONLY`. Gráfico `Document\CH01 TARGET_PIXELS=235,116,950,320 QLIK_RECT=588,290,2375,800`; rótulo `CHART_EXPRESSION_LABEL_READBACK=PASS_COM_ONLY`. Os resultados comprovam leitura de volta de propriedades, mas **não são evidência de posicionamento e visibilidade real dos objetos em pixels**.
+
+| Cenário | Estado de condição no QlikView COM | SHA-256 PNG reportado pelo executor, não recalculado neste documento |
+| --- | --- | --- |
+| `S0_ALLOWED.png` | `EVAL=1 EXPECTED=1` | `2B1FC055F25D589EE1BEE1ACDB2DD2BAB180FC722E5ED227A381FE4A2566AFC2` |
+| `S1_BLOCK_PROCEDURE.png` | `EVAL=0 EXPECTED=0` | `4A36DE0A78A6D4E4A8599CB81EF360136128D0615965BA12F06D1CE8CB9814B1` |
+| `S2_BLOCK_PROCEDURE_PLUS_RESIDENCE.png` | `EVAL=0 EXPECTED=0` | `414E2BDF4B251259292E0D5022E91A49C651D899DC5E8ADDD7E52E0BB44C23CC` |
+| `S3_BLOCK_BED_TYPE.png` | `EVAL=0 EXPECTED=0` | `7D33164123F6671C1ADA9974A5DB1B80E589986DB51AEC1EA9170E14A47F0DC5` |
+| `S4_PARTIAL_NOT_ANNUAL.png` | `EVAL=0 EXPECTED=0` | `941AD81A1F2E71208DE0EFBC580F9DA43B625F03878D2AD72E706E37E20337EB` |
+| `S5_RESTORED` | `EVAL=1 EXPECTED=1` | Não há sexto PNG; restauração aferida via COM |
+
+**Resumo experimental:** `C2V_SCREENSHOTS_5_CAPTURED_GEOMETRY_COM_CHECKED_VISUAL_AUDIT_PENDING`; `VERDICT=PASS_LOCAL_C2V_GEOMETRY_LABEL_COM_5_SCREENSHOTS_VISUAL_PENDING`. O valor de condição e os hashes de tela são resultados reportados do executor; **não** houve inspeção independentemente das cinco imagens nesta etapa documental. `D2_PREDISPATCH=ALREADY_PASSED_IN_C2A_NOT_REPEATED C2V_SCOPE=PRESENTATION_ONLY`; **D2_UI_INTERCEPTION=NOT_TESTED** e P5 total não homologado.
+
+**Imutabilidade reportada após execução:** `ORIGINAL_22_QVD_SHA256_UNCHANGED=True`; `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`; `SOURCE_T24_QVW_SHA256_UNCHANGED=True`. Nenhum QVD/QVW original foi acessado diretamente por esta revisão no Git, nem houve aprovação de produção.
+
+**STOP técnico atingido; próximo passo exclusivamente de evidência:** não repetir execução QlikView. Receber somente `S0_ALLOWED.png`, `S1_BLOCK_PROCEDURE.png`, `S2_BLOCK_PROCEDURE_PLUS_RESIDENCE.png`, `S3_BLOCK_BED_TYPE.png`, `S4_PARTIAL_NOT_ANNUAL.png` do diretório TEMP em ZIP; conferir **os cinco hashes** e inspecionar efetivamente todos os painéis: cabeçalho/caveat íntegros, ratio 31,21 legível sem `#####`, mensagens B de procedimento, residência e leito completas, indisponibilidade anual sob mês parcial e ausências de recorte/sobreposição. Se visual ainda inadequado, `C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION` sem alterar PASS técnico. Não versionar binários no repositório.
+
+**Fronteiras mantidas:** `C2V_COM_GEOMETRY_LABEL_FORMAT_AND_CAPTURE=PASS_LOCAL_CANDIDATE_ONLY`, `C2V_VISUAL_AUDIT=PENDING_PNG_INSPECTION`, `C2_FULL=NOT_APPROVED`, `T26_GENERAL=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. PR #118 permanece Draft, sem merge.
