@@ -1,6 +1,6 @@
 # Fase VIII — C2-W: correção controlada de largura T26, com Size to Data manual (19/10/2026)
 
-**Status:** `C2W_VERSIONED_NOT_EXECUTED`; `C2W_SIZE_TO_DATA_GUI=PENDING`; `C2W_VISUAL_REVIEW=PENDING`; `PRODUCTION_APPROVED=False`. PR Draft em branch específica originada de `main@337943d5c5b77067f842902fc679dbb68db87020`.
+**Status atual:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_SIZE_TO_DATA_GUI=PENDING`; `C2W_VISUAL_REVIEW=PENDING` (ver seção 5); `PRODUCTION_APPROVED=False`. PR Draft em branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`; execução Windows reportada, não reexecutada independentemente.
 
 ## 1. Evidências e objetivo delimitado
 
@@ -45,3 +45,36 @@
 **GATE C2-W termina** após uma tentativa COM e, se PASS, uma edição GUI controlada e análise de dois PNGs. Não desenvolver novos executores ou expandir painel automaticamente. Não converter falha de layout em nova revisão de modelagem.
 
 `C2A_COM_AND_SCREENSHOTS=PASS_LOCAL_CANDIDATE_ONLY`; `C2V_COM_GEOMETRY_LABEL_FORMAT_AND_CAPTURE=PASS_LOCAL_CANDIDATE_ONLY`; `C2V_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION` (artefato anterior); `C2S_SIZE_TO_DATA_CAUSAL_EFFECT_ALLOWED_S0=CONFIRMED_GUI_EXPERIMENTAL`. Mantidos: `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `T26_GENERAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+## 5. Execução C2-W no Windows — PASS COM candidato; conclusão GUI/visual pendente
+
+**Origem:** stdout PowerShell/QlikView 12 **fornecido pelo responsável**, não execução independente do agente nem inspeção binária do QVW local. Após `git fetch origin` e `git switch --track`, o wrapper comparou o HEAD completo `2483b38f9e6a809dcd4ca849bf9e25470d4d3929` e confirmou `PARSER=PASS`; executou o script versionado uma vez.
+
+- **HEAD executado:** `2483b38f9e6a809dcd4ca849bf9e25470d4d3929`.
+- **SHA-256 do script executado (reportado):** `1691D75184E98C9FBE6C77FCFFE8772088FA70814C496D999F25A3254E5FC001`.
+- **SHA-256 da origem TEMP C2-V, registrado no preflight:** `12F2FB851E5309C4874BC881EE22FBA2917D9B81BCB6A5FF8FEC1424BC3A5E7A`. O executor comprovou **o mesmo hash ao final**, mas não existia baseline publicada antes do preflight para esse QVW; não inferir retroativamente que uma edição GUI anterior foi ou não gravada.
+- **SHA-256 da fonte T24:** `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E`; preservado no final.
+- **Diretório da evidência:** `C:\\Users\\pedro\\AppData\\Local\\Temp\\SAD_VIII_C2W_04f58b85152b4794b0bf4809b4e10f3c`, não acessado diretamente nesta sessão.
+- **Único QVW novo salvo:** `C:\\Users\\pedro\\AppData\\Local\\Temp\\SAD_VIII_C2W_04f58b85152b4794b0bf4809b4e10f3c\\SAD_C2W_T26_LAYOUT_TEST.qvw`; `COPY_SAVED_WITH_COLUMNS_AND_FRAMES=True`.
+
+**Propriedades COM com readback local reportado:**
+- `C2W_CHART_COLUMN_WIDTHS_COM=PASS_DIM_155_EXPR_285`, no CH01 (`Dimensions.Item(0).ColWidth=155`, `Expressions.Item(0).Item(0).Data.ExpressionVisual.ColWidth=285`).
+- `FRAME_READBACK_PASS` para exatamente **10 objetos**: `CH01` (`300,116,865,320`), `LB01` (`16,120,250,143`), `LB02` (`16,280,250,143`), `LB03` (`16,440,250,143`) e `TX01` a `TX06` (largura 865).
+- `C2W_S0_SMOKE=PASS_DISPLAY_31,21_CONDITION_1` com `PERIODO_ANO=2018`, município de serviço `250750` e sem incompatibilidades selecionadas no smoke do runner.
+- `MODE=TEMP_DISPOSABLE_NO_RELOAD_NO_QVD_WRITES`. A cópia foi salva; **o executor não alterou `Size to Data`**, pois a propriedade COM não foi inventada.
+
+**Integridade reportada depois do Save/Close da cópia:** `ORIGINAL_22_QVD_SHA256_UNCHANGED=True`, `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`, `C2V_EVIDENCE_QVW_SHA256_UNCHANGED=True` e `T24_SOURCE_QVW_SHA256_UNCHANGED=True`. O runner **não fez um segundo readback independente reabrindo o novo QVW**; o resultado COM e a cópia são candidatos até inspeção da GUI.
+
+**Veredito literal do runner:** `VERDICT=PASS_LOCAL_C2W_COM_COLUMNS_AND_FRAMES_GUI_SIZE_TO_DATA_STILL_PENDING`. Não afirmar `PASS_VISUAL`, nem que a checkbox esteja desmarcada na nova cópia, nem que as larguras das colunas sejam visualmente suficientes.
+
+### Ação única seguinte — GUI SOMENTE NA CÓPIA C2-W
+
+1. Abrir exclusivamente `SAD_C2W_T26_LAYOUT_TEST.qvw` a partir do caminho `COPY_FOR_GUI` acima; conferir no título da janela que **não é** `SAD_C2V_T26_DISPOSABLE.qvw`. Se a origem C2-V estiver aberta, fechá-la sem salvar.
+2. CH01 → botão direito → Propriedades → **Layout** → desmarcar **Ajustar o tamanho aos dados**; aplicar e **salvar somente o QVW C2-W**. Se já estiver desmarcado, relatar esse estado; não declarar desativação por COM.
+3. Limpar todas as seleções; selecionar somente `PERIODO_ANO=2018` e `SERV_COD_DATASUS_6=250750`; tirar o **primeiro PNG, S0**, mostrando o frame largo e `31,21`, cabeçalhos completos, nenhuma mensagem de bloqueio.
+4. Selecionar **um único valor de `COD_PROCEDIMENTO`**, mantendo o ano e município de serviço; tirar o **segundo PNG, S1**, com condição indisponível e **aviso P5 de procedimento completo**. Não gerar novamente S2/S3/S4, não reexecutar o PowerShell.
+5. Encaminhar os **dois PNGs** para auditoria independente. Preferir encerrar a interface sem salvar seleções experimentais adicionais. Se houve erro de QlikView, screenshot vazio, valor incorreto, truncamento ou `Size to Data` permanecendo ativo, anotar e **STOP**.
+
+**Condição de parada:** após duas capturas e auditoria, `C2W_VISUAL_ACCEPTANCE` será `PASS_RESTRICTED` apenas se todas as evidências estiverem legíveis, ou `BLOCKED/INCONCLUSIVE` caso contrário. A configuração não é adotada automaticamente no dashboard final.
+
+**Estados mantidos:** `C2W_COLUMNS_AND_FRAMES_COM=PASS_LOCAL_CANDIDATE_ONLY`; `C2W_SIZE_TO_DATA_GUI=PENDING`; `C2W_VISUAL_REVIEW=PENDING`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `P5_D2_UI=NOT_TESTED`; `T26_GENERAL=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR #120 Draft, sem merge, main inalterada.
