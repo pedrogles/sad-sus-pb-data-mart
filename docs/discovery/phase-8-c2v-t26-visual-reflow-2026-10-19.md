@@ -1,6 +1,6 @@
 # Fase VIII — C2-V: correção visual restrita do gráfico T26 após BLOCKED_PRESENTATION (19/10/2026)
 
-**Estado:** `C2V_VISUAL_REFLOW=VERSIONED_NOT_EXECUTED`; **nenhuma execução Windows deste novo script**. Branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`. **PR Draft, sem merge ou alteração de dados e dashboards canônicos**.
+**Estado:** `C2V_VISUAL_REFLOW=BLOCKED_COM_EXPRESSION_VISUAL_ACCESS_FIRST_RUN; FIX_VERSIONED_PENDING_WINDOWS_RETEST`. A execução original ficou bloqueada e a correção de COM ainda **não** foi validada no Windows. Branch originada de `main@337943d5c5b77067f842902fc679dbb68db87020`. **PR Draft, sem merge ou alteração de dados e dashboards canônicos**.
 
 ## 1. Problema comprovado e objetivo limitado
 
@@ -50,3 +50,28 @@ Este não é o `PAINEL.qvw` final nem um novo indicador. `T26` = admissões eleg
 **Condição de parada:** uma tentativa Windows após parser PASS, seguida de inspeção visual independente dos cinco PNGs se o executor concluir. **Se não houver evidência, manter `C2V=NOT_EXECUTED` ou `BLOCKED`, jamais `PASS_VISUAL`**. Em caso de êxito visual restrito, fechar somente C2-V e propor continuação C2/P5 em tarefa própria. Não expandir para todos os filtros C/R/I/B, outras cidades, D2 UI, fase IX ou produção.
 
 `C2A_COM_AND_SCREENSHOTS=PASS_LOCAL_CANDIDATE_ONLY` permanece histórico; `C2A_VISUAL_ACCEPTANCE=BLOCKED_PRESENTATION` não é reclassificado retroativamente. `C2_FULL=NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `T26_GENERAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+## 5. Primeira execução C2-V no Windows — bloqueada no acesso ao rótulo
+
+**Proveniência:** stdout da primeira execução PowerShell/QlikView 12 **reportado pelo responsável** (sem auditoria de binário QVW). Branch `test/phase-viii-c2v-t26-visual-reflow-20261019`; **HEAD executado** `1da6554f028e8856835bc516016d1e2aa315be90`; SHA-256 do runner `FF256EF1C93846EE4159960BEB4B92B920649F06F84A863BD408C85A717B1436`; fonte T24 QVW `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E`; `PARSER=PASS` real emitido pelo wrapper após HEAD conferido.
+
+**Diretório local da tentativa, não acessado nesta revisão:** `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_C2V_e4ce8f012fe5427c84eafb2ef8158ab9`.
+
+**Preflight preservado:** oráculos hashados `F1_servico_ano.csv` `EDE0F700887262B47A510D931A459C6B712AC6B8464C777C387029FDABC12A00` e `F2_lt_municipio_ano_cobertura_candidata.csv` `97EB032F3A7E444B436349608A2B73F61D597E83DBB7576E47BB5ABBCC82512D` corresponderam às referências congeladas. `ORACLES_F1_F2_JP_2018=PASS_RD_73105_LT_SNAPSHOT_SUM_28106_HOSPITAL_NOT_VERIFIED`. **Não houve nova reconciliação gráfica do T26 nesta tentativa**, pois o script foi interrompido durante a criação das propriedades de chart.
+
+**Resultado positivo estritamente COM de geometria:** 9 objetos receberam `FRAME_SET_READBACK=PASS_COM_ONLY`, 3 listboxes e 6 textos. Exemplo de leitura de volta: `Document\LB01 TARGET_PIXELS=16,120,192,143 QLIK_RECT=40,300,480,358`; `Document\TX01 TARGET_PIXELS=235,10,950,42 QLIK_RECT=588,25,2375,105`; `Document\TX06 TARGET_PIXELS=235,465,950,42 QLIK_RECT=588,1162,2375,105`. A existência desses valores **não comprova** largura/posição **visual** na janela. Todos os 6 textos informaram `PROPERTY_READBACK=PASS_COM_ONLY`.
+
+**Falha principal inequívoca:** `VERDICT=BLOCKED_OR_INCONCLUSIVE BLOCKED_EXPRESSION_VISUAL_COM_Falha na invocação do método porque [System.__ComObject] não contém um método denominado 'ExpressionVisuals'.`. Linha 267 da versão executada: `$p.ExpressionVisuals(0)`. O stdout terminou também com prefixo legado `C2A_EXECUTION_BLOCKED_...` dentro do runner e `C2V_EXECUTION=BLOCKED` no wrapper. **Este foi um bloqueio de acesso ao rótulo de gráfico, não evidência de incompatibilidade da fórmula T26.** O erro impediu `TEMP_QVW_SAVED_ONLY_DISPOSABLE=True`, as capturas S0–S4 e qualquer aprovação visual do reflow.
+
+**Integridade física reportada após falha:** `ORIGINAL_22_QVD_SHA256_UNCHANGED=True`, `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`, `SOURCE_T24_QVW_SHA256_UNCHANGED=True`. `MODE=TEMP_COPY_NO_RELOAD_CANONICAL_WRITE QVD_WRITES=0` e nenhuma evidência de escrita nas fontes canônicas; cópia TEMP pode ter sido criada/aberta.
+
+**Diagnóstico e correção mínima versionada:** no COM QlikView 12, a invocação direta `ExpressionVisuals(0)` no objeto retornado por `GetProperties()` não é suportada na instalação testada. Exemplo específico publicado na [Qlik Community](https://community.qlik.com/t5/QlikView/Expression-label-change-in-Module/m-p/361023/highlight/true), incluindo observação sobre QlikView 12, acessa `Expressions.Item(0).Item(0).Data.ExpressionVisual`, atribui `Label.v` e usa `SetProperties`. **É uma hipótese técnica com fonte externa, não um PASS no Windows do responsável.**
+
+Ajuste exclusivo no commit `1935a641ae5aca3afe49aa5676e114d750d6ad91`:
+- Substituído `$p.ExpressionVisuals(0)` por `$p.Expressions.Item(0).Item(0).Data.ExpressionVisual` para a atribuição do label;
+- a **mesma rota** é usada para leitura de volta após `SetProperties`, com mensagens de falha identificáveis e checagem de `Label`;
+- corrigido prefixo residual `C2A_EXECUTION_BLOCKED_` para `C2V_EXECUTION_BLOCKED_`, sem mudar seleção, medidas, formato, geometria ou proteção SHA.
+
+**Próximo passo delimitado:** `git pull --ff-only` na mesma branch, conferir o novo HEAD documental, executar `Parser.ParseFile()` no próprio Windows e, somente se `PARSER=PASS`, uma única tentativa do runner com QVW T24 TEMP original e oráculos F1/F2 existentes. Qualquer erro `Expressions.Item`, `LabelAdjust`, `Num()`, screenshot, geometria ou hash => **STOP e preservar log**, sem propor testes ilimitados. Se cinco PNGs forem realmente gerados, enviar só as imagens para **inspeção visual independente**. Não repetir C2-A/D2/T24–T26.
+
+**Estado desta revisão:** `C2V_VISUAL_REFLOW=FIX_VERSIONED_PENDING_WINDOWS_RETEST`, `C2V_VISUAL_ACCEPTANCE=NOT_APPROVED`, `C2_FULL=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_D2_UI=NOT_TESTED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. PR #118 Draft, sem merge.
