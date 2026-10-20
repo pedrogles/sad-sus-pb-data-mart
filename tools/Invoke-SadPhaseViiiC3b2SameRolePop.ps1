@@ -109,6 +109,9 @@ try{
     throw 'BLOCKED: LINK_ANALISE baseline hash drift'
   }
   $oracleF1=Oracle $F1F2Dir 'F1_fluxo_ano.csv' 'manifest_F1_F2.json'
+  if((Get-FileHash -LiteralPath $oracleF1 -Algorithm SHA256).Hash -cne '203DF1D1CE5B4325F0F9E8F590850D3EEF18D62EBDECF34400959A6267349F3B'){
+    throw 'BLOCKED: frozen F1 annual oracle SHA differs from C3-B1 evidence'
+  }
   $oracleF3=Oracle $F3Dir 'F3_pop_municipio_ano.csv' 'manifest_F3.json'
   $rows=@(Import-Csv -LiteralPath $oracleF1 -Delimiter ';' -Encoding UTF8)
   $popRows=@(Import-Csv -LiteralPath $oracleF3 -Delimiter ';' -Encoding UTF8)
