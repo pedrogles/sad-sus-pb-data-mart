@@ -6,10 +6,10 @@
 
 | Fonte | Situação | Limite |
 | --- | --- | --- |
-| `main@337943d5c5b77067f842902fc679dbb68db87020` | Integrações até PR #106; Fase VII candidata, Fase VIII ainda sem contrato físico geral aprovado | Este é o estado integrado; preservar snapshot e evidências acima |
+| `main@337943d5c5b77067f842902fc679dbb68db87020` (baseline pré-G0) | Integrações até PR #106; Fase VII candidata, Fase VIII ainda sem contrato físico geral aprovado | Referência histórica anterior ao PR #126; não representa automaticamente o HEAD vigente após merge |
 | [PR #90](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/90) e [PRs #108–#114](https://github.com/pedrogles/sad-sus-pb-data-mart/pulls) | Drafts de CNES/LT, Discovery/readiness e pilotos T24–T26 | Provas locais restritas e documentação em branches, sem promoção à `main` |
 | [PRs #115–#124](https://github.com/pedrogles/sad-sus-pb-data-mart/pulls) e [PR #125](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/125) | Drafts de fechamento C1, testes C2/D2, UIA/Win32 e C3-B1 | O NO-GO de identificação UIA/Win32 não autoriza cliques; C3-B1 não tinha PASS físico ao fim da auditoria |
-| Governança G0 | Política de agentes proposta em branch de revisão, **não integrada na `main`** | Não altera gates, contratos, QVS, QVD/QVW nem autoriza G1 |
+| Governança G0 — [PR #126](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/126) | Política v0.2 proposta em `docs/project/agent-model-routing.md`; consultar o estado real do PR para saber se está em Draft ou integrada à `main` | Não altera gates, contratos, QVS, QVD/QVW nem autoriza G1 |
 
 **Atualização apenas documental:** a situação dos Drafts deve ser reconsultada por número/HEAD antes do próximo gate. Não somar os resultados experimentais à homologação da `main`. Permanecem `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `P5_D2_UI=NOT_TESTED_FULLY`, `PRODUCTION_APPROVED=False` e Fase IX não autorizada.
 
