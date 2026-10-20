@@ -2,8 +2,8 @@
 
 **Data:** 20/10/2026  
 **Base documental:** `main@e4fdba706a2e22420e9c52d3ea62280461291734`  
-**Estado do gate:** `PRESENTATION_SCOPE_DOCUMENTED_RESTRICTED_BRANCH_ONLY`  
-**Integração:** `BRANCH_ONLY_NOT_MERGED`; sem PR aberto por este gate  
+**Resultado da preparação documental (20/10/2026):** `PRESENTATION_SCOPE_DOCUMENTED_RESTRICTED`  
+**Proveniência da publicação:** originalmente registrado somente em branch; revisão e eventual integração rastreadas no [PR #133](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/133). O estado vigente do merge deve ser consultado no GitHub, não inferido deste cabeçalho.  
 **Natureza:** decisão **restrita de nomenclatura e escopo de apresentação experimental/acadêmica**, não homologação física, hospitalar, visual ou de produção.
 
 ## 1. Objetivo, autorização e fronteira
@@ -79,7 +79,7 @@ O percentual **97,2% refere-se a combinações distintas tipo×leito×competênc
 
 ## 6. Condições de aceite e STOP
 
-**PASS documental restrito** quando: (1) terminologias T25/T26 e universo observado ficam explícitos; (2) fórmulas, papéis territoriais, temporalidade e ausência/zero seguem V2; (3) C1 `GO_RESTRICTED` e `NO_GO_HOSPITAL` não são promovidos; (4) avisos de cobertura e T29 são preservados; (5) evidências são qualificadas como locais reportadas; (6) a alteração no Git é exclusivamente este Markdown em branch isolada. **STOP** após commit e conferência do diff. Não executar gates físicos, criar PR/merge, alterar código, atualizar estado de produção ou iniciar Fase IX nesta execução.
+**PASS documental restrito da etapa original de preparação** quando: (1) terminologias T25/T26 e universo observado ficam explícitos; (2) fórmulas, papéis territoriais, temporalidade e ausência/zero seguem V2; (3) C1 `GO_RESTRICTED` e `NO_GO_HOSPITAL` não são promovidos; (4) avisos de cobertura e T29 são preservados; (5) evidências são qualificadas como locais reportadas; (6) a alteração no Git é exclusivamente este Markdown em branch isolada. **STOP da preparação original** após commit e conferência do diff. Naquela etapa, não executar gates físicos, criar PR/merge, alterar código, atualizar estado de produção ou iniciar Fase IX. A abertura posterior do PR #133 e sua eventual integração são ações separadas, rastreáveis no GitHub.
 
 **Pendências preservadas:**
 
@@ -90,13 +90,13 @@ O percentual **97,2% refere-se a combinações distintas tipo×leito×competênc
 - `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `P5_D2_UI=NOT_TESTED`.
 - `PRODUCTION_APPROVED=False`; `PHASE_IX=NOT_AUTHORIZED`.
 
-**Handoff posterior, não autorizado por este gate:** revisão e eventual integração **documental** específica; depois gates separados para associações/medidas/filtros e aceite visual, seguindo a ordem aprovada no Boundary 7, antes de qualquer dashboard definitivo.
+**Handoff definido ao encerrar a preparação original:** revisão e eventual integração **documental** específica; depois gates separados para associações/medidas/filtros e aceite visual, seguindo a ordem aprovada no Boundary 7, antes de qualquer dashboard definitivo.
 
 ## 7. Roteamento e evidências desta execução
 
 - **Agente/ambiente:** ChatGPT GPT-6 + conector GitHub; nível de esforço não verificável nesta integração. Sem acesso assumido ao Windows, QlikView COM ou GUI.
-- **Permissões:** leitura do repositório e escrita **apenas deste Markdown em branch dedicada**. Sem PR, merge, execução física, alterações de dados ou limpeza.
+- **Permissões da preparação original:** leitura do repositório e escrita **apenas deste Markdown em branch dedicada**. Sem PR ou merge naquela etapa; sem execução física, alterações de dados ou limpeza.
 - **Evidência versionada:** link do arquivo e commit no GitHub. `RUNTIME_TEMP` e `EVIDENCE_ROOT`: não aplicáveis.
 - **PASS:** commit contém só o documento; `main` não modificada; decisão limitada.
 - **BLOCKED/INCONCLUSIVE:** documento/branch conflitante, base divergente ou ausência de fonte obrigatória — parar sem contornar.
-- **STOP:** confirmar commit, diff e integridade de escopo; aguardar nova autorização.
+- **STOP da preparação original:** confirmar commit, diff e integridade de escopo; aguardar nova autorização.
