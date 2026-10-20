@@ -33,7 +33,7 @@ Não tratar PR Draft como `main` e não converter PASS local em aprovação de p
 
 **BLOCKED/INCONCLUSIVE:** falta de acesso local, múltiplas fontes sem identificação inequívoca, fonte antiga ausente, SHA divergente, parser inválido, erro de COM, seleção alterada, contagem divergente, hashes não preservados ou evidências insuficientes. **STOP imediato, sem corrigir à força e sem segunda tentativa automática.** Reportar primeiro a causa e os logs.
 
-## C3-B1-CKO-PERSIST — falha de persistência do sandbox (22:27–22:30, 19/10)
+## C3-B1-CKO-PERSIST — falha de persistência do sandbox (19/10/2026)
 
 **Resultado relatado pelo Work (não auditado neste ambiente):** CKO parou antes de checkout; inventário de 10 QVWs e 22 QVDs teria sido calculado e gravado, mas o diretório de evidência criado no `%TEMP%` contextual do sandbox desapareceu entre chamadas, inclusive quando consultado fora dele. Logo: `CKO_INVENTORY_PRESERVED=NOT_VERIFIED`; `CKO_SWITCH=NOT_RUN`; `C3B1_PHYSICAL=NOT_RUN`. O estado do Git e os QVWs continuam preservados segundo o relato. **Não repetir o inventário até confirmar persistência.**
 
@@ -52,7 +52,7 @@ $root=Join-Path $hostTemp ('SAD_C3B1_CKO_'+[guid]::NewGuid().ToString('N'))
 New-Item -Path $root -ItemType Directory -ErrorAction Stop | Out-Null
 $token=[guid]::NewGuid().ToString('N')
 $probe=Join-Path $root 'persistence_probe.txt'
-[IO.File]::WriteAllText($probe,$token,(New-Object System.Text.UTF8Encoding($false)))
+[IO.File]::WriteAllText($probe,$token,([System.Text.UTF8Encoding]::new($false)))
 $sha=(Get-FileHash -LiteralPath $probe -Algorithm SHA256).Hash
 if(-not (Test-Path -LiteralPath $probe -PathType Leaf)){throw 'BLOCKED: probe did not persist even in same process'}
 Write-Output "CKO_HOST_LOCALAPPDATA=$localAppData"
@@ -79,7 +79,7 @@ Write-Output "CKO_PROBE_SHA256=$observed"
 Write-Output 'CKO_PERSISTENCE=PASS_INDEPENDENT_PROCESS_ONLY'
 ```
 
-**Se qualquer chamada não puder executar de fato no Windows local, se o token desaparecer ou se o SHA divergir: STOP `BLOCKED_EVIDENCE_PERSISTENCE`. Não fazer novo retry automático, não trocar branch, não repetir QVD/QVW inventário e não produzir PASS CKO. Informar ao responsável que será necessário executar no terminal Windows real, com acesso direto à mesma pasta.
+**Se qualquer chamada falhar**, se não executar de fato no Windows local, se o token desaparecer ou se o SHA divergir: **STOP `BLOCKED_EVIDENCE_PERSISTENCE`**. Não fazer novo retry automático, não trocar branch, não repetir QVD/QVW inventário e não produzir PASS CKO. Informar ao responsável que será necessário executar no terminal Windows real, com acesso direto à mesma pasta.
 
 **Somente após `CKO_PERSISTENCE=PASS_INDEPENDENT_PROCESS_ONLY`:** usar **o mesmo** `CKO_EVIDENCE_DIR` persistente para salvar `qvw_before.csv`, `qvd_before.csv`, estado de Git e inventário de paths; conferir que os arquivos estão acessíveis em uma segunda leitura independente **antes** de prosseguir ao controle de colisões. Se não conseguir reabrir qualquer inventário: STOP. Verificar colisões no **tree completo da branch destino**, não só diff do PR. A troca `git switch --track` sem força permanece condicionada ao CKO original, e os arquivos terão novo inventário/hashes pós-switch. **O sucesso do probe não prova automaticamente persistência dos arquivos que o runner C3-B1 gravará mais tarde via `[IO.Path]::GetTempPath()`; antes do gate COM, verificar o destino efetivo `EVIDENCE_DIR` do runner.**
 
