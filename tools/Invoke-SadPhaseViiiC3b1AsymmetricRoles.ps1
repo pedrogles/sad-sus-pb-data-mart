@@ -1,5 +1,5 @@
-# VIII-B: T26 candidate. Annual eligible service RD admissions / mean LT SUS observed 12 snapshots.
-# Input: previously PASSed TEMP T24 QVW. Only a new TEMP copy is opened.
+# C3-B1: one SIH/RD year x residence x service flow, independently reconciled against F1.
+# Input: SHA-pinned TEMP T24 QVW; open only a disposable copy, never reload or save originals.
 [CmdletBinding()]
 param(
   [Parameter(Mandatory=$true)][string]$Root,
