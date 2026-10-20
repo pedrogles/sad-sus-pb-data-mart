@@ -33,7 +33,7 @@ O script exige:
 - QVW TEMP anual original comprovado pelo SHA-256 `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E`; ausência/drift = BLOCKED, sem reconstruir T24;
 - 10 QVDs de extração + 12 de transformação preservados por SHA, com `LINK_ANALISE.qvd` no SHA-256 congelado `78FFA33DE82F5CB00DE1E0D380D96F29245B22801A91376CD61626E7AC8732DB`;
 - QVWs canônicos existentes inventariados antes/depois; nenhum `Reload`, `STORE`, `Save`, escrita em QVD, QVW original ou binário do painel final;
-- arquivos de evidência **somente** em `%TEMP%\SAD_VIII_C3B1_<GUID>\`: `c3b1_oracle_pair.csv`, `c3b1_reconciliation.csv`, manifestos CSV SHA pré/pós e stdout.
+- arquivos de evidência **somente** em `%TEMP%\SAD_VIII_C3B1_<GUID>`: `c3b1_oracle_pair.csv`, `c3b1_reconciliation.csv`, manifestos CSV SHA pré/pós e stdout.
 
 A prova deve ficar associada ao HEAD exato do script, ao SHA do oráculo/manifesto e ao SHA do QVW TEMP. `PASS_REFERENCE_PRECHECK_ONLY_C3B1_QV_NOT_RUN` não equivale a PASS físico.
 
@@ -74,9 +74,9 @@ $t24Candidates | ForEach-Object { [pscustomobject]@{Path=$_; SHA256=(Get-FileHas
 $f1Candidates | Select-Object FullName,LastWriteTime
 ```
 
-**Exigir** uma fonte QVW existente com SHA \`7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E\` e um diretório F1/F2 real com manifest + F1. Múltiplos candidatos ou SHA divergente: **BLOCKED** para seleção controlada; não escolher por nome/data sem conferir proveniência. Definir \`$source\` e \`$f1\` com os caminhos **efetivamente observados**, nunca com caminho de exemplo.
+**Exigir** uma fonte QVW existente com SHA `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E` e um diretório F1/F2 real com manifest + F1. Múltiplos candidatos ou SHA divergente: **BLOCKED** para seleção controlada; não escolher por nome/data sem conferir proveniência. Definir `$source` e `$f1` com os caminhos **efetivamente observados**, nunca com caminho de exemplo.
 
-No modo **referência sem COM**, sem \`-RunQlik\`, obter o stdout completo e confirmar \`VERDICT=PASS_REFERENCE_PRECHECK_ONLY_C3B1_QV_NOT_RUN\`:
+No modo **referência sem COM**, sem `-RunQlik`, obter o stdout completo e confirmar `VERDICT=PASS_REFERENCE_PRECHECK_ONLY_C3B1_QV_NOT_RUN`:
 
 ```powershell
 $logRef=Join-Path $env:TEMP 'SAD_C3B1_REFERENCE_STDOUT.txt'
@@ -86,7 +86,7 @@ $logRef=Join-Path $env:TEMP 'SAD_C3B1_REFERENCE_STDOUT.txt'
 if($LASTEXITCODE -ne 0){throw 'BLOCKED: C3B1 reference preflight exit code'}
 ```
 
-Após revisar o stdout, os hashes e o par assimétrico real, executar **uma única sessão física explicitamente autorizada** com o mesmo commit e \`-RunQlik\`. Se o Work não tiver acesso real ao Windows/COM, parar em \`BLOCKED_NO_LOCAL_WINDOWS_ACCESS\`, sem alegar execução:
+Após revisar o stdout, os hashes e o par assimétrico real, executar **uma única sessão física explicitamente autorizada** com o mesmo commit e `-RunQlik`. Se o Work não tiver acesso real ao Windows/COM, parar em `BLOCKED_NO_LOCAL_WINDOWS_ACCESS`, sem alegar execução:
 
 ```powershell
 $logCom=Join-Path $env:TEMP 'SAD_C3B1_COM_STDOUT.txt'
