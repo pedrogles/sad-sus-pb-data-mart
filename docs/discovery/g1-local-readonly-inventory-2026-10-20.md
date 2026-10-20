@@ -72,3 +72,25 @@ powershell.exe -NoProfile -File $ps1 -Root $repo -EvidenceRoot $evidenceRoot -Ba
 O executor lê e faz hashes; **não houve parser/execução Windows neste PR**. A análise estática e revisão de diff não equivalem a prova de compatibilidade PowerShell 5.1. Antes de reutilizar um runner histórico para novo gate, verificar a origem do SHA e os parâmetros, sem repetir V–VIII automaticamente.
 
 **Handoff:** após obter provas locais, enviar apenas inventário/manifests/logs e resumo; decidir em etapa separada higiene B1 com nova confirmação dos PRs/SHA e aprovação explícita do lote.
+
+## Encerramento do ensaio Windows — evidências recebidas e revisadas em 20/10/2026
+
+**Gate encerrado neste recorte, sem novas execuções:** `G1_LOCAL_PARTIAL_INVENTORY=PASS_LOCAL_REPORTED_WITH_FILES_REVIEWED`; `G1_FULL=INCONCLUSIVE_G1_INCOMPLETE_REFERENCES`. Não houve homologação física integral, aceitação semântica, autorização de produção ou merge.
+
+**Proveniência e escopo de revisão:** operador executou no Windows PowerShell 5.1 o script commitado em `e8168f33798646e64efcba051c0d21bc85348cf0` (blob Git SHA `e1fe85daf8f807beea1adb49e3276b19955f3c69`), informou `SCRIPT_SHA256=ED349D8624428F18D06ECC95879ECDF24CC76757E40FD6FC18C9B520E23468B2` e `EVIDENCE_DIR=SAD_G1_6cfb81297d214af5857835ad47398be8` (subpasta persistente privada). A revisão independente conferiu os quatro arquivos CSV/TXT **enviados pelo operador**. Não acessou os binários QVD/QVW reais no Windows e não verificou hash de preservação pré/pós.
+
+| Evidência enviada | SHA-256 do arquivo recebido |
+| --- | --- |
+| `qvd_22_inventory.csv` | `C8C661CC962BD1A25DF7F7214DF3D1BF891096AEAEA9C60295152D03FD2E7C90` |
+| `qvw_canonical_inventory.csv` | `2CD17CA48C5C8DBD516BB6A48076DE6FDC370D4BE7916263B06D9891F87D2935` |
+| `git_status.txt` | `DC768FBF098D6974FB8BA81E97B9FC5818014D1A0766D61771DD9FD3465E78AB` |
+| `git_worktrees.txt` | `47369FE7CACF0D77885A0DC49695512C52396E3F4B3A167D2A266E2B0E555B16` |
+
+**Constatações nos arquivos:** 22 QVDs únicos (10 `EXTRACAO/QVD` e 12 `TRANSFORMACAO/QVD`), metadados de linhas/campos, tamanhos positivos e SHA-256 em todos; `FATO_INTERNACAO` 566.672 linhas/17 campos, `FATO_CAPACIDADE_LEITO` 35.518/11, `FATO_POPULACAO` 669/7 e `LINK_ANALISE` 85.705/6. Os três QVWs canônicos constam presentes com hash. `git_status.txt` registra dez QVWs **não rastreados** e nenhum arquivo rastreado alterado; preservar todos. `git_worktrees.txt` registra worktree principal em `docs/phase-viii-c2d3-rawview-win32-discovery-20261019@314205733af067013fe19017a9e15c971d114ebf` e outro worktree destacado `6742e94e6e48770d5619768e46581b4a67f346e2` em pasta temporária. **Não remover nem limpar** nenhum deles com base neste ensaio.
+
+**Stdout reportado:** `QVD_22=PASS_READ_ONLY_INVENTORY`, `CANONICAL_QVW_PRESENT=3_OF_3`, `QVD_WRITES=0 QVW_WRITES=0 GIT_WRITES=0 COM_INSTANTIATION=False` e `VERDICT=INCONCLUSIVE_G1_INCOMPLETE_REFERENCES`. Os marcadores de não escrita são declarações do runner, não evidência independente de preservação contra um hash anterior.
+
+**Pendências sem repetição automática:** `FROZEN_QVD_BASELINE=NOT_PROVIDED_INCONCLUSIVE`, `F1F2=NOT_PROVIDED`, `F3=NOT_PROVIDED`, `REFERENCE_T24_QVW=NOT_PROVIDED_INCONCLUSIVE`. Não reconstruir referências nem repetir o G1 como efeito desta documentação. Branch hygiene B1 e Fase VIII são gates **distintos**, dependem de permissão e preflight próprios; não fazem parte do PASS parcial.
+
+**STOP:** documentação G1 encerrada com provas disponíveis, PR continua Draft e nada foi integrado à `main`.
+
