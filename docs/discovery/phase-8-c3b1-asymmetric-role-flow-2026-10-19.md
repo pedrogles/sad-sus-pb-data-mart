@@ -59,21 +59,41 @@ if($parseErrors.Count -gt 0){
 'PARSER=PASS'
 ```
 
-**Somente com parser real PASS, branch correta, QVW TEMP e F1/F2 presentes**, iniciar o modo de referência sem COM, sem `-RunQlik`:
+**Somente com parser real PASS e branch correta**, localizar os insumos anteriores **sem assumir caminhos fixos nem recriá-los**:
 
 ```powershell
-$source=Join-Path $env:TEMP 'SAD_VIII_T24_75a70372567b46bc9bd9cb070e6c4bac\SAD_VIII_T24_ANNUAL_TEST.qvw'
-$f1=Join-Path $env:TEMP 'sad-f1-f2-20261014-191743'
-
-powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiC3b1AsymmetricRoles.ps1 `
-  -Root (Get-Location).Path -SourceQvw $source -F1F2Dir $f1
+$t24Candidates=@(Get-ChildItem -LiteralPath $env:TEMP -Directory -Filter 'SAD_VIII_T24_*' -ErrorAction Stop |
+  ForEach-Object { Join-Path $_.FullName 'SAD_VIII_T24_ANNUAL_TEST.qvw' } |
+  Where-Object { Test-Path -LiteralPath $_ -PathType Leaf })
+$f1Candidates=@(Get-ChildItem -LiteralPath $env:TEMP -Directory -Filter '*f1*f2*' -ErrorAction Stop |
+  Where-Object {
+    (Test-Path -LiteralPath (Join-Path $_.FullName 'manifest_F1_F2.json') -PathType Leaf) -and
+    (Test-Path -LiteralPath (Join-Path $_.FullName 'F1_fluxo_ano.csv') -PathType Leaf)
+  })
+$t24Candidates | ForEach-Object { [pscustomobject]@{Path=$_; SHA256=(Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash} }
+$f1Candidates | Select-Object FullName,LastWriteTime
 ```
 
-Após conferir `VERDICT=PASS_REFERENCE_PRECHECK_ONLY_C3B1_QV_NOT_RUN`, realizar **uma única execução QVW TEMP explicitamente autorizada** com os mesmos argumentos e `-RunQlik`, sem repetir o pré-check se ele estiver inválido:
+**Exigir** uma fonte QVW existente com SHA \`7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E\` e um diretório F1/F2 real com manifest + F1. Múltiplos candidatos ou SHA divergente: **BLOCKED** para seleção controlada; não escolher por nome/data sem conferir proveniência. Definir \`$source\` e \`$f1\` com os caminhos **efetivamente observados**, nunca com caminho de exemplo.
+
+No modo **referência sem COM**, sem \`-RunQlik\`, obter o stdout completo e confirmar \`VERDICT=PASS_REFERENCE_PRECHECK_ONLY_C3B1_QV_NOT_RUN\`:
 
 ```powershell
-powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiC3b1AsymmetricRoles.ps1 `
-  -Root (Get-Location).Path -SourceQvw $source -F1F2Dir $f1 -RunQlik
+$logRef=Join-Path $env:TEMP 'SAD_C3B1_REFERENCE_STDOUT.txt'
+& powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiC3b1AsymmetricRoles.ps1 `
+  -Root (Get-Location).Path -SourceQvw $source -F1F2Dir $f1 2>&1 |
+  Tee-Object -FilePath $logRef
+if($LASTEXITCODE -ne 0){throw 'BLOCKED: C3B1 reference preflight exit code'}
+```
+
+Após revisar o stdout, os hashes e o par assimétrico real, executar **uma única sessão física explicitamente autorizada** com o mesmo commit e \`-RunQlik\`. Se o Work não tiver acesso real ao Windows/COM, parar em \`BLOCKED_NO_LOCAL_WINDOWS_ACCESS\`, sem alegar execução:
+
+```powershell
+$logCom=Join-Path $env:TEMP 'SAD_C3B1_COM_STDOUT.txt'
+& powershell.exe -NoProfile -File .\tools\Invoke-SadPhaseViiiC3b1AsymmetricRoles.ps1 `
+  -Root (Get-Location).Path -SourceQvw $source -F1F2Dir $f1 -RunQlik 2>&1 |
+  Tee-Object -FilePath $logCom
+if($LASTEXITCODE -ne 0){throw 'BLOCKED: C3B1 physical COM exit code'}
 ```
 
 Se uma execução falhar, **STOP**. Preservar logs e os CSVs gerados; não ajustar fórmulas, remover verificações, reexecutar T24 nem disparar testes em cascata.
