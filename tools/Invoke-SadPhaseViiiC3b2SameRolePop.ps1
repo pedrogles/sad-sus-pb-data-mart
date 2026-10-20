@@ -140,7 +140,8 @@ try{
   if(@($candidates|Group-Object -Property municipio_residencia|Where-Object {$_.Count -ne 1}).Count -ne 0){
     throw 'BLOCKED: duplicate F1 municipality R=S rows'
   }
-  $chosen=@($candidates|Sort-Object -Property @{Expression={[long]$_.internacoes_elegiveis};Descending=$true},@{Expression={$_.municipio_residencia};Descending=$false})[0]
+  $ordered=@($candidates|Sort-Object -Property @{Expression={[long]$_.internacoes_elegiveis};Descending=$true},@{Expression={$_.municipio_residencia};Descending=$false})
+  $chosen=$ordered[0]
   [long]$expectedRecords=[long]::Parse([string]$chosen.registros_rd)
   [long]$expectedEligible=[long]::Parse([string]$chosen.internacoes_elegiveis)
   [long]$expectedIdent5=[long]::Parse([string]$chosen.continuidades_ident5)
