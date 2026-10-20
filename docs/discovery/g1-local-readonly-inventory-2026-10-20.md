@@ -18,6 +18,21 @@
 4. Passar `-Root`, `-EvidenceRoot` e, quando localizados, `-BaselineCsv`, `-F1F2Dir`, `-F3Dir` e `-ReferenceQvw` (não inventar caminhos). Invocar uma vez apenas; não tentar reconstruir insumos faltantes.
 5. Anexar o stdout, `qvd_22_inventory.csv`, `qvw_canonical_inventory.csv`, `git_status.txt` e `git_worktrees.txt` do novo `EVIDENCE_DIR` privado. Não publicar QVD, QVW, dados brutos ou caminhos sensíveis desnecessários.
 
+**Bootstrap da cópia verificada, sem checkout (executar após escolher um EVIDENCE_ROOT existente):**
+
+```powershell
+$evidenceRoot = '<diretorio-existente-e-persistente-fora-do-git-e-temp>'
+$ps1 = Join-Path $evidenceRoot 'Invoke-SadG1LocalReadOnlyInventory.ps1'
+$raw = 'https://raw.githubusercontent.com/pedrogles/sad-sus-pb-data-mart/2869f28a39e4698a3f1824b92c8005187861322a/tools/Invoke-SadG1LocalReadOnlyInventory.ps1'
+Invoke-WebRequest -Uri $raw -OutFile $ps1
+$actualBlob = [string](& git hash-object -- $ps1)
+if($actualBlob.Trim() -cne 'd65e3aa403db3c4b0a9bf91f0df85e79365a3e87'){
+    throw 'BLOCKED_SCRIPT_BLOB_SHA_MISMATCH'
+}
+```
+
+O comando acima **grava apenas a cópia** do script dentro do diretório de evidências escolhido. O blob Git é SHA-1 do objeto versionado, **não** o SHA-256 de execução; o executor registrará seu SHA-256 local separadamente. Não execute o script antes da confirmação de origem e do parser.
+
 **Comando lógico (substituir apenas caminhos existentes; nunca inventar):**
 
 ```powershell
