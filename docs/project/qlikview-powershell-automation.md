@@ -1,10 +1,14 @@
 # Automação de validação QlikView 12 com PowerShell — inventário e contrato operacional candidato
 
-**Situação em 15/10/2026:** documentação de Discovery, **sem novo executor** e **sem novos testes**. Escopo: automação de testes e obtenção de evidências; não altera o fluxo acadêmico QlikView `BASE → EXTRACAO → QVD → TRANSFORMACAO → QVD → PAINEL`. Preservar a ordem de implementação do [Boundary 7](../discovery/boundary-7-implementation-plan.md).
+**Inventário histórico de 15/10/2026:** documentação de Discovery, **sem novo executor** e **sem novos testes**. Escopo: automação de testes e obtenção de evidências; não altera o fluxo acadêmico QlikView `BASE → EXTRACAO → QVD → TRANSFORMACAO → QVD → PAINEL`. Preservar a ordem de implementação do [Boundary 7](../discovery/boundary-7-implementation-plan.md).
 
 **Origem:** código `main`, [PR #83 encerrado sem merge](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/83) e [HEAD histórico congelado](https://github.com/pedrogles/sad-sus-pb-data-mart/commit/26369052bd3f96de5f3eccf873c390053c20b561). Os executores que permanecem nessa branch **não são ferramentas adotadas em produção**. A aprovação semântica V2 está em [documento integrado](../discovery/phase-6-semantic-v2-approved-2026-10-14.md) e **não** libera indicadores ou filtros físicos.
 
-## 1. Resultado do inventário — o que existe
+## Atualização operacional — 20/10/2026
+
+O inventário abaixo é histórico. Fatos e Link Table possuem materialização local reportada e código integrado, e a Fase VII tem painel técnico candidato; isso não torna os entrypoints `transf_main.qvs` e `painel_main.qvs` completos nem aprova produção. Para status vigente, consultar [current-state](current-state.md). O runner G1 do PR #127 permanece Draft e não foi executado nesta estabilização. Não repetir os gates concluídos como remediação operacional. Preservação e restauração: [política de artefatos](artifact-recovery-policy.md).
+
+## 1. Resultado do inventário histórico
 
 O diff original do PR #83 contém **25 PowerShell (`.ps1`), 10 QVS (`.qvs`), 6 Python (`.py`), 3 Markdown e 1 arquivo de dependências**. A integração seletiva do [PR #84](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/84) trouxe **2 PowerShell, 2 QVS e 1 Python**, preservando evidências da Fase V; o sexto arquivo é documento de Discovery. **23 PowerShell e 8 QVS daquele diff permanecem apenas no commit histórico**, salvo eventual integração futura específica.
 
@@ -81,8 +85,8 @@ O comportamento `Show Conditional` e `Calculation Condition` foi testado **restr
 
 **DECISÃO PENDENTE — automação ponta a ponta sem intervenções manuais:** verificar em Windows real a robustez de inicialização COM, `Reload()`, sincronização de logs, objetos e capturas em QVW de teste, e definir quando uma captura requer auditoria visual. Não afirmar que já existe operação 100% autônoma.
 
-**HIPÓTESE OPERACIONAL — menor próximo passo:** escolher **um único gate aprovado da main**, por exemplo medidas Fase V, e padronizar a saída do executor como `VERDICT` + `SOURCE_SHA256_UNCHANGED` + `SCRIPT_SHA256` + localização de log + códigos de saída, **sem reescrever o executor ou a arquitetura de QlikView**. Somente se este padrão for insuficiente, propor orquestração simples PowerShell em PR separado com testes locais controlados.
+**HIPÓTESE HISTÓRICA, não roteamento vigente:** escolher **um único gate aprovado da main**, por exemplo medidas Fase V, e padronizar a saída do executor como `VERDICT` + `SOURCE_SHA256_UNCHANGED` + `SCRIPT_SHA256` + localização de log + códigos de saída, **sem reescrever o executor ou a arquitetura de QlikView**. Somente se este padrão for insuficiente, propor orquestração simples PowerShell em PR separado com testes locais controlados.
 
 **Gate futuro para objetos/gráficos:** após existir um PAINEL técnico e medidas autorizadas, testar **um objeto de cada vez** por três vias: propriedade COM, expressão reconciliada para seleção de referência, e screenshot/renderização auditada. A automação de captura ajuda a reduzir trabalho manual, mas não substitui aprovação visual até haver validador de imagem demonstrado.
 
-**Fronteiras ainda fechadas:** `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `T29_HISTORICAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, fatos/Link Table/PAINEL finais **NOT_STARTED**. Nenhum teste novo de QlikView/PowerShell foi executado para redigir este documento.
+**Fronteiras ainda fechadas:** `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `T29_HISTORICAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, contratos finais e produção **NOT_APPROVED**; materializações e painel técnico candidato conforme current-state. Nenhum teste novo de QlikView/PowerShell foi executado para redigir este documento.
