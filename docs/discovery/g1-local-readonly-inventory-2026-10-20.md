@@ -10,6 +10,14 @@
 - **Fontes:** 22 QVDs (10 EXTRAÇÃO + 12 TRANSFORMAÇÃO), três caminhos QVW canônicos (registrando ausência), CSV histórico `qvd_22_before.csv`, referência F1/F2 (8 CSVs e manifesto), F3 (5 CSVs e manifesto) e QVW T24 TEMP original de SHA congelado.
 - **Proveniência:** script `tools/Invoke-SadG1LocalReadOnlyInventory.ps1`, commit exato congelado antes da execução; cópia local deve corresponder ao **Git blob SHA** indicado no GitHub. Não aceitar versões avulsas como prova do gate.
 
+## Correção versionada após bloqueio local de preflight
+
+**Evidência reportada pelo operador (20/10/2026):** com PowerShell 5.1 e `$ErrorActionPreference='Stop'`, a execução foi interrompida na checagem `git -C <EVIDENCE_ROOT> rev-parse --show-toplevel 2>$null` porque o diretório de evidências está corretamente **fora** do Git. O stderr nativo gerou `NativeCommandError` terminante. O script parou **antes** de criar `SAD_G1_...`, sem inventário QVD, nenhuma recarga nem evidência persistente de execução.
+
+**Correção:** commit `e8168f33798646e64efcba051c0d21bc85348cf0` substitui a tentativa Git por verificação apenas de caminhos `.git` no diretório de evidências e seus ancestrais; passa a aceitar diretórios de evidências fora do Git, sem mascarar stderr. **Blob SHA exigido para o novo runner:** `e1fe85daf8f807beea1adb49e3276b19955f3c69`. O SHA e parser **da revisão anterior** não comprovam a revisão nova. A mudança não foi executada no Windows nesta sessão: `PATCH_VERSIONED_NOT_EXECUTED`.
+
+**Regra de rerun:** requer inspeção da cópia atualizada, `git hash-object` igual ao blob novo, parser real 5.1 com 0 erros e autorização específica de **uma** tentativa de inventário parcial. Não rodar a revisão antiga, não iniciar Codex, não abrir QlikView. Salvar stdout do novo ensaio no diretório de evidências sem versionar QVD/QVW.
+
 ## Modo de uso no Windows — somente após preflight de destino
 
 1. Identificar `Root` existente, `EvidenceRoot` **já existente** e escolhido pelo responsável, fora de `Root`, fora de `%TEMP%` e fora de qualquer outro Git. Não criar/reorganizar diretórios do projeto, não fazer checkout.
@@ -23,10 +31,10 @@
 ```powershell
 $evidenceRoot = '<diretorio-existente-e-persistente-fora-do-git-e-temp>'
 $ps1 = Join-Path $evidenceRoot 'Invoke-SadG1LocalReadOnlyInventory.ps1'
-$raw = 'https://raw.githubusercontent.com/pedrogles/sad-sus-pb-data-mart/2869f28a39e4698a3f1824b92c8005187861322a/tools/Invoke-SadG1LocalReadOnlyInventory.ps1'
+$raw = 'https://raw.githubusercontent.com/pedrogles/sad-sus-pb-data-mart/e8168f33798646e64efcba051c0d21bc85348cf0/tools/Invoke-SadG1LocalReadOnlyInventory.ps1'
 Invoke-WebRequest -Uri $raw -OutFile $ps1
 $actualBlob = [string](& git hash-object -- $ps1)
-if($actualBlob.Trim() -cne 'd65e3aa403db3c4b0a9bf91f0df85e79365a3e87'){
+if($actualBlob.Trim() -cne 'e1fe85daf8f807beea1adb49e3276b19955f3c69'){
     throw 'BLOCKED_SCRIPT_BLOB_SHA_MISMATCH'
 }
 ```
