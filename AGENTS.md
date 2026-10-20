@@ -48,6 +48,12 @@ Antes de executar, registrar **objetivo**, **fontes**, **escopo tocável**, **in
 - Preserve invariantes, evite regressões e mantenha distinção entre revisão estática, teste local Windows/QlikView, CI e validação independente. Não alegar execução que não ocorreu.
 - **Nenhum merge, exclusão de branch, force push, mudança estrutural ou geração de dado de produção sem autorização específica.** Higiene de branches: inventário + dry-run + confirmação HEAD/PR + rollback rastreável.
 
+## Roteamento de agentes, modelos e ambientes
+
+Usar a política canônica `docs/project/agent-model-routing.md` **quando integrada na `main`**. Em todo novo bootstrap, explicitar agente primário, modelo e esforço realmente disponíveis, ambiente, permissões, fallback, gatilho objetivo de escalonamento, escopo, evidência persistente, PASS/BLOCKED/INCONCLUSIVE, STOP e handoff. O template e a matriz ficam apenas no documento vinculado; não duplicá-los aqui.
+
+A escolha do agente/modelo não amplia permissões, não autoriza COM/QlikView/GUI, mudanças estruturais, merge ou execução física e não promove experimento Draft ou PASS local à aprovação de produção. Recursos indisponíveis devem ser registrados com fallback verificável. Permanecem obrigatórios os contratos científicos, a hierarquia de fontes e a ordem de gates aprovada.
+
 ## Dados, segurança e operações
 
 Não versionar QVDs, QVWs binários, datasets grandes, dados brutos, saídas locais e artefatos derivados automaticamente. Antes de publicar qualquer dado, conferir licença, tamanho, proveniência e finalidade. Para testes locais, usar QVW/QVD de origem somente leitura quando essa for a fronteira aprovada, verificando preservação por hash quando necessário.
