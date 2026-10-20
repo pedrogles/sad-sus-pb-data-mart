@@ -83,8 +83,16 @@ if(Inside $evidence $root){throw 'BLOCKED_EVIDENCE_INSIDE_DATA_REPOSITORY'}
 if(Inside $root $evidence){throw 'BLOCKED_DATA_REPOSITORY_INSIDE_EVIDENCE'}
 $temp=[IO.Path]::GetFullPath([IO.Path]::GetTempPath())
 if(Inside $evidence $temp){throw 'BLOCKED_EVIDENCE_IN_TEMP'}
-$gitEv=@(& git -C $evidence rev-parse --show-toplevel 2>$null)
-if($LASTEXITCODE -eq 0 -and $gitEv.Count -gt 0){throw 'BLOCKED_EVIDENCE_INSIDE_OTHER_GIT_REPOSITORY'}
+# A non-repository EvidenceRoot is the expected case.
+# Avoid invoking Git on that directory: PowerShell 5.1 with
+# ErrorActionPreference=Stop can turn harmless native stderr into a terminating error.
+$cursor=Get-Item -LiteralPath $evidence -ErrorAction Stop
+while($null -ne $cursor) {
+    if(Test-Path -LiteralPath (Join-Path $cursor.FullName '.git')) {
+        throw 'BLOCKED_EVIDENCE_INSIDE_OTHER_GIT_REPOSITORY'
+    }
+    $cursor=$cursor.Parent
+}
 $work=Join-Path $evidence ('SAD_G1_'+[Guid]::NewGuid().ToString('N'))
 $null=New-Item -ItemType Directory -Path $work -ErrorAction Stop
 Write-Output ('EVIDENCE_DIR='+$work)
