@@ -33,6 +33,60 @@ Não tratar PR Draft como `main` e não converter PASS local em aprovação de p
 
 **BLOCKED/INCONCLUSIVE:** falta de acesso local, múltiplas fontes sem identificação inequívoca, fonte antiga ausente, SHA divergente, parser inválido, erro de COM, seleção alterada, contagem divergente, hashes não preservados ou evidências insuficientes. **STOP imediato, sem corrigir à força e sem segunda tentativa automática.** Reportar primeiro a causa e os logs.
 
+## C3-B1-CKO-PERSIST — falha de persistência do sandbox (22:27–22:30, 19/10)
+
+**Resultado relatado pelo Work (não auditado neste ambiente):** CKO parou antes de checkout; inventário de 10 QVWs e 22 QVDs teria sido calculado e gravado, mas o diretório de evidência criado no `%TEMP%` contextual do sandbox desapareceu entre chamadas, inclusive quando consultado fora dele. Logo: `CKO_INVENTORY_PRESERVED=NOT_VERIFIED`; `CKO_SWITCH=NOT_RUN`; `C3B1_PHYSICAL=NOT_RUN`. O estado do Git e os QVWs continuam preservados segundo o relato. **Não repetir o inventário até confirmar persistência.**
+
+**Única tentativa de recuperação permitida:** executar apenas um probe de persistência em **duas chamadas PowerShell independentes** na sessão **Windows real**, sem tocar no repositório ou em QVD/QVW. O LocalApplicationData real precisa existir e não ser um redirecionamento efêmero do sandbox. Não fixar o nome do usuário no código.
+
+**Chamada 1 — criar token exclusivamente no Temp do Windows:**
+
+```powershell
+$ErrorActionPreference='Stop'
+$localAppData=[Environment]::GetFolderPath('LocalApplicationData')
+$hostTemp=Join-Path $localAppData 'Temp'
+if(-not (Test-Path -LiteralPath $hostTemp -PathType Container)){
+  throw 'BLOCKED: Windows LocalAppData Temp not accessible'
+}
+$root=Join-Path $hostTemp ('SAD_C3B1_CKO_'+[guid]::NewGuid().ToString('N'))
+New-Item -Path $root -ItemType Directory -ErrorAction Stop | Out-Null
+$token=[guid]::NewGuid().ToString('N')
+$probe=Join-Path $root 'persistence_probe.txt'
+[IO.File]::WriteAllText($probe,$token,(New-Object System.Text.UTF8Encoding($false)))
+$sha=(Get-FileHash -LiteralPath $probe -Algorithm SHA256).Hash
+if(-not (Test-Path -LiteralPath $probe -PathType Leaf)){throw 'BLOCKED: probe did not persist even in same process'}
+Write-Output "CKO_HOST_LOCALAPPDATA=$localAppData"
+Write-Output "CKO_HOST_TEMP=$hostTemp"
+Write-Output "CKO_EVIDENCE_DIR=$root"
+Write-Output "CKO_PROBE_SHA256=$sha"
+Write-Output 'CKO_PROBE_STAGE=WRITTEN_NOT_YET_VERIFIED_ACROSS_CALLS'
+```
+
+**Chamada 2 — novo processo PowerShell separado (idealmente fora do sandbox), não recriar arquivo:** usar **somente** o caminho `CKO_EVIDENCE_DIR` e SHA impressos na chamada 1, passados explicitamente, sem depender de variáveis de sessão anteriores.
+
+```powershell
+$ErrorActionPreference='Stop'
+$root='COLE_AQUI_O_CKO_EVIDENCE_DIR_EXATO_DA_CHAMADA_1'
+$expectedSha='COLE_AQUI_O_CKO_PROBE_SHA256_EXATO_DA_CHAMADA_1'
+$probe=Join-Path $root 'persistence_probe.txt'
+if(-not (Test-Path -LiteralPath $probe -PathType Leaf)){
+  throw 'BLOCKED_EVIDENCE_PERSISTENCE: probe absent on independent process'
+}
+$observed=(Get-FileHash -LiteralPath $probe -Algorithm SHA256).Hash
+if($observed -cne $expectedSha){throw 'BLOCKED_EVIDENCE_PERSISTENCE: SHA mismatch'}
+Write-Output "CKO_EVIDENCE_DIR=$root"
+Write-Output "CKO_PROBE_SHA256=$observed"
+Write-Output 'CKO_PERSISTENCE=PASS_INDEPENDENT_PROCESS_ONLY'
+```
+
+**Se qualquer chamada não puder executar de fato no Windows local, se o token desaparecer ou se o SHA divergir: STOP `BLOCKED_EVIDENCE_PERSISTENCE`. Não fazer novo retry automático, não trocar branch, não repetir QVD/QVW inventário e não produzir PASS CKO. Informar ao responsável que será necessário executar no terminal Windows real, com acesso direto à mesma pasta.
+
+**Somente após `CKO_PERSISTENCE=PASS_INDEPENDENT_PROCESS_ONLY`:** usar **o mesmo** `CKO_EVIDENCE_DIR` persistente para salvar `qvw_before.csv`, `qvd_before.csv`, estado de Git e inventário de paths; conferir que os arquivos estão acessíveis em uma segunda leitura independente **antes** de prosseguir ao controle de colisões. Se não conseguir reabrir qualquer inventário: STOP. Verificar colisões no **tree completo da branch destino**, não só diff do PR. A troca `git switch --track` sem força permanece condicionada ao CKO original, e os arquivos terão novo inventário/hashes pós-switch. **O sucesso do probe não prova automaticamente persistência dos arquivos que o runner C3-B1 gravará mais tarde via `[IO.Path]::GetTempPath()`; antes do gate COM, verificar o destino efetivo `EVIDENCE_DIR` do runner.**
+
+Este probe é preparação de ambiente `EXPERIMENTAL_NOT_GATE_EVIDENCE`; o único executor para PASS físico permanece o PowerShell versionado do PR #125. Não versionar o token, os inventários ou arquivos de prova no Git.
+
+---
+
 ## C3-B1-CKO — retomada controlada após bloqueio de checkout
 
 **Relato local fornecido pelo operador, ainda não auditado independentemente:** às 22:27 de 19/10/2026, o Work encontrou o checkout `docs/phase-viii-c2d3-rawview-win32-discovery-20261019` no commit `314205733af067013fe19017a9e15c971d114ebf`, com **10 QVWs não rastreados em `TRANSFORMACAO/`**, sem outras alterações listadas. Windows PowerShell 5.1 e QlikView 12 foram encontrados, mas parser, F1 e COM **não executados**. A proteção de STOP foi correta.
