@@ -33,9 +33,25 @@ Não tratar PR Draft como `main` e não converter PASS local em aprovação de p
 
 **BLOCKED/INCONCLUSIVE:** falta de acesso local, múltiplas fontes sem identificação inequívoca, fonte antiga ausente, SHA divergente, parser inválido, erro de COM, seleção alterada, contagem divergente, hashes não preservados ou evidências insuficientes. **STOP imediato, sem corrigir à força e sem segunda tentativa automática.** Reportar primeiro a causa e os logs.
 
+## C3-B1-CKO — retomada controlada após bloqueio de checkout
+
+**Relato local fornecido pelo operador, ainda não auditado independentemente:** às 22:27 de 19/10/2026, o Work encontrou o checkout `docs/phase-viii-c2d3-rawview-win32-discovery-20261019` no commit `314205733af067013fe19017a9e15c971d114ebf`, com **10 QVWs não rastreados em `TRANSFORMACAO/`**, sem outras alterações listadas. Windows PowerShell 5.1 e QlikView 12 foram encontrados, mas parser, F1 e COM **não executados**. A proteção de STOP foi correta.
+
+**Correção de processo, sem relaxar invariantes:** estar em outra branch não é, isoladamente, evidência de alteração perigosa. O Work poderá prosseguir com uma **única troca de branch não forçada** após realizar os guardas abaixo. Este gate de preparação **não altera scripts, QVDs, QVWs, `main` ou PR**, nem autoriza por si só executar COM. Não criar clone novo, pois ele não carregaria automaticamente os QVDs locais.
+
+1. Dentro do **checkout Windows original**, coletar `git status --porcelain=v1 --untracked-files=all`, `git rev-parse HEAD`, `git branch --show-current` e os caminhos completos dos QVWs não rastreados. O estado rastreado precisa estar limpo; `git diff --quiet` e `git diff --cached --quiet` não devem apontar mudanças. Exigir exclusivamente os dez QVWs em `TRANSFORMACAO/` reportados; mudança adicional = STOP. Não usar `git clean`, `git reset`, `git stash -u`, `git checkout -f`, `git switch -f` nem mover arquivos.
+2. Calcular SHA-256 e tamanho dos **dez QVWs antes** do checkout e registrar esse inventário fora da árvore Git (por exemplo, `%TEMP%`). Também registrar, sem modificar, o número e hash dos 22 QVDs existentes conforme script de gate, se acessíveis.
+3. Executar apenas `git fetch origin test/phase-viii-c3b1-asymmetric-roles-20261019`, verificar HEAD do remote tracking e que o PR #125 continua Draft. Verificar via `git ls-tree -r --name-only origin/test/phase-viii-c3b1-asymmetric-roles-20261019` se qualquer um dos caminhos não rastreados colide com arquivo rastreado da branch destino. Se houver interseção: **STOP**. Não confiar apenas no diff do PR.
+4. Se não houver colisão e a branch local destino ainda não existir, executar **uma vez, sem força**: `git switch --track origin/test/phase-viii-c3b1-asymmetric-roles-20261019`. Em caso de conflito/erro: **STOP**, sem contornar a proteção do Git. Se a branch local já existir, parar para conferir seu HEAD/upstream antes de escolher um comando; não substituí-la silenciosamente.
+5. Verificar a branch e HEAD após a troca, inventariar novamente os dez QVWs (mesmos nomes, tamanho e SHA-256) e os QVDs existentes; se algum hash divergir, **STOP_CRITICAL_PRESERVATION**. Conferir que o runner C3-B1 agora existe e está commitado e limpo. Somente então seguir ao parser e ao preflight já contratados.
+
+**Classificação:** `C3B1_CHECKOUT_PREPARATION=PROPOSED_CONTROLLED_RESUME`; `C3B1_PARSER=NOT_RUN`; `C3B1_PHYSICAL=NOT_RUN` até evidências locais. Ao retomar, registrar SHA real do PR em vez de presumir o commit histórico `7a816d85b32cb48ee7c9460eb0692df3a7662616`. Nenhum merge, reset, criação ou exclusão de branch remota está autorizado.
+
+---
+
 ## Sequência operacional (usar o procedimento executável da documentação C3-B1)
 
-1. Confirmar Git `main` e estado da branch `test/phase-viii-c3b1-asymmetric-roles-20261019` no clone real. **Não rodar `git reset --hard`, `git clean`, `git pull` indiscriminado, squash, rebase, merge, force push ou alterar a `main`.** Se o checkout estiver diferente, verificar alterações locais e parar antes de forçar qualquer mudança.
+1. Confirmar Git `main` e estado da branch `test/phase-viii-c3b1-asymmetric-roles-20261019` no clone real. **Não rodar `git reset --hard`, `git clean`, `git pull` indiscriminado, squash, rebase, merge, force push ou alterar a `main`.** Se o checkout estiver diferente, seguir apenas o gate controlado `C3-B1-CKO` anterior; se seus critérios não forem atendidos, STOP.
 2. Verificar que o executor `tools/Invoke-SadPhaseViiiC3b1AsymmetricRoles.ps1` está commitado, sem alterações locais, e registrar `git rev-parse HEAD`, status e SHA do script. Fazer apenas **parse estático** via `System.Management.Automation.Language.Parser`; isto ainda não é PASS físico.
 3. Procurar em `%TEMP%` candidatos reais a `SAD_VIII_T24_ANNUAL_TEST.qvw` e diretório histórico contendo ambos `manifest_F1_F2.json` e `F1_fluxo_ano.csv`. **Não usar caminhos inventados ou fixos de exemplos.** Conferir a origem QVW SHA-256 `7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E` e assinatura do `LINK_ANALISE.qvd` conforme runner, sem copiar nem recriar os QVDs.
 4. Executar **apenas o modo preflight, sem `-RunQlik`**, do executor do PR #125, com `-Root`, `-SourceQvw` e `-F1F2Dir` identificados. Registrar stdout e `$LASTEXITCODE`. Esse modo pode criar arquivos de evidência em `%TEMP%` mas não abre COM nem recarrega QVD.
