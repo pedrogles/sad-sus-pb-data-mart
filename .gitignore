@@ -33,7 +33,8 @@ TRANSFORMACAO/QVD/**
 !EXTRACAO/QVD/.gitkeep
 !TRANSFORMACAO/QVD/.gitkeep
 
-# QlikView documents are local binaries until the repository policy is decided
+# QlikView binaries remain local under AGENTS.md; includes test documents
+*.qvw
 EXTRACAO/EXT.qvw
 TRANSFORMACAO/TRANSF.qvw
 PAINEL/PAINEL.qvw
