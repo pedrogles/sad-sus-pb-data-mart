@@ -2,6 +2,17 @@
 
 **Snapshot operacional:** 18/10/2026. **`main` conferida após integração do PR #106:** `875a7b72ff1ba87dfc49b55472b8e1e058837cbb`. O código efetivamente executado no Windows/QlikView 12 para o gate VII foi `973a2ad2ac245841ff9e56c591ab269754cdc450` (mesmos QVS/runner; commits subsequentes somente documentais). **Fase VII encerrada como `GATE_PASS_CANDIDATE_ONLY`**: inventário/reload locais reportados e inspeção visual de captura do Table Viewer; o log nativo integral e binário de teste não foram auditados independentemente. [Evidências Fase VII](../discovery/phase-7-technical-panel-controlled-gate-2026-10-18.md). O histórico CREATE/READBACK de `LINK_ANALISE.qvd` permanece em [Fase VI](../discovery/phase-6-link-analise-physical-r2-2026-10-18.md).
 
+## Inventário documental main × Draft (revisão G0 — 20/10/2026)
+
+| Fonte | Situação | Limite |
+| --- | --- | --- |
+| `main@337943d5c5b77067f842902fc679dbb68db87020` | Integrações até PR #106; Fase VII candidata, Fase VIII ainda sem contrato físico geral aprovado | Este é o estado integrado; preservar snapshot e evidências acima |
+| [PR #90](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/90) e [PRs #108–#114](https://github.com/pedrogles/sad-sus-pb-data-mart/pulls) | Drafts de CNES/LT, Discovery/readiness e pilotos T24–T26 | Provas locais restritas e documentação em branches, sem promoção à `main` |
+| [PRs #115–#124](https://github.com/pedrogles/sad-sus-pb-data-mart/pulls) e [PR #125](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/125) | Drafts de fechamento C1, testes C2/D2, UIA/Win32 e C3-B1 | O NO-GO de identificação UIA/Win32 não autoriza cliques; C3-B1 não tinha PASS físico ao fim da auditoria |
+| Governança G0 | Política de agentes proposta em branch de revisão, **não integrada na `main`** | Não altera gates, contratos, QVS, QVD/QVW nem autoriza G1 |
+
+**Atualização apenas documental:** a situação dos Drafts deve ser reconsultada por número/HEAD antes do próximo gate. Não somar os resultados experimentais à homologação da `main`. Permanecem `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `P5_D2_UI=NOT_TESTED_FULLY`, `PRODUCTION_APPROVED=False` e Fase IX não autorizada.
+
 ## Contrato acadêmico preservado
 
 Data Mart SUS Paraíba, 2017–2019, com SIH/SUS RD, CNES/LT e IBGE/SIDRA; **QlikView 12 obrigatório**. Fluxo: `BASE → EXTRACAO → QVD → TRANSFORMACAO → QVD → PAINEL`. **Star Schema por processo factual**, constelação com três fatos e oito dimensões aprovadas. Capítulos 1 e 2 entregues conforme relato de 13/10/2026; avaliação do professor pendente. Ver [requisitos](../academic/requirements.md), [modelagem](../academic/chapter-1-2-modeling.md) e [Boundary 7](../discovery/boundary-7-implementation-plan.md).
