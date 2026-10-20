@@ -63,20 +63,20 @@ if ($g2manifest.Gate -ne 'G2' -or $g2manifest.Verdict -ne 'G2_INVENTORY_READONLY
 
 # Immutable target ID / size selection from G2 file_inventory.csv of 2026-10-20.
 $targets=@(
- @('P6','2263693f848c4d24a4ac287f28d2b849',8609536)
- @('P6','236f13c6364a4efab1d73f5b4817022e',8609536)
- @('P6','23a408983dde4074921fe1f0279d6a74',8609536)
- @('P6','3d98811e808d4fddaf703573d9aba70e',8609536)
- @('P6','a27cb0583df444f6aa49da9b36c78827',8609536)
- @('P6','a4478dcfd1134998acd9f02c35aa9d08',8609536)
- @('P6','cf9a00663fa240ef888f68fd6926cc59',8609536)
- @('P6','d3d0060b3f9542598d61567cb89b4395',8609536)
- @('P6','da1fa322ccd04b1ca807e16bc5748d45',8609536)
- @('P6','dac7d57791524a44a49bde1e32a63f19',8609536)
- @('F4','0df1cb260ded4e8f993b18c805b45d3b',10189824)
- @('F4','0e78a50bf37d455b8031125c3b32ef27',10195968)
- @('F4','298e911087904f029d6f488b6d6579aa',10193408)
- @('F4','4b10a021771c4301b9cfc30d9109ca38',10196736)
+ 'P6|2263693f848c4d24a4ac287f28d2b849|8609536'
+ 'P6|236f13c6364a4efab1d73f5b4817022e|8609536'
+ 'P6|23a408983dde4074921fe1f0279d6a74|8609536'
+ 'P6|3d98811e808d4fddaf703573d9aba70e|8609536'
+ 'P6|a27cb0583df444f6aa49da9b36c78827|8609536'
+ 'P6|a4478dcfd1134998acd9f02c35aa9d08|8609536'
+ 'P6|cf9a00663fa240ef888f68fd6926cc59|8609536'
+ 'P6|d3d0060b3f9542598d61567cb89b4395|8609536'
+ 'P6|da1fa322ccd04b1ca807e16bc5748d45|8609536'
+ 'P6|dac7d57791524a44a49bde1e32a63f19|8609536'
+ 'F4|0df1cb260ded4e8f993b18c805b45d3b|10189824'
+ 'F4|0e78a50bf37d455b8031125c3b32ef27|10195968'
+ 'F4|298e911087904f029d6f488b6d6579aa|10193408'
+ 'F4|4b10a021771c4301b9cfc30d9109ca38|10196736'
 )
 if ($targets.Count -ne 14) { throw 'Unexpected frozen target count.' }
 $old=@(Import-Csv -LiteralPath $g2file.FullName -Encoding UTF8)
@@ -89,7 +89,7 @@ foreach ($r in $old) {
 }
 $selected=New-Object 'System.Collections.Generic.List[object]'
 foreach ($t in $targets) {
- $kind=[string]$t[0];$id=[string]$t[1];$bytes=[int64]$t[2]
+ $parts=$t.Split('|');$kind=$parts[0];$id=$parts[1];$bytes=[int64]$parts[2]
  $folder=if ($kind -eq 'P6') { 'SAD_P6_E13_COM_'+$id } else { 'SAD_F4_P5_UI_GUARD_'+$id }
  $leaf=if ($kind -eq 'P6') { 'P6_E13_DISPOSABLE.qvw' } else { 'F4_P5_UI_GUARD_DISPOSABLE.qvw' }
  $relative=Join-Path $folder $leaf
