@@ -11,6 +11,8 @@ param(
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+# Prevent Git read commands from opportunistically refreshing the index.
+$env:GIT_OPTIONAL_LOCKS = '0'
 
 function Inside([string]$child, [string]$parent) {
     $a=[IO.Path]::GetFullPath($child).TrimEnd('\','/')+'\'
@@ -43,7 +45,7 @@ function QvdHeader([string]$path) {
 }
 function Check-References([string]$folder, [string]$name, [string[]]$expected) {
     if([string]::IsNullOrWhiteSpace($folder)) {
-        Write-Output ($name+'=NOT_PROVIDED')
+        Write-Host ($name+'=NOT_PROVIDED')
         return $false
     }
     if(-not(Test-Path -LiteralPath $folder -PathType Container)){throw ($name+'_DIR_MISSING')}
@@ -67,7 +69,7 @@ function Check-References([string]$folder, [string]$name, [string[]]$expected) {
             throw ($name+'_SHA_MISMATCH_'+$n)
         }
     }
-    Write-Output ($name+'=PASS_MANIFEST_'+$expected.Count+'_FILES')
+    Write-Host ($name+'=PASS_MANIFEST_'+$expected.Count+'_FILES')
     return $true
 }
 
@@ -81,6 +83,8 @@ if(Inside $evidence $root){throw 'BLOCKED_EVIDENCE_INSIDE_DATA_REPOSITORY'}
 if(Inside $root $evidence){throw 'BLOCKED_DATA_REPOSITORY_INSIDE_EVIDENCE'}
 $temp=[IO.Path]::GetFullPath([IO.Path]::GetTempPath())
 if(Inside $evidence $temp){throw 'BLOCKED_EVIDENCE_IN_TEMP'}
+$gitEv=@(& git -C $evidence rev-parse --show-toplevel 2>$null)
+if($LASTEXITCODE -eq 0 -and $gitEv.Count -gt 0){throw 'BLOCKED_EVIDENCE_INSIDE_OTHER_GIT_REPOSITORY'}
 $work=Join-Path $evidence ('SAD_G1_'+[Guid]::NewGuid().ToString('N'))
 $null=New-Item -ItemType Directory -Path $work -ErrorAction Stop
 Write-Output ('EVIDENCE_DIR='+$work)
