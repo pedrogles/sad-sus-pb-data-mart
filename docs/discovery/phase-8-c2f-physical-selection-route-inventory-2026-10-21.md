@@ -139,3 +139,17 @@ Manifesto informado: `c2f_prepare_manifest.json`, com 25 arquivos e hash da cóp
 **Status:** C2F_OBJECT_STRUCTURE=PASS_INDEPENDENT_EXPORT_RECONCILIATION; C2F_LISTBOX_YEAR_AND_MONTH=VISIBLE_WITH_READ_ONLY_UNKNOWN; C2F_ACTIONS_TRIGGERS_BOOKMARKS=UNKNOWN; C2F_FULL_PHYSICAL_ROUTE_INVENTORY=IN_PROGRESS_NOT_PASSED. Não há revalidação pós-abertura dos hashes físicos nesta sessão. Preservar P5_D2_UI=NOT_TESTED, C2_FULL=NO_GO_NOT_APPROVED, F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY.
 
 **Próximo passo restrito:** abrir somente as propriedades dos objetos LB01 e LB04 da cópia temporária; registrar campo, Read Only/Somente Leitura, busca e ações se existentes; sair com Cancelar e enviar capturas. Depois, inspecionar BU01/BU02 e triggers/bookmarks sem executar seleções, não repetir UIA/Win32 ou Qlik Reload. O resultado final deste gate dependerá do restante das propriedades observáveis e dos limites explícitos.
+
+## 9. LB01 — propriedade Apenas leitura (captura enviada em 21/10/2026)
+
+**Fonte:** captura original `image(20261021-133440).png`, recebida do responsável e inspecionada visualmente. SHA-256 dos bytes recebidos: `6AD54EBB02EE6418CC2F7C722E460913A8DF340BC712DAEB0D540F3CBDB4FC0E`; dimensões: 794 × 634 pixels. O diálogo é **Propriedades da Lista [PERIODO_ANO]**, aba **Geral**, sobre a janela **Propriedades do Documento** do QVW temporário C2-F.
+
+**Propriedades diretamente visíveis:**
+- **ID do objeto:** `LB01`; **Campo:** `PERIODO_ANO`.
+- A opção **Apenas leitura** está **desmarcada** (`ReadOnly=False` na configuração visual observada da listbox). `Sempre Um Valor Selecionado` também está desmarcada.
+- A seção **Pesquisar** mostra **Modo de Pesquisa Padrão = <usar padrão>** e **Incluir Valores Excluídos na Pesquisa = <usar padrão>**; a captura **não confirma a configuração efetiva de pesquisa herdada nem execução por busca**.
+- `Mostrar Alternativas`, `Ocultar Excluídos` e `Modo AND` aparecem desmarcados.
+
+**Interpretação restrita:** a listbox `LB01` é uma **superfície alternativa visível e não configurada como somente leitura** para `PERIODO_ANO`, fora dos botões D2 BU01/BU02. Isto é evidência concreta de um **controle potencialmente editável**, não observação de clique, despacho, seleção efetivamente realizada, nem prova de bypass funcional. O estado carregado mostrado em captura anterior não serve como evento de seleção neste gate.
+
+**Classificação:** `C2F_LB01_YEAR_LISTBOX=PRESENT_READ_ONLY_UNCHECKED_VISUAL`; `C2F_D2_UNCONTROLLED_YEAR_ROUTE=RISK_CONFIRMED_CONFIGURATION_ONLY`; `C2F_LB01_SELECTION_DISPATCH=NOT_TESTED`. O aceite `C2_FULL` e `P5_D2_UI` permanecem NO-GO/NOT_TESTED. **Próximo passo:** sair com **Cancelar**, inspecionar apenas as propriedades `LB04 — PERIODO_COMPETENCIA` sem alterar campos, botões ou seleções; capturar a aba Geral com o estado de `Apenas leitura`. Não executar seleção direta, busca, bookmark, script, COM, reload ou save.
