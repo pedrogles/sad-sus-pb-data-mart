@@ -1,5 +1,5 @@
 # C4-B1: regional 2018 service JP+CG T25 observational candidate, prepared only.
-# Default reference-only; any -RunQlik execution needs separate approval and a physical token.
+# Default reference-only; -RunQlik requires separate explicit approval.
 [CmdletBinding()]
 param(
   [Parameter(Mandatory=$true)][string]$Root,
@@ -20,15 +20,16 @@ if([IO.Path]::GetFullPath($PSCommandPath) -ine [IO.Path]::GetFullPath($self)){th
 $b=@(& git -C $repo branch --show-current 2>$null)
 $h=@(& git -C $repo rev-parse HEAD 2>$null)
 if($LASTEXITCODE -ne 0 -or $b.Count -ne 1 -or $h.Count -ne 1 -or
-   $b[0] -cne $branch -or $h[0] -notmatch '^[a-f0-9]{40}){throw 'BLOCKED: Git branch/HEAD'}
+   $b[0] -cne $branch -or $h[0] -notmatch '^[a-f0-9]{40}$' -or
+   $ExpectedHead -cne $h[0]){throw 'BLOCKED: Git branch/HEAD pinned mismatch'}
 $null=& git -C $repo merge-base --is-ancestor 949e6e96b6e0f4e530672d52808ad178080bce28 HEAD 2>$null
 if($LASTEXITCODE -ne 0){throw 'BLOCKED: not based on frozen main'}
 $tracked=@(& git -C $repo ls-files --error-unmatch -- $selfRel 2>$null)
 $dirty=@(& git -C $repo status --porcelain -- $selfRel)
 if($tracked.Count -ne 1 -or $dirty.Count -ne 0){throw 'BLOCKED: runner not committed/clean'}
 $blob=(& git -C $repo rev-parse ('HEAD:'+$selfRel)).Trim()
-$live=(& git -C $repo hash-object -- $self).Trim()
-if($LASTEXITCODE -ne 0 -or $blob -cne $live){throw 'BLOCKED: runner binary differs from commit'}
+$live=(& git -C $repo hash-object --path=$selfRel -- $self).Trim()
+if($LASTEXITCODE -ne 0 -or $blob -cne $live){throw 'BLOCKED: runner differs from committed blob'}
 if($RunQlik -and $PhysicalAuthorization -cne 'C4B1_ONE_REGIONAL_TEST_ONLY'){throw 'BLOCKED: physical authorization token missing'}
 $src=[IO.Path]::GetFullPath($SourceQvw)
 $tmp=[IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')+'\'
@@ -96,83 +97,6 @@ function Numeric([string]$expr){
   if($s.Trim() -notmatch '^\d+([.,]\d+)?$'){throw ('BLOCKED: numeric result invalid '+$expr+' => '+$s)}
   return [decimal]::Parse($s.Trim().Replace(',','.'),[Globalization.NumberStyles]::AllowDecimalPoint,[Globalization.CultureInfo]::InvariantCulture)
 }
- -or $ExpectedHead -cne $h[0]){throw 'BLOCKED: Git branch/HEAD'}
-$null=& git -C $repo merge-base --is-ancestor 949e6e96b6e0f4e530672d52808ad178080bce28 HEAD 2>$null
-if($LASTEXITCODE -ne 0){throw 'BLOCKED: not based on frozen main'}
-$tracked=@(& git -C $repo ls-files --error-unmatch -- $selfRel 2>$null)
-$dirty=@(& git -C $repo status --porcelain -- $selfRel)
-if($tracked.Count -ne 1 -or $dirty.Count -ne 0){throw 'BLOCKED: runner not committed/clean'}
-$blob=(& git -C $repo rev-parse ('HEAD:'+$selfRel)).Trim()
-$live=(& git -C $repo hash-object -- $self).Trim()
-if($LASTEXITCODE -ne 0 -or $blob -cne $live){throw 'BLOCKED: runner binary differs from commit'}
-if($RunQlik -and $PhysicalAuthorization -cne 'C4B1_ONE_REGIONAL_TEST_ONLY'){throw 'BLOCKED: physical authorization token missing'}
-$src=[IO.Path]::GetFullPath($SourceQvw)
-$tmp=[IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\')+'\'
-if(-not $src.StartsWith($tmp,[StringComparison]::OrdinalIgnoreCase) -or
-   [IO.Path]::GetFileName($src) -cne 'SAD_VIII_T24_ANNUAL_TEST.qvw' -or
-   [IO.Path]::GetFileName([IO.Path]::GetDirectoryName($src)) -notmatch '^SAD_VIII_T24_[a-f0-9]{32}$' -or
-   -not(Test-Path -LiteralPath $src -PathType Leaf)){throw 'BLOCKED: not a prior T24 TEMP QVW'}
-$sourceHash=(Get-FileHash -LiteralPath $src -Algorithm SHA256).Hash
-if($sourceHash -cne '7B2D92FD476CA7F64999C79DC55A510AFB811513BC1A60CACCC7586478C70C5E'){
-  throw 'BLOCKED: source QVW differs from successfully reconciled T24 baseline'
-}
-$work=Join-Path $tmp ('SAD_VIII_C4B1_T25_'+[Guid]::NewGuid().ToString('N'))
-$null=New-Item -ItemType Directory -Path $work
-Write-Output ('EVIDENCE_DIR='+$work)
-Write-Output ('VERSIONED_GIT_HEAD='+$h[0])
-Write-Output ('SCRIPT_SHA256='+(Get-FileHash -LiteralPath $self -Algorithm SHA256).Hash)
-Write-Output ('SOURCE_QVW_SHA256='+$sourceHash)
-Write-Output 'MODE=C4B1_TEMP_COPY_NO_RELOAD QVD_WRITES=0 CANONICAL_QVW_WRITES=0'
-function Snapshot([string]$kind){
-  $items=@()
-  if($kind -ceq 'QVD'){
-    $ext=@(Get-ChildItem -LiteralPath (Join-Path $repo 'EXTRACAO/QVD') -File -Filter '*.qvd')
-    $trans=@(Get-ChildItem -LiteralPath (Join-Path $repo 'TRANSFORMACAO/QVD') -File -Filter '*.qvd')
-    if($ext.Count -ne 10 -or $trans.Count -ne 12){throw 'BLOCKED: expected 10+12 QVDs'}
-    $items=@($ext)+@($trans)
-  }else{
-    foreach($r in @('EXTRACAO/EXT.qvw','TRANSFORMACAO/TRANSF.qvw','PAINEL/PAINEL.qvw')){
-      $p=Join-Path $repo $r
-      if(Test-Path -LiteralPath $p -PathType Leaf){$items+=Get-Item -LiteralPath $p}
-    }
-  }
-  $out=@()
-  foreach($i in $items){
-    $out += [pscustomobject]@{Path=$i.FullName;Length=$i.Length;SHA256=(Get-FileHash -LiteralPath $i.FullName -Algorithm SHA256).Hash}
-  }
-  return @($out|Sort-Object Path)
-}
-function Same($a,$b){
-  return ((ConvertTo-Json -InputObject @($a) -Compress -Depth 3) -ceq
-          (ConvertTo-Json -InputObject @($b) -Compress -Depth 3))
-}
-function Oracle([string]$folder,[string]$file,[string]$manifest){
-  $csv=Join-Path $folder $file
-  $mf=Join-Path $folder $manifest
-  if(-not(Test-Path -LiteralPath $csv -PathType Leaf) -or
-     -not(Test-Path -LiteralPath $mf -PathType Leaf)){throw ('BLOCKED: missing '+$file)}
-  $m=Get-Content -LiteralPath $mf -Raw -Encoding UTF8|ConvertFrom-Json
-  $v=[string]$m.output_sha256.$file
-  $hash=(Get-FileHash -LiteralPath $csv -Algorithm SHA256).Hash
-  if($v -notmatch '^[a-fA-F0-9]{64}$' -or $hash -cne $v.ToUpperInvariant()){throw ('BLOCKED: SHA oracle '+$file)}
-  Write-Host ('ORACLE_'+$file+'_SHA256='+$hash)
-  return $csv
-}
-function CountSelected([string]$field){
-  $s=[string]$script:doc.Evaluate(('GetSelectedCount('+$field+')'))
-  if($s -notmatch '^\d+$'){throw ('BLOCKED: selection count invalid '+$field+' -> '+$s)}
-  return [int]$s
-}
-function SelectOne([string]$field,[string]$value){
-  $null=$script:doc.GetField($field).Select($value)
-  if((CountSelected $field) -ne 1){throw ('BLOCKED: selection failed '+$field)}
-}
-function Numeric([string]$expr){
-  $s=[string]$script:doc.Evaluate($expr)
-  if($s.Trim() -notmatch '^\d+([.,]\d+)?$'){throw ('BLOCKED: numeric result invalid '+$expr+' => '+$s)}
-  return [decimal]::Parse($s.Trim().Replace(',','.'),[Globalization.NumberStyles]::AllowDecimalPoint,[Globalization.CultureInfo]::InvariantCulture)
-}
-
 $oldQvd=$null
 $oldQvw=$null
 $script:doc=$null
