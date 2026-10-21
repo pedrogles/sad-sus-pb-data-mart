@@ -102,3 +102,20 @@ A cópia C2-F foi originalmente reportada em outro diretório, fora do sandbox:
 **Uma verificação ambiental mínima proposta, sem escrever arquivos:** em **Windows PowerShell 5.1 normal na sessão do usuário (fora do sandbox)**, ler `$env:TEMP`, `[IO.Path]::GetTempPath()`, `Test-Path -LiteralPath` do caminho C2-F literal e `Get-FileHash -Algorithm SHA256` **somente se existir**. Se o arquivo estiver presente com SHA esperado `31B1DD3FD3D5D100104D5B3F80118B7725E16CB76F13676A6678E5E9B31AF087`, preferir execução futura do runner **sem modificá-lo no Windows PowerShell nativo** (contrato de TEMP original). Se a origem não existir nesse ambiente, ou hash for diferente, STOP e decisão específica; não copiar de arquivos arbitrários, desabilitar sandbox ou flexibilizar validações.
 
 **STOP:** não repetir `-Prepare`, não rodar parser no Codex isolado nem alterar runner enquanto a hipótese de escopo/permite-acesso não for checada; nova execução física após o diagnóstico exige decisão/autorização correspondente. PR #148 continua Draft sem merge. `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+## 8. Verificação PowerShell nativo — origem recuperável no contexto correto (21/10/2026)
+
+**Fonte e nível probatório:** retorno textual do responsável, executado no prompt `PS C:\Users\pedro>` em PowerShell normal do Windows. Arquivos físicos não foram abertos independentemente pelo agente. Classificar como **PASS_USER_REPORTED**, não auditoria binária externa.
+
+| Controle | Resultado reportado |
+| --- | --- |
+| `$env:TEMP` | `C:\Users\pedro\AppData\Local\Temp` |
+| `[IO.Path]::GetTempPath()` | `C:\Users\pedro\AppData\Local\Temp\` |
+| `SOURCE_EXISTS` | `True` |
+| `SOURCE_SHA256` | `31B1DD3FD3D5D100104D5B3F80118B7725E16CB76F13676A6678E5E9B31AF087` |
+
+**Diagnóstico atualizado:** `C2H_NATIVE_TEMP_SOURCE_PATH_AND_SHA=PASS_USER_REPORTED`; o mesmo QVW C2-F pinado está acessível no TEMP original do usuário. O bloqueio anterior refere-se ao caminho TEMP do sandbox Codex, **não comprova perda da fonte**. `-Prepare` continua **não executado**, nenhuma cópia de teste C2-H foi criada.
+
+**Recuperação delimitada dentro do C2-H autorizado:** fechar o QVW C2-F sem salvar; abrir PowerShell 5.1 **nativo**, na raiz do clone, atualizar a branch #148 por fast-forward se o checkout estiver limpo, validar parser real do script versionado e executar **uma única vez** `-Prepare` com `-SourceQvw` igual ao caminho literal já validado. Não executar no sandbox, alterar variável de TEMP ou relaxar verificações de SHA. Enviar stdout, `RUNTIME_TEMP_COPY`, `EVIDENCE_DIR` e veredito **antes de abrir o novo QVW na interface**.
+
+**Estados:** `C2H_ENV_BLOCK=RESOLVED_FOR_NATIVE_POWERSHELL_SOURCE_CHECK_USER_REPORTED`; `C2H_NATIVE_PARSER=NOT_RUN`; `C2H_PREPARE=NOT_RUN`; `C2H_PHYSICAL_LISTBOX_TEST=NOT_RUN`; `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR #148 Draft, sem merge. **STOP** na primeira falha ou após preparar a cópia; nenhum avanço automático à GUI.
