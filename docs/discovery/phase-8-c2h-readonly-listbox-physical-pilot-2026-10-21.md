@@ -177,3 +177,16 @@ C:\Users\pedro\Documents\SAD_C2H_EVIDENCIAS\SAD_VIII_C2H_ee31c0f9a9da40cda0d94fe
 **Próxima etapa autorizada:** abrir **somente** a cópia TEMP C2-H indicada acima em QlikView 12; capturar a barra de título e propriedades `LB01` e `LB04` **antes** da modificação, verificando que ambas mostram `Apenas leitura` desmarcado. Em seguida, sob roteiro da seção 4, alterar apenas essas duas flags na cópia nova, salvar unicamente a cópia e registrar pós-configuração. Não executar `-Prepare` novamente, não reabrir fontes originais para edição, não realizar recarga. A revisão humana de imagens será diferenciada da verificação binária posterior `-Verify`.
 
 **Estados ainda não promovidos:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. PR #148 permanece Draft e `main` não alterada pelo relato. O SUCCESS do runner somente prova a preparação restrita conforme seu próprio código e stdout, não a configuração futura da interface.
+
+## 11. Capturas pré-mudança da nova cópia C2-H (21/10/2026)
+
+**Proveniência:** duas capturas PNG enviadas diretamente pelo responsável e inspecionadas visualmente; SHA-256 dos bytes anexados calculado neste ambiente. As capturas exibem no título da janela de propriedades o caminho da cópia C2-H `SAD_VIII_C2H_ee31c0f9a9da40cda0d94fe791b6ec32`, não a origem C2-F nem o painel canônico. Não foi executada nenhuma chamada QlikView/COM neste ambiente.
+
+| Captura | Dimensões | SHA-256 da imagem recebida | Evidência visual |
+| --- | --- | --- | --- |
+| `image(20261021-155937).png` | `747×607` | `AAF9FD32970B611C73D584A7DAFB412C1F5994AFBAD17799B28DD8162739E1C5` | `Propriedades da Lista [PERIODO_ANO]`, `LB01`, campo `PERIODO_ANO`, `Apenas leitura` desmarcado |
+| `image(20261021-160002).png` | `741×604` | `1C6313C82B20DD4F31F58D74C8078E2A548CC19950CA6C655D5D053D3834184C` | `Propriedades da Lista [PERIODO_COMPETENCIA]`, `LB04`, campo `PERIODO_COMPETENCIA`, `Apenas leitura` desmarcado |
+
+**Classificação restrita:** `C2H_PRECHANGE_LISTBOX_CONFIG=PASS_VISUAL_BASELINE_TWO_OBJECTS`; `C2H_PHYSICAL_LISTBOX_MITIGATION=NOT_TESTED`; `C2H_AFTER_SAVE_PROPERTIES=NOT_CAPTURED`; `C2H_POST_GUI_VERIFY=NOT_RUN`. As capturas provam propriedades pré-mudança da **cópia** preparada, mas não provam configuração posterior, persistência ao salvar ou bloqueio funcional de seleção.
+
+**Próximo passo manual já autorizado e delimitado:** nesta mesma cópia C2-H, marcar exclusivamente `Apenas leitura` em `LB01` e `LB04`, confirmar apenas essas alterações via OK de cada objeto e do diálogo principal, salvar **uma única vez somente o QVW C2-H**, reabrir propriedades somente para captura posterior e encerrar cada leitura com Cancelar. Em caso de qualquer outra alteração ou mensagem inesperada, STOP e registrar antes de prosseguir. Não testar ainda seleções/bookmarks/busca; subgate funcional aguarda conferência das duas capturas pós-salvamento. Não reexecutar `-Prepare`, não alterar originais.
