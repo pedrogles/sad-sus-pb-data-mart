@@ -1,7 +1,7 @@
 # Fase VIII — C2-F | Inventário físico READ-ONLY das rotas de seleção
 
 **Data da preparação:** 21/10/2026. **Baseline:** `main@9dbdef8e3f20b076cc1a07d0c273a981b3ac45e1`.  
-**Autorização:** responsável autorizou iniciar o C2-F após o C2-E. **Estado atualizado após stdout do responsável (21/10):** `C2F_PREPARATION=PASS_LOCAL_REPORTED_ONLY`, `C2F_PHYSICAL_INVENTORY=NOT_RUN`. Sem PASS físico até evidência local real.
+**Autorização:** responsável autorizou iniciar o C2-F após o C2-E. **Estado de encerramento restrito (21/10):** `C2F_PREPARATION=PASS_LOCAL_REPORTED_ONLY`; `C2F_OBJECT_STRUCTURE=PASS_INDEPENDENT_EXPORT_RECONCILIATION`; `C2F_LB01_LB04_READ_ONLY=UNCHECKED_VISUAL`; `C2F_ROUTE_INVENTORY=STOPPED_WITH_BOUNDED_EVIDENCE_AND_UNKNOWN_ROUTES`. **Sem aprovação geral da UI**; os registros históricos abaixo permanecem com os estados que tinham quando produzidos.
 
 ## 1. Objetivo, fonte, limites e STOP
 
@@ -153,3 +153,25 @@ Manifesto informado: `c2f_prepare_manifest.json`, com 25 arquivos e hash da cóp
 **Interpretação restrita:** a listbox `LB01` é uma **superfície alternativa visível e não configurada como somente leitura** para `PERIODO_ANO`, fora dos botões D2 BU01/BU02. Isto é evidência concreta de um **controle potencialmente editável**, não observação de clique, despacho, seleção efetivamente realizada, nem prova de bypass funcional. O estado carregado mostrado em captura anterior não serve como evento de seleção neste gate.
 
 **Classificação:** `C2F_LB01_YEAR_LISTBOX=PRESENT_READ_ONLY_UNCHECKED_VISUAL`; `C2F_D2_UNCONTROLLED_YEAR_ROUTE=RISK_CONFIRMED_CONFIGURATION_ONLY`; `C2F_LB01_SELECTION_DISPATCH=NOT_TESTED`. O aceite `C2_FULL` e `P5_D2_UI` permanecem NO-GO/NOT_TESTED. **Próximo passo:** sair com **Cancelar**, inspecionar apenas as propriedades `LB04 — PERIODO_COMPETENCIA` sem alterar campos, botões ou seleções; capturar a aba Geral com o estado de `Apenas leitura`. Não executar seleção direta, busca, bookmark, script, COM, reload ou save.
+
+## 10. LB04 — propriedade Apenas leitura (captura enviada em 21/10/2026)
+
+**Fonte original inspecionada:** `image(20261021-134232).png`, PNG 750 × 610, SHA-256 **`F3879A5BCEFAA61BB9DD3ADB1F54C99D0C1854717D3A45D8C8E17776BB88E4C8`** calculado dos bytes recebidos. Imagem mostra diálogo **Propriedades da Lista [PERIODO_COMPETENCIA] → Geral**, dentro de Propriedades do Documento da cópia QVW C2-F.
+
+**Observações diretamente legíveis:** ID `LB04`; campo `PERIODO_COMPETENCIA`; checkbox **Apenas leitura desmarcado**; **Sempre Um Valor Selecionado** desmarcado/cinza (indisponível na captura); `Modo de Pesquisa Padrão` e `Incluir Valores Excluídos na Pesquisa` exibem **<usar padrão>**, sem revelar a configuração de pesquisa efetiva herdada. Nada foi alterado ou testado por seleção nesta evidência.
+
+**Distinção evidencial:** `LB04` é uma listbox temporal existente e não marcada como somente leitura na cópia inspecionada. Assim como `LB01`, representa **superfície alternativa potencialmente editável** fora dos botões controlados BU01/BU02. Não foi demonstrado um clique conflitante, despacho/seleção direta, bookmark, busca ou mecanismo de prevenção em todas as rotas.
+
+**Classificação individual:** `C2F_LB04_MONTH_LISTBOX=PRESENT_READ_ONLY_UNCHECKED_VISUAL`; `C2F_LB04_SELECTION_DISPATCH=NOT_TESTED`.
+
+## 11. STOP e decisão de suficiência restrita C2-F — 21/10/2026
+
+**Objetivo delimitado atendido até o primeiro impedimento material:** uma folha `SH01` e 13 objetos exportados e auditados; duas listboxes temporais visíveis `LB01` (ano) e `LB04` (competência), ambas com a opção **Apenas leitura desmarcada** comprovada por capturas independentes. BU01/BU02 existem, mas neste C2-F não foram relidas suas ações/propriedades; a evidência histórica C2-D1 dos botões permanece **qualificada e restrita**, não repetida. Busca/bookmarks/triggers, ações de outros objetos e possível existência de outras rotas de despacho ainda não foram inventariados em sua totalidade.
+
+**STOP justificado:** a configuração das duas listas impede declarar que a proposta por dois botões controlados constitui a única rota de mudança de ano/competência; sem ter demonstrado o controle pré-despacho de cada rota alternativa, `D2=B` V2 §62 **não pode ser aprovado globalmente**. Não é preciso nem está autorizado neste READ-ONLY simular clique incompatível para provar um bypass funcional. O risco de configuração já é suficiente para o **NO-GO de suficiência**. As propriedades das listas não demonstram isolamento do campo nem comprovam ausência/presença de guardas em caminhos externos.
+
+**Veredito do C2-F:** `C2F_ROUTE_INVENTORY=STOPPED_WITH_BOUNDED_EVIDENCE_AND_UNKNOWN_ROUTES`; `C2F_OBJECT_STRUCTURE=PASS_INDEPENDENT_EXPORT_RECONCILIATION`; `C2F_LB01_LB04_READ_ONLY=UNCHECKED_VISUAL`; `C2F_GLOBAL_D2_SUFFICIENCY=NO_GO_UNCONTROLLED_LISTBOX_CANDIDATES`; `C2F_FULL_UI_ROUTE_COVERAGE=NOT_PROVEN`. **Não** registrar `PASS_READONLY_BOUNDED` para toda a UI nem `D2_BYPASS_FUNCTIONALLY_PROVEN`. Hash pós-abertura do QVW local/artefatos protegidos **não foi conferido independentemente** neste chat; a preparação original tinha preservação reportada.
+
+**Decisão pendente ao responsável, para gate separado:** optar entre (A) desenhar uma superfície de seleção temporal controlada, restringir as listas nativas e inventariar/neutralizar os demais caminhos expostos de seleção, com prova física em cópia QVW e critérios de reversibilidade; (B) preservar `C2_FULL=NO_GO` e documentar os pilotos apenas como apresentação experimental restrita. Não marcar `Apenas leitura` ou salvar QVW agora; **mudar propriedades é mutação e exige novo escopo**. Não reexecutar C2-D3, C2-W, T24–T26 ou fazer novos cliques exploratórios.
+
+**Encerramento:** PR #146 permanece Draft e só contém script de preparação + documento, sem merge. Os resultados seguintes continuam `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `C2_FULL=NO_GO_NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
