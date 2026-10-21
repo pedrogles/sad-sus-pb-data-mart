@@ -1,5 +1,18 @@
 # Current State — SAD Data Mart SUS PB
 
+## Estado vigente — 21/10/2026 | C2-H integrado com limites; próxima fronteira D2/P5
+
+**Fonte Git verificada:** `main@cb2bcc5f5212165cef905f23d81bf688fa33dd2a` após o [PR #148 — C2-H](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/148) integrado por squash; [PR #146 — C2-F](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/146) e [PR #147 — C2-G](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/147) já integrados anteriormente. **PR integrado não equivale a aprovação de UI, de contrato físico nem de produção.**
+
+**C2-H encerrado, sem testes adicionais:** [relatório com protocolo e provas](../discovery/phase-8-c2h-readonly-listbox-physical-pilot-2026-10-21.md): `C2H_CLOSEOUT=COMPLETED_WITH_LIMITS`; duas listas `LB01/PERIODO_ANO` e `LB04/PERIODO_COMPETENCIA` aparecem como `Apenas leitura` na **cópia temporária C2-H**; o responsável reportou que cliques diretos não mudaram seleção (uma captura final, sem dois pares de imagens); o botão BU01 produziu `PERIODO_COMPETENCIA=201801`, com par visual restrito; o runner `-Verify` reportou `PROTECTED_25_FILES_UNCHANGED=True`, `SOURCE_QVW_UNCHANGED=True` e `TEST_COPY_CHANGED_FROM_BASELINE=True`. SHA da cópia alterada: `1724C785442F4FBA8C59E4D908C711AADC546C3AEB958208EA3FDC0F35CF180B`. Os hashes físicos/COM não foram rechecados independentemente neste ambiente; logs e QVWs de teste permanecem fora do Git. **Não repetir C2-H.**
+
+**Decisão da interface ainda não liberada:** as flags `Apenas leitura` restringem **aquelas duas listas**; não existe prova completa de prevenção pré-despacho nas rotas de busca, menus, bookmarks, ações de objetos/COM ou no filtro geral P5 V2 §62.6. Portanto, `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; os resultados experimentais T24/T25/T26, C3-B1/B2 e C4-B1 permanecem candidatos restritos. A sequência de implementação Boundary 7 continua obrigatória.
+
+**Próxima ação delimitada:** realizar **uma revisão documental READ-ONLY das rotas residuais realmente visíveis/possíveis no QVW C2-H**, usando **evidências já exportadas**, e decidir um só bloqueio material para próximo gate físico separado. Não fazer novos cliques, UIA/Win32, automação COM, alteração QVW/QVD ou reexecução de ensaios históricos nesta triagem; D2 não pode ser promovido por ausência de prova das rotas externas. Após essa triagem, o trabalho quantitativo C3/C4 deve manter contratos físicos independentes (sem reexecutar pilotos concluídos).
+
+**Estados preservados:** `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. Três fatos, oito dimensões e QlikView 12 inalterados. **Os blocos abaixo são registros/snapshots históricos conforme a data e PR de sua redação; linhas 'não autorizado', 'Draft' ou 'NOT_RUN' antigas não substituem este estado vigente.**
+
+---
 ## Estado vigente — 21/10/2026 | C2-F integrado; C2-G decisão técnica READ-ONLY
 
 **Git verificado:** `main@f49c3d7c66127d9b9f38372ec778019c9d4d5469` após merge por squash do [PR #146](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/146). O C2-F foi encerrado **com evidências restritas e rotas desconhecidas**, não PASS global: folha `SH01`/13 objetos, `LB01/PERIODO_ANO` e `LB04/PERIODO_COMPETENCIA` visíveis e com `Apenas leitura` desmarcado, ambas verificadas em capturas. Teste de bypass funcional não realizado, e as demais rotas não estão exaustivamente inventariadas. Runner de preparação teve PASS local reportado com fontes protegidas, não homologação de QVW final.
