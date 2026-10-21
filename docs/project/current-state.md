@@ -1,6 +1,6 @@
 # Current State — SAD Data Mart SUS PB
 
-## Roteamento operacional atualizado — 21/10/2026 | PRs #110–#114 integrados; próximo gate C2-E
+## Roteamento operacional atualizado — 21/10/2026 | PRs #110–#114 integrados; C2-E documentado
 
 **Git verificado:** `main@197cc0d8f6478b91f2158b2638573b377c234ace` após integração **squash** de cinco PRs históricos concluídos como pilotos **locais restritos**: [#110](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/110) `fd9fda7f` (T24 anual), [#111](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/111) `b6659e24` (T24 parcial e D2/P5 somente wrapper), [#112](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/112) `b45fcd11` (T24 regional/indisponibilidade), [#113](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/113) `754d5816` (T25 observado) e [#114](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/114) `197cc0d8` (T26 observado). **Zero PRs abertos** na consulta após os merges. Os documentos dos pilotos preservam seus estados e commits históricos de execução; o merge não executou novamente QlikView/COM e os runners do snapshot antigo não devem ser reexecutados a partir da `main` integrada.
 
@@ -8,7 +8,7 @@
 
 **Estados que não mudaram:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. O universo documental permitido de T25/T26 continua `LT_TODOS_REGISTROS_VALIDOS_RN21` em recortes efetivamente reconciliados, sem qualificar oferta integral hospitalar ou ocupação. A semântica V2 §62 segue aprovada **somente semanticamente**.
 
-**Próximo objetivo único:** `C2-E — inventário e decisão de rotas de seleção D2/P5 (READ-ONLY)`: recuperar as provas integradas C2-D/C2-D3/C2 e identificar todas as rotas candidatas/alternativas de seleção do painel, distinguindo prevenção D2 *antes do despacho*, guards de wrapper e regras C/R/I/B da V2. Entregar matriz de alternativas, riscos e **uma** decisão mínima de teste futuro, sem QlikView/COM/GUI, script, QVD/QVW, dashboards ou merges implícitos. O Boundary 7 continua vinculante (C2 → C3 → C4 → eventual Fase IX, sem homologação automática). **STOP** após documento de decisão deste gate.
+**C2-E READ-ONLY concluído documentalmente:** [inventário de rotas D2/P5](../discovery/phase-8-c2e-d2-p5-selection-route-inventory-2026-10-21.md): `C2E_ROUTE_INVENTORY=COMPLETED_READONLY_WITH_LIMITS`, `C2E_GLOBAL_UI=NO_GO_NOT_PROVEN`. O estudo diferencia wrapper pré-COM, botões experimentais, listboxes/ações/busca/bookmarks possíveis porém não inventariados fisicamente, triggers pós-seleção e bloqueios de exibição P5. **Próximo gate proposto (não autorizado):** `C2-F — inventário físico READ-ONLY de rotas efetivamente expostas` em cópia QVW e Windows/QlikView 12, com SHA/origem confirmados, sem clique, mutação ou runner novo sem commit/autorização. O Boundary 7 continua vinculante; C3/C4 globais e Fase IX não foram liberados.
 
 **Histórico abaixo:** os blocos anteriores são snapshots datados, não estado operacional vigente; suas referências a PRs históricos Draft, C4-D ainda não iniciado ou preflight `NOT_RUN` não prevalecem sobre as integrações acima.
 
