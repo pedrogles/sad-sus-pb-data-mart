@@ -1,0 +1,90 @@
+# Fase VIII-B — T24 anual, ensaio isolado
+
+**Estado:** `VERSIONED_NOT_RUN`. Nenhum resultado QlikView do piloto foi executado ou validado neste registro.
+
+## Objetivo e limites
+
+Testar T24 — internações de residentes por 1.000 habitantes — em cinco recortes anuais, usando a fato `QTD_INTERNACAO`, a população anual IBGE e o papel municipal de residência. Numerador e denominador serão comparados com os componentes independentes `F3_componentes_residencia_ano.csv` e `manifest_F3.json`. Preservar o universo SIH/RD processado na PB, sem confundir `IDENT=5` com internação nova.
+
+| Caso | Filtro de ano | Filtro territorial | Referência |
+|---|---|---|---|
+| PB_2017 | 2017 | RES_UF=PB | 182.069 / 4.025.558 |
+| PB_2018 | 2018 | RES_UF=PB | 181.673 / 3.996.496 |
+| PB_2019 | 2019 | RES_UF=PB | 186.280 / 4.018.127 |
+| JP_2018 | 2018 | RES_COD_DATASUS_6=250750 | Componentes F3 originais |
+| CG_2018 | 2018 | RES_COD_DATASUS_6=250400 | Componentes F3 originais |
+
+Aceitação experimental: 12 competências possíveis, nenhuma competência mensal selecionada, numerador e população iguais aos F3 como inteiros; taxa Qlik com erro absoluto máximo de 0,000001 por mil. Esse valor é uma **tolerância candidata apenas para o piloto**.
+
+## Artefatos versionados
+
+- `PAINEL/phase_viii_t24_annual_pilot.qvs`: 16 tabelas do painel técnico VII, chaves e projeção POP em memória, sem STORE ou mudança dimensional.
+- `tools/Invoke-SadPhaseViiiT24AnnualPilot.ps1`: carrega um **novo QVW temporário**, lê os oráculos F3, avalia T24 via COM, captura log e hashes dos 22 QVDs e dos QVWs canônicos antes/depois. Reutiliza o executor VII já integrado como base.
+
+O runner exige branch própria e ambos os scripts versionados. Antes da execução, validar sua sintaxe com `System.Management.Automation.Language.Parser.ParseFile`; se houver erros, **STOP** sem tentar o QlikView. Após parser PASS, executar somente sob Windows e QlikView 12 com `-RunQlik`. Os binários e logs derivados devem permanecer em `%TEMP%`, fora do Git. A branch de teste parte do commit `main@337943d5c5b77067f842902fc679dbb68db87020`.
+
+## Condição de parada
+
+`PASS_LOCAL_T24_ANNUAL_5_CASES_CANDIDATE_ONLY` requer cinco reconciliações, log nativo coerente, 16 tabelas sem synthetic keys/loops, e hashes QVD/QVW preservados. Qualquer divergência bloqueia o gate; não corrigir as fórmulas por conveniência nem repetir automaticamente.
+
+**Fora do escopo:** T24 geral (mês parcial, multiano, seleção contraditória D2, P5 R/I/B, agregação regional), T25/T26, CNES histórico, Fase IX, homologação e produção. Estados preservados: `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `PRODUCTION_APPROVED=False`.
+
+Não modificar nem recarregar QVD/QVW original, realizar merge ou iniciar dashboards.
+
+
+## Tentativa local 1 — BLOCKED_RUNTIME_DECIMAL_ABS
+
+**Fonte:** stdout Windows PowerShell encaminhado pelo responsável. Teste executado da branch `feat/phase-viii-b-t24-annual-pilot-20261018`, commit `da3d5cf28f51fe4648df162e2e28822341353d90`; runner SHA-256 `939E11FD5C9F0CF74274819E08DFC2523B358893421307C6D61416A9D446C213`; QVS SHA-256 `DF9F35D5CB02D3192D60CEB832AA7177087813ED14DD0CD0BA203A116907CF1E`.
+
+**Parser:** `PARSER=PASS` reportado em sessão anterior à execução. **Evidência local:** `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_T24_c1bd6fa732604437b10383c71cfcece8`.
+
+**Resultado local reportado:** `INVENTORY_22_QVD=PASS_READ_ONLY`; `F3_ORACLE_SHA256=8B9AF93015D3B2574A2424D9241FDC42FB56E86CAFA52963811BCE9D485AF622`; `VERDICT=BLOCKED_OR_INCONCLUSIVE` por `System.Decimal` sem método estático `Abs`, erro na linha 282 em `$delta=[decimal]::Abs($actualRate-$expectedRate)`. Após a falha, `ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED=True` e `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`.
+
+**Diagnóstico restrito:** a implementação do piloto atingiu a etapa de comparação de taxa depois de criar/carregar o modelo Qlik em QVW temporário; a saída não comprova ainda reconciliação numérica de nenhum dos cinco casos. `Decimal.Abs` não é disponível no .NET Framework usado com Windows PowerShell 5.1. Não presumir erro na semântica Qlik, denominador F3, dados ou `LINK_ANALISE`. Não houve evidência de escrita nos arquivos de produção. Os arquivos temporários e logs devem permanecer preservados para auditoria se necessário.
+
+**Correção pontual versionada** nesta mesma branch: `$delta=[Math]::Abs([decimal]($actualRate-$expectedRate))` substitui unicamente a chamada incompatível, preservando o tipo decimal, fórmula candidata, tolerância `0.000001`, oráculos, seleção e integridade. Commit de correção: `ef3041a47ba7bc1c56131a26dd334318f0a44cfd`. Este commit é **somente revisão de código**, sem PASS de parser Windows ou execução numérica nova.
+
+**Próxima ação única:** `git pull --ff-only` na branch correta; verificar novo commit; rodar parser real do PowerShell, e **somente em `PARSER=PASS`** realizar **uma nova tentativa controlada** com `-F3Dir` e `-RunQlik`. Verificar os cinco registros e `t24_reconciliation.csv`, hash de 22 QVDs/QVWs e stdout/log nativo. Se houver nova falha, STOP, recuperar motivo e relatório; nenhuma repetição automática.
+
+**Estado:** `VIII_B_T24_ANNUAL_PILOT=BLOCKED_FIRST_RUNTIME_ATTEMPT_NEW_FIX_UNTESTED`; `T24_5_CASES=NOT_RECONCILED`; `T25_T26=NOT_TESTED`; `P5_D2=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `PRODUCTION_APPROVED=False`. PR #110 Draft, sem merge, sem fase IX.
+
+
+## Tentativa local 2 — taxa Qlik com representação decimal incoerente
+
+**Fato observado em stdout/CSV encaminhado pelo responsável:** `PARSER=PASS DECIMAL_ABS=PASS`; branch `feat/phase-viii-b-t24-annual-pilot-20261018`, versão executada `d645f89b571b64bf672edd2e9882babed5372374`, runner SHA-256 `67EBFAB9045C045E0EB7EBC8DA8FF344746735B63DEF3B3C6840A97B1220E1B9`, QVS SHA-256 `DF9F35D5CB02D3192D60CEB832AA7177087813ED14DD0CD0BA203A116907CF1E`. A revisão corrigiu o erro anterior `Decimal.Abs` e atingiu a primeira comparação de T24. Arquivos TEMP em `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_T24_1b3ce97fd32d4851b65847475ae84ad9`.
+
+Para `PB_2017`: oráculo F3 `OracleAdmissions=182069`, `OraclePop=4025558`; Qlik `QlikAdmissions=182069`, `QlikPop=4025558` (**ambos idênticos**). Taxas emitidas: `OracleRate=45.228264007126465449013528062`, `QlikRate=0.000000045`, `Error=45.228263962126465449013528062`. O status foi `BLOCKED_MISMATCH` e nenhum dos cinco casos foi reconciliado. Hashes depois da execução: `ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED=True`, `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`.
+
+**Hipótese técnica delimitada, não fato demonstrado:** o executor utilizava `Num(1000*Sum(QTD_INTERNACAO)/Sum(POPULACAO_ESTIMADA),'0.000000000','.','')` na chamada COM `Evaluate()`. A função `Num()` no QlikView **formata um valor dual conforme máscara/separadores**; a representação textual pode diferir da expressão aritmética bruta conforme as configurações de formato. Referência: documentação oficial QlikView, `Num - script and chart function`. Não alterar o significado de T24 nem atribuir ainda o erro à divisão matemática até testar o retorno bruto COM.
+
+**Correção de leitura candidata** no commit `eba58dce91bd6c408d6da1c6cb2501d58d5a91e4`: substitui apenas o cálculo formatado de taxa por `Evaluate('1000*Sum(QTD_INTERNACAO)/Sum(POPULACAO_ESTIMADA)')`, grava `T24_RAW_QLIK_RATE_CASE` e coluna `QlikRateRaw`; rejeita retorno que não seja número decimal simples com ponto ou vírgula, normaliza **um** separador para a interpretação decimal PowerShell e compara com F3 sob a tolerância **inalterada** de 0,000001/1.000. Os `Num(...,'0')` dos dois inteiros foram mantidos porque a igualdade exata já foi observada em PB_2017. Nenhuma alteração de QVS, fatos, oráculos, filtros, ano, componente POP ou política de indisponibilidade.
+
+**Controle obrigatório:** antes de reexecutar, atualizar a branch e rodar parser real PowerShell; se `PARSER=PASS`, autorizar uma única tentativa QVW TEMP isolada `-F3Dir`/`-RunQlik`. O caso PB_2017 deve agora emitir a taxa bruta de Qlik, além da reconciliação; se divergir, interromper e inspecionar o CSV/log, sem introduzir outra solução por adivinhação. **Nenhum PASS é transferido de tentativas antigas para o novo commit.**
+
+**Estado:** `VIII_B_T24=BLOCKED_RATE_REPRESENTATION_RAW_EVALUATE_FIX_VERSIONED_NOT_TESTED`; `T24_5_CASES=NOT_RECONCILED`; `T25_T26=NOT_TESTED`; `P5_D2=NOT_TESTED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. PR #110 ainda Draft; nenhum merge ou alteração estrutural.
+
+## Tentativa local 3 — PASS_LOCAL_T24_ANNUAL_5_CASES_CANDIDATE_ONLY
+
+**Execução real reportada pelo responsável em Windows/QlikView 12, 18/10/2026.** Script e QVS versionados na branch `feat/phase-viii-b-t24-annual-pilot-20261018`, **commit efetivamente executado** `c35302aec6a4a5e91d1837dc9aac0e0cd626c2d7`. PowerShell `PARSER=PASS` antes da invocação. Runner SHA-256 reportado: `7411670ABF5FF5744A4B66993D64DF8D69DD064AE9A7CEEBFF9C9F5DCE17F014`. QVS SHA-256 reportado: `DF9F35D5CB02D3192D60CEB832AA7177087813ED14DD0CD0BA203A116907CF1E`. Referência F3 SHA-256: `8B9AF93015D3B2574A2424D9241FDC42FB56E86CAFA52963811BCE9D485AF622`.
+
+**Diretório de evidência (somente máquina do responsável):** `C:\Users\pedro\AppData\Local\Temp\SAD_VIII_T24_75a70372567b46bc9bd9cb070e6c4bac`. QVW temporário: `SAD_VIII_T24_ANNUAL_TEST.qvw`; log nativo: `SAD_VIII_T24_ANNUAL_TEST.qvw.log`; CSV por cenário: `t24_reconciliation.csv` no mesmo diretório.
+
+**Reconciliação reportada no stdout:** cinco cenários com `PASS_CANDIDATE`. O Qlik retornou taxa bruta com **vírgula decimal**, resolvida por leitura não formatada de `Evaluate()`, sem alteração da definição semântica de T24.
+
+| Cenário | F3 internações | Qlik internações | F3 POP | Qlik POP | Taxa Qlik bruta (por 1.000) | Resultado |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| `PB_2017` | 182069 | 182069 | 4025558 | 4025558 | `45,228264007126` | `PASS_CANDIDATE` |
+| `PB_2018` | 181673 | 181673 | 3996496 | 3996496 | `45,458071270433` | `PASS_CANDIDATE` |
+| `PB_2019` | 186280 | 186280 | 4018127 | 4018127 | `46,359908484724` | `PASS_CANDIDATE` |
+| `JP_2018` | 39369 | 39369 | 800323 | 800323 | `49,191388976701` | `PASS_CANDIDATE` |
+| `CG_2018` | 22247 | 22247 | 407472 | 407472 | `54,597616523344` | `PASS_CANDIDATE` |
+
+**Integridade e veredito emitidos pelo executor:** `INVENTORY_22_QVD=PASS_READ_ONLY`; `T24_ANNUAL_5_CASES=PASS_NUMERIC_CANDIDATE_PENDING_SHA_RECHECK`; `TEMP_QVW` e `NATIVE_LOG` em `%TEMP%`; `T24_PILOT_QVW_TEST=COMPLETE_PENDING_FINAL_HASHES`; `ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED=True`; `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`; e **`VERDICT=PASS_LOCAL_T24_ANNUAL_5_CASES_CANDIDATE_ONLY`** após verificação final. Sem indicação de erro ou bloqueio nesta execução.
+
+**Nível da prova:** execução física e stdout **reportados pelo responsável**; os cinco resultados numéricos foram transcritos do stdout. O conteúdo integral do QVW temporário, do CSV `t24_reconciliation.csv` e do log nativo não foi inspecionado independentemente nesta sessão. Portanto, **PASS local candidato restrito**, sem homologação final de T24 geral nem declaração de CI/produção.
+
+**Condição de parada atingida:** o piloto anual T24 nestes cinco recortes está **ENCERRADO** como `VIII_B_T24_ANNUAL_PILOT=PASS_LOCAL_CANDIDATE_ONLY`. **Não repetir** a recarga ou os preflights VI/VII/VIII sem gatilho de integridade. O cálculo de referência POP anual teve reconciliação exata nos cinco contextos, mas isso **não prova** recuperação mensal POP, filtro ano×competência conflitante, recortes externos, duas municipalidades, multi-ano, nem políticas P5 R/I/B. T25/T26 continuam não testados.
+
+**Gates independentes pendentes:** `VIII_B_T24_GENERAL=NOT_APPROVED`; `VIII_B_T25_T26=NOT_TESTED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`.
+
+**Governança:** documento atualizado **somente nesta branch**, PR #110 continua Draft até revisão e autorização explícita de merge. `main` não atualizada por esta evidência, sem alteração dos arquivos fonte/QVW/QVD, Fase IX não iniciada.
