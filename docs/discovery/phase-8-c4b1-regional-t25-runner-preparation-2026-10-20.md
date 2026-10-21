@@ -40,6 +40,11 @@ Não copiar ZIPs, QVDs, QVWs, oráculos e relatórios brutos para o repositório
 
 **Critério de BLOCKED/INCONCLUSIVE:** arquivo/oráculo ausente ou alterado, parser inválido, HEAD divergente, QVW fora do TEMP/hash conhecido, quantidades/grãos/seleções diferentes, erro COM, indicador não reconciliado ou inventários SHA alterados. Interromper sem retentativa automática; preservar evidências e pedir revisão de causa. **Não considerar** os PASS da #113 ou #141 como PASS físico deste novo executor.
 
+
+### Errata de revisão estática pré-checkout (20/10/2026)
+
+A primeira versão do executor no commit `bf9c4af706cac3c1a14e0bfa9e380e58b258c1fa` continha **erro de montagem textual no bloco de HEAD Git**, com duplicação do cabeçalho e condição `-notmatch` malformada. Detectado por inspeção do arquivo no GitHub **antes de qualquer checkout, parser Windows, preflight local ou COM**. A correção foi commitada separadamente em `1840ed9f7e2f627cf72eaa0d78a0d26e622a8702`, reconstruindo o bloco a partir do executor T25 histórico e reutilizando apenas o corpo C4-B1. Foi também trocado o comando de comparação do blob do executor para `git hash-object --path=$selfRel -- $self`, respeitando filtros de checkout Windows. A revisão estática da versão corrigida encontrou blocos `()[]{ }` balanceados, marcadores de segurança preservados e um único bloco de parâmetros; **não equivale a parser PowerShell**. **A versão original NÃO deve ser executada.** Ao realizar checkout, fixar o HEAD **final deste PR**, não o SHA antigo: o documento pode receber commits adicionais de rastreabilidade.
+
 ## Handoff e governança
 
 **Ponto de parada deste PR:** runner e protocolo versionados, sem execução. Próximo objetivo admissível é revisar o PR Draft e validar o **parser Windows** + preflight de referência, em gate próprio sem COM. **Nenhum merge foi autorizado nesta preparação.** Não iniciar execução física, novo município, T26 regional, QVS de indicador final, C2/P5/D2/UI, alteração dos Boundaries 6/7 ou Fase IX.
