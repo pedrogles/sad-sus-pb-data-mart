@@ -1,5 +1,7 @@
 # Fase VIII — C2-F | Inventário físico READ-ONLY das rotas de seleção
 
+> **Atualização de integração (21/10/2026):** o inventário C2-F deste arquivo foi integrado pelo [PR #146](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/146). Referências internas a PR Draft e rotas `UNKNOWN` são snapshots da etapa C2-F, não estado Git atual. Depois houve C2-G (#147) e C2-H (#148), com mitigação restrita local das duas listboxes, sem prova de D2 global. Consultar `docs/project/current-state.md`.
+
 **Data da preparação:** 21/10/2026. **Baseline:** `main@9dbdef8e3f20b076cc1a07d0c273a981b3ac45e1`.  
 **Autorização:** responsável autorizou iniciar o C2-F após o C2-E. **Estado de encerramento restrito (21/10):** `C2F_PREPARATION=PASS_LOCAL_REPORTED_ONLY`; `C2F_OBJECT_STRUCTURE=PASS_INDEPENDENT_EXPORT_RECONCILIATION`; `C2F_LB01_LB04_READ_ONLY=UNCHECKED_VISUAL`; `C2F_ROUTE_INVENTORY=STOPPED_WITH_BOUNDED_EVIDENCE_AND_UNKNOWN_ROUTES`. **Sem aprovação geral da UI**; os registros históricos abaixo permanecem com os estados que tinham quando produzidos.
 
