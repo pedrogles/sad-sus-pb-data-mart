@@ -141,3 +141,39 @@ if ($Prepare.IsPresent -eq $Verify.IsPresent) {throw 'BLOCKED_CHOOSE_EXACTLY_ONE
 **Estados reais até nova evidência:** `C2H_NATIVE_PARSER_PRIOR_VERSION=PASS_REPORTED`; `C2H_PREPARE_ATTEMPT_1=FAILED_FAST_SWITCHPARAMETER_CAST`; `C2H_RUNNER_FIX=VERSIONED_UNTESTED_WINDOWS`; `C2H_PREPARE_PASS=NOT_ACHIEVED`; `C2H_TEST_COPY=NOT_CREATED`; `C2H_HASH_VERIFICATION=NOT_RUN`; `C2H_PHYSICAL_LISTBOX_TEST=NOT_RUN`. De acordo com relato do responsável, QVW/QVD não foram alterados; os 25 hashes não foram computados por esta tentativa falha. PR #148 continua Draft, sem merge, nenhuma aprovação de C2/D2/P5 ou Fase IX.
 
 **Próximo passo sujeito a autorização específica de reexecução:** somente se o responsável autorizar, usar o **mesmo PowerShell nativo** (não sandbox), `git pull --ff-only` com checkout limpo do PR #148, conferir o novo HEAD, parser PowerShell 5.1 PASS e executar **uma única segunda chamada `-Prepare`** na origem C2-F pinada. **STOP na primeira falha**; não iniciar GUI antes de evidência de preparação íntegra. Não alterar QVW/arquivos protegidos nem executar ou modificar scripts fora do commit versionado.
+
+## 10. Segunda execução nativa autorizada: preparação concluída (21/10/2026)
+
+**Proveniência da evidência:** transcrição completa da sessão PowerShell 5.1 nativa fornecida diretamente pelo responsável. Valores de hash e integridade foram emitidos pelo script local; os 25 arquivos físicos protegidos e o manifesto ainda não foram reabertos para auditoria externa nesta etapa. Logo, classificar como `PASS_LOCAL_PREPARATION_REPORTED_ONLY`, nunca `PASS_PHYSICAL_LISTBOX_TEST`.
+
+**Pré-condições reportadas:** branch `test/phase-viii-c2h-listbox-readonly-pilot-20261021`, `git status --short` vazio, fast-forward até `58aaebc3146cc89010a5d06084089488a21d3ae1`, parser real `PARSER=PASS`, `-Prepare` invocado **uma única vez nesta segunda tentativa**. Não houve erro ou throw do wrapper após a chamada.
+
+| Saída exata do runner | Valor reportado |
+| --- | --- |
+| VERSIONED_GIT_HEAD | `58aaebc3146cc89010a5d06084089488a21d3ae1` |
+| SCRIPT_SHA256 | `EAA0086C8806EE179D241AEB3239A7E35FFBF0CF68615B61AFD792EC3412F2B7` |
+| SOURCE_C2F_QVW_SHA256 | `31B1DD3FD3D5D100104D5B3F80118B7725E16CB76F13676A6678E5E9B31AF087` |
+| INPUT_EVENTS | `0` |
+| QLIK_COM_CALLS | `0` |
+| AUTOMATED_QVW_MODIFICATIONS | `0` |
+| ORIGINAL_22_QVD_3_QVW_AND_SOURCE_UNCHANGED | `True` |
+| BEFORE_TEST_COPY_SHA256 | `31B1DD3FD3D5D100104D5B3F80118B7725E16CB76F13676A6678E5E9B31AF087` |
+| VERDICT | `PASS_LOCAL_PREPARATION_ONLY_C2H_UI_NOT_EXECUTED` |
+
+**Cópia TEMP C2-H criada e reportada:**
+
+```text
+C:\Users\pedro\AppData\Local\Temp\SAD_VIII_C2H_ee31c0f9a9da40cda0d94fe791b6ec32\SAD_C2H_READONLY_PILOT_COPY.qvw
+```
+
+**Diretório persistente de evidência reportado:**
+
+```text
+C:\Users\pedro\Documents\SAD_C2H_EVIDENCIAS\SAD_VIII_C2H_ee31c0f9a9da40cda0d94fe791b6ec32
+```
+
+**Classificação do subgate:** `C2H_PARSER=PASS_USER_REPORTED_POWERSHELL_5_1`, `C2H_PREPARE=PASS_LOCAL_PREPARATION_REPORTED_ONLY`, `C2H_TEST_COPY=CREATED_SHA_MATCH_REPORTED`, `C2H_PHYSICAL_LISTBOX_TEST=NOT_RUN`, `C2H_POST_GUI_VERIFY=NOT_RUN`.
+
+**Próxima etapa autorizada:** abrir **somente** a cópia TEMP C2-H indicada acima em QlikView 12; capturar a barra de título e propriedades `LB01` e `LB04` **antes** da modificação, verificando que ambas mostram `Apenas leitura` desmarcado. Em seguida, sob roteiro da seção 4, alterar apenas essas duas flags na cópia nova, salvar unicamente a cópia e registrar pós-configuração. Não executar `-Prepare` novamente, não reabrir fontes originais para edição, não realizar recarga. A revisão humana de imagens será diferenciada da verificação binária posterior `-Verify`.
+
+**Estados ainda não promovidos:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. PR #148 permanece Draft e `main` não alterada pelo relato. O SUCCESS do runner somente prova a preparação restrita conforme seu próprio código e stdout, não a configuração futura da interface.
