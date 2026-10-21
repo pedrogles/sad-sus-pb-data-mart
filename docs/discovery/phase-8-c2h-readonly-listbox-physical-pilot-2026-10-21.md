@@ -2,7 +2,7 @@
 
 **Preparação documental:** 21/10/2026. **Baseline:** `main@3ca9c50a98c429ddb880ad6ea877fdf89a33a3fa`.  
 **Autorização explícita:** responsável confirmou "sim, prossiga" para modificar **somente LB01 e LB04 em NOVA cópia temporária**, preservar QVWs originais e 22 QVDs. A autorização não abrange o painel canônico, produção, Fase IX, merges ou alteração semântica.  
-**Status de saída desta preparação no Git:** `C2H_RUNNER=VERSIONED_NOT_EXECUTED_WINDOWS`; `C2H_PREPARE=NOT_RUN`; `C2H_PHYSICAL_LISTBOX_TEST=NOT_RUN`; `P5_D2_UI=NOT_TESTED`; `C2_FULL=NO_GO_NOT_APPROVED`.
+**Estado final deste gate (após evidência local reportada em 21/10/2026):** `C2H_CLOSEOUT=COMPLETED_WITH_LIMITS`; `C2H_PREPARE=PASS_LOCAL_REPORTED`; `C2H_POST_GUI_HASH_VERIFY=PASS_LOCAL_REPORTED_INTEGRITY_ONLY`; `C2H_LISTBOX_MITIGATION=SUPPORTED_OPERATOR_REPORTED_WITH_SCREENSHOT_LIMIT`; `C2H_BU01_REGRESSION=PASS_VISUAL_RESTRICTED`; `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED`. Os estados intermediários das seções históricas abaixo permanecem classificados segundo o momento em que foram registrados.
 
 ## 1. Objetivo único e escopo
 
@@ -233,3 +233,33 @@ C:\Users\pedro\Documents\SAD_C2H_EVIDENCIAS\SAD_VIII_C2H_ee31c0f9a9da40cda0d94fe
 **STOP da GUI:** ensaio físico restrito concluído; **não executar BU02 ou novos cliques**. Fechar a cópia C2-H sem salvar novamente (se QlikView perguntar, escolher Não salvar; mudanças da propriedade já foram salvas uma vez antes dos cliques). Em PowerShell 5.1 nativo, usar **o mesmo checkout local em `58aaebc3146cc89010a5d06084089488a21d3ae1` da preparação**, sem `git pull`: o script `-Verify` compara exatamente `VersionedGitHead` do manifesto com `git rev-parse HEAD` e também o SHA do script. Executar **uma vez `-Verify`**, sem `-Prepare`, indicando `-RunDir` do manifesto reportado na seção 10. Enviar stdout e, se possível, `c2h_hash_verification.json` para revisão. Se PR tiver sido atualizado remotamente apenas com documentação, não fazer fast-forward antes de verificar; não alterar script, hashes, TEMP ou manifesto para contornar guardas.
 
 **Status ainda pendente:** `C2H_VERIFY=NOT_RUN`, `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. O PR #148 segue Draft, sem merge.
+
+## 15. C2-H — verificação final, reconciliação e STOP (21/10/2026)
+
+**Origem desta rodada:** stdout completo de `powershell.exe -NoProfile ... -Verify -RunDir` fornecido pelo responsável no Windows PowerShell nativo. Não foram disponibilizados os bytes do manifesto `c2h_manifest.json`, do relatório `c2h_hash_verification.json` ou dos QVDs/QVWs para inspeção física externa; **as verificações são emitidas pelo runner local e reportadas**, não reproduzidas neste ambiente.
+
+**Identidade do executor efetivamente utilizado:** `VERSIONED_GIT_HEAD=58aaebc3146cc89010a5d06084089488a21d3ae1`; `SCRIPT_SHA256=EAA0086C8806EE179D241AEB3239A7E35FFBF0CF68615B61AFD792EC3412F2B7`. A identidade corresponde à preparação C2-H previamente relatada na seção 10, sem mudança do runner. O script registrou `INPUT_EVENTS=0 QLIK_COM_CALLS=0 AUTOMATED_QVW_MODIFICATIONS=0` em sua própria execução; não implica ausência de interações humanas de teste na interface, previamente documentadas.
+
+| Chave textual do stdout | Saída |
+| --- | --- |
+| `SOURCE_C2F_QVW_SHA256` | `31B1DD3FD3D5D100104D5B3F80118B7725E16CB76F13676A6678E5E9B31AF087` |
+| `PROTECTED_25_FILES_UNCHANGED` | `True` |
+| `SOURCE_QVW_UNCHANGED` | `True` |
+| `TEST_COPY_CHANGED_FROM_BASELINE` | `True` |
+| `AFTER_TEST_COPY_SHA256` | `1724C785442F4FBA8C59E4D908C711AADC546C3AEB958208EA3FDC0F35CF180B` |
+| `VERDICT` | `PASS_HASH_INTEGRITY_ONLY_UI_VISUAL_REVIEW_PENDING` |
+| `C2_FULL` / `P5_D2_UI` / `PRODUCTION_APPROVED` | `NO_GO_NOT_APPROVED` / `NOT_TESTED` / `False` |
+
+**Evidência fora do Git informada:** `C:\Users\pedro\Documents\SAD_C2H_EVIDENCIAS\SAD_VIII_C2H_ee31c0f9a9da40cda0d94fe791b6ec32`. O script procura manifesto nessa pasta e, em execução exitosa, grava `c2h_hash_verification.json`. Não se afirma leitura independente desse JSON.
+
+**Reconciliação de todos os subpassos do gate:** (a) preparação em uma nova cópia TEMP, hashes de origem idênticos e 25 artefatos preservados conforme stdout; (b) imagens pré/pós das propriedades de LB01 e LB04 com opção `Apenas leitura` desmarcada/marcada, respectivamente; (c) operador afirmou não conseguir mudar diretamente o estado das duas listas, com **apenas uma captura final sem seleção** — evidência incompleta para atestar de modo independente cada clique individual ou confirmação de valor possível; (d) o relato de um clique BU01 é coerente com um **par visual antes/depois** demonstrando competência 201801 selecionada em LB04, mesmo marcada somente leitura; (e) após fechar a cópia, `-Verify` reportou preservação de fonte e 25 protegidos, e hash novo apenas na cópia de teste.
+
+**Veredito proporcional à prova:**
+
+- `C2H_CLOSEOUT=COMPLETED_WITH_LIMITS` — gate encerrado após a rodada autorizada, sem exploração adicional.
+- `C2H_PREPARE=PASS_LOCAL_REPORTED`, `C2H_HASH_VERIFY=PASS_LOCAL_REPORTED_INTEGRITY_ONLY`.
+- `C2H_CONFIG=PASS_VISUAL_TWO_LISTBOXES_READ_ONLY`; `C2H_DIRECT_SELECTION=SUPPORTED_OPERATOR_REPORT_SINGLE_FINAL_PNG_LIMIT`; `C2H_BU01_REGRESSION=PASS_VISUAL_RESTRICTED_AFTER_REPORTED_CLICK`.
+- **NÃO** classificar `PASS_INDEPENDENT_PAIRED_STATE_COMPARISON` nem `P5_D2_UI=APPROVED`; a configuração `Read Only` limita aquelas listboxes, mas não estabelece intercepção de busca, bookmark, menu ou seleção programática em todo o documento.
+- `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False` inalterados.
+
+**STOP e decisão posterior:** nenhum novo clique, recarga, execução, reedição ou rodada de captura é necessário dentro de C2-H. Não executar `-Prepare` ou `-Verify` novamente para aumentar o nível de prova. O QVW temporário permanece evidência local fora do Git, sem promoção a painel canônico. A integração documental de PR #148, se desejada, depende de autorização independente; não ocorreu durante este closeout. Para progredir de D2 local a global, é necessária decisão futura separada sobre busca/bookmarks/menus/ações alternativas; não transformar automaticamente essa pendência em novo gate de testes.
