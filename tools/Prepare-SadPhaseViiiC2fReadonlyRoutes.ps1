@@ -46,7 +46,7 @@ function Get-ProtectedSnapshot {
   foreach($p in $canon) {
     $fp=Join-Path $repo $p
     if(-not (Test-Path -LiteralPath $fp -PathType Leaf)){throw ('BLOCKED_CANONICAL_QVW_NOT_FOUND_'+$p)}
-    $all+=Get-Item -LiteralPath $fp
+    $all+=@(Get-Item -LiteralPath $fp)
   }
   $r=@(foreach($f in $all){
     [pscustomobject]@{Path=$f.FullName;Length=$f.Length;SHA256=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash}
