@@ -190,3 +190,18 @@ C:\Users\pedro\Documents\SAD_C2H_EVIDENCIAS\SAD_VIII_C2H_ee31c0f9a9da40cda0d94fe
 **Classificação restrita:** `C2H_PRECHANGE_LISTBOX_CONFIG=PASS_VISUAL_BASELINE_TWO_OBJECTS`; `C2H_PHYSICAL_LISTBOX_MITIGATION=NOT_TESTED`; `C2H_AFTER_SAVE_PROPERTIES=NOT_CAPTURED`; `C2H_POST_GUI_VERIFY=NOT_RUN`. As capturas provam propriedades pré-mudança da **cópia** preparada, mas não provam configuração posterior, persistência ao salvar ou bloqueio funcional de seleção.
 
 **Próximo passo manual já autorizado e delimitado:** nesta mesma cópia C2-H, marcar exclusivamente `Apenas leitura` em `LB01` e `LB04`, confirmar apenas essas alterações via OK de cada objeto e do diálogo principal, salvar **uma única vez somente o QVW C2-H**, reabrir propriedades somente para captura posterior e encerrar cada leitura com Cancelar. Em caso de qualquer outra alteração ou mensagem inesperada, STOP e registrar antes de prosseguir. Não testar ainda seleções/bookmarks/busca; subgate funcional aguarda conferência das duas capturas pós-salvamento. Não reexecutar `-Prepare`, não alterar originais.
+
+## 12. Capturas pós-alteração de LB01/LB04 no QVW C2-H (21/10/2026)
+
+**Proveniência:** duas imagens PNG anexadas pelo responsável e auditadas visualmente nesta sessão, hashes calculados dos bytes efetivamente anexados. A barra de título de ambas identifica a cópia temporal C2-H e não os QVWs canônicos. O operador enviou estas capturas em resposta ao pedido de reabertura de propriedades **depois do salvamento orientado**, mas o ato de salvar e o conteúdo binário do QVW não foram observados diretamente neste ambiente. A verificação de integridade `-Verify` continua pendente.
+
+| Objeto / arquivo recebido | Dimensão | SHA-256 do PNG recebido | Estado observado |
+| --- | --- | --- | --- |
+| `LB01/PERIODO_ANO` — `image(20261021-160612).png` | 746 × 606 | `DFAE26E647ED5B527059E52492F9B679CE602E35493576791645527C6DD3ECCC` | checkbox `Apenas leitura` **marcado** |
+| `LB04/PERIODO_COMPETENCIA` — `image(20261021-160622).png` | 736 × 620 | `D20062D172E569F546252D50D0F1450604215CF501128AC41382A2F8F0F1EA21` | checkbox `Apenas leitura` **marcado** |
+
+**Comparação com §11:** ambas tinham `Apenas leitura` desmarcado antes da alteração, e ambas aparecem marcadas agora. Sem outro campo visivelmente modificado nesta comparação, mas **isso não é auditoria de todas as propriedades QVW**.
+
+**Veredito restrito:** `C2H_POSTCHANGE_CONFIG=PASS_VISUAL_FLAGS_CHECKED_TWO_OBJECTS`; `C2H_SAVED_TO_DISK=REPORTED_NOT_BINARY_VERIFIED`; `C2H_DIRECT_LISTBOX_SELECTION_BEHAVIOR=NOT_TESTED`; `C2H_BU01_REGRESSION=NOT_TESTED`; `C2H_VERIFY=NOT_RUN`; `C2_FULL=NO_GO_NOT_APPROVED` e `P5_D2_UI=NOT_TESTED` mantidos. Não declarar aprovação de prevenção global ou bypass funcional.
+
+**Próximo teste delimitado:** fechar janelas de propriedades com Cancelar e mostrar a folha atual; testar **uma rodada** conforme §4, tomando um valor que esteja **possível** (não cinza/excluído) em cada listbox, com capturas antes/depois, seguido do único clique BU01 já contratado, se estiver habilitado. Caso nenhuma alternativa possível esteja disponível sem limpeza, o §4 permite **um único Limpar na cópia C2-H**, que deve ser registrado como alteração de seleção **de teste**, não reconfiguração de propriedades. Se qualquer listbox admitir seleção direta, STOP e classificar `BLOCKED_LISTBOX_MITIGATION`; se não houver estado comparável, `INCONCLUSIVE`. Não repetir `-Prepare`, não usar search/bookmarks/triggers, não salvar novamente após testes de seleção. Depois fechar a cópia e executar uma vez `-Verify`, com hash da origem e dos 25 artefatos protegidos.
