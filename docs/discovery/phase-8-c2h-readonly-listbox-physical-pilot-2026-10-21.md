@@ -119,3 +119,25 @@ A cópia C2-F foi originalmente reportada em outro diretório, fora do sandbox:
 **Recuperação delimitada dentro do C2-H autorizado:** fechar o QVW C2-F sem salvar; abrir PowerShell 5.1 **nativo**, na raiz do clone, atualizar a branch #148 por fast-forward se o checkout estiver limpo, validar parser real do script versionado e executar **uma única vez** `-Prepare` com `-SourceQvw` igual ao caminho literal já validado. Não executar no sandbox, alterar variável de TEMP ou relaxar verificações de SHA. Enviar stdout, `RUNTIME_TEMP_COPY`, `EVIDENCE_DIR` e veredito **antes de abrir o novo QVW na interface**.
 
 **Estados:** `C2H_ENV_BLOCK=RESOLVED_FOR_NATIVE_POWERSHELL_SOURCE_CHECK_USER_REPORTED`; `C2H_NATIVE_PARSER=NOT_RUN`; `C2H_PREPARE=NOT_RUN`; `C2H_PHYSICAL_LISTBOX_TEST=NOT_RUN`; `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. PR #148 Draft, sem merge. **STOP** na primeira falha ou após preparar a cópia; nenhum avanço automático à GUI.
+
+## 9. Falha da primeira execução nativa - SwitchParameter (21/10/2026)
+
+**Proveniência:** transcrição integral do terminal PowerShell nativo compartilhada pelo responsável. Branch limpa, `git fetch` e `git pull --ff-only` atualizados para `da0a713ea8936035950b08d6ab063955125f4ecb`; parser real PowerShell 5.1 retornou **PASS**. Em seguida, **uma chamada** com `-Prepare` foi realizada e terminou em erro de tipo **antes** da leitura da origem, dos snapshots de QVD/QVW e da criação de qualquer cópia/manifestações.
+
+**Erro reportado:** `Não é possível converter o valor "True" do tipo "System.Management.Automation.SwitchParameter" no tipo "System.Int32"` (`ConvertToFinalInvalidCastException`). O retorno fornecido não continha linhas de saída de preparação ou PASS de integridade. A falha é atribuível à validação de exclusividade dos modos na linha inicial do executor:
+
+```powershell
+if ([int]$Prepare + [int]$Verify -ne 1) {throw 'BLOCKED_CHOOSE_EXACTLY_ONE_MODE'}
+```
+
+**Correção mínima versionada (commit `b01abff525e0861cb1a14398bce5eb90bc5e13c0`):** substituir **somente** a linha acima por:
+
+```powershell
+if ($Prepare.IsPresent -eq $Verify.IsPresent) {throw 'BLOCKED_CHOOSE_EXACTLY_ONE_MODE'}
+```
+
+**Justificativa estática:** `SwitchParameter.IsPresent` fornece um valor lógico sem cast numérico. Quando apenas `-Prepare` ou apenas `-Verify` está presente, os booleanos diferem e a validação permite prosseguir; quando nenhum ou ambos estão presentes, a igualdade gera `BLOCKED_CHOOSE_EXACTLY_ONE_MODE`. Esta análise de uma linha **não substitui novo parser/execução física Windows**, não qualifica os demais ramos do script como aprovados e não autoriza contornar falhas posteriores.
+
+**Estados reais até nova evidência:** `C2H_NATIVE_PARSER_PRIOR_VERSION=PASS_REPORTED`; `C2H_PREPARE_ATTEMPT_1=FAILED_FAST_SWITCHPARAMETER_CAST`; `C2H_RUNNER_FIX=VERSIONED_UNTESTED_WINDOWS`; `C2H_PREPARE_PASS=NOT_ACHIEVED`; `C2H_TEST_COPY=NOT_CREATED`; `C2H_HASH_VERIFICATION=NOT_RUN`; `C2H_PHYSICAL_LISTBOX_TEST=NOT_RUN`. De acordo com relato do responsável, QVW/QVD não foram alterados; os 25 hashes não foram computados por esta tentativa falha. PR #148 continua Draft, sem merge, nenhuma aprovação de C2/D2/P5 ou Fase IX.
+
+**Próximo passo sujeito a autorização específica de reexecução:** somente se o responsável autorizar, usar o **mesmo PowerShell nativo** (não sandbox), `git pull --ff-only` com checkout limpo do PR #148, conferir o novo HEAD, parser PowerShell 5.1 PASS e executar **uma única segunda chamada `-Prepare`** na origem C2-F pinada. **STOP na primeira falha**; não iniciar GUI antes de evidência de preparação íntegra. Não alterar QVW/arquivos protegidos nem executar ou modificar scripts fora do commit versionado.
