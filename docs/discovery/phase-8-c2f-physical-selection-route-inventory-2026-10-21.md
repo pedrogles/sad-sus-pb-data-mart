@@ -118,3 +118,24 @@ Manifesto informado: `c2f_prepare_manifest.json`, com 25 arquivos e hash da cóp
 **Decisão documental restrita:** `C2F_PREPARATION=PASS_LOCAL_REPORTED_ONLY`; `C2F_PHYSICAL_INVENTORY=NOT_RUN`. A preparação está encerrada, **não reexecutar** `-Prepare` para repetir o PASS. O próximo passo **dentro do mesmo gate autorizado** é abrir **somente a cópia temporária** para inspeção humana *sem seleção*, observar propriedades e registrar screenshots. Sem COM, sem nova automação de acessibilidade, sem reload/save. A inspeção deve permitir classificar cada rota em `PRESENT`, `NOT_FOUND_IN_SCOPE` ou `UNKNOWN`, sem extrapolar para aprovação geral de D2/P5.
 
 **Invariantes após o relato:** PR #146 continua Draft e não integrado; `P5_D2_UI=NOT_TESTED`, `C2_FULL=NO_GO_NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED` e `PRODUCTION_APPROVED=False`. Encerrar o gate após o inventário real ou o primeiro bloqueio fundamentado.
+
+## 8. Evidência exportada da estrutura QlikView (21/10/2026)
+
+**Origem:** dois arquivos tabulares exportados pelo QlikView, recebidos e lidos independentemente como UTF-8 com BOM e colunas separadas por TAB, mais duas capturas PNG fornecidas pelo responsável e inspecionadas visualmente neste gate. Nível: auditoria de metadados e imagem, **não** COM/seleção/aceite D2.
+
+| Arquivo recebido | SHA-256 apurado sobre os bytes | Conferência |
+| --- | --- | --- |
+| SAD_C2F_ROUTE_INVENTORY_COPY.qvw.Sheets.tab | BE7DD528EA00A3C3F1DC8A24176D58D4D06C8FF478344F817C500DBA1CF47378 | Uma folha, SH01 / Principal / Visible / 13 objetos |
+| SAD_C2F_ROUTE_INVENTORY_COPY.qvw.Objects.tab | 732CD225ED7F41B19A836E83B55C19D77FA21204C043BD470852FB5AA421B555 | 13 objetos de SH01; IDs sem duplicatas |
+| image(20261021-132221).png | 2195DFA62E5E42CD73D318C2DF997C878F6434D4B3ED392E8BECDC36F7F961AD | QVW temporário C2-F aberto em QlikView x64 Personal Edition; folha Principal visível |
+| image(20261021-132641).png | 2433C1AB3D5E3CB9166422B817E2620CDE0A9F3462205A2F9D9CC481CC4B8BD4 | Propriedades do documento na aba Pastas, lista parcial e contagem 13 |
+
+**Reconciliação física documental:** 2 botões BU01/BU02, 4 listboxes LB01-LB04, 1 tabela simples CH01 e 6 textos TX01-TX06: total 13. Dois textos em modo Normal (TX01/02), quatro com ShowMode Condicional: Oculto (TX03-TX06). Nove objetos com ShowMode Normal. A folha SH01 é a única exportada.
+
+**Rotas visivelmente existentes:** lista LB01 de PERIODO_ANO e lista LB04 de PERIODO_COMPETENCIA, bem como os botões BU01 (proposta de competência 201801) e BU02 (proposta de ano 2019). A listbox LB02 é SERV_COD_DATASUS_6; a LB03 é COD_PROCEDIMENTO. A tabela CH01 tem caption Internacoes por leito SUS medio. O PNG mostra ano 2018 e serviço 250750 destacados em verde, mas isso é estado carregado, não seleção disparada neste gate.
+
+**Limite indispensável:** objetos de lista visíveis são **candidatos a bypass** das rotas por botão, mas o TSV não exporta Read Only, ações, condições ou triggers. Nenhuma prova de clique na lista ou seleção é autorizada/realizada. A ação dos botões e o escopo de bookmarks/buscas também permanecem não inspecionados. Quatro textos condicionalmente ocultos não foram interpretados como aviso efetivo em qualquer estado.
+
+**Status:** C2F_OBJECT_STRUCTURE=PASS_INDEPENDENT_EXPORT_RECONCILIATION; C2F_LISTBOX_YEAR_AND_MONTH=VISIBLE_WITH_READ_ONLY_UNKNOWN; C2F_ACTIONS_TRIGGERS_BOOKMARKS=UNKNOWN; C2F_FULL_PHYSICAL_ROUTE_INVENTORY=IN_PROGRESS_NOT_PASSED. Não há revalidação pós-abertura dos hashes físicos nesta sessão. Preservar P5_D2_UI=NOT_TESTED, C2_FULL=NO_GO_NOT_APPROVED, F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY.
+
+**Próximo passo restrito:** abrir somente as propriedades dos objetos LB01 e LB04 da cópia temporária; registrar campo, Read Only/Somente Leitura, busca e ações se existentes; sair com Cancelar e enviar capturas. Depois, inspecionar BU01/BU02 e triggers/bookmarks sem executar seleções, não repetir UIA/Win32 ou Qlik Reload. O resultado final deste gate dependerá do restante das propriedades observáveis e dos limites explícitos.
