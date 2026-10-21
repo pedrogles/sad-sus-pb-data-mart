@@ -1,5 +1,15 @@
 # Current State — SAD Data Mart SUS PB
 
+## Estado vigente — 21/10/2026 | C2-F integrado; C2-G decisão técnica READ-ONLY
+
+**Git verificado:** `main@f49c3d7c66127d9b9f38372ec778019c9d4d5469` após merge por squash do [PR #146](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/146). O C2-F foi encerrado **com evidências restritas e rotas desconhecidas**, não PASS global: folha `SH01`/13 objetos, `LB01/PERIODO_ANO` e `LB04/PERIODO_COMPETENCIA` visíveis e com `Apenas leitura` desmarcado, ambas verificadas em capturas. Teste de bypass funcional não realizado, e as demais rotas não estão exaustivamente inventariadas. Runner de preparação teve PASS local reportado com fontes protegidas, não homologação de QVW final.
+
+**C2-G concluído somente como proposta documental:** [decisão técnica de controle D2](../discovery/phase-8-c2g-temporal-selection-design-decision-2026-10-21.md). `C2G_READONLY_DESIGN=COMPLETED_WITH_PROPOSAL`; `C2G_OPTION_A=RECOMMENDED_NOT_APPROVED`. A hipótese candidata é usar `LB01/LB04` em modo somente leitura **na futura cópia experimental** e propostas temporais por rota controlada, mas isso **não bloqueia buscas, bookmarks ou outras seleções por si só**. Caso tais rotas continuem acessíveis sem guarda, D2 global é NO-GO. O estudo não escolheu a opção A pelo responsável nem autorizou modificação do QVW.
+
+**Próxima decisão única:** autorizar explicitamente ou recusar **C2-H — piloto físico mínimo de mitigação das duas listboxes em uma NOVA cópia QVW** (`C2H_PHYSICAL_MUTATION=NOT_AUTHORIZED` até aprovação), com SHA pré/pós de origem, 22 QVDs e 3 QVWs, sem reload/modelagem e sem executar a sondagem C2-D3 novamente. `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. Respeitar a ordem C2 → C3 → C4 do Boundary 7. Os snapshots datados abaixo não são roteamento vigente.
+
+---
+
 ## Roteamento operacional atualizado — 21/10/2026 | PRs #110–#114 integrados; C2-E documentado
 
 **Git verificado:** `main@197cc0d8f6478b91f2158b2638573b377c234ace` após integração **squash** de cinco PRs históricos concluídos como pilotos **locais restritos**: [#110](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/110) `fd9fda7f` (T24 anual), [#111](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/111) `b6659e24` (T24 parcial e D2/P5 somente wrapper), [#112](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/112) `b45fcd11` (T24 regional/indisponibilidade), [#113](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/113) `754d5816` (T25 observado) e [#114](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/114) `197cc0d8` (T26 observado). **Zero PRs abertos** na consulta após os merges. Os documentos dos pilotos preservam seus estados e commits históricos de execução; o merge não executou novamente QlikView/COM e os runners do snapshot antigo não devem ser reexecutados a partir da `main` integrada.
