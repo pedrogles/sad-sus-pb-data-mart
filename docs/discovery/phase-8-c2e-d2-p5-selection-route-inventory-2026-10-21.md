@@ -1,5 +1,7 @@
 # Fase VIII — C2-E | Inventário e decisão de rotas de seleção D2/P5 (READ-ONLY)
 
+> **Atualização de roteamento (21/10/2026):** o estado `C2F_PHYSICAL_ROUTE_INVENTORY=PROPOSED_NOT_AUTHORIZED` abaixo descreve o encerramento **histórico C2-E**. Depois, C2-F (#146), C2-G (#147) e C2-H (#148) foram integrados. C2-H concluiu somente mitigação local restrita na cópia TEMP. Para estado vigente, consultar `docs/project/current-state.md`; D2 global permanece NO-GO e P5/UI não aprovado.
+
 **Data:** 21/10/2026. **Fonte operacional:** `main@28e70fee75035a86b52ea9bf0fd6a836be1ce5ca`, após merges #110–#114 e reconciliação #144.  
 **Veredito do gate:** `C2E_ROUTE_INVENTORY=COMPLETED_READONLY_WITH_LIMITS`. **Decisão:** `C2E_GLOBAL_UI=NO_GO_NOT_PROVEN`; próxima investigação proposta `C2F_PHYSICAL_ROUTE_INVENTORY=PROPOSED_NOT_AUTHORIZED`.
 

@@ -1,5 +1,7 @@
 # Fase VIII — C2-G | Decisão técnica candidata de controle temporal D2 (READ-ONLY)
 
+> **Atualização de integração (21/10/2026):** a proposta C2-G foi integrada pelo [PR #147](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/147); a **autorização pontual subsequente** de C2-H permitiu modificar somente `LB01/LB04` na cópia TEMP, encerrada com evidências limitadas e integrada pelo [PR #148](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/148). `C2H_PHYSICAL_MUTATION=NOT_AUTHORIZED` e `NOT_RUN` abaixo são **estados históricos da redação**. A proposta de superfície temporal completa (opção A) **continua não homologada**. Estado vigente: `docs/project/current-state.md`.
+
 **Data:** 21/10/2026. **Fonte operacional verificada:** `main@f49c3d7c66127d9b9f38372ec778019c9d4d5469`.  
 **Escopo:** decisão de engenharia e protocolo do próximo teste; **nenhuma mutação em QVW, QVD, UI, scripts QVS/PowerShell ou modelagem**.  
 **Estado:** `C2G_READONLY_DESIGN=COMPLETED_WITH_PROPOSAL`; `C2G_OPTION_A=RECOMMENDED_NOT_APPROVED`; `C2H_PHYSICAL_MUTATION=NOT_AUTHORIZED`; `C2_FULL=NO_GO_NOT_APPROVED`.

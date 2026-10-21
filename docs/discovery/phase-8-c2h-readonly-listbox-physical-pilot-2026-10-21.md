@@ -1,5 +1,7 @@
 # Fase VIII — C2-H | Piloto físico restrito de duas listboxes temporais
 
+> **Atualização Git (21/10/2026):** o closeout restrito C2-H foi integrado à `main` por [PR #148](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/148), squash `cb2bcc5f5212165cef905f23d81bf688fa33dd2a`. As seções de tentativas/erros e menções a `Draft`, `NOT_RUN` e 'sem merge' reproduzem o estado quando registradas. Integração não altera o veredito local limitado, não executa novamente o teste e não aprova D2/P5 globais.
+
 **Preparação documental:** 21/10/2026. **Baseline:** `main@3ca9c50a98c429ddb880ad6ea877fdf89a33a3fa`.  
 **Autorização explícita:** responsável confirmou "sim, prossiga" para modificar **somente LB01 e LB04 em NOVA cópia temporária**, preservar QVWs originais e 22 QVDs. A autorização não abrange o painel canônico, produção, Fase IX, merges ou alteração semântica.  
 **Estado final deste gate (após evidência local reportada em 21/10/2026):** `C2H_CLOSEOUT=COMPLETED_WITH_LIMITS`; `C2H_PREPARE=PASS_LOCAL_REPORTED`; `C2H_POST_GUI_HASH_VERIFY=PASS_LOCAL_REPORTED_INTEGRITY_ONLY`; `C2H_LISTBOX_MITIGATION=SUPPORTED_OPERATOR_REPORTED_WITH_SCREENSHOT_LIMIT`; `C2H_BU01_REGRESSION=PASS_VISUAL_RESTRICTED`; `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED`. Os estados intermediários das seções históricas abaixo permanecem classificados segundo o momento em que foram registrados.
