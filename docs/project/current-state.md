@@ -1,5 +1,20 @@
 # Current State — SAD Data Mart SUS PB
 
+## Roteamento operacional atualizado — 21/10/2026 | PRs #110–#114 integrados; próximo gate C2-E
+
+**Git verificado:** `main@197cc0d8f6478b91f2158b2638573b377c234ace` após integração **squash** de cinco PRs históricos concluídos como pilotos **locais restritos**: [#110](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/110) `fd9fda7f` (T24 anual), [#111](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/111) `b6659e24` (T24 parcial e D2/P5 somente wrapper), [#112](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/112) `b45fcd11` (T24 regional/indisponibilidade), [#113](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/113) `754d5816` (T25 observado) e [#114](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/114) `197cc0d8` (T26 observado). **Zero PRs abertos** na consulta após os merges. Os documentos dos pilotos preservam seus estados e commits históricos de execução; o merge não executou novamente QlikView/COM e os runners do snapshot antigo não devem ser reexecutados a partir da `main` integrada.
+
+**Evidência posterior fora do repositório (não integrada):** C4-D matriz de lacunas; C4-E política conservadora de cobertura; C4-F releitura dos três TXT VI-P4 exportados, reconciliação observacional de 8.028 pares município×competência (4.467 sem LT, 97 com QT_SUS observado zero e 3.464 com QT_SUS positivo); C4-G três capturas do CNESNet em `201801`: Água Branca `250010` (20 existentes/20 SUS), Conde `250460` (40/0) com concordância numérica e Zabelê `251740` com tela sem tabela, **compatível com ausência de linha**, não prova de zero. Trata-se de evidência externa enviada pelo responsável e relatórios locais, sem PR nem auditoria de completude hospitalar; a referência canônica deste parágrafo não substitui anexos originais, hashes e relatórios locais.
+
+**Estados que não mudaram:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. O universo documental permitido de T25/T26 continua `LT_TODOS_REGISTROS_VALIDOS_RN21` em recortes efetivamente reconciliados, sem qualificar oferta integral hospitalar ou ocupação. A semântica V2 §62 segue aprovada **somente semanticamente**.
+
+**Próximo objetivo único:** `C2-E — inventário e decisão de rotas de seleção D2/P5 (READ-ONLY)`: recuperar as provas integradas C2-D/C2-D3/C2 e identificar todas as rotas candidatas/alternativas de seleção do painel, distinguindo prevenção D2 *antes do despacho*, guards de wrapper e regras C/R/I/B da V2. Entregar matriz de alternativas, riscos e **uma** decisão mínima de teste futuro, sem QlikView/COM/GUI, script, QVD/QVW, dashboards ou merges implícitos. O Boundary 7 continua vinculante (C2 → C3 → C4 → eventual Fase IX, sem homologação automática). **STOP** após documento de decisão deste gate.
+
+**Histórico abaixo:** os blocos anteriores são snapshots datados, não estado operacional vigente; suas referências a PRs históricos Draft, C4-D ainda não iniciado ou preflight `NOT_RUN` não prevalecem sobre as integrações acima.
+
+---
+
+
 ## Roteamento operacional atualizado — 20–21/10/2026 | C4-B1 integrado e fechado com limites
 
 **Fonte Git verificada antes desta atualização:** `main@0c4cae9c2aa1aa8c8894c005fb8dd9f9d44514a6`. Integrações **MERGED por squash** em ordem: [#139 — readiness C4](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/139) `38f331ed`, [#140 — triagem C4-A](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/140) `e60026f5`, [#141 — oráculos F2/F3](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/141) `77876cc1`, [#142 — runner físico e closeout C4-B1](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/142) `0c4cae9c`. Não foram integrados por inferência os pilotos históricos #110–#114. Merge não homologa produção nem altera semanticamente a V2.
