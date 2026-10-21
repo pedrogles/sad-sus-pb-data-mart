@@ -1,7 +1,7 @@
 # Fase VIII — C2-F | Inventário físico READ-ONLY das rotas de seleção
 
 **Data da preparação:** 21/10/2026. **Baseline:** `main@9dbdef8e3f20b076cc1a07d0c273a981b3ac45e1`.  
-**Autorização:** responsável autorizou iniciar o C2-F após o C2-E. **Estado atual:** `C2F_PREPARATION=VERSIONED_NOT_EXECUTED_WINDOWS`, `C2F_PHYSICAL_INVENTORY=NOT_RUN`. Sem PASS físico até evidência local real.
+**Autorização:** responsável autorizou iniciar o C2-F após o C2-E. **Estado atualizado após stdout do responsável (21/10):** `C2F_PREPARATION=PASS_LOCAL_REPORTED_ONLY`, `C2F_PHYSICAL_INVENTORY=NOT_RUN`. Sem PASS físico até evidência local real.
 
 ## 1. Objetivo, fonte, limites e STOP
 
@@ -90,3 +90,31 @@ Registrar imagens com janela e contexto visíveis no `EVIDENCE_ROOT`. Um clique 
 O pacote de prova física só poderá ser classificado `C2F_ROUTE_INVENTORY=PASS_READONLY_BOUNDED` após conferência do stdout, SHA e screenshots/propriedades correspondentes às rotas **efetivamente vistas**. Caso não haja cobertura de todos os pontos da interface, concluir `COMPLETED_WITH_UNKNOWN_ROUTES` e propor decisão mínima, não executar sondagens adicionais neste gate.
 
 **Estados inalterados independentemente do preparo:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. **A integração desta branch/PR exige revisão separada após o resultado físico.**
+
+## 7. Preparo Windows reportado pelo responsável — uma execução (21/10/2026)
+
+**Proveniência:** stdout textual copiado pelo responsável nesta conversa, juntamente com relato de que conferiu o manifesto local. **Os bytes do manifesto, o conteúdo do QVW e os 25 arquivos protegidos não foram enviados para auditoria independente neste gate.** Portanto, os resultados descritos abaixo são `PASS_LOCAL_REPORTED_ONLY` e não `INDEPENDENT_ARTIFACT_AUDIT`.
+
+| Item reportado | Valor |
+| --- | --- |
+| Branch | `test/phase-viii-c2f-readonly-route-inventory-20261021` (declarada limpa) |
+| HEAD realmente executado | `19828e38d8c8d50970f2ba245706cbb01514e703` |
+| Parser real Windows PowerShell 5.1 | `PARSER=PASS` (relato fora do stdout integral do runner) |
+| Executor SHA-256 | `EFF03F1DF5B7EEB51845B28142133FE52135124F3BD7D15EE842E06731DF7F49` |
+| QVW de origem SHA-256 | `31B1DD3FD3D5D100104D5B3F80118B7725E16CB76F13676A6678E5E9B31AF087` |
+| Inventário protegido | `PASS_22_QVD_3_CANONICAL_QVW` |
+| Política de execução | `INPUT_EVENTS=0 QLIK_COM_CALLS=0 NO_RELOAD_NO_SAVE_NO_STORE=True` |
+| Integridade final reportada | `ORIGINAL_22_QVD_3_CANONICAL_QVW_AND_SOURCE_SHA256_UNCHANGED=True` |
+| Processo de preparação | Uma execução `-Prepare`, exit code `0` |
+| Veredito literal | `PASS_LOCAL_PREPARATION_ONLY_NOT_C2F_PHYSICAL_INVENTORY` |
+
+**QVW temporário preparado (saída textual):**
+`C:\Users\pedro\AppData\Local\Temp\SAD_VIII_C2F_ed031b28b1564486af78785e53a01886\SAD_C2F_ROUTE_INVENTORY_COPY.qvw`.
+
+**Evidência persistente informada:**
+`C:\Users\pedro\Documents\SAD_C2F_EVIDENCIAS\SAD_VIII_C2F_ed031b28b1564486af78785e53a01886`.
+Manifesto informado: `c2f_prepare_manifest.json`, com 25 arquivos e hash da cópia igual ao de origem, segundo conferência do responsável. Arquivos não abertos neste ambiente.
+
+**Decisão documental restrita:** `C2F_PREPARATION=PASS_LOCAL_REPORTED_ONLY`; `C2F_PHYSICAL_INVENTORY=NOT_RUN`. A preparação está encerrada, **não reexecutar** `-Prepare` para repetir o PASS. O próximo passo **dentro do mesmo gate autorizado** é abrir **somente a cópia temporária** para inspeção humana *sem seleção*, observar propriedades e registrar screenshots. Sem COM, sem nova automação de acessibilidade, sem reload/save. A inspeção deve permitir classificar cada rota em `PRESENT`, `NOT_FOUND_IN_SCOPE` ou `UNKNOWN`, sem extrapolar para aprovação geral de D2/P5.
+
+**Invariantes após o relato:** PR #146 continua Draft e não integrado; `P5_D2_UI=NOT_TESTED`, `C2_FULL=NO_GO_NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED` e `PRODUCTION_APPROVED=False`. Encerrar o gate após o inventário real ou o primeiro bloqueio fundamentado.
