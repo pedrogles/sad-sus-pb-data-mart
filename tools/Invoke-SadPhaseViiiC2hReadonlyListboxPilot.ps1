@@ -13,7 +13,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {throw 'BLOCKED_WINDOWS_REQUIRED'}
-if ([int]$Prepare + [int]$Verify -ne 1) {throw 'BLOCKED_CHOOSE_EXACTLY_ONE_MODE'}
+if ($Prepare.IsPresent -eq $Verify.IsPresent) {throw 'BLOCKED_CHOOSE_EXACTLY_ONE_MODE'}
 $repo=[IO.Path]::GetFullPath($Root).TrimEnd('\','/')
 $source=[IO.Path]::GetFullPath($SourceQvw)
 $evRoot=[IO.Path]::GetFullPath($EvidenceRoot).TrimEnd('\','/')
