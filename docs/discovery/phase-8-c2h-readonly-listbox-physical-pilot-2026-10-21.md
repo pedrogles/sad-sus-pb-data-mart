@@ -79,3 +79,26 @@ Esperado: `PROTECTED_25_FILES_UNCHANGED=True`, `SOURCE_QVW_UNCHANGED=True`, `TES
 - **Manter mesmo com PASS restrito:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
 
 **Estado até execução Windows reportada:** `C2H_RUNNER=VERSIONED_NOT_EXECUTED_WINDOWS`; `C2H_PREPARE=NOT_RUN`; `C2H_PHYSICAL_LISTBOX_TEST=NOT_RUN`. Ação seguinte: Codex Local executa parser/preparação e fornece stdout; depois iniciar GUI só na nova cópia. Não existe autorização de merge automático por esta permissão.
+
+## 7. BLOQUEIO de ambiente Codex antes de parser/preparação (21/10/2026)
+
+**Proveniência:** relato textual e stderr informados diretamente pelo responsável; nenhum arquivo do Windows foi inspecionado pelo agente neste registro. **Tentativas executadas de `-Prepare`: zero.** Preflight interrompido na primeira falha; não houve criação de cópia nem pasta C2-H, nem GUI/COM/Reload/Save/merge.
+
+**Contexto relatado:** branch `test/phase-viii-c2h-listbox-readonly-pilot-20261021`, HEAD `fd563c2a582fd787c469991195bb3d347763d2c2` e checkout limpo. `RUNNER_SHA256=9A70C54DA53BC8DFCC92ED9CE8D6493F0711854583F84AB8D9B600A5F4D0F32C` informado, sem revalidação dos bytes pela auditoria.
+
+**Erro recebido, literalmente:**
+
+```text
+Could not find a part of the path 'C:\Users\pedro\AppData\Local\Packages\sandbox.{122f7a09-f8ab-46e7-88dd-691d15499a88}\AC\Temp\SAD_VIII_C2F_ed031b28b1564486af78785e53a01886\SAD_C2F_ROUTE_INVENTORY_COPY.qvw'.
+```
+
+A cópia C2-F foi originalmente reportada em outro diretório, fora do sandbox:
+`C:\Users\pedro\AppData\Local\Temp\SAD_VIII_C2F_ed031b28b1564486af78785e53a01886\SAD_C2F_ROUTE_INVENTORY_COPY.qvw`.
+
+**Diagnóstico documentado:** `$env:TEMP` no executor Codex resolveu para o TEMP isolado do sandbox, e o pré-check externo tentou acessar um caminho derivado dali. Isto é `RECOVERABLE_BLOCK_ENVIRONMENT_PATH_SCOPE`, **não** `SOURCE_FILE_PROVEN_MISSING`. O executor C2-H versionado também ancora a origem ao `[IO.Path]::GetTempPath()` corrente, de forma que apenas passar caminho absoluto sob um TEMP diferente não removeria a incompatibilidade de contrato, mesmo se o arquivo for acessível. Não editar proteções de caminho nem contornar pin SHA sem nova decisão.
+
+**Status fiel:** `PARSER=NOT_RUN`, `PREPARE=NOT_RUN`, `SOURCE_C2F_QVW_SHA256=NOT_VERIFIED`, `RUNTIME_TEMP_COPY=NOT_CREATED`, `EVIDENCE_DIR=NOT_CREATED`; `C2H_PHYSICAL_LISTBOX_TEST=NOT_RUN`. Nenhuma execução local foi apresentada como PASS.
+
+**Uma verificação ambiental mínima proposta, sem escrever arquivos:** em **Windows PowerShell 5.1 normal na sessão do usuário (fora do sandbox)**, ler `$env:TEMP`, `[IO.Path]::GetTempPath()`, `Test-Path -LiteralPath` do caminho C2-F literal e `Get-FileHash -Algorithm SHA256` **somente se existir**. Se o arquivo estiver presente com SHA esperado `31B1DD3FD3D5D100104D5B3F80118B7725E16CB76F13676A6678E5E9B31AF087`, preferir execução futura do runner **sem modificá-lo no Windows PowerShell nativo** (contrato de TEMP original). Se a origem não existir nesse ambiente, ou hash for diferente, STOP e decisão específica; não copiar de arquivos arbitrários, desabilitar sandbox ou flexibilizar validações.
+
+**STOP:** não repetir `-Prepare`, não rodar parser no Codex isolado nem alterar runner enquanto a hipótese de escopo/permite-acesso não for checada; nova execução física após o diagnóstico exige decisão/autorização correspondente. PR #148 continua Draft sem merge. `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
