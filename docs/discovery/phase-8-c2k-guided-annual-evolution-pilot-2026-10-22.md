@@ -1,6 +1,6 @@
 # C2-K — Seleção anual/evolução guiada com ação única
 
-**Data:** 22/10/2026. **Estado:** piloto planejado e runner versionado; **sem execução QlikView/Windows neste gate ainda**. Base da `main`: `a16539e10499d0346bf5574f3142f568a5073d02`.
+**Data:** 22/10/2026. **Estado inicial (histórico):** piloto planejado e runner versionado; sem execução QlikView/Windows naquele momento. **Resultado vigente deste gate:** consultar “Fechamento C2-K — evidências da rodada física”: `COMPLETED_WITH_LIMITS`, ano real e Evolução observados, integridade local reportada, gráfico e KPI ainda não validados. Base da `main` à época da preparação: `a16539e10499d0346bf5574f3142f568a5073d02`.
 
 ## Autoridade e escopo
 
