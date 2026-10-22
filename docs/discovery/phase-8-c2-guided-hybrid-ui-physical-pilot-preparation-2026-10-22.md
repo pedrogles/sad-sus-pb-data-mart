@@ -94,3 +94,68 @@ Esperados \`PROTECTED_25_UNCHANGED=True\`, \`SOURCE_UNCHANGED=True\`, \`COPY_CHA
 - [QlikView 12 — Button](https://help.qlik.com/en-US/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Button2.htm).
 - [QlikView 12 — Multi Box](https://help.qlik.com/en-US/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Multi_Box.htm).
 - [V2 aprovada semanticamente](phase-6-semantic-v2-approved-2026-10-14.md), [C2-H](phase-8-c2h-readonly-listbox-physical-pilot-2026-10-21.md), [C2-I](phase-8-c2i-residual-temporal-selection-closure-2026-10-21.md).
+
+
+
+## 8. Fechamento experimental com evidências Windows/GUI fornecidas (22/10/2026)
+
+**Gate encerrado no escopo de navegação guiada por variáveis + integridade da cópia.** Este fechamento não modifica o runner, sua identidade, os QVDs ou o QVW; somente registra as evidências transmitidas pelo operador.
+
+### 8.1 Execução Windows — relatada por stdout
+
+A sequência de mensagens PowerShell fornecida pelo operador contém `CHECKOUT=PASS`, `PARSER=PASS` (PowerShell 5.1), uma preparação `-Prepare` e uma verificação final `-Verify`. As saídas textuais do executor local, sem inspeção externa do binário QVW ou dos JSONs de manifesto, registram:
+
+| Atributo | Saída reportada |
+|---|---|
+| Branch | `test/phase-viii-c2-guided-hybrid-ui-physical-prep-20261022` |
+| `VERSIONED_GIT_HEAD` no preparo e verificação | `49c48f3eab40cdd790d7abe78f33c83db49e627a` |
+| `RUNNER_SHA256` | `BD124C1E8C33967DD1FDD95586062188B2086EDE995BAA0DAD7ED03DDFDFC146` |
+| `SOURCE_SHA256` | `1724C785442F4FBA8C59E4D908C711AADC546C3AEB958208EA3FDC0F35CF180B` |
+| `PROTECTED_AND_SOURCE_UNCHANGED` após Prepare | `True` |
+| `RUNTIME_COPY` | `C:\Users\pedro\Documents\SAD_C2_GUIDED_RUNTIME\SAD_VIII_C2_GUIDED_2574d7e1b90b4edbb6e17edd9322e501\SAD_C2_GUIDED_HYBRID_POC_COPY.qvw` |
+| `EVIDENCE_DIR` | `C:\Users\pedro\Documents\SAD_C2_GUIDED_EVIDENCIAS\SAD_VIII_C2_GUIDED_2574d7e1b90b4edbb6e17edd9322e501` |
+| `PROTECTED_25_UNCHANGED` no Verify | `True` |
+| `SOURCE_UNCHANGED` no Verify | `True` |
+| `COPY_CHANGED` | `True` |
+| `COPY_SHA256` após teste GUI | `3BD19C6D7AE64A258094FA53233D9542E5203189369EA8C1460BF4A447857774` |
+| `VERDICT` do Verify | `PASS_HASH_INTEGRITY_ONLY_UI_NOT_PROVEN` |
+| `QLIK_COM_CALLS / RELOAD_CALLS / AUTOMATED_UI_EDITS` do runner | `0 / 0 / 0` |
+
+**Nível probatório:** `PASS_LOCAL_REPORTED_HASH_INTEGRITY`; logs/manifests de origem não foram abertos independentemente nesta execução remota. O texto comprova o que o runner reportou, **não** funcionamento numérico das medidas nem aprovação visual automática.
+
+### 8.2 Seis imagens QlikView — conteúdo realmente conferido
+
+Cinco capturas visuais de `POC - Interface Guiada` exibem o QVW experimental na barra de título, três botões de modo (`Mensal`, `Anual`, `Evolução`), dois botões de indicador (`Internações (RES)`, `Leitos (LEI)`), caixa de entrada com Ano/Mês, texto de contexto e um objeto compacto de filtros. O texto observável muda:
+
+| Captura fornecida | Contexto visível |
+|---|---|
+| `image(20261022-153547).png` | `MENSAL / 2018 / mês 1 / LEI` |
+| `image(20261022-153610).png` | `ANUAL / 2019 / mês 1 / LEI` |
+| `image(20261022-153629).png` | `EVOLUCAO / 2018 / mês 1 / LEI` |
+| `image(20261022-153644).png` | `EVOLUCAO / 2018 / mês 1 / RES` |
+| `image(20261022-153655).png` | `EVOLUCAO / 2018 / mês 1 / LEI` |
+
+A sexta imagem, `image(20261022-154842).png`, 689 × 526 px, SHA-256 **`7FB707DD549B636D2E74CF0DB1299188A80730DFB48657A03A31401C79419685`**, mostra a caixa `Propriedades do Botão [Mensal]`, aba `Ações`, com uma ação `Definir Variável`, variável `vSAD_POC_Mode` e valor `='MENSAL'`. Isso suporta tanto a configuração declarada quanto sua compatibilidade com as alterações de texto observadas, sem captura interna do evento.
+
+Um seletor compacto mostra visualmente uma escolha verde `250750` na linha cujo rótulo inicia `SERV_COD_DA...`, **sem expansão do nome de campo ou reconciliação do papel por metadados**. A seleção continua visível nas imagens de RES e LEI. A P5 afirma que município de serviço é B para RES, mas **não houve teste de guarda real do KPI**, e o campo exato precisa ser confirmado se for objeto de um novo gate.
+
+**Precisão temporal:** o texto `Mês: 1` continua visível no estado ANUAL/EVOLUCAO. Isso é aceitável *somente como estado de proposta* e deve ser ocultado/interpretado corretamente na UI futura; não é evidência de que o Qlik filtrou fisicamente 201801 ou limpou competência anterior.
+
+### 8.3 Resultado proporcional
+
+| Contrato/gate | Fechamento |
+|---|---|
+| `GUIDED_UI_BUTTON_VARIABLE_ACTION` | `SUPPORTED_BY_REAL_QV_PROPERTY_SCREENSHOT` |
+| `GUIDED_UI_THREE_MODES_PROPOSAL` | `PASS_VISUAL_BOUNDED_PROPOSAL_ONLY` |
+| `GUIDED_UI_RES_LEI_NAVIGATION` | `PASS_VISUAL_BOUNDED_PROPOSAL_ONLY` |
+| `GUIDED_UI_MULTIBOX_PRESENT` | `PASS_VISUAL_PRESENT_SELECTION_LABEL_TRUNCATED` |
+| `GUIDED_UI_HASH_VERIFY` | `PASS_LOCAL_REPORTED_HASH_INTEGRITY_ONLY` |
+| `GUIDED_UI_TEMPORAL_REAL_FIELD_DISPATCH` | `NOT_TESTED` |
+| `GUIDED_UI_P5_INDICATOR_GUARD` | `NOT_TESTED` |
+| `GUIDED_UI_END_TO_END_D2_P5` | `NOT_APPROVED` |
+| `C2_FULL` / `P5_D2_UI` | `NO_GO_NOT_APPROVED` / `NOT_TESTED` |
+| `F4_P5_PHYSICAL_FILTERS` / `PHASE_IX` / `PRODUCTION_APPROVED` | `NOT_TESTED_FULLY` / `NOT_AUTHORIZED` / `False` |
+
+**STOP:** piloto já executado e encerrado no limite de navegação/variáveis. Não pedir novamente as cinco capturas, reproduzir a sequência GUI, reexecutar `-Prepare`/`-Verify` nem mexer no QVW originário para aumentar o nível de prova. PNGs e artefatos binários não foram incluídos no Git, e o SHA de verificação diz respeito ao **runner no HEAD executado** `49c48f3e...`, não ao HEAD documental atualizado por este registro.
+
+**Nova frente independente, ainda não autorizada por este fechamento:** projetar e testar em gate próprio a tradução segura do contexto proposto em `PERIODO_ANO` / `PERIODO_COMPETENCIA` reais e a guarda P5 de um KPI sob seleção territorial simultânea. Reutilizar esta cópia e evidências somente após revalidar sua proveniência, sem reabrir C2-H/C2-I, alterar V2 ou permitir números sem cobertura CNES/LT comprovada.
