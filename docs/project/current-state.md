@@ -1,5 +1,17 @@
 # Current State — SAD Data Mart SUS PB
 
+## Estado vigente — 21/10/2026 | reconciliação documental C4-D/E/F/G pós-C2-I
+
+**Base da reconciliação:** `main@4b2d062536c42fe718fc622adc66f55e6d44e3a1` (PR #150/C2-I integrado). [PR #151](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/151) publica os relatórios históricos C4-D/E/F/G, originalmente externos ao repositório, **somente como evidência documental**, sem nova execução física nem homologação automática. [C4-D](../discovery/phase-8-c4d-global-indicator-gaps-readonly-2026-10-21.md), [C4-E](../discovery/phase-8-c4e-cnes-coverage-unavailability-readonly-2026-10-21.md), [C4-F](../discovery/phase-8-c4f-vi-p4-export-readback-2026-10-21.md), [C4-G](../discovery/phase-8-c4g-cnesnet-201801-screenshot-closeout-2026-10-21.md).
+
+**C4 — resultado qualificado:** C4-F relata leitura exploratória e reconciliação dos três TXT exportados do VI-P4: 223 municípios × 36 competências = 8.028 pares; 4.467 sem linha LT, 97 com `QT_SUS` observado zero, 3.464 positivos; 290/669 municípios×ano com linhas nos 12 meses. C4-G relata duas concordâncias visuais numéricas CNESNet × TXT para `201801` (Água Branca `250010`, 20/20; Conde `250460`, 40/0) e uma tela de Zabelê `251740` sem tabela, **não** prova de capacidade zero. Os originais TXT/PNG/ZIP, binários locais e execução COM não foram reabertos nesta integração documental. Não há certificação de completude hospitalar ou zero real.
+
+**Próxima decisão de maior valor:** gate READ-ONLY e **separadamente autorizado** de suficiência acadêmica/metodológica do escopo `LT_TODOS_REGISTROS_VALIDOS_RN21`: indicar precisamente quais T25/T26 podem ser descritos como **CNES/LT observado** somente nos recortes reconciliados segundo #133, quais são indisponíveis e quais dependeriam de fonte histórica adicional ou consulta ao professor. Não repetir VI-P4, C4-B1 nem C2-I, não iniciar T26 regional/comparações em massa por inferência. Em frente independente, D2 global continua NO-GO até estratégia completa de superfície de seleção pré-despacho e validação P5.
+
+**Contratos preservados:** `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. Estado anterior abaixo é histórico para os closeouts subsequentes.
+
+---
+
 ## Estado vigente — 21/10/2026 | C2-H integrado, C2-I READ-ONLY encerrado
 
 **Baseline Git verificada para C2-I:** `main@329a765bfaa27583b09bc24f8734db1301e2d752` após [PR #148 — C2-H](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/148) (merge `cb2bcc5f`) e [PR #149 — reconciliação pós-C2-H](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/149) (merge `329a765b`). C2-F (#146) e C2-G (#147) integrados anteriormente. Documentos históricos mais abaixo mantêm estado e SHA de sua época.
