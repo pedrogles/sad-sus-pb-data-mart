@@ -96,7 +96,8 @@ O PASS deste próximo gate aprovaria **somente a experiência guiada na cópia**
 
 `GUIDED_HYBRID_LOGIC_GATE=PASS_PURE_MODEL_ONLY`  
 `GUIDED_HYBRID_PHYSICAL_GATE=NOT_TESTED`  
-`MERGE_AUTHORIZED=FALSE`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.  
+`MERGE_AUTHORIZED_AT_DISCOVERY=FALSE`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.  
+**Nota posterior (22/10/2026):** o responsável autorizou revisar e integrar os PRs #152–#155 como relatórios e executores históricos; essa autorização não transforma o PASS lógico em validação física ou aprovação de produção.  
 **STOP do presente gate:** atingido; nenhuma execução física iniciada.
 
 ## 8. Referências
