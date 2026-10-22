@@ -1,8 +1,8 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado vigente proposto — 21/10/2026 | reconciliação documental C4-D/E/F/G pós-C2-I
+## Estado vigente — 21/10/2026 | reconciliação documental C4-D/E/F/G pós-C2-I
 
-**Base da reconciliação:** `main@4b2d062536c42fe718fc622adc66f55e6d44e3a1` (PR #150/C2-I integrado); relatórios históricos C4-D/E/F/G publicados nesta branch **apenas para revisão**, sem nova execução física nem homologação automática. Até o merge autorizado, este estado ainda **não pertence à main**. [C4-D](../discovery/phase-8-c4d-global-indicator-gaps-readonly-2026-10-21.md), [C4-E](../discovery/phase-8-c4e-cnes-coverage-unavailability-readonly-2026-10-21.md), [C4-F](../discovery/phase-8-c4f-vi-p4-export-readback-2026-10-21.md), [C4-G](../discovery/phase-8-c4g-cnesnet-201801-screenshot-closeout-2026-10-21.md).
+**Base da reconciliação:** `main@4b2d062536c42fe718fc622adc66f55e6d44e3a1` (PR #150/C2-I integrado). [PR #151](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/151) publica os relatórios históricos C4-D/E/F/G, originalmente externos ao repositório, **somente como evidência documental**, sem nova execução física nem homologação automática. [C4-D](../discovery/phase-8-c4d-global-indicator-gaps-readonly-2026-10-21.md), [C4-E](../discovery/phase-8-c4e-cnes-coverage-unavailability-readonly-2026-10-21.md), [C4-F](../discovery/phase-8-c4f-vi-p4-export-readback-2026-10-21.md), [C4-G](../discovery/phase-8-c4g-cnesnet-201801-screenshot-closeout-2026-10-21.md).
 
 **C4 — resultado qualificado:** C4-F relata leitura exploratória e reconciliação dos três TXT exportados do VI-P4: 223 municípios × 36 competências = 8.028 pares; 4.467 sem linha LT, 97 com `QT_SUS` observado zero, 3.464 positivos; 290/669 municípios×ano com linhas nos 12 meses. C4-G relata duas concordâncias visuais numéricas CNESNet × TXT para `201801` (Água Branca `250010`, 20/20; Conde `250460`, 40/0) e uma tela de Zabelê `251740` sem tabela, **não** prova de capacidade zero. Os originais TXT/PNG/ZIP, binários locais e execução COM não foram reabertos nesta integração documental. Não há certificação de completude hospitalar ou zero real.
 
