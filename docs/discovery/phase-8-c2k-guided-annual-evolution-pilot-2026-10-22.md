@@ -100,3 +100,61 @@ Esperado: `PROTECTED_25_UNCHANGED=True`, `SOURCE_UNCHANGED=True`, `COPY_CHANGED=
 | `PHASE_IX`, `PRODUCTION_APPROVED` | NOT_AUTHORIZED / False |
 
 **STOP:** uma cópia, uma tentativa de clique, uma verificação. Não implementar automaticamente o fallback em cadeia, não repetir esta fase por curiosidade e não alterar os campos ou QVWs originais.
+
+## Fechamento C2-K — evidências da rodada física (22/10/2026)
+
+**Status:** `C2K_CLOSEOUT=COMPLETED_WITH_LIMITS`. Dois cenários restritos de navegação anual/evolução demonstrados em capturas QlikView, integridade de arquivos confirmada **conforme saída local do executor Windows**. Sem validação física independente dos binários, cálculo de KPI, D2 global ou produção.
+
+### Proveniência
+
+- **Código preparado/executado (conforme stdout):** `VERSIONED_GIT_HEAD=aca5f2f5b8f00ed6a418ac7dc6a06047de1983e5`, branch `test/phase-viii-c2k-guided-annual-evolution-20261022`.
+- **Executor hash:** `RUNNER_SHA256=C0C731040E1D8A2E1F432BCE0E32556725260E729D47C9FD7F39560B904A7DA2`.
+- **QVW de origem pinada:** `SAD_C2J_GUIDED_REAL_SELECTION_COPY.qvw`, `SOURCE_SHA256=E4DA93675F93302AD2C954D7C8C21320042CC244957B370059EFB028403B3985`.
+- **Cópia C2-K de runtime:** `C:\Users\pedro\Documents\SAD_C2K_ANNUAL_RUNTIME\SAD_VIII_C2K_ANNUAL_47f2ae84abd747cb963f1cb8baad41a4\SAD_C2K_ANNUAL_EVOLUTION_COPY.qvw`.
+- **Evidências persistentes locais:** `C:\Users\pedro\Documents\SAD_C2K_ANNUAL_EVIDENCIAS\SAD_VIII_C2K_ANNUAL_47f2ae84abd747cb963f1cb8baad41a4`. Não foram abertos o manifesto JSON nem o binário local QVW nesta sessão cloud.
+
+### Evidência visual — somente a rota testada
+
+| Teste | Antes | Depois | Resultado |
+|---|---|---|---|
+| Única ação `Selecionar no Campo(PERIODO_ANO)` para 2019 | Proposta ANUAL/2019, `ANO REAL=2018 (Qtd 1)`, `COMPETENCIA REAL=201801 (Qtd 1)` | `ANO REAL=2019 (Qtd 1)`, `COMPETENCIA REAL=SEM SELECAO (Qtd 0)`, serviço `250750` preservado | `C2K_TEMPORAL_ANNUAL_ACTION=PASS_VISUAL_BOUNDED_SINGLE_201801_TO_2019` |
+| Botão `Evolução` altera somente variável de modo | ANUAL/2019 já aplicado aos campos reais | Proposta EVOLUCAO/2019, mantendo `ANO REAL=2019 (Qtd 1)`, `COMPETENCIA REAL=SEM SELECAO (Qtd 0)` | `C2K_EVOLUTION_SAME_PERIOD=PASS_VISUAL_BOUNDED` |
+
+Capturas e hashes dos PNGs foram referenciados nos comentários de evidência [pré/pós anual](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/155#issuecomment-6351608807) e [modo Evolução](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/155#issuecomment-6352010386). Os arquivos gráficos não foram adicionados ao Git.
+
+**Limite:** o QlikView mostrou que, nessa rota, selecionar o ano novo removeu a seleção explícita mensal incompatível; não atribuir o comportamento a todas as mudanças ou aos mecanismos nativos alternativos. O modo EVOLUCAO foi validado **apenas enquanto navegação/contexto**, sem gráfico com doze meses ou indicador oficial.
+
+### Resultado final do `-Verify` em PowerShell 5.1 (transcrição enviada pelo operador)
+
+~~~text
+VERSIONED_GIT_HEAD=aca5f2f5b8f00ed6a418ac7dc6a06047de1983e5
+RUNNER_SHA256=C0C731040E1D8A2E1F432BCE0E32556725260E729D47C9FD7F39560B904A7DA2
+SOURCE_SHA256=E4DA93675F93302AD2C954D7C8C21320042CC244957B370059EFB028403B3985
+QLIK_COM_CALLS=0 RELOAD_CALLS=0 AUTOMATED_UI_EDITS=0
+PROTECTED_25_UNCHANGED=True
+SOURCE_UNCHANGED=True
+COPY_CHANGED=True
+COPY_SHA256=9896D55ED7F98CFA480A0626484A04C3A937E2F64EBF238011D3CDEF4E1E21FA
+EVIDENCE_DIR=C:\Users\pedro\Documents\SAD_C2K_ANNUAL_EVIDENCIAS\SAD_VIII_C2K_ANNUAL_47f2ae84abd747cb963f1cb8baad41a4
+VERDICT=PASS_HASH_INTEGRITY_ONLY_UI_NOT_PROVEN
+~~~
+
+**Qualificação da integridade:** `C2K_HASH_VERIFY=PASS_LOCAL_REPORTED`. O executor reportou hashes invariantes dos 22 QVDs, três QVWs originais e QVW de origem, com alteração da nova cópia descartável. O veredito `UI_NOT_PROVEN` do runner é deliberado: ele não executa chamadas COM nem interpreta seleções, telas ou fórmulas.
+
+### Fechamento e estados que NÃO são promovidos
+
+| Gate/contrato | Estado |
+|---|---|
+| `C2K_CLOSEOUT` | `COMPLETED_WITH_LIMITS` |
+| `C2K_TEMPORAL_ANNUAL_ACTION` | `PASS_VISUAL_BOUNDED_SINGLE_201801_TO_2019` |
+| `C2K_EVOLUTION_SAME_PERIOD` | `PASS_VISUAL_BOUNDED` |
+| `C2K_HASH_VERIFY` | `PASS_LOCAL_REPORTED` |
+| `C2K_FULL_EVOLUTION_CHART` | `NOT_TESTED` |
+| `C2_FULL` / `P5_D2_UI` | `NO_GO_NOT_APPROVED` / `NOT_TESTED_GLOBAL` |
+| `F4_P5_PHYSICAL_FILTERS` / `P5_KPI_CALC_GUARD` | `NOT_TESTED_FULLY` / `NOT_TESTED` |
+| `LINK_KEY_CONTRACT` / `MEASURES_AND_DENOMINATOR_CONTRACT` | `NOT_APPROVED` / `NOT_APPROVED` |
+| `PHASE_IX` / `PRODUCTION_APPROVED` | `NOT_AUTHORIZED` / `False` |
+
+**STOP alcançado:** uma cópia, uma ação temporal, uma mudança para evolução e uma verificação final. Não repetir `-Prepare`, `-Verify` ou os cliques. O commit deste **fechamento apenas documental** ocorreu depois do teste; por isso o HEAD remoto muda, enquanto a execução fica corretamente atribuída ao commit original `aca5f2f5` e ao mesmo hash do runner. Não exigir sincronizar Git local para refazer o `-Verify`.
+
+**Próximas decisões separadas:** (a) contrato de UX para generalizar os três modos mantendo sinalização da proposta versus seleção real e política de limpeza; (b) condição de cálculo efetiva da classe B de P5 em KPI com medidas aprovadas; (c) gráfico de evolução mensal com granularidade, cobertura e tratamento de ausência/zero válidos. Nenhuma dessas pendências é aprovação automática de um novo gate.
