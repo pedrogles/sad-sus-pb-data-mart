@@ -106,3 +106,64 @@ STOP após uma rodada ou primeira falha; manter QVW/prints/logs fora do Git. No 
 - https://help.qlik.com/en-US/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Button2.htm
 - https://help.qlik.com/pt-BR/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/ChartFunctions/FieldFunctions/field-functions-charts.htm
 - https://help.qlik.com/en-US/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Ajax/WebView_StraightTable.htm
+
+
+## Fechamento C2-J — 22/10/2026
+
+**Status do gate:** `C2J_CLOSEOUT=COMPLETED_WITH_LIMITS`. O teste da ação real para janeiro/2018 e o diagnóstico textual P5 foram observados visualmente; a preservação dos arquivos foi reportada no stdout do runner nativo Windows. **Não é aprovação de indicadores, KPI, produção ou D2/P5 global.**
+
+### Evidência do teste físico — fornecida pelo operador
+
+- **Ambiente reportado:** QlikView x64 Personal Edition no Windows e Windows PowerShell 5.1; QVW de trabalho apenas `SAD_C2J_GUIDED_REAL_SELECTION_COPY.qvw` em runtime descartável.
+- **Base do script realmente executado:** `VERSIONED_GIT_HEAD=5f237e453701f03c4e990b887a4a1225affd5e26`, branch `test/phase-viii-c2j-guided-real-selection-p5-20261022`.
+- **Runner SHA-256:** `96052D1C3CD068BE49D0F5F03A465BF03570CC5D25B562C36CD221169BD02B7D`.
+- **Fonte protegida (cópia do piloto #153):** `SOURCE_SHA256=3BD19C6D7AE64A258094FA53233D9542E5203189369EA8C1460BF4A447857774`.
+- **Copy runtime, reportado anteriormente por `-Prepare`:** `C:\Users\pedro\Documents\SAD_C2J_REAL_RUNTIME\SAD_VIII_C2J_REAL_6a2ba43f62a9435abf506f99dc6470a9\SAD_C2J_GUIDED_REAL_SELECTION_COPY.qvw`.
+- **Evidências persistentes:** `C:\Users\pedro\Documents\SAD_C2J_REAL_EVIDENCIAS\SAD_VIII_C2J_REAL_6a2ba43f62a9435abf506f99dc6470a9`. Logs JSON/manifestos não foram materializados para inspeção independente nesta sessão.
+
+### Resultado visual realmente observado
+
+| Verificação | Evidência | Resultado qualificado |
+|---|---|---|
+| Configuração do botão `BU12` | Capturas `image(20261022-193117).png` e `image(20261022-193142).png`: condição de habilitação com MENSAL/2018/1 e uma ação `Selecionar no Campo` de `PERIODO_COMPETENCIA` | Configuração visível |
+| Seleção real | Capturas `image(20261022-193203).png` e `image(20261022-193219).png`: competência real de sem seleção (Qtd 0) para `201801` (Qtd 1), mantendo ano real 2018 (Qtd 1); botão passa a desabilitado | `C2J_TEMPORAL_REAL_SELECTION=PASS_VISUAL_BOUNDED_SINGLE_201801` |
+| P5 municipal | Capturas `image(20261022-200344).png` e `image(20261022-200402).png`: seleção municipal serviço `250750` permanece, alternância LEI→RES muda texto de sem bloqueio para `B - INDICADOR RES INDISPONIVEL`, sem limpar município | `C2J_P5_TEXT_DIAGNOSTIC=PASS_VISUAL_BOUNDED` |
+| KPI numérico físico | Não existe evidência de condition/expressão de KPI real bloqueando medida em P5=B | `C2J_P5_KPI_CALC_GUARD=NOT_TESTED` |
+
+**Importante:** a tela com `P5=B` é texto de diagnóstico. Não demonstra `Calculation Condition` em um KPI de RES, não prova medida oficial, nem autoriza apresentar numerador/denominador. Também não houve prova de aplicação real para modo ANUAL/2019 ou EVOLUCAO/2018.
+
+### Saída final do `-Verify` — stdout Windows fornecido após salvar e fechar somente a cópia
+
+~~~text
+VERSIONED_GIT_HEAD=5f237e453701f03c4e990b887a4a1225affd5e26
+RUNNER_SHA256=96052D1C3CD068BE49D0F5F03A465BF03570CC5D25B562C36CD221169BD02B7D
+SOURCE_SHA256=3BD19C6D7AE64A258094FA53233D9542E5203189369EA8C1460BF4A447857774
+QLIK_COM_CALLS=0 RELOAD_CALLS=0 AUTOMATED_UI_EDITS=0
+PROTECTED_25_UNCHANGED=True
+SOURCE_UNCHANGED=True
+COPY_CHANGED=True
+COPY_SHA256=E4DA93675F93302AD2C954D7C8C21320042CC244957B370059EFB028403B3985
+EVIDENCE_DIR=C:\Users\pedro\Documents\SAD_C2J_REAL_EVIDENCIAS\SAD_VIII_C2J_REAL_6a2ba43f62a9435abf506f99dc6470a9
+VERDICT=PASS_HASH_INTEGRITY_ONLY_UI_NOT_PROVEN
+~~~
+
+**Qualificação:** `C2J_INTEGRITY=PASS_LOCAL_REPORTED`. Essa saída sustenta que, segundo a verificação executada no Windows, os 22 QVDs e três QVWs canônicos e a cópia de origem mantiveram seus hashes, e somente a cópia C2-J mudou. Não equivale a abrir/auditar independentemente os arquivos nem a provar o funcionamento do KPI. Não houve chamada COM, recarga ou edição automatizada pelo runner.
+
+### Decisão de encerramento / próximos limites
+
+| Indicador/gate | Estado ao encerrar |
+|---|---|
+| `C2J_PHYSICAL_BOUNDED` | `COMPLETED_WITH_LIMITS` |
+| `C2J_TEMPORAL_REAL_SELECTION` | `PASS_VISUAL_BOUNDED_SINGLE_201801` |
+| `C2J_P5_TEXT_DIAGNOSTIC` | `PASS_VISUAL_BOUNDED` |
+| `C2J_INTEGRITY` | `PASS_LOCAL_REPORTED` |
+| `C2J_P5_KPI_CALC_GUARD` | `NOT_TESTED` |
+| `C2_FULL` | `NO_GO_NOT_APPROVED` |
+| `P5_D2_UI` | `NOT_TESTED_GLOBAL` |
+| `F4_P5_PHYSICAL_FILTERS` | `NOT_TESTED_FULLY` |
+| `LINK_KEY_CONTRACT` / `MEASURES_AND_DENOMINATOR_CONTRACT` | `NOT_APPROVED` / `NOT_APPROVED` |
+| `PHASE_IX` / `PRODUCTION_APPROVED` | `NOT_AUTHORIZED` / `False` |
+
+**STOP alcançado:** os dois cenários e a verificação de integridade foram executados uma vez; não repetir `-Prepare`, a seleção 201801, C2-H/C2-I ou `-Verify` desta cópia. Esta nota documental foi incorporada **após** o `-Verify`, por isso o commit de fechamento do PR terá novo HEAD remoto, diferente do HEAD `5f237e45` do **runner efetivamente executado**. O runner não foi alterado; não usar o HEAD do closeout para reclassificar a execução.
+
+**Decisão pendente de gate independente:** testar uma guarda `Calculation Condition` em KPI já semanticamente aprovado ou, se ainda não houver KPI contratualmente aprovado, obter aprovação metodológica de expressão antes de qualquer medida. Projetar também mudança anual/evolução real por controle guiado com preservação de contexto e regras D2; não deduzir esse comportamento de PASS mensal 201801. Não começar Fase IX por este resultado. O PR continua Draft sem merge até decisão específica do responsável.
