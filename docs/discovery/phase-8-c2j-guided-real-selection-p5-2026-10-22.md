@@ -2,7 +2,7 @@
 
 Data: 22/10/2026. Base main: a16539e10499d0346bf5574f3142f568a5073d02.
 
-Gate PREP: roteiro e script versionados; QlikView Windows NÃO foi executado nesta sessão.
+Gate PREP (registro histórico anterior à prova Windows): roteiro e script versionados; QlikView Windows ainda não tinha sido executado naquele momento. **Estado final deste gate:** consultar “Fechamento C2-J — 22/10/2026”: `COMPLETED_WITH_LIMITS`, seleção real `201801` e diagnóstico textual P5 com evidência visual, integridade local reportada, KPI P5 ainda `NOT_TESTED`.
 
 ## Fontes canônicas e dependências
 
