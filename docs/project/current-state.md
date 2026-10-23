@@ -1,5 +1,11 @@
 # Current State — SAD Data Mart SUS PB
 
+## Roteamento documental — 22/10/2026 | Caminho crítico para entrega final
+
+**Plano operacional de priorização, sem autorizar os próximos gates:** [Caminho crítico da entrega](final-delivery-critical-path.md). **Próximo problema a resolver:** [Issue #157 — suficiência científica CNES/LT para T25/T26](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157), estado inicial `OPEN_UNRESOLVED`. Prioridade sugerida: **G1 escopo metodológico T25/T26 → G2 Link Key físico → G3 medidas/denominadores/expressões → G4 UX e guardas D2/P5 → G5 encerramento da Fase VIII → G6 três painéis após GO/IX → G7 relatório e entrega**. A priorização de decisões G1–G7 não substitui a ordem física de implementação aprovada no Boundary 7: G1 é READ-ONLY; validações físicas C2/C3/C4 dependem de seus próprios gates e permissões. **Cada gate dependente só é liberado com `RESOLVED_ACCEPTED` rastreável; se fonte/professor faltar, manter item `BLOCKED_EXTERNAL` aberto e não afirmar conclusão.** Trabalho comprovadamente independente exige escopo/autorização próprios. O plano não altera a aprovação semântica V2, a modelagem ou os status globais abaixo. Confirmar a data da segunda avaliação/professor; relatório final exige ≥3 painéis, Capítulos 3–5 e anexos de scripts.
+
+---
+
 ## Estado vigente — 22/10/2026 | Interface guiada C2 consolidada após PRs #152–#155
 
 **Base de entrada conferida:** `main@00ceba47572e36b83d9ca780822a59f86fe67e0d`. Quatro merges **squash** documentais/experimentais integrados em sequência, sem QVD/QVW binário ou alteração de modelagem: [#152 — Discovery + 18 testes lógicos](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/152) (`eb827f82`), [#153 — navegação por botões](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/153) (`278ab189`), [#154 — mensal real e diagnóstico P5](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/154) (`1b9ed2cc`), [#155 — anual/evolução](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/155) (`00ceba47`). Estado de PRs abertos imediatamente após as quatro integrações: **zero**. As seções de 21/10 abaixo são histórico, não roteamento atualizado.
