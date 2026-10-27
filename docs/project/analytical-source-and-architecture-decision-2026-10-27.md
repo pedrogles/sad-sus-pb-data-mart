@@ -55,3 +55,13 @@
 - **Sem autorização:** merge, alteração da main, Capítulos 1–2, V2/RN21, schema/QVD/QVW, QlikView COM/GUI, novos downloads, testes físicos, Fase IX ou produção.
 
 **Próximo gate proposto:** [SAD-ANALYTICAL-CONSUMPTION-DISCOVERY-01](../discovery/sad-analytical-consumption-discovery-2026-10-27.md), apenas READ-ONLY, com bootstrap em documento próprio.
+
+## Atualização de integração — decisão D1–D3 posterior (27/10/2026)
+
+O responsável **aprovou no PR #165** o escopo de **14 visuais candidatos**: P1=5, P2=5, P3=4; I06/I07 opcionais, I12/T24 adiado do núcleo inicial sem retirar `FATO_POPULACAO` nem alterar três fatos/oito dimensões. A aprovação de **quais análises apresentar** é distinta da escolha **A0 versus A1 para consumo físico**, que permanece decisão pendente e exige uma Discovery mínima justificada, sem duplicar o trabalho de AE01 ou A0 R1.
+
+**Reuso de evidências posterior:** os executores do PR #164 e auditoria independente A0 R1 já demonstraram igualdade numérica **36 SIH mensais + 108 LT mensais + dois pares RES/SERV**, total **146/146**, **apenas no recorte delimitado** ([parecer](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/164#issuecomment-6451787982)). A matriz global, UI/UX, T24/T25/T26 e Link Key global seguem não homologadas. O escopo aprovado fica em [contrato dos 14 visuais](../discovery/sad-analytical-scope-acceptance-01-2026-10-27.md).
+
+**Atenção à numeração:** `P2.2` do A0 R1 era **série mensal LT** (equivale a `P2.1` no contrato dos 14 visuais); o novo `P2.2` é composição SUS/não-SUS mensal **sem homologação de objeto visual**. Não atribuir a mesma prova de interface a ambos.
+
+**Nenhuma decisão A1/A2, código físico, merge de implementação, T29, Fase IX ou produção é autorizada por este adendo.**
