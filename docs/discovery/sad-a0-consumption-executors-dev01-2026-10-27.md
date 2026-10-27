@@ -40,7 +40,17 @@ Uma futura validação poderá gerar PASS_LOCAL_CANDIDATE_ONLY **apenas se**: re
 
 Qualquer desvio de fontes, scripts, hashes, QlikView/COM, saída inesperada, ausência de oráculo ou log encerra em BLOCKED/INCONCLUSIVE/HARD_STOP, sem retries automáticos. Um resultado de COM/Evaluate não prova o comportamento de seleção interativa nem apresentação dos 15 visuais.
 
-## 4. Estado e handoff
+## 4. Remediação B1/B2 e incerteza B3 — revisão estática (27/10/2026)
+
+**B1 — parser do log nativo, remediado no código para revisão estática:** o runner filtra linhas que contêm instruções `TRACE` antes de classificar os **eventos emitidos** do log, reproduzindo a regra do executor integrado `tools/Invoke-SadPhaseViiTechnicalPanel.ps1`. Exige exatamente **um** evento `[VII] VERDICT=PASS_SCRIPT_ASSOCIATIVE_CANDIDATE_ONLY`, zero eventos `[VII] VERDICT=BLOCKED`, log contemporâneo e ausência de avisos de associação. Não assumir que texto-fonte registrado no log equivale a evento executado. **A semântica concreta do log QlikView 12 no host ainda não foi comprovada nesta revisão**.
+
+**B2 — integridade e evidência antes do PASS, remediado no código para revisão estática:** a análise dos **146** candidatos no `try` não emite PASS; no `finally`, o runner tenta preservar o log nativo mesmo quando `Reload()`, validação de log ou `Evaluate()` falham, registra `protected_after.json` e compara hashes contra `protected_before.json`. Somente **depois** desse bloco, e na ausência de erro de validação e de cópia do log, pode escrever `execution_metadata.json` com `PASS_LOCAL_CANDIDATE_ONLY` e emitir PASS. Em discrepância de hash, aplicar `HARD_STOP`; em ausência/falha da cópia do log, bloquear o PASS. Não alegar que o comportamento foi executado ou testado com Qlik.
+
+**B3 — `COM_EVALUATE_SET_ANALYSIS=NOT_VERIFIED` (não remediar por inferência nesta autorização):** a existência de métodos COM e a sintaxe de expressões de gráfico do QlikView **não comprovam**, sem execução apropriada, a aceitação por `$doc.Evaluate()` de `Num(Sum({<...>} medida),'0','.',',')` nem o retorno de um inteiro canônico. Permanece também pendente confirmar os domínios efetivos `PERIODO_COMPETENCIA=YYYYMM`, `PERIODO_ANO=2018`, papéis RES/SERV simultâneos, comportamento de Set Analysis na constelação e o alcance preciso das duas amostras C3. Isso é uma **condição não verificada**, não um PASS/erro físico observado. Registrar um eventual smoke de compatibilidade apenas **dentro de gate físico futuro expressamente autorizado**, com SHA/ambiente/oráculos e limites; não executar neste gate.
+
+**Prova desta remediação:** inspeção de fonte e do diff no GitHub, confronto com o parser existente da Fase VII e regras estáticas de ordem de operações. Nenhum teste Windows/PowerShell/COM/QlikView, `Reload()`, `Evaluate()` ou dados E1/E4 locais foi executado para esta remediação. `STATIC_CODE_REVIEW` não equivale a `STATIC_TEST_PASS`, `PASS_LOCAL` ou `PHYSICAL_GO`.
+
+## 5. Estado e handoff
 
 - DEVELOPMENT_VERSIONED_STATIC_REVIEW_ONLY: scripts e contrato em PR; inspeção estática, **sem alegar testes locais executados**.
 - STATIC_TEST_PASS: **não declarado** até executar e registrar testes offline no commit efetivo.
