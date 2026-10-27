@@ -99,3 +99,13 @@ Preparar, sem executar, **três casos de validação de consumo A0**, dentro da 
 - **C2_FULL, P5/D2, LINK_KEY_CONTRACT e MEASURES_AND_DENOMINATOR_CONTRACT** permanecem não aprovados globalmente. As validações unitárias não resolverão automaticamente estes contratos.
 - **P2.1** (grade completa de ausência/zero/positivo) e os outros 11 visuais não pertencem a este gate.
 - **Próxima decisão separada:** revisar/aceitar este contrato documental e, somente se desejado, autorizar em novo escopo o desenvolvimento **versionado** de executor/oráculo para estes três visuais. A execução física permanece especificamente NÃO AUTORIZADA até nova decisão explícita.
+
+## Adendo de integração — encerramento documental e execução sucessora (27/10/2026)
+
+A preparação documental descrita acima foi encerrada como `REVIEW_CLOSED_DOCUMENTATION_PREPARED_ONLY` em [PR #163](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/163#issuecomment-6450392909), com parecer documental favorável e ressalvas não bloqueantes. **As expressões `PHYSICAL_NOT_RUN` / `EXECUTION_NOT_AUTHORIZED` são estados históricos deste gate de preparação**, não descrevem a etapa sucessora.
+
+Após decisões expressas **separadas**, o desenvolvimento de executores ocorreu no [PR #164](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/164), e a execução local A0 R1 foi reportada e auditada **sobre commit 7760c3079f998243e5bf72c44747aac60e2b76e0**, com resultado numérico restrito **146/146** ([parecer](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/164#issuecomment-6451787982)). O documento de preparação não herda aprovação de UI/Link Key global nem de Fase IX.
+
+**Alias histórico:** a visualização rotulada `P2.2` neste gate corresponde à **série mensal LT**; no contrato de 14 visuais aprovado depois, ela aparece como **`P2.1`**. O `P2.2` novo identifica a composição SUS/não-SUS por competência e não foi homologado como objeto visual por A0 R1. `P1.2` e `P3.1` mantêm os IDs, com P3.1 limitado a dois pares.
+
+**STOP:** preservar o artefato preparatório para rastreabilidade; não reabrir este gate nem realizar novos testes por decorrência do merge.
