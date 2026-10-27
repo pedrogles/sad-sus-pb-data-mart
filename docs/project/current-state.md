@@ -1,8 +1,8 @@
 # Current State — SAD Data Mart SUS PB
 
-## Direcionamento vigente proposto — 27/10/2026 | Suficiência analítica antes dos painéis
+## Roteamento documental — 27/10/2026 | Suficiência analítica antes dos painéis
 
-**Verificação de entrada:** `main@9f4fc0ea43dfe8b6f20f7b6254bc7f965f6a9c04` (baseline igual no início da revisão). **Autoridade:** responsável aprovou em conversa em 27/10 a revisão de prioridade para demonstrar conhecimento real com os dados existentes. O registro documental nesta branch necessita revisão e integração explícita para valer na `main`; **não** é `G1_RESOLVED`, aceite físico ou produção.
+**Verificação de entrada:** `main@9f4fc0ea43dfe8b6f20f7b6254bc7f965f6a9c04` (baseline igual no início da revisão). **Autoridade:** responsável aprovou em conversa em 27/10 a revisão de prioridade para demonstrar conhecimento real com os dados existentes. Registro submetido pelo [PR #159](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/159); verificar sua integração para confirmar vigência na `main`. A atualização **não** é `G1_RESOLVED`, aceite físico ou produção.
 
 **Novo objetivo operacional isolado:** `SAD-ANALYTICAL-SUFFICIENCY-01`. Próximo gate candidato, **sem execução física autorizada:** `EXTRATOS-ANALITICOS-READONLY-01`. Conferir o [direcionamento](analytical-direction-2026-10-27.md), as [12 perguntas](../discovery/analytical-question-inventory-2026-10-27.md) e o [plano de suficiência](../discovery/analytical-sufficiency-plan-2026-10-27.md). Validar séries, rankings e perfis SIH/RD, observabilidade/distribuição CNES/LT e fluxos RES→SERV, reconciliando números reais **antes** de fechar especificações dos três painéis: (1) produção hospitalar, (2) leitos observados, (3) fluxos territoriais. Sem QVD acessível, apenas registrar agregado necessário e motivo; não inventar resultados.
 
@@ -12,7 +12,7 @@
 
 **Status não promovidos:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_KPI_CALC_GUARD=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. Preservar **22 QVDs e três QVWs canônicos** e os relatórios de testes fechados; não recarregar/salvar originais.
 
-**STOP documental:** plano, matriz, referências e bootstrap em PR Draft; não editar Capítulos 1–2 ou V2, não fechar Issue #157, não executar COM, não criar dashboards.
+**STOP documental:** plano, matriz, referências e bootstrap versionados via PR #159; a publicação na `main` encerra somente o gate documental. Não editar Capítulos 1–2 ou V2, fechar Issue #157, executar COM ou criar dashboards por decorrência.
 
 ---
 

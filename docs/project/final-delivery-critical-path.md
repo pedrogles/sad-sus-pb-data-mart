@@ -2,12 +2,12 @@
 
 **Estado:** roteiro de priorização DOCUMENTAL; a publicação na `main` não altera Boundaries, não homologa indicadores nem autoriza a execução física dos gates.  
 **Preparado em:** 22/10/2026 sobre `main@9a4ed359ea8f5337aaecc5fe2487aca9ffb17acd`.  
-**Primeiro item rastreável:** [Issue #157 — suficiência CNES/LT T25/T26](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157).  
+**Primeiro item rastreável da trilha condicionada T25/T26 (não da trilha analítica independente):** [Issue #157 — suficiência CNES/LT T25/T26](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157).  
 **Autoridade:** `AGENTS.md`, `docs/project/current-state.md`, `docs/academic/requirements.md`, `docs/project/agent-model-routing.md`, [Boundary 7](../discovery/boundary-7-implementation-plan.md), [V2 §62](../discovery/phase-6-semantic-v2-approved-2026-10-14.md) e `DescricaoProjetoSAD.pdf` (roteiro oficial do professor, inspecionado na revisão). Estes documentos prevalecem; este plano **não** substitui requisitos, semântica ou a ordem física aprovada.
 
 ## Atualização estratégica — 27/10/2026 | Dois fluxos, sem alterar contratos
 
-**Nova prioridade escolhida pelo responsável em conversa (integração documental pendente):** validar primeiro se os dados já existentes sustentam **12 perguntas e três painéis candidatos**, por meio do gate independente `EXTRATOS-ANALITICOS-READONLY-01`, descrito em [direcionamento](analytical-direction-2026-10-27.md), [inventário](../discovery/analytical-question-inventory-2026-10-27.md) e [plano](../discovery/analytical-sufficiency-plan-2026-10-27.md). Isso antecede a implementação visual, **não** antecipa G6/Fase IX.
+**Nova prioridade escolhida pelo responsável em conversa e registrada no PR #159 (verificar integração na `main`):** validar primeiro se os dados já existentes sustentam **12 perguntas e três painéis candidatos**, por meio do gate independente `EXTRATOS-ANALITICOS-READONLY-01`, descrito em [direcionamento](analytical-direction-2026-10-27.md), [inventário](../discovery/analytical-question-inventory-2026-10-27.md) e [plano](../discovery/analytical-sufficiency-plan-2026-10-27.md). Isso antecede a implementação visual, **não** antecipa G6/Fase IX.
 
 **Fluxo A — valor analítico independente:** séries/rankings SIH/RD, observabilidade CNES/LT e fluxos RES→SERV **dentro de uma fato**, com números e ressalvas; não exigem G1 T25/T26, Link Key global ou cobertura hospitalar integral. Não transformar essa suficiência em homologação física de visual/filtro.
 

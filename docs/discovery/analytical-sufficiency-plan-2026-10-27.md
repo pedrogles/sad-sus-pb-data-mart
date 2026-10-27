@@ -1,7 +1,7 @@
 # SAD SUS PB — Plano de suficiência analítica e extratos (27/10/2026)
 
 **Meta:** `SAD-ANALYTICAL-SUFFICIENCY-01`. **Primeiro gate:** `EXTRATOS-ANALITICOS-READONLY-01`.
-**Estado:** PLAN_APPROVED_DIRECTION_CHAT / EXECUTION_NOT_RUN. Documento de planejamento em branch, não permissão para alterar dados.
+**Estado:** PLAN_APPROVED_DIRECTION_CHAT / EXECUTION_NOT_RUN. Documento de planejamento versionado; a integração na `main` não constitui permissão para alterar dados ou executar QlikView.
 **Proveniência:** `main@9f4fc0ea43dfe8b6f20f7b6254bc7f965f6a9c04`; revalidar branch/PR/main ao executar.
 **Escopo:** 2017–2019; `FATO_INTERNACAO`, `FATO_CAPACIDADE_LEITO`, `FATO_POPULACAO`, dimensões e exportações/manifestos já existentes.
 
@@ -15,14 +15,14 @@ A análise permite ajustar as **propostas analíticas**, não alterar modelos ac
 
 1. Ler `AGENTS.md` → `docs/project/current-state.md` → `docs/academic/requirements.md` → `docs/project/agent-model-routing.md` → estratégia, inventário e este plano; confirmar `main@SHA` e estado do PR que os propôs.
 2. Verificar quais QVDs, extratos F1/F2/F3/VI-P4, manifestos, QVS e logs **estão de fato acessíveis**; não assumir acesso ao Windows local em ChatGPT/Work Cloud.
-3. Conferir schemas e grãos apenas com fontes existentes. Em ausência do dado físico, classificar `CALCULAVEL_SEM_DADO_NOVO` e especificar extrato mínimo; **não inventar ranking**.
+3. Conferir schemas e grãos com os QVS de origem e os arquivos existentes. **Não pressupor** que `PROC_REA`, `DIAG_PRINC`, RES, SERV ou `CODUFMUN` sejam colunas físicas diretas das fatos: SIH utiliza SKs e `%LINK_KEY`, e a localização de LT também participa da Link Key. Para agregações independentes, preferir `SRC_SIH_RD.qvd` / `SRC_CNES_LT.qvd` ou extratos F1/VI-P4 já autorizados, com regras de medição compatíveis e reconciliação contra os totais das fatos; não declarar homologação global de associações. Em ausência do dado físico, classificar `CALCULAVEL_SEM_DADO_NOVO` e especificar extrato mínimo; **não inventar ranking**.
 4. Proteger os 22 QVDs reportados e três QVWs canônicos. Não abrir/editar/salvar QVW canônico, fazer reload, STORE, baixar dados em massa ou rodar COM neste primeiro gate.
 
 ## 3. Sequência delimitada de leitura e extração
 
 - **A — Disponibilidade:** inventário READ-ONLY de artefatos físicos fornecidos, proveniência, commit de script, hashes originais/manifestos e cobertura já demonstrada; aproveitar as evidências F5/C3/C4, sem novos testes repetitivos.
-- **B — SIH/RD:** conferir os agregados I01/I06/I07; se os dados forem acessíveis, apurar I02 por competência, I03 por SERV, I04 por PROC_REA, I05 por DIAG_PRINC; I08 por R=S/R≠S e I09 por par RES/SERV e origem externa. Emitir tanto `QTD_REGISTRO_AIH` quanto `QTD_INTERNACAO` quando relevante para impedir inclusão de continuidade.
-- **C — CNES/LT:** reutilizar C4-F para I10; somente em QVD/extratos READ-ONLY, agrupar I11 por mês×município×CNES×código, mantendo medidas observadas, contagens de linhas, ausência/zero/positivo diferenciados. Não fazer soma de snapshots como leito anual; não aplicar descrições T29 sem validade histórica.
+- **B — SIH/RD:** conferir os agregados I01/I06/I07; se os dados forem acessíveis, extrair I02 por competência, I03 por município SERV, I04 por `PROC_REA`, I05 por `DIAG_PRINC`, I08 por R=S/R≠S e I09 por par RES/SERV e origem externa **do staging ou extratos já reconciliados**. Quando usar `FATO_INTERNACAO.qvd`, mapear SKs/`%LINK_KEY` por contratos explicitamente verificados; não atribuir nomes de campos de origem à fato. Emitir tanto `QTD_REGISTRO_AIH` quanto `QTD_INTERNACAO` quando relevante para impedir inclusão de continuidade.
+- **C — CNES/LT:** reutilizar C4-F para I10; em staging `SRC_CNES_LT.qvd` ou extratos READ-ONLY, agrupar I11 por mês×município×CNES×código. No QVD da fato, usar somente os campos físicos existentes e a associação municipal conforme evidência, não criar `CODUFMUN` por inferência; manter medidas observadas, contagens de linhas, ausência/zero/positivo diferenciados. Não fazer soma de snapshots como leito anual; não aplicar descrições T29 sem validade histórica.
 - **D — IBGE/T24:** conferir os 669 pares e POP anual sem somar anos; tratar I12 como condicionado a V2/contrato e não criar novo KPI global sem autorização.
 - **E — Reconciliação e decisão:** conferir soma/grão/sinais e compatibilidade de filtros do recorte, confrontar oráculo independente, registrar divergências, confiança, universo e impossibilidades. Julgar **cada visualização** como `SUSTENTADA`, `CONDICIONADA` ou `NAO_SUSTENTADA`.
 

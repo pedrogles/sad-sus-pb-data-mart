@@ -10,6 +10,10 @@
 - `NAO_SUSTENTADO` (N): pergunta que a base não pode responder defensavelmente.
 - P0 = primeira prioridade analítica; P1 = complementar; P2 = indicador transversal condicionado. Prioridade **não autoriza implementação**.
 
+## Proveniência e compatibilidade física dos campos
+
+As colunas de negócio descritas na matriz podem estar disponíveis **na origem/staging** e não como campos diretos da fato. O QVS versionado `TRANSFORMACAO/transf_fato_internacao.qvs` projeta `FATO_INTERNACAO.qvd` com `%SK_PROCEDIMENTO`, `%SK_DIAGNOSTICO` e `%LINK_KEY`; ele **não expõe diretamente** `PROC_REA`, `DIAG_PRINC`, município de residência ou município de serviço. Já `TRANSFORMACAO/transf_fato_capacidade_leito.qvs` expõe `FATO_LT_CNES_ORIGEM`, `FATO_LT_CODLEITO_ORIGEM` e `FATO_LT_COMPETENCIA_ORIGEM`, mas o município de localização está na coordenada de `%LINK_KEY`, não como campo municipal direto. Para obter agregações por município/papel, procedimento ou diagnóstico **sem presumir aceite associativo global**, começar por extratos de `EXTRACAO/QVD/SRC_SIH_RD.qvd` ou `SRC_CNES_LT.qvd` com regras validadas e oráculos; joins por SK/dimensões e ligação por `%LINK_KEY` só quando a estrutura/compatibilidade estiver comprovada no recorte. A menção a campo de origem nesta matriz **não afirma que existe na fato**.
+
 ## Matriz (12 perguntas)
 
 | ID | Pergunta de negócio | Fonte e medidas | Recorte/regra | Número ou evidência | Estado | Ressalva e dependência mínima | Painel/prioridade |

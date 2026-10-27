@@ -1,6 +1,6 @@
 # SAD SUS PB — Direcionamento analítico e controle de escopo (27/10/2026)
 
-**Estado:** DIRECIONAMENTO_APROVADO_PELO_RESPONSAVEL_EM_CHAT; **registro nesta branch é proposta para integração**, não aceite formal da `main`, do professor, de contratos físicos ou de produção.
+**Estado:** DIRECIONAMENTO_APROVADO_PELO_RESPONSAVEL_EM_CHAT; documentado no [PR #159](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/159), cuja integração deve ser confirmada ao consultar a `main`. A integração documental não é aceite do professor, de contratos físicos ou de produção.
 **Baseline de elaboração:** `main@9f4fc0ea43dfe8b6f20f7b6254bc7f965f6a9c04`.
 **Fontes superiores:** roteiro do professor, `AGENTS.md`, `docs/project/current-state.md`, `docs/academic/requirements.md`, Capítulos 1–2, V2 §62 e Boundary 7.
 

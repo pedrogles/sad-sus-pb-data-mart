@@ -28,4 +28,4 @@ Essa frente **não substitui nem resolve** G1 / [Issue #157](https://github.com/
 - [Plano de suficiência](docs/discovery/analytical-sufficiency-plan-2026-10-27.md) e [bootstrap para novo chat](docs/discovery/bootstrap-extratos-analiticos-readonly-2026-10-27.md).
 - [Caminho crítico físico/acadêmico](docs/project/final-delivery-critical-path.md), [V2 §62](docs/discovery/phase-6-semantic-v2-approved-2026-10-14.md) e [Boundary 7](docs/discovery/boundary-7-implementation-plan.md).
 
-**Proveniência:** até merge autorizado, os quatro novos documentos são **propostas na branch documental**, não parte da `main`; consultar o PR antes de tratá-los como fonte canônica.
+**Proveniência:** o direcionamento e os quatro registros documentais foram submetidos no [PR #159](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/159); considerar o estado de integração indicado pelo GitHub e pela `main` consultada, não presumir que a branch permanece Draft.

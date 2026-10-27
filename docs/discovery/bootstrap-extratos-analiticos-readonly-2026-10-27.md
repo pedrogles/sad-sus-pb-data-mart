@@ -59,7 +59,7 @@ Para cada pergunta separar: `RESULTADO_JA_RECONCILIADO`, `CALCULAVEL_SEM_DADO_NO
 ## 5. Procedimento de execução
 
 1. Confirmar `main`, branch/PR e invariantes; obter e ler os documentos específicos. Não reconstruir cronologia.
-2. Enumerar arquivos **de fato acessíveis** (QVDs, CSV/TXT de exportação, manifestos, evidência), hashes/schemas/grãos/escopo. Não presumir Windows local, Qlik COM ou QVDs por referência em docs.
+2. Enumerar arquivos **de fato acessíveis** (QVDs, CSV/TXT de exportação, manifestos, evidência), hashes/schemas/grãos/escopo. Verificar QVS físicos: `FATO_INTERNACAO.qvd` não contém diretamente `PROC_REA`, `DIAG_PRINC`, RES nem SERV (usa SKs e `%LINK_KEY`); `FATO_CAPACIDADE_LEITO.qvd` tampouco contém diretamente município de localização. Para análises independentes, preferir staging `EXTRACAO/QVD/SRC_SIH_RD.qvd`, `SRC_CNES_LT.qvd` ou extratos F1/VI-P4 com regras reconciliadas; não usar campos da origem como se existissem diretamente nas fatos nem assumir aprovação da Link Key. Não presumir Windows local, Qlik COM ou QVDs por referência em docs.
 3. Reusar imediatamente os valores comprovados nos casos documentados e apontar as diferenças de nível de prova.
 4. Se houver exportações/QVDs legíveis em modo read-only já fornecidos, apurar I02–I05, I08–I09 e I11 com agregação, oráculos e rastreabilidade. `QT_SUS` nulo/sem linha nunca vira zero por padrão. Não criar ranking sem dados.
 5. Se os dados não estiverem fisicamente acessíveis, **NÃO** baixar em massa nem rodar COM: definir **apenas uma especificação mínima** de exportação local das agregações em modo leitura, com script/commit necessários; classificar não extraído e encerrar.
