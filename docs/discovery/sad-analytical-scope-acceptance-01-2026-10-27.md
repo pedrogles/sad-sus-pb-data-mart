@@ -1,15 +1,15 @@
-# SAD SUS PB — Proposta de aceite de escopo analítico (2017–2019)
+# SAD SUS PB — Escopo analítico restrito aprovado pelo responsável (2017–2019)
 
 **Gate:** `SAD-ANALYTICAL-SCOPE-ACCEPTANCE-01`  
-**Estado:** `READY_FOR_OWNER_REVIEW` / `NOT_ACCEPTED` — documento proposto, **não** homologação de painel, KPI, modelo físico, Fase IX nem produção.  
+**Estado:** `SCOPE_ACCEPTED_RESTRICTED_BY_OWNER_IN_CHAT` / `PR_DRAFT_NOT_MERGED` — aceite **exclusivamente do escopo analítico D1–D3** em 27/10/2026; não homologa consumo QlikView global, filtros, KPI transversal, painel físico, Fase IX nem produção.  
 **Base Git:** `main@db5d6e6e23371422ca1d2d77a8576150aaf63d03`, lida em 27/10/2026.  
 **Modo:** revisão documental READ-ONLY das evidências existentes; criação desta proposta em branch isolada. Nenhum QVD/QVW, script de transformação ou contrato acadêmico alterado.
 
 ## 1. Objetivo, autoridade e limites
 
-Decidir **quais análises já demonstradas** entram no escopo candidato de três painéis acadêmicos, registrar os seus contratos mínimos de consumo, e separar fatos reconciliados de hipóteses e aprovações futuras. O aceite desta proposta deve ser **expresso pelo responsável** e não altera automaticamente o objetivo dos Capítulos 1–2 entregues nem substitui parecer do professor.
+Decidir **quais análises já demonstradas** entram no escopo candidato de três painéis acadêmicos, registrar os seus contratos mínimos de consumo, e separar fatos reconciliados de hipóteses e aprovações futuras. O aceite D1–D3 foi **expresso pelo responsável em chat**, após a proposta do PR #165. Não altera automaticamente o objetivo dos Capítulos 1–2 entregues nem substitui parecer do professor; a aprovação da documentação na `main` permanece separada.
 
-Fontes: roteiro oficial do professor (`DescricaoProjetoSAD.pdf`; ao menos três painéis e implementação BI), `AGENTS.md`, `docs/project/current-state.md`, `docs/academic/requirements.md`, `docs/project/analytical-direction-2026-10-27.md`, `docs/discovery/analytical-question-inventory-2026-10-27.md`, `docs/discovery/analytical-sufficiency-plan-2026-10-27.md`, V2 `62 e Boundary 7. Respeitar a hierarquia de fontes do AGENTS.
+Fontes: roteiro oficial do professor (`DescricaoProjetoSAD.pdf`; ao menos três painéis e implementação BI), `AGENTS.md`, `docs/project/current-state.md`, `docs/academic/requirements.md`, `docs/project/analytical-direction-2026-10-27.md`, `docs/discovery/analytical-question-inventory-2026-10-27.md`, `docs/discovery/analytical-sufficiency-plan-2026-10-27.md`, V2 §62 e Boundary 7. Respeitar a hierarquia de fontes do AGENTS.
 
 **Invariantes:** QlikView 12 e fluxo BASE → EXTRACAO → QVD → TRANSFORMACAO → QVD → PAINEL; `FATO_INTERNACAO`, `FATO_CAPACIDADE_LEITO`, `FATO_POPULACAO`; oito dimensões aprovadas; Star por processo/constelação; grãos e RN21; RES e SERV em papéis distintos. `IDENT=5` não conta internação nova; leitos/população são semi-aditivos no tempo. Nenhuma soma de snapshots como capacidade anual e nenhuma razão internações/leito nomeada “taxa de ocupação”.
 
@@ -73,15 +73,15 @@ S = sustentada **nos extratos/limites indicados**, H = evidência histórica sem
 
 **Filtros e interfaces:** seleção mensal/anual/evolução e preservação de estado RES/SERV devem respeitar C2/P5/D2; isso permanece `C2_FULL=NO_GO_NOT_APPROVED` e `P5_D2_UI=NOT_TESTED_GLOBAL`. Validar futuramente qualquer interação entre fatos/SKs/`%LINK_KEY` antes de apresentá-la como funcional. O candidato P1.1 pode ter apenas o KPI de internações, tornando I06/I07 não bloqueantes. O candidato P2.3 exige construção verificável de grade, sem imputar zero.
 
-## 5. Decisões a obter do responsável — não presumidas
+## 5. Decisões D1–D3 — aceite restrito do responsável
 
-**D1 — Aprovação do núcleo:** aceitar **P1 5, P2 5, P3 4 visuais** com os recortes/filtros descritivos acima, sem afirmar que a implementação final já foi autorizada? Recomendação: **sim, como escopo candidato**.
+**D1 — APROVADA:** **P1 5, P2 5, P3 4 visuais** como escopo analítico candidato, exclusivamente nos recortes/filtros descritivos documentados. Não inclui aprovação de implementação final nem prova de interação dinâmica entre campos ausentes dos extratos.
 
-**D2 — Medidas complementares:** I06/I07 devem permanecer **opcionais** (só entrar no painel com evidência de consumo e apresentação própria), sem bloquear P1? Recomendação: **sim**.
+**D2 — APROVADA:** I06/I07 são **opcionais** e **não bloqueiam P1**; sua incorporação posterior requer evidência de consumo e apresentação própria. Continuam reportadas historicamente em F5-RD, não reavaliadas em AE01.
 
-**D3 — População/T24:** manter `FATO_POPULACAO`, as oito dimensões e a promessa acadêmica entregues, mas deixar I12/T24 fora do núcleo visual até contratos aprovados? Recomendação: **sim**, sujeita à conferência com objetivo dos Capítulos 1–2 e, se houver mudança material, consulta ao professor.
+**D3 — APROVADA:** manter `FATO_POPULACAO`, três fatos/oito dimensões e a promessa acadêmica entregue, mas **não incluir I12/T24 no núcleo inicial dos visuais** até aceites de contrato. Confirmar alinhamento com o objetivo dos Capítulos 1–2; qualquer mudança material exige aprovação própria e, quando necessário, consulta ao professor.
 
-A resposta “vamos prosseguir” autoriza preparar **esta proposta documental**; não é aceite presumido de D1–D3, autorização de merge ou liberação física.
+**Evidência do aceite:** em 27/10/2026, após o assistente apresentar o PR #165 e perguntar expressamente “Você aprova D1–D3 nesses termos?”, o responsável respondeu **“aprovado prossiga”**. Esta resposta aceita **D1, D2 e D3 nos termos exibidos acima**. É autoridade de escopo do responsável, não aceite docente, merge, execução física ou liberação da Fase IX. O registro nesta branch documenta a aprovação; somente um merge futuro e especificamente autorizado tornará este texto vigente na `main`.
 
 ## 6. Três lacunas prioritárias e handoff
 
@@ -89,13 +89,13 @@ A resposta “vamos prosseguir” autoriza preparar **esta proposta documental**
 2. **Evidência I06/I07:** métricas somente em F5-RD; não chamar de nova auditoria AE01. Se incorporadas ao painel definitivo, exigir prova de consumo/reconciliação delimitada, sem executar automaticamente.
 3. **Indicadores inter-fatos e filtros globais:** T24 precisa de POP anual territorial/temporal e contrato de medidas/Link Key; T25/T26 dependem de G1/[Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157). Em casos aplicáveis, preservar a ordem C2→C3→C4 do Boundary 7 e aprovações separadas G1–G5 antes da Fase IX.
 
-**Próximo passo se D1–D3 aceitos:** versionar o aceite explícito em documentação canônica e definir gate próprio de fechamento físico e UX **somente dos visuais aplicáveis**, não reexecutar os 146 testes já encerrados. Preparação do Capítulo 3 pode iniciar sem prints falsos; entrega física de painéis depende de autorização `PHASE_IX` distinta.
+**Próximo passo após D1–D3 aprovadas:** preparar **outro gate delimitado** de revisão estática/READ-ONLY das lacunas de consumo, associações e UX **apenas para os 14 visuais**, confrontando o [PR #162](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/162) sem presumir A1/A2 nem reformular a constelação. A definição documental não antecipa qualquer passo C2→C3→C4, não reexecuta os 146 testes e não autoriza implementação. Concluir/reconciliar o estado documental do PR #162 antes de integrar alterações concorrentes em `current-state.md`. Preparação do Capítulo 3 pode iniciar sem prints falsos; entrega física de painéis depende de autorização `PHASE_IX` distinta.
 
 ## 7. Critérios e condição de parada
 
-- `PROPOSAL_READY_FOR_OWNER_REVIEW`: matriz 12/12, contratos 14/14, fontes/evidências e três lacunas documentados em branch Draft, com D1–D3 pendentes.
-- `SCOPE_ACCEPTED_RESTRICTED` **somente** após aprovação explícita de D1–D3, atualização versionada do parecer e decisão sobre eventual alinhamento com professor/Capítulos 1–2.
+- `PROPOSAL_READY_FOR_OWNER_REVIEW`: **etapa anterior concluída** com matriz 12/12, contratos 14/14, fontes/evidências e três lacunas.
+- `SCOPE_ACCEPTED_RESTRICTED_BY_OWNER_IN_CHAT`: **SIM, nesta branch**. D1–D3 aprovadas expressamente e registradas; alinhamento docente/Capítulos 1–2 continua condicionado caso uma alteração material se mostre necessária. **Não** é `PR_MERGED`, `PHASE_IX_GO` nem `PROD_APPROVED`.
 - `BLOCKED_EXTERNAL`: quando a decisão depender de fonte oficial ou docente; registrar questão e não inferir resposta.
-- **STOP nesta execução:** publicar proposta documental para revisão, não executar COM/reload/testes físicos, não integrar Draft, não abrir Fase IX. **Status encerrável agora:** preparação documental para aceite — nunca `PROD_APPROVED`.
+- **STOP nesta execução:** registro documental da aprovação D1–D3 na branch/PR Draft e encaminhamento do próximo gate, sem COM/reload/testes físicos, merge ou Fase IX. **Status encerrável agora:** `SCOPE_ACCEPTED_RESTRICTED_BY_OWNER_IN_CHAT` / `PR_DRAFT_NOT_MERGED`; nunca `PROD_APPROVED`.
 
 Fontes de estado: [current-state](../project/current-state.md), [Boundary 7](boundary-7-implementation-plan.md), [direção](../project/analytical-direction-2026-10-27.md), [inventário](analytical-question-inventory-2026-10-27.md), [plano de suficiência](analytical-sufficiency-plan-2026-10-27.md), [caminho crítico](../project/final-delivery-critical-path.md), [PR #160](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/160), [PR #164](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/164).
