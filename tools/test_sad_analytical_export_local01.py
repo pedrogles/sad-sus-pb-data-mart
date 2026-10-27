@@ -102,6 +102,14 @@ def check_qvs_prefix_isolation(src: str) -> None:
         raise ValueError('runtime synthetic-key guard absent')
 
 
+def check_qvs_control_if_single_line(src: str) -> None:
+    """QlikView script control IF..THEN clauses must not cross line boundaries."""
+    for number, line in enumerate(src.splitlines(), start=1):
+        if re.match(r'^\s*IF\s+', line, re.I):
+            if not re.search(r'\bTHEN\s*;?\s*$', line, re.I):
+                raise ValueError(f'QVS IF control clause crosses line boundary: {number}')
+
+
 class AE01NegativeTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix='AE01_SYNTHETIC_')
@@ -155,6 +163,18 @@ class AE01NegativeTests(unittest.TestCase):
         src=QVS.read_text(encoding='utf-8').replace('AS AE2_competencia','AS AE1_competencia',1)
         with self.assertRaisesRegex(ValueError,'unqualified internal alias'):
             check_qvs_prefix_isolation(src)
+
+    def test_qlik_control_if_clauses_are_single_line(self):
+        src=QVS.read_text(encoding='utf-8')
+        check_qvs_control_if_single_line(src)
+
+    def test_multiline_qlik_if_mutation_must_block(self):
+        src=QVS.read_text(encoding='utf-8')
+        self.assertIn(' OR $(vAECont)<>11583',src)
+        mutated=src.replace(' OR $(vAECont)<>11583',
+                            '\n    OR $(vAECont)<>11583',1)
+        with self.assertRaisesRegex(ValueError,'IF control clause crosses line boundary'):
+            check_qvs_control_if_single_line(mutated)
 
     def test_public_table_overlap_mutation_must_block(self):
         src=QVS.read_text(encoding='utf-8').replace('DROP TABLE AE_E1;','// DROP TABLE AE_E1;',1)

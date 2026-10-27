@@ -108,6 +108,18 @@
 
 **Limites residuais:** não existe nesta revisão verificação de parser PowerShell 5.1, execução QlikView do QVS, comportamento real `STORE (txt, delimiter is ';')` ou CSVs de produção. A guarda de topologia Qlik e o estado de ausência de `$Syn` devem ser observados em log físico na execução **apenas após autorização**. Adicionais P2 do review podem ser acompanhados separadamente, sem ampliar o gate silenciosamente. Issue #161 deve manter `EXECUTION_NOT_AUTHORIZED` enquanto não houver autorização expressa específica.
 
+## Diagnóstico físico reportado — 27/10/2026, AE01_20261027_01
+
+**Proveniência:** log `qlik_reload.log` e inventários pré/pós **transcritos pelo responsável na conversa**, sem arquivo de evidência anexado ou auditoria de bytes neste agente. A execução física única autorizada utilizou `9aa8eeec46e470627c1b42cfc6bd6fe58b0693f7` no QlikView Desktop 12.0.20000.0 (Windows).
+
+- Leitura inicial: `566672` registros `SRC_SIH_RD.qvd`; `RD MONTHS=36 NEW=555089 CONT=11583 IDENT_BAD=0 DOMAIN_BAD=0`. Essas são as únicas medidas alcançadas.
+- Falha real de parser na linha 50 do QVS: a cláusula `IF` começava na linha 49 e continuava com `OR ... THEN` na linha seguinte. A ajuda QlikView determina que `IF condition THEN` não cruze limite de linha.
+- Inspeção estática posterior identificou **três** casos idênticos (guardas RD, LT, reconciliação de grupos). Este patch põe toda a cláusula `IF ... THEN` em linha única, sem alterar predicados/oráculos.
+- `Compare-Object` dos arquivos `protected_before.json` e `protected_after.json` retornou vazio segundo o operador: conteúdo protegido preservado quanto a caminho, bytes e SHA-256 declarados. Esta afirmação continua `RELATO_LOCAL` até receber os arquivos reais.
+- Nenhum CSV foi criado. `AE01=BLOCKED_QVS_SYNTAX`; `EXPORTED_AND_RECONCILED_RESTRICTED` **não atingido**.
+- Regressão adicionada em `tools/test_sad_analytical_export_local01.py`: exige `IF ... THEN` em linha única e recusa mutação que introduza `OR` em outra linha. Verificação estática não equivale a reexecução física.
+- **A tentativa anterior foi consumida.** Esta correção requer **novo commit**, revisão e **nova autorização expressa** antes de qualquer recarga. Não reutilizar `AE01_20261027_01` nem sobrescrever evidências; manter PR Draft.
+
 ## Pendências reais e STOP
 
 - **Versionamento proposto neste PR Draft:** os três scripts e este documento foram preparados para commit em branch de objetivo único; conferir o commit do PR antes de qualquer uso. Execução física exige autorização separada.

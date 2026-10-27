@@ -46,8 +46,7 @@ LET vAEIdentBad=Peek('identidade_invalida',0,'AE_RD_CHECK');
 LET vAEDomainBad=Peek('dominio_invalido',0,'AE_RD_CHECK');
 DROP TABLE AE_RD_CHECK;
 TRACE [AE01] RD MONTHS=$(vAEMonths) NEW=$(vAENew) CONT=$(vAECont) IDENT_BAD=$(vAEIdentBad) DOMAIN_BAD=$(vAEDomainBad);
-IF ScriptErrorCount > $(vAEStart) OR $(vAEMonths)<>36 OR $(vAENew)<>555089
-    OR $(vAECont)<>11583 OR $(vAEIdentBad)<>0 OR $(vAEDomainBad)<>0 THEN
+IF ScriptErrorCount > $(vAEStart) OR $(vAEMonths)<>36 OR $(vAENew)<>555089 OR $(vAECont)<>11583 OR $(vAEIdentBad)<>0 OR $(vAEDomainBad)<>0 THEN
     TRACE [AE01] VERDICT=BLOCKED_RD_SOURCE_RECONCILIATION;
     EXIT SCRIPT;
 ENDIF
@@ -149,8 +148,7 @@ LET vAELTNsus=Peek('nsus_total',0,'AE_LT_CHECK');
 LET vAELTBad=Peek('invalidos',0,'AE_LT_CHECK');
 DROP TABLE AE_LT_CHECK;
 TRACE [AE01] LT MONTHS=$(vAELTMonths) EXIST=$(vAELTExist) SUS=$(vAELTSus) NSUS=$(vAELTNsus) BAD=$(vAELTBad);
-IF ScriptErrorCount > $(vAEStart) OR $(vAELTMonths)<>36 OR $(vAELTExist)<>337147
-    OR $(vAELTSus)<>270076 OR $(vAELTNsus)<>67071 OR $(vAELTBad)<>0 THEN
+IF ScriptErrorCount > $(vAEStart) OR $(vAELTMonths)<>36 OR $(vAELTExist)<>337147 OR $(vAELTSus)<>270076 OR $(vAELTNsus)<>67071 OR $(vAELTBad)<>0 THEN
     TRACE [AE01] VERDICT=BLOCKED_LT_SOURCE_RECONCILIATION;
     EXIT SCRIPT;
 ENDIF
@@ -199,8 +197,7 @@ LET vAEE4Exist=Peek('existentes',0,'AE_E4_CONTROL');
 LET vAEE4Sus=Peek('sus',0,'AE_E4_CONTROL');
 LET vAEE4Nsus=Peek('nsus',0,'AE_E4_CONTROL');
 DROP TABLE AE_E4_CONTROL;
-IF ScriptErrorCount > $(vAEStart) OR $(vAEGroupBad)<>0 OR $(vAEGroupN)<>3
-    OR $(vAEE4Rows)<>35518 OR $(vAEE4Exist)<>337147 OR $(vAEE4Sus)<>270076 OR $(vAEE4Nsus)<>67071 THEN
+IF ScriptErrorCount > $(vAEStart) OR $(vAEGroupBad)<>0 OR $(vAEGroupN)<>3 OR $(vAEE4Rows)<>35518 OR $(vAEE4Exist)<>337147 OR $(vAEE4Sus)<>270076 OR $(vAEE4Nsus)<>67071 THEN
     TRACE [AE01] VERDICT=BLOCKED_GROUP_RECONCILIATION;
     EXIT SCRIPT;
 ENDIF
