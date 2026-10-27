@@ -1,3 +1,13 @@
+## Encaminhamento proposto — 27/10/2026 | racionalização de fontes e arquitetura de consumo
+
+**Origem:** aprovação do responsável em conversa para **documentar e preparar**, sem autorizar remodelagem ou execução física. Gate documental candidato [SAD-ANALYTICAL-CONSUMPTION-DISCOVERY-01](../discovery/sad-analytical-consumption-discovery-2026-10-27.md), [matriz](../discovery/sad-analytical-consumption-source-matrix-2026-10-27.md), [registro de decisão](analytical-source-and-architecture-decision-2026-10-27.md) e [bootstrap](../discovery/bootstrap-sad-analytical-consumption-discovery-2026-10-27.md). Esta seção está proposta em **PR Draft**; verificar integração antes de tratá-la como roteamento da main.
+
+**Evidência nova fora da main:** PR #160 Draft, AE01 tentativa 02 no commit 8633f12a910f422f6b2e9af5e0d06d622ff13497, PASS restrito de exportação e reconciliação dos quatro CSVs (Issue #161). Exploração derivada: I01–I05/I08–I11 com respostas quantitativas diretas, I06/I07 apenas evidência histórica, I12 condicionado. Não herdar PASS de interface, associação global ou produção. O arquivo de resultados exploratórios não é um novo gate versionado.
+
+**Direção proposta:** conservar as três fatos, oito dimensões e Boundary 7. Em READ-ONLY comparar A0 (consumo da arquitetura atual) e A1 (projeções analíticas candidatas, sem materialização). A2 (remodelagem) permanece NÃO APROVADA. T24/T25/T26 e G1/Issue #157 continuam em trilha independente; LINK_KEY_CONTRACT e medidas/denominadores continuam pendentes; Fase IX não autorizada. **Próximo passo deste tema:** abrir novo chat e executar apenas a Discovery documental.
+
+---
+
 # Current State — SAD Data Mart SUS PB
 
 ## Roteamento documental — 27/10/2026 | Suficiência analítica antes dos painéis
