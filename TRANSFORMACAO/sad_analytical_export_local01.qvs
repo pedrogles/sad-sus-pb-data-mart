@@ -1,0 +1,285 @@
+// SAD-ANALYTICAL-EXPORT-LOCAL-01 — QlikView 12; experimental, NOT EXECUTED.
+// INPUTS: only two immutable staging QVDs. OUTPUTS: four grouped CSVs outside Git.
+// Placeholders are resolved by the versioned runner after strict path validation.
+// Never run in EXT.qvw, TRANSF.qvw or PAINEL.qvw. No QVD STORE.
+SET ErrorMode=0;
+LET vAEStart=ScriptErrorCount;
+TRACE [AE01] START READONLY_STAGING_2017_2019;
+
+AE_RD:
+NOCONCATENATE LOAD
+    Trim(Text(_META_SOURCE_COMPETENCE)) AS competencia,
+    Trim(Text(ANO_CMPT)) AS ano,
+    Trim(Text(MES_CMPT)) AS _mes,
+    Trim(Text(MUNIC_RES)) AS municipio_res,
+    Trim(Text(MUNIC_MOV)) AS municipio_serv,
+    Text(PROC_REA) AS proc_rea,
+    RTrim(Text(DIAG_PRINC)) AS diag_princ,
+    Trim(Text(IDENT)) AS _ident,
+    If(Trim(Text(IDENT))='1',1,0) AS _internacao,
+    If(Trim(Text(IDENT))='5',1,0) AS _continuidade
+FROM [__RD_QVD__] (qvd);
+IF ScriptErrorCount > $(vAEStart) OR NoOfRows('AE_RD')<>566672 THEN
+    TRACE [AE01] VERDICT=BLOCKED_RD_LOAD_OR_ROWS;
+    EXIT SCRIPT;
+ENDIF
+AE_RD_CHECK:
+NOCONCATENATE LOAD
+    Count(DISTINCT competencia) AS meses,
+    Sum(_internacao) AS internacoes,
+    Sum(_continuidade) AS continuidades,
+    Sum(If(_ident<>'1' AND _ident<>'5',1,0)) AS identidade_invalida,
+    Sum(If(Len(competencia)<>6 OR Len(KeepChar(competencia,'0123456789'))<>6
+        OR competencia<'201701' OR competencia>'201912'
+        OR Left(competencia,4)<>ano OR Right(competencia,2)<>Right('00'&_mes,2)
+        OR Len(ano)<>4 OR Len(_mes)<1
+        OR Len(municipio_res)<>6 OR Len(KeepChar(municipio_res,'0123456789'))<>6
+        OR Len(municipio_serv)<>6 OR Len(KeepChar(municipio_serv,'0123456789'))<>6
+        OR IsNull(municipio_res) OR IsNull(municipio_serv)
+        OR IsNull(proc_rea) OR Len(proc_rea)=0 OR IsNull(diag_princ) OR Len(diag_princ)=0,
+        1,0)) AS dominio_invalido
+RESIDENT AE_RD;
+LET vAEMonths=Peek('meses',0,'AE_RD_CHECK');
+LET vAENew=Peek('internacoes',0,'AE_RD_CHECK');
+LET vAECont=Peek('continuidades',0,'AE_RD_CHECK');
+LET vAEIdentBad=Peek('identidade_invalida',0,'AE_RD_CHECK');
+LET vAEDomainBad=Peek('dominio_invalido',0,'AE_RD_CHECK');
+DROP TABLE AE_RD_CHECK;
+TRACE [AE01] RD MONTHS=$(vAEMonths) NEW=$(vAENew) CONT=$(vAECont) IDENT_BAD=$(vAEIdentBad) DOMAIN_BAD=$(vAEDomainBad);
+IF ScriptErrorCount > $(vAEStart) OR $(vAEMonths)<>36 OR $(vAENew)<>555089 OR $(vAECont)<>11583 OR $(vAEIdentBad)<>0 OR $(vAEDomainBad)<>0 THEN
+    TRACE [AE01] VERDICT=BLOCKED_RD_SOURCE_RECONCILIATION;
+    EXIT SCRIPT;
+ENDIF
+
+AE_RD_YEAR:
+NOCONCATENATE LOAD ano, Sum(_internacao) AS internacoes
+RESIDENT AE_RD GROUP BY ano;
+AE_RD_YEAR_BAD:
+NOCONCATENATE LOAD
+    Count(*) AS grupos,
+    Sum(If((ano='2017' AND internacoes=183532)
+        OR (ano='2018' AND internacoes=183311)
+        OR (ano='2019' AND internacoes=188246),0,1)) AS invalidos
+RESIDENT AE_RD_YEAR;
+LET vAEYearGroups=Peek('grupos',0,'AE_RD_YEAR_BAD');
+LET vAEYearBad=Peek('invalidos',0,'AE_RD_YEAR_BAD');
+DROP TABLE AE_RD_YEAR;
+DROP TABLE AE_RD_YEAR_BAD;
+IF ScriptErrorCount > $(vAEStart) OR $(vAEYearGroups)<>3 OR $(vAEYearBad)<>0 THEN
+    TRACE [AE01] VERDICT=BLOCKED_RD_ANNUAL_ORACLE;
+    EXIT SCRIPT;
+ENDIF
+
+// Disjoint GROUP BY projections are kept with UNIQUE internal field names.
+// Shared Qlik fields across resident tables can introduce synthetic keys.
+// The final public names exist in only ONE AE_E* table at a time at STORE.
+AE_PRE_E1:
+NOCONCATENATE LOAD
+    competencia AS AE1_competencia,
+    ano AS AE1_ano,
+    municipio_res AS AE1_municipio_res,
+    municipio_serv AS AE1_municipio_serv,
+    Count(*) AS AE1_qtd_registro_aih,
+    Sum(_internacao) AS AE1_qtd_internacao,
+    Sum(_continuidade) AS AE1_qtd_continuidade
+RESIDENT AE_RD GROUP BY competencia,ano,municipio_res,municipio_serv;
+AE_PRE_E2:
+NOCONCATENATE LOAD
+    competencia AS AE2_competencia,
+    ano AS AE2_ano,
+    proc_rea AS AE2_proc_rea,
+    Count(*) AS AE2_qtd_registro_aih,
+    Sum(_internacao) AS AE2_qtd_internacao,
+    Sum(_continuidade) AS AE2_qtd_continuidade
+RESIDENT AE_RD GROUP BY competencia,ano,proc_rea;
+AE_PRE_E3:
+NOCONCATENATE LOAD
+    competencia AS AE3_competencia,
+    ano AS AE3_ano,
+    diag_princ AS AE3_diag_princ,
+    Count(*) AS AE3_qtd_registro_aih,
+    Sum(_internacao) AS AE3_qtd_internacao,
+    Sum(_continuidade) AS AE3_qtd_continuidade
+RESIDENT AE_RD GROUP BY competencia,ano,diag_princ;
+DROP TABLE AE_RD;
+
+AE_LT:
+NOCONCATENATE LOAD
+    Trim(Text(COMPETEN)) AS competencia,
+    Trim(Text(_META_SOURCE_COMPETENCE)) AS _meta_comp,
+    Trim(Text(CODUFMUN)) AS municipio_serv,
+    Trim(Text(CNES)) AS cnes,
+    Text(TP_LEITO) AS _tp_staging,
+    Left(Text(TP_LEITO),1) AS tp_leito,
+    Text(CODLEITO) AS codleito,
+    QT_EXIST AS qt_exist,
+    QT_SUS AS qt_sus,
+    QT_NSUS AS qt_nsus
+FROM [__LT_QVD__] (qvd);
+IF ScriptErrorCount > $(vAEStart) OR NoOfRows('AE_LT')<>35518 THEN
+    TRACE [AE01] VERDICT=BLOCKED_LT_LOAD_OR_ROWS;
+    EXIT SCRIPT;
+ENDIF
+AE_LT_CHECK:
+NOCONCATENATE LOAD
+    Count(DISTINCT competencia) AS meses,
+    Sum(qt_exist) AS exist_total,
+    Sum(qt_sus) AS sus_total,
+    Sum(qt_nsus) AS nsus_total,
+    Sum(If(competencia<>_meta_comp
+        OR Len(competencia)<>6 OR Len(KeepChar(competencia,'0123456789'))<>6
+        OR competencia<'201701' OR competencia>'201912'
+        OR Len(municipio_serv)<>6 OR Len(KeepChar(municipio_serv,'0123456789'))<>6
+        OR IsNull(cnes) OR Len(cnes)=0 OR IsNull(codleito)
+        OR Len(codleito)<>2 OR Len(KeepChar(codleito,'0123456789'))<>2
+        OR IsNull(_tp_staging)
+        OR Match(tp_leito,'1','2','3','4','5','6','7')=0
+        OR (Len(_tp_staging)<>1 AND (Len(_tp_staging)<>2 OR Right(_tp_staging,1)<>' '))
+        OR NOT IsNum(qt_exist) OR NOT IsNum(qt_sus) OR NOT IsNum(qt_nsus)
+        OR qt_exist<0 OR qt_sus<0 OR qt_nsus<0
+        OR qt_exist<>Round(qt_exist,1) OR qt_sus<>Round(qt_sus,1)
+        OR qt_nsus<>Round(qt_nsus,1) OR qt_exist<>qt_sus+qt_nsus,
+        1,0)) AS invalidos
+RESIDENT AE_LT;
+LET vAELTMonths=Peek('meses',0,'AE_LT_CHECK');
+LET vAELTExist=Peek('exist_total',0,'AE_LT_CHECK');
+LET vAELTSus=Peek('sus_total',0,'AE_LT_CHECK');
+LET vAELTNsus=Peek('nsus_total',0,'AE_LT_CHECK');
+LET vAELTBad=Peek('invalidos',0,'AE_LT_CHECK');
+DROP TABLE AE_LT_CHECK;
+TRACE [AE01] LT MONTHS=$(vAELTMonths) EXIST=$(vAELTExist) SUS=$(vAELTSus) NSUS=$(vAELTNsus) BAD=$(vAELTBad);
+IF ScriptErrorCount > $(vAEStart) OR $(vAELTMonths)<>36 OR $(vAELTExist)<>337147 OR $(vAELTSus)<>270076 OR $(vAELTNsus)<>67071 OR $(vAELTBad)<>0 THEN
+    TRACE [AE01] VERDICT=BLOCKED_LT_SOURCE_RECONCILIATION;
+    EXIT SCRIPT;
+ENDIF
+AE_PRE_E4:
+NOCONCATENATE LOAD
+    competencia AS AE4_competencia,
+    municipio_serv AS AE4_municipio_serv,
+    cnes AS AE4_cnes,
+    tp_leito AS AE4_tp_leito,
+    codleito AS AE4_codleito,
+    Count(*) AS AE4_linhas_lt,
+    Sum(qt_exist) AS AE4_qt_exist,
+    Sum(qt_sus) AS AE4_qt_sus,
+    Sum(qt_nsus) AS AE4_qt_nsus
+RESIDENT AE_LT GROUP BY competencia,municipio_serv,cnes,tp_leito,codleito;
+DROP TABLE AE_LT;
+
+// Mandatory in-memory group-level check BEFORE any CSV is written.
+AE_GROUP_CONTROL:
+NOCONCATENATE LOAD 'E1' AS saida, Sum(AE1_qtd_registro_aih) AS linhas,
+    Sum(AE1_qtd_internacao) AS novas, Sum(AE1_qtd_continuidade) AS cont
+RESIDENT AE_PRE_E1;
+CONCATENATE (AE_GROUP_CONTROL) LOAD 'E2' AS saida,
+    Sum(AE2_qtd_registro_aih) AS linhas,
+    Sum(AE2_qtd_internacao) AS novas, Sum(AE2_qtd_continuidade) AS cont
+RESIDENT AE_PRE_E2;
+CONCATENATE (AE_GROUP_CONTROL) LOAD 'E3' AS saida,
+    Sum(AE3_qtd_registro_aih) AS linhas,
+    Sum(AE3_qtd_internacao) AS novas, Sum(AE3_qtd_continuidade) AS cont
+RESIDENT AE_PRE_E3;
+AE_GROUP_ERRORS:
+NOCONCATENATE LOAD Sum(If(linhas<>566672 OR novas<>555089 OR cont<>11583,1,0)) AS bad,
+    Count(*) AS groups RESIDENT AE_GROUP_CONTROL;
+LET vAEGroupBad=Peek('bad',0,'AE_GROUP_ERRORS');
+LET vAEGroupN=Peek('groups',0,'AE_GROUP_ERRORS');
+DROP TABLE AE_GROUP_CONTROL;
+DROP TABLE AE_GROUP_ERRORS;
+AE_E4_CONTROL:
+NOCONCATENATE LOAD
+    Sum(AE4_linhas_lt) AS linhas,
+    Sum(AE4_qt_exist) AS existentes,
+    Sum(AE4_qt_sus) AS sus,
+    Sum(AE4_qt_nsus) AS nsus RESIDENT AE_PRE_E4;
+LET vAEE4Rows=Peek('linhas',0,'AE_E4_CONTROL');
+LET vAEE4Exist=Peek('existentes',0,'AE_E4_CONTROL');
+LET vAEE4Sus=Peek('sus',0,'AE_E4_CONTROL');
+LET vAEE4Nsus=Peek('nsus',0,'AE_E4_CONTROL');
+DROP TABLE AE_E4_CONTROL;
+IF ScriptErrorCount > $(vAEStart) OR $(vAEGroupBad)<>0 OR $(vAEGroupN)<>3 OR $(vAEE4Rows)<>35518 OR $(vAEE4Exist)<>337147 OR $(vAEE4Sus)<>270076 OR $(vAEE4Nsus)<>67071 THEN
+    TRACE [AE01] VERDICT=BLOCKED_GROUP_RECONCILIATION;
+    EXIT SCRIPT;
+ENDIF
+
+// Fail closed on unintended Qlik synthetic-key tables before the first export.
+// Static prefix tests verify the design; this probe checks actual Qlik model only
+// when the explicitly authorized Windows/QlikView reload eventually executes.
+LET vAETableCount=NoOfTables();
+LET vAESynCount=0;
+FOR vAEIndex=0 TO $(vAETableCount)-1
+    LET vAETableName=TableName($(vAEIndex));
+    IF Index('$(vAETableName)','$Syn')>0 THEN
+        LET vAESynCount=$(vAESynCount)+1;
+    ENDIF
+NEXT
+TRACE [AE01] PRESTORE_TABLES=$(vAETableCount) SYNTHETIC=$(vAESynCount);
+IF ScriptErrorCount > $(vAEStart) OR $(vAESynCount)<>0 OR $(vAETableCount)<>4 THEN
+    TRACE [AE01] VERDICT=BLOCKED_SYNTHETIC_KEYS;
+    EXIT SCRIPT;
+ENDIF
+
+// Exactly four CSV STOREs (QlikView documented txt + delimiter); UTF-8 BOM
+// is generated by STORE, no LOAD-only utf8/embedded labels specifiers.
+// Each public-shaped table exists briefly, then
+// is dropped before the next public-shaped table is loaded. No QVD STORE.
+AE_E1:
+NOCONCATENATE LOAD AE1_competencia AS competencia, AE1_ano AS ano,
+    AE1_municipio_res AS municipio_res, AE1_municipio_serv AS municipio_serv,
+    AE1_qtd_registro_aih AS qtd_registro_aih, AE1_qtd_internacao AS qtd_internacao,
+    AE1_qtd_continuidade AS qtd_continuidade RESIDENT AE_PRE_E1;
+STORE AE_E1 INTO [__E1_CSV__] (txt, delimiter is ';');
+IF ScriptErrorCount > $(vAEStart) THEN
+    TRACE [AE01] VERDICT=BLOCKED_CSV_STORE_PARTIAL_OUTPUT_RETAIN_FOR_DIAGNOSIS;
+    EXIT SCRIPT;
+ENDIF
+DROP TABLE AE_E1;
+DROP TABLE AE_PRE_E1;
+
+AE_E2:
+NOCONCATENATE LOAD AE2_competencia AS competencia, AE2_ano AS ano,
+    AE2_proc_rea AS proc_rea, AE2_qtd_registro_aih AS qtd_registro_aih,
+    AE2_qtd_internacao AS qtd_internacao, AE2_qtd_continuidade AS qtd_continuidade
+RESIDENT AE_PRE_E2;
+STORE AE_E2 INTO [__E2_CSV__] (txt, delimiter is ';');
+IF ScriptErrorCount > $(vAEStart) THEN
+    TRACE [AE01] VERDICT=BLOCKED_CSV_STORE_PARTIAL_OUTPUT_RETAIN_FOR_DIAGNOSIS;
+    EXIT SCRIPT;
+ENDIF
+DROP TABLE AE_E2;
+DROP TABLE AE_PRE_E2;
+
+AE_E3:
+NOCONCATENATE LOAD AE3_competencia AS competencia, AE3_ano AS ano,
+    AE3_diag_princ AS diag_princ, AE3_qtd_registro_aih AS qtd_registro_aih,
+    AE3_qtd_internacao AS qtd_internacao, AE3_qtd_continuidade AS qtd_continuidade
+RESIDENT AE_PRE_E3;
+STORE AE_E3 INTO [__E3_CSV__] (txt, delimiter is ';');
+IF ScriptErrorCount > $(vAEStart) THEN
+    TRACE [AE01] VERDICT=BLOCKED_CSV_STORE_PARTIAL_OUTPUT_RETAIN_FOR_DIAGNOSIS;
+    EXIT SCRIPT;
+ENDIF
+DROP TABLE AE_E3;
+DROP TABLE AE_PRE_E3;
+
+AE_E4:
+NOCONCATENATE LOAD AE4_competencia AS competencia,
+    AE4_municipio_serv AS municipio_serv, AE4_cnes AS cnes,
+    AE4_tp_leito AS tp_leito, AE4_codleito AS codleito,
+    AE4_linhas_lt AS linhas_lt, AE4_qt_exist AS qt_exist,
+    AE4_qt_sus AS qt_sus, AE4_qt_nsus AS qt_nsus
+RESIDENT AE_PRE_E4;
+STORE AE_E4 INTO [__E4_CSV__] (txt, delimiter is ';');
+IF ScriptErrorCount > $(vAEStart) THEN
+    TRACE [AE01] VERDICT=BLOCKED_CSV_STORE_PARTIAL_OUTPUT_RETAIN_FOR_DIAGNOSIS;
+    EXIT SCRIPT;
+ENDIF
+DROP TABLE AE_E4;
+DROP TABLE AE_PRE_E4;
+IF ScriptErrorCount > $(vAEStart) THEN
+    TRACE [AE01] VERDICT=BLOCKED_CSV_STORE_PARTIAL_OUTPUT_RETAIN_FOR_DIAGNOSIS;
+    EXIT SCRIPT;
+ENDIF
+TRACE [AE01] FOUR_CSVS_WRITTEN_CHECKED_BY_RUNNER=True;
+TRACE [AE01] VERDICT=PASS_GROUPED_CSV_EXPORTED_PENDING_INDEPENDENT_VALIDATION;
+TRACE [AE01] PHASE_IX=NOT_AUTHORIZED PRODUCTION_APPROVED=False;
