@@ -58,3 +58,20 @@ Qualquer desvio de fontes, scripts, hashes, QlikView/COM, saída inesperada, aus
 - Issue #157 / G1 T25/T26 permanece aberta, separada e necessária.
 
 **Próxima decisão do responsável:** revisão do PR de executores e eventuais correções versionadas. Aprovação documental/do desenvolvimento, commit ou merge **não autorizam** executar QlikView. A execução física exigirá aprovação independente, com commit, host, escopo e pasta de evidências definidos. Nenhum trabalho de Fase IX começa por decorrência.
+
+## Adendo de integração — tentativa local A0 R1 e auditoria restrita posteriores (27/10/2026)
+
+Os estados de **desenvolvimento não executado** acima descrevem o momento da preparação no commit `7760c3079f998243e5bf72c44747aac60e2b76e0`. Após autorização física distinta, o responsável executou **uma tentativa R1** nesse mesmo commit em Windows/QlikView Desktop 12.0.20000.0. Este adendo não altera o script testado nem amplia seu escopo.
+
+**Evidência arquivada:** [PR #164, comentário com auditoria independente](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/164#issuecomment-6451787982), pacote `A0_20261027_R1_audit_bundle.zip` SHA-256 `e5eff236031b5c41d72deabaecefbef7ac4bf40ea248ef8e05fbfb30b6f53604`, sete arquivos (CRC OK). O host reportou `PEDRO-ASUS`; o auditor conferiu logs, metadados, hashes e valores arquivados, sem reproduzir a chamada COM nem abrir os QVDs/QVWs binários originais.
+
+**Resultado restrito:** `A0_R1_RESTRICTED_ORACLE_RECONCILED_WITH_ARCHIVED_EVIDENCE`; **146/146** verificações (`36/36` séries SIH; `108/108` medidas mensais LT; `2/2` pares RES→SERV de 2018). Foram preservados os inventários hash de 22 QVDs, três QVWs e crosswalk no pacote apresentado. As duas amostras territoriais não homologam a matriz completa; a execução não comprova UI/UX visual/global.
+
+**Mapeamento dos IDs para o escopo posteriormente aprovado no PR #165:**
+- A0 R1 `P1.2` (série de internações por competência) → escopo aprovado `P1.2`;
+- A0 R1 `P2.2` (**série mensal LT**, ID histórico deste gate) → escopo aprovado `P2.1` (série de snapshots por competência). O novo `P2.2` é **composição SUS/não-SUS**, que utiliza as mesmas 108 medidas mensais como oráculo numérico sob competência explícita, **mas não recebeu validação independente de composição como objeto visual**;
+- A0 R1 `P3.1` (dois pares RES→SERV) → escopo aprovado `P3.1`, limitado aos dois pares; não à matriz global.
+
+**Sem promoção indevida:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `T29_HISTORICAL=NOT_APPROVED`, G1/[Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157) aberta, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. Scripts só poderão ser reexecutados em gate futuro específico, novamente autorizado, com HEAD e oráculos conferidos. A integração Git é somente preservação de código e rastreabilidade.
+
+**STOP:** adendo documental posterior à execução; não repetir A0 R1, refazer dados ou iniciar Fase IX.
