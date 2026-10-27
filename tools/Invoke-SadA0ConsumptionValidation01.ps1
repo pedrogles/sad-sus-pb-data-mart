@@ -150,7 +150,9 @@ $before=@(Snapshot)
 $before | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence 'protected_before.json') -Encoding UTF8
 $runtime=Join-Path $temp ('SAD_A0_01_'+[Guid]::NewGuid().ToString('N'))
 [void][IO.Directory]::CreateDirectory($runtime)
-$app=$null;$doc=$null;$problem=$null
+$app=$null;$doc=$null;$problem=$null;$logCopyProblem=$null
+# Defined before COM so a partial/failed reload log can be preserved in finally.
+$nativeLog=Join-Path $runtime 'A0_CONSUMPTION_DISPOSABLE.qvw.log'
 try{
     $oraclePath=Join-Path $evidence 'a0_oracle.json'
     & $PythonExe (Join-Path $repo $oracleRel) --ae01-dir $ae --output $oraclePath
@@ -171,17 +173,21 @@ try{
     if(-not(Test-Path -LiteralPath $qvw -PathType Leaf)){throw 'Disposable QVW not created'}
     $started=[DateTime]::UtcNow
     $null=$doc.Reload()
-    $nativeLog=$qvw+'.log'
     if(-not(Test-Path -LiteralPath $nativeLog -PathType Leaf)){throw 'Qlik native log absent'}
-    Copy-Item -LiteralPath $nativeLog -Destination (Join-Path $evidence 'qlik_reload.log')
     if((Get-Item -LiteralPath $nativeLog).LastWriteTimeUtc -lt $started.AddSeconds(-3)){
         throw 'Qlik native log stale'
     }
+    # Reuse the existing phase-VII log contract: exclude logged TRACE source
+    # instructions; count emitted markers only, with exactly one PASS.
+    $events=@(Get-Content -LiteralPath $nativeLog | Where-Object {$_ -notmatch '\bTRACE\b'})
+    $pass=@($events | Where-Object {$_.Contains('[VII] VERDICT=PASS_SCRIPT_ASSOCIATIVE_CANDIDATE_ONLY')})
+    $blocked=@($events | Where-Object {$_.Contains('[VII] VERDICT=BLOCKED')})
+    if($pass.Count -ne 1 -or $blocked.Count -gt 0){
+        throw 'Missing unique executed VII PASS or executed BLOCKED detected'
+    }
     $log=Get-Content -LiteralPath $nativeLog -Raw
-    if($log -notmatch '\[VII\] VERDICT=PASS_SCRIPT_ASSOCIATIVE_CANDIDATE_ONLY' -or
-       $log -match '\[VII\] VERDICT=BLOCKED' -or
-       $log -match '(?i)circular reference|loosely coupled|synthetic key'){
-        throw 'Fase VII model reload did not prove restricted candidate'
+    if($log -match '(?i)circular reference|loosely coupled|synthetic key'){
+        throw 'Fase VII native log contains association warning'
     }
     function ReadUInt([string]$expression,[string]$label){
         $raw=[string]$doc.Evaluate($expression)
@@ -220,28 +226,39 @@ try{
     if($results.Count -ne 146 -or @($results | Where-Object {-not $_.pass}).Count -ne 0){
         throw 'Restricted A0 result mismatch (36 SIH + 108 LT + 2 pairs)'
     }
-    [pscustomobject]@{
-        gate='SAD-A0-CONSUMPTION-VALIDATION-01'
-        status='PASS_LOCAL_CANDIDATE_ONLY'
-        p1_2_months=36;p2_2_month_measure_checks=108;p3_1_sample_pairs=2
-        p3_1_full_matrix='NOT_TESTED'
-        link_key_contract='NOT_APPROVED'
-        phase_ix='NOT_AUTHORIZED'
-        authorization_ref=$ExecutionAuthorizationRef
-        git_commit=$head
-        git_branch=$branch
-        scripts_sha256=$scriptHashes
-    } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence 'execution_metadata.json') -Encoding UTF8
-    Write-Output 'VERDICT=PASS_LOCAL_CANDIDATE_ONLY_NOT_FINAL_VISUAL'
+    # All candidate measurements matched; PASS is deferred until post-run integrity and log evidence pass.
 }catch{
     $problem=$_.Exception.Message
     Write-Output ('VERDICT=BLOCKED_OR_INCONCLUSIVE '+$problem)
 }finally{
     if($null -ne $doc){try{$null=$doc.CloseDoc()}catch{};try{[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($doc)}catch{}}
     if($null -ne $app){try{$app.Quit()}catch{};try{[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($app)}catch{}}
+    # Retain native evidence even if Reload, parsing or Evaluate failed.
+    if(Test-Path -LiteralPath $nativeLog -PathType Leaf){
+        try{
+            Copy-Item -LiteralPath $nativeLog -Destination (Join-Path $evidence 'qlik_reload.log') -ErrorAction Stop
+        }catch{
+            $logCopyProblem=$_.Exception.Message
+        }
+    }
     $after=@(Snapshot)
     $after | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence 'protected_after.json') -Encoding UTF8
     if(-not(Same $before $after)){throw 'HARD_STOP: protected QVD/QVW/AE01/crosswalk hash drift'}
     Write-Output 'PROTECTED_SOURCES_SHA256_UNCHANGED=True'
 }
 if($null -ne $problem){throw $problem}
+if($null -ne $logCopyProblem){throw ('EVIDENCE_LOG_COPY_FAILED: '+$logCopyProblem)}
+# Only now are the 146 checks, native log copy and protected pre/post hashes complete.
+[pscustomobject]@{
+    gate='SAD-A0-CONSUMPTION-VALIDATION-01'
+    status='PASS_LOCAL_CANDIDATE_ONLY'
+    p1_2_months=36;p2_2_month_measure_checks=108;p3_1_sample_pairs=2
+    p3_1_full_matrix='NOT_TESTED'
+    link_key_contract='NOT_APPROVED'
+    phase_ix='NOT_AUTHORIZED'
+    authorization_ref=$ExecutionAuthorizationRef
+    git_commit=$head
+    git_branch=$branch
+    scripts_sha256=$scriptHashes
+} | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence 'execution_metadata.json') -Encoding UTF8
+Write-Output 'VERDICT=PASS_LOCAL_CANDIDATE_ONLY_NOT_FINAL_VISUAL'
