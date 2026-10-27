@@ -37,6 +37,10 @@ Não inventar campos, chaves, granularidades, medidas, entidades, cardinalidades
 
 Regras completas: `docs/academic/chapter-1-2-modeling.md`, `docs/discovery/boundary-5-historization-role-playing.md`, `boundary-6-qlikview-physical-architecture.md` e `boundary-7-implementation-plan.md` no mesmo diretório. **A ordem de implementação aprovada nos Boundaries não deve ser alterada silenciosamente.**
 
+## Direcionamento analítico aprovado em 27/10/2026
+
+O responsável priorizou comprovar resultados descritivos dos **dados já materializados**, antes de investir em três painéis acadêmicos definitivos. **A ordem de implementação do Boundary 7 e os contratos físicos NÃO mudaram.** A fonte de referência estratégica é [direcionamento analítico](docs/project/analytical-direction-2026-10-27.md), com [inventário](docs/discovery/analytical-question-inventory-2026-10-27.md) e [plano de suficiência](docs/discovery/analytical-sufficiency-plan-2026-10-27.md). As análises independentes SIH/RD e CNES/LT observacionais podem ser validadas sem aceite científico global de T25/T26; isso **não autoriza** Fase IX, Link Key ou indicadores cross-fact. Consultar o `current-state.md` para verificar se a orientação já foi integrada na `main` e o gate vigente.
+
 ## Contrato mínimo de execução e encerramento
 
 Antes de executar, registrar **objetivo**, **fontes**, **escopo tocável**, **invariantes**, **critérios PASS/BLOCKED**, **evidências** e **condição de parada**. Trabalhar com PRs de objetivo único. Mudança material de arquitetura ou semântica requer evidência e aprovação explícita do responsável.

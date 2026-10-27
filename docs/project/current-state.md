@@ -1,6 +1,22 @@
 # Current State — SAD Data Mart SUS PB
 
-## Roteamento documental — 22/10/2026 | Caminho crítico para entrega final
+## Direcionamento vigente proposto — 27/10/2026 | Suficiência analítica antes dos painéis
+
+**Verificação de entrada:** `main@9f4fc0ea43dfe8b6f20f7b6254bc7f965f6a9c04` (baseline igual no início da revisão). **Autoridade:** responsável aprovou em conversa em 27/10 a revisão de prioridade para demonstrar conhecimento real com os dados existentes. O registro documental nesta branch necessita revisão e integração explícita para valer na `main`; **não** é `G1_RESOLVED`, aceite físico ou produção.
+
+**Novo objetivo operacional isolado:** `SAD-ANALYTICAL-SUFFICIENCY-01`. Próximo gate candidato, **sem execução física autorizada:** `EXTRATOS-ANALITICOS-READONLY-01`. Conferir o [direcionamento](analytical-direction-2026-10-27.md), as [12 perguntas](../discovery/analytical-question-inventory-2026-10-27.md) e o [plano de suficiência](../discovery/analytical-sufficiency-plan-2026-10-27.md). Validar séries, rankings e perfis SIH/RD, observabilidade/distribuição CNES/LT e fluxos RES→SERV, reconciliando números reais **antes** de fechar especificações dos três painéis: (1) produção hospitalar, (2) leitos observados, (3) fluxos territoriais. Sem QVD acessível, apenas registrar agregado necessário e motivo; não inventar resultados.
+
+**Dependências separadas:** G1 / [Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157) **continua pendente para suficiência T25/T26** e não libera G2–G6; também não deve bloquear análise SIH/RD ou CNES/LT observada restrita à própria fato. T24 é candidato condicionado à V2 e contratos de integração. O [caminho crítico](final-delivery-critical-path.md) distingue a trilha analítica independente da cadeia de aceite dos indicadores dependentes. **A ordem física C2→C3→C4 do Boundary 7 não mudou**; Fase IX não autorizada.
+
+**Dados já documentados:** `FATO_INTERNACAO`: 566.672 RD, 555.089 contagens de internação e 11.583 continuidades; `FATO_CAPACIDADE_LEITO`: 35.518 linhas/36 competências, observabilidade C4-F de 8.028 pares (3.464 positivos, 97 zeros observados, 4.467 sem linha); `FATO_POPULACAO`: 669 município×ano. São **execuções locais reportadas/exportações documentadas**, sem reabertura independente de QVD/QVW nesta revisão.
+
+**Status não promovidos:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`, `P5_KPI_CALC_GUARD=NOT_TESTED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. Preservar **22 QVDs e três QVWs canônicos** e os relatórios de testes fechados; não recarregar/salvar originais.
+
+**STOP documental:** plano, matriz, referências e bootstrap em PR Draft; não editar Capítulos 1–2 ou V2, não fechar Issue #157, não executar COM, não criar dashboards.
+
+---
+
+## Registro histórico de roteamento — 22/10/2026 | Caminho crítico anterior
 
 **Plano operacional de priorização, sem autorizar os próximos gates:** [Caminho crítico da entrega](final-delivery-critical-path.md). **Próximo problema a resolver:** [Issue #157 — suficiência científica CNES/LT para T25/T26](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157), estado inicial `OPEN_UNRESOLVED`. Prioridade sugerida: **G1 escopo metodológico T25/T26 → G2 Link Key físico → G3 medidas/denominadores/expressões → G4 UX e guardas D2/P5 → G5 encerramento da Fase VIII → G6 três painéis após GO/IX → G7 relatório e entrega**. A priorização de decisões G1–G7 não substitui a ordem física de implementação aprovada no Boundary 7: G1 é READ-ONLY; validações físicas C2/C3/C4 dependem de seus próprios gates e permissões. **Cada gate dependente só é liberado com `RESOLVED_ACCEPTED` rastreável; se fonte/professor faltar, manter item `BLOCKED_EXTERNAL` aberto e não afirmar conclusão.** Trabalho comprovadamente independente exige escopo/autorização próprios. O plano não altera a aprovação semântica V2, a modelagem ou os status globais abaixo. Confirmar a data da segunda avaliação/professor; relatório final exige ≥3 painéis, Capítulos 3–5 e anexos de scripts.
 
