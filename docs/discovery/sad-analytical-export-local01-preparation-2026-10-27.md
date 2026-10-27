@@ -1,6 +1,6 @@
 # SAD-ANALYTICAL-EXPORT-LOCAL-01 — preparação estática
 
-**Estado:** `SCRIPT_VERSIONED_CANDIDATE` (preparação versionada em branch para revisão; **não testada no Windows/QlikView e não executada**). O ZIP original era um pacote não versionado.
+**Estado:** `STATIC_P1_REMEDIATION_CANDIDATE` (PR #160 Draft, branch versionada; sete testes sintéticos locais PASS; **sem Windows/QlikView/COM e sem dados físicos**). Integração e execução permanecem NÃO autorizadas.
 
 ## Proveniência e fronteira
 
@@ -41,7 +41,7 @@
 |---|---|
 | RD (cada E1/E2/E3) | 566.672 registros, 555.089 elegíveis, 11.583 continuidades |
 | RD 2017/2018/2019 | 183.532 / 183.311 / 188.246 elegíveis |
-| RD período | 36 competências, grão exclusivo, sem duplicatas de grupo |
+| RD período | 36 competências, grão exclusivo, sem duplicatas de grupo, E1/E2/E3 com mesmo triplo mensal (`registros`, `internações`, `continuidades`) |
 | RD externos E1 | 5.202 linhas administrativas e 5.067 elegíveis (F1/F3 histórico), confrontados com crosswalk C5.2 de 223 códigos PB |
 | LT E4 | 35.518 linhas, 337.147 `QT_EXIST`, 270.076 `QT_SUS`, 67.071 `QT_NSUS` (somas **somente de snapshots observados**, controle de auditoria) |
 | LT cobertura observada | 36 competências, 3.561 pares com linhas, 3.464 positivos, 97 zeros observados e 4.467 células sem linha na grade 223×36 |
@@ -62,9 +62,9 @@
 
 ## Arquitetura do patch candidato
 
-- `TRANSFORMACAO/sad_analytical_export_local01.qvs`: só carrega duas fontes QVD, valida controles, agrupa quatro tabelas em memória e executa **quatro** `STORE` texto; nenhuma escrita QVD/QVW. Sua sintaxe QlikView **não foi testada fisicamente**.
+- `TRANSFORMACAO/sad_analytical_export_local01.qvs`: lê apenas dois QVDs de staging, agrupa em `AE_PRE_E1..E4` com aliases exclusivos e materializa sequencialmente cada tabela pública `AE_E1..E4`, com `DROP` entre stores. Antes da primeira exportação, exige quatro tabelas temporárias e zero `$Syn` pela inspeção de `NoOfTables()/TableName()`; executa **quatro** `STORE` somente TXT. Sintaxe QlikView e probe **não testados fisicamente**.
 - `tools/Invoke-SadAnalyticalExportLocal01.ps1`: exige `-RunQlik` e `-ExpectedCommit` igual ao HEAD da branch não-main, scripts versionados e sem mudanças; valida inventário 22 QVDs, cabeçalhos RD/LT, script allowlist, cria QVW descartável em TEMP e copia log para evidências; inspeciona hashes antes/depois. Não rodar scripts VI-P3/VI-P4.
-- `tools/validate_sad_analytical_export_local01.py`: auditor independente que **não chama Qlik**. Confere esquema, códigos, unicidade, períodos, totais, F2 opcional e escreve `manifest.json` somente após PASS; registra SHA-256 dos CSVs e scripts via metadados locais.
+- `tools/validate_sad_analytical_export_local01.py`: auditor independente que **não chama Qlik**. Confere esquema, códigos, unicidade, períodos, totais anuais **e igualdade mensal E1=E2=E3 para registros, internações e continuidades**, F2 opcional e escreve `manifest.json` somente após PASS; `run_metadata.json` aceita UTF-8 com/sem BOM emitido pelo Windows PowerShell 5.1.
 - A execução será **uma única tentativa**. Falha exige diagnóstico/STOP, sem retry automático.
 
 ## Procedimento futuro (não executado)
@@ -93,6 +93,18 @@
 - Teste negativo com crosswalk incompleto: BLOCKED conforme esperado, sem criação de manifesto.
 - Auditoria textual: quatro `STORE` somente TXT/CSV, sem `STORE` QVD; `-RunQlik` explícito e proteção pré/pós previstas.
 - **Não testado:** parser do PowerShell em Windows, execução COM, reload QlikView 12, formato CSV real ou validação com dados físicos.
+
+## Correções P1 — PR #160 (revisão offline de 27/10/2026)
+
+| Bloqueio do review | Correção proposta | Evidência local (somente teste sintético) |
+|---|---|---|
+| P1 / BOM no metadado do PowerShell 5.1 | `read_metadata()` com `encoding='utf-8-sig'` | JSON com BOM lido pelo código de produção; a leitura com `utf-8` antigo falha no mesmo fixture |
+| P1 / totais mensais inconsistentes | Comparação das 36 competências entre E1, E2 e E3 para o triplo `(QTD_REGISTRO_AIH, QTD_INTERNACAO, QTD_CONTINUIDADE)` | Mutações 201701→201702 em E2 (internação) e E3 (continuidade), preservando totais anuais, retornam BLOCKED |
+| P1 / `$Syn` em tabelas residentes simultâneas | Alias internos exclusivos por extrato, `STORE` sequencial com `DROP TABLE` após cada CSV, e guarda de zero `$Syn` e exatamente quatro tabelas temporárias antes do STORE | Testes estáticos para nomes internos exclusivos, stores serializados e mutações maliciosas rejeitadas. **Não equivale a ausência física comprovada de `$Syn` no QlikView.** |
+
+**Testes executados no ambiente isolado Python (sem QlikView):** `python -m unittest discover -s tools -p 'test_sad_analytical_export_local01.py' -v` → **7/7 PASS**, Python 3.13.5; `python -m py_compile` para validador e suíte PASS. Fixture inteiramente sintético, descartável e mantido somente durante a execução, sem QVD/QVW/COM. O script de testes integra este mesmo PR; antes de sustentar gate futuro, usar o **commit correspondente** (sem herdar evidência de SHA anterior).
+
+**Limites residuais:** não existe nesta revisão verificação de parser PowerShell 5.1, execução QlikView do QVS, comportamento real `STORE (txt, utf8, delimiter is ';', embedded labels)` ou CSVs de produção. A guarda de topologia Qlik e o estado de ausência de `$Syn` devem ser observados em log físico na execução **apenas após autorização**. Adicionais P2 do review podem ser acompanhados separadamente, sem ampliar o gate silenciosamente. Issue #161 deve manter `EXECUTION_NOT_AUTHORIZED` enquanto não houver autorização expressa específica.
 
 ## Pendências reais e STOP
 

@@ -87,10 +87,11 @@ def read_municipios(path: Path) -> set[str]:
 
 def audit_rd(folder: Path, code_pb: set[str]):
     output={}
-    flow_municipal=Counter()
+    monthly_profiles={}
     for filename in list(EXPECTED)[:3]:
         fields=EXPECTED[filename]
         seen=set();byyear=Counter();summary=Counter();by_month=set();outside=Counter()
+        by_month_counts=defaultdict(Counter)
         for line,row in read_csv(folder/filename,fields):
             month=row['competencia']
             require(valid_month(month) and row['ano']==month[:4],f'{filename}:{line}: ano/mes')
@@ -99,7 +100,9 @@ def audit_rd(folder: Path, code_pb: set[str]):
             seen.add(k);by_month.add(month)
             reg,intern,cont=[uint(row[f],f'{filename}:{line}:{f}') for f in fields[-3:]]
             require(reg>0 and reg==intern+cont,f'{filename}:{line}: decomposicao RD')
-            for name,n in [('rows',reg),('intern',intern),('cont',cont)]:summary[name]+=n
+            for name,n in [('rows',reg),('intern',intern),('cont',cont)]:
+                summary[name]+=n
+                by_month_counts[month][name]+=n
             byyear[row['ano']]+=intern
             if filename=='sih_fluxo_competencia.csv':
                 res,serv=row['municipio_res'],row['municipio_serv']
@@ -108,7 +111,6 @@ def audit_rd(folder: Path, code_pb: set[str]):
                 require(not (res.startswith('25') and res not in code_pb),
                         f'{filename}:{line}: residencia PB fora C5.2')
                 if res not in code_pb:outside['rows']+=reg;outside['intern']+=intern
-                flow_municipal[(month,serv)]+=intern
             elif filename=='sih_procedimento_competencia.csv':
                 require(bool(row['proc_rea']),f'{filename}:{line}: PROC_REA vazio')
             else:
@@ -117,6 +119,8 @@ def audit_rd(folder: Path, code_pb: set[str]):
         require(tuple(summary[x] for x in ['rows','intern','cont'])==RD_ALL,
                 f'{filename}: totais RD divergentes {dict(summary)}')
         require(dict(byyear)==RD_YEAR,f'{filename}: anos divergentes {dict(byyear)}')
+        monthly_profiles[filename]={m:tuple(by_month_counts[m][key] for key in ('rows','intern','cont'))
+                                    for m in sorted(MONTHS)}
         if filename=='sih_fluxo_competencia.csv':
             require(outside['rows']==5202 and outside['intern']==5067,
                     f'Residencia externa difere de F1/F3: {dict(outside)}')
@@ -124,6 +128,11 @@ def audit_rd(folder: Path, code_pb: set[str]):
                           'competencias':len(by_month),'sums':dict(summary),
                           'annual_internacoes':dict(sorted(byyear.items())),
                           'residencia_externa':dict(outside) if outside else None}
+    reference=monthly_profiles['sih_fluxo_competencia.csv']
+    for filename,profile in monthly_profiles.items():
+        for month in sorted(MONTHS):
+            require(profile[month]==reference[month],
+                    f'{filename}: divergencia mensal E1/E2/E3 em {month}: esperado={reference[month]} observado={profile[month]}')
     return output
 
 
@@ -173,6 +182,11 @@ def compare_f2(path: Path,observed):
     return {'file':path.name,'sha256':F2_PIN,'pares_comparados':len(refs)}
 
 
+def read_metadata(path: Path) -> dict:
+    # Windows PowerShell 5.1's Set-Content -Encoding UTF8 emits a UTF-8 BOM.
+    return json.loads(path.read_text(encoding='utf-8-sig'))
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--exports',type=Path,required=True)
@@ -186,17 +200,19 @@ def main():
     require(manifest.parent==folder and not manifest.exists(), 'Manifesto deve ser novo no diretorio dos CSVs')
     require(args.crosswalk.resolve(strict=True)!=manifest and args.metadata.resolve(strict=True)!=manifest,
             'Entrada colide com saida')
-    metadata=json.loads(args.metadata.read_text(encoding='utf-8'))
+    metadata=read_metadata(args.metadata)
     require(metadata.get('gate')=='SAD-ANALYTICAL-EXPORT-LOCAL-01' and metadata.get('commit')
             and metadata.get('protection_unchanged') is True,'Proveniencia/hash nao validado pelo runner')
     codes=read_municipios(args.crosswalk)
     rd=audit_rd(folder,codes)
     lt,observed=audit_lt(folder,codes)
+    export_results=dict(rd)
+    export_results['lt_cnes_leito_competencia.csv']=lt
     result={'gate':'SAD-ANALYTICAL-EXPORT-LOCAL-01',
             'status':'EXPORTED_AND_RECONCILED_RESTRICTED',
             'verified_utc':datetime.now(timezone.utc).isoformat(),
             'execution':metadata,'reference_crosswalk_sha256':sha256(args.crosswalk),
-            'exports':rd | {'lt_cnes_leito_competencia.csv':lt},
+            'exports':export_results,
             'f2_comparison':compare_f2(args.f2,observed) if args.f2 else 'NOT_PROVIDED',
             'interpretation':['2017-2019 SIH/RD PB administrative records; IDENT=5 not new',
               'Municipio RES and SERV are distinct; outside-PB means residence outside C5.2',
