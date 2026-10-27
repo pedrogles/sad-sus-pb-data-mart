@@ -29,7 +29,7 @@
 | `sih_diagnostico_competencia.csv` | competência × DIAG_PRINC normalizado por `RTrim` | I05 |
 | `lt_cnes_leito_competencia.csv` | competência × município × CNES × tipo × código leito | I11 |
 
-- **UTF-8; CSV delimitado por `;`; cabeçalho exato** do bootstrap; quoting padrão do `STORE (txt, utf8, delimiter is ';', embedded labels)` Qlik, a confirmar no Windows; códigos municipais e de domínio são textos.
+- **UTF-8; CSV delimitado por `;`; cabeçalho exato** do bootstrap; exportação em UTF-8 com BOM conforme documentação oficial do QlikView, usando `STORE (txt, delimiter is ';')`; quoting/cabeçalho exatos ainda sujeitos a validação física; códigos municipais e de domínio são textos.
 - Medidas E1–E3: três inteiros não negativos `qtd_registro_aih`, `qtd_internacao`, `qtd_continuidade`; a primeira deve ser soma das outras duas. **Contagens administrativas, não indivíduos.**
 - E4: `linhas_lt`, `qt_exist`, `qt_sus`, `qt_nsus`; inteiros não negativos, `qt_exist=qt_sus+qt_nsus`. Sem linha LT não produz linha no E4 (ausência não significa zero); um grupo existente pode ter QT_SUS=0 observado.
 - Não conter campos monetários. Tratamento de nulos: **fail closed nos códigos e nas medidas da origem**; não produzir chaves sentinela nem transformar ausência em zero. Campo nulo/ambíguo inesperado é bloqueio, não correção silenciosa.
@@ -104,7 +104,9 @@
 
 **Testes executados no ambiente isolado Python (sem QlikView):** `python -m unittest discover -s tools -p 'test_sad_analytical_export_local01.py' -v` → **7/7 PASS**, Python 3.13.5; `python -m py_compile` para validador e suíte PASS. Fixture inteiramente sintético, descartável e mantido somente durante a execução, sem QVD/QVW/COM. O script de testes integra este mesmo PR; antes de sustentar gate futuro, usar o **commit correspondente** (sem herdar evidência de SHA anterior).
 
-**Limites residuais:** não existe nesta revisão verificação de parser PowerShell 5.1, execução QlikView do QVS, comportamento real `STORE (txt, utf8, delimiter is ';', embedded labels)` ou CSVs de produção. A guarda de topologia Qlik e o estado de ausência de `$Syn` devem ser observados em log físico na execução **apenas após autorização**. Adicionais P2 do review podem ser acompanhados separadamente, sem ampliar o gate silenciosamente. Issue #161 deve manter `EXECUTION_NOT_AUTHORIZED` enquanto não houver autorização expressa específica.
+**Ajuste adicional fundamentado na documentação QlikView:** o `STORE` de texto usa `(txt, delimiter is ';')`, sem especificadores exclusivos de `LOAD` (`utf8`/`embedded labels`). A ajuda oficial registra CSV UTF-8 com BOM por padrão. A guarda regex do PowerShell verifica a forma exata. Requer teste físico posterior da saída efetiva: cabeçalho, aspas e separador.
+
+**Limites residuais:** não existe nesta revisão verificação de parser PowerShell 5.1, execução QlikView do QVS, comportamento real `STORE (txt, delimiter is ';')` ou CSVs de produção. A guarda de topologia Qlik e o estado de ausência de `$Syn` devem ser observados em log físico na execução **apenas após autorização**. Adicionais P2 do review podem ser acompanhados separadamente, sem ampliar o gate silenciosamente. Issue #161 deve manter `EXECUTION_NOT_AUTHORIZED` enquanto não houver autorização expressa específica.
 
 ## Pendências reais e STOP
 

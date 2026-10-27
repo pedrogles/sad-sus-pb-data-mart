@@ -95,7 +95,8 @@ def check_qvs_prefix_isolation(src: str) -> None:
         starts.append((start,store,drop))
     if not all(starts[i][2]<starts[i+1][0] for i in range(3)):
         raise ValueError('overlapping public-shaped export tables')
-    if len(re.findall(r'(?m)^STORE\s+',src)) != 4 or re.search(r'(?im)^STORE.+\(qvd\)',src):
+    allowed_store = r"(?m)^STORE AE_E[1-4] INTO \[__E[1-4]_CSV__\] \(txt, delimiter is ';'\);$"
+    if len(re.findall(allowed_store, src)) != 4 or len(re.findall(r'(?m)^STORE\s+',src)) != 4 or re.search(r'(?im)^STORE.+\(qvd\)',src):
         raise ValueError('STORE allowlist violated')
     if 'VERDICT=BLOCKED_SYNTHETIC_KEYS' not in src:
         raise ValueError('runtime synthetic-key guard absent')

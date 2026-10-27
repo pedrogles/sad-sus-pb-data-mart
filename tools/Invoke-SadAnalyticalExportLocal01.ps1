@@ -102,7 +102,7 @@ function SameInventory($left,$right) {
 }
 $pre=@(Inventory)
 $source=(Get-Content -LiteralPath (Join-Path $repo $critical[0]) -Raw -Encoding UTF8)
-$stores=[regex]::Matches($source,'(?im)^\s*STORE\s+AE_E[1-4]\s+INTO\s+\[__(?:E1|E2|E3|E4)_CSV__\]\s+\(txt, utf8, delimiter is '';'', embedded labels\);')
+$stores=[regex]::Matches($source,'(?im)^\s*STORE\s+AE_E[1-4]\s+INTO\s+\[__(?:E1|E2|E3|E4)_CSV__\]\s+\(txt, delimiter is '';''\);')
 if($stores.Count -ne 4 -or [regex]::Matches($source,'(?im)^\s*STORE\b').Count -ne 4){throw 'QVS STORE whitelist mismatch'}
 if($source -match '(?im)^\s*(EXECUTE|BINARY|SQL|DIRECT\s+QUERY|DROP\s+FILE|MUST_INCLUDE|INCLUDE)\b'){throw 'Forbidden QVS statement'}
 if($source -notmatch 'VERDICT=PASS_GROUPED_CSV_EXPORTED_PENDING_INDEPENDENT_VALIDATION'){throw 'Missing QVS marker'}
