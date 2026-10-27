@@ -1,5 +1,13 @@
 # Current State — SAD Data Mart SUS PB
 
+## Proposta em revisão — 27/10/2026 | Aceite delimitado de escopo analítico
+
+**Gate candidato:** `SAD-ANALYTICAL-SCOPE-ACCEPTANCE-01`, preparado **apenas documentalmente em branch/PR Draft**, sem aprovação das decisões de escopo D1–D3. [Matriz e contrato de 14 visuais](../discovery/sad-analytical-scope-acceptance-01-2026-10-27.md) confrontam AE01 (E1–E4), análise exploratória e A0 R1: **9 perguntas sustentadas com limitações; I06/I07 históricas não reauditadas; I12 condicionada**. Não registrar `SCOPE_ACCEPTED_RESTRICTED` antes do aceite explícito. O `EXTRATOS-ANALITICOS-READONLY-01` abaixo descreve o roteamento documental anterior, não autoriza sua repetição.
+
+**Próximo passo sugerido:** responsável revisar D1 (5+5+4 visuais por fonte), D2 (I06/I07 opcionais) e D3 (I12 adiada sem alterar `FATO_POPULACAO`/objetivo acadêmico). Nenhum merge, QVD/QVW, QlikView/COM, nova recarga, Fase IX ou homologação de filtros decorre deste documento. Manter G1/[Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157), contratos globais, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED` e `PRODUCTION_APPROVED=False`. A ordem física C2→C3→C4 do Boundary 7 não muda. Este cabeçalho só passa a integrar a `main` mediante revisão/merge autorizado.
+
+---
+
 ## Roteamento documental — 27/10/2026 | Suficiência analítica antes dos painéis
 
 **Verificação de entrada:** `main@9f4fc0ea43dfe8b6f20f7b6254bc7f965f6a9c04` (baseline igual no início da revisão). **Autoridade:** responsável aprovou em conversa em 27/10 a revisão de prioridade para demonstrar conhecimento real com os dados existentes. Registro submetido pelo [PR #159](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/159); verificar sua integração para confirmar vigência na `main`. A atualização **não** é `G1_RESOLVED`, aceite físico ou produção.
