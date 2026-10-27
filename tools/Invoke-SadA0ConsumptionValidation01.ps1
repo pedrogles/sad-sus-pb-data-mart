@@ -240,6 +240,8 @@ try{
         }catch{
             $logCopyProblem=$_.Exception.Message
         }
+    }else{
+        $logCopyProblem='Qlik native log missing at evidence-copy checkpoint'
     }
     $after=@(Snapshot)
     $after | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence 'protected_after.json') -Encoding UTF8
