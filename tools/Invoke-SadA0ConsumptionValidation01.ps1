@@ -147,8 +147,7 @@ if($qvs -match '__[A-Z_]+__'){throw 'Unresolved model placeholder'}
 # Scope restriction: only a future separate authorization may reach here.
 $before=@(Snapshot)
 [void][IO.Directory]::CreateDirectory($evidence)
-$before | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath
-    (Join-Path $evidence 'protected_before.json') -Encoding UTF8
+$before | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence 'protected_before.json') -Encoding UTF8
 $runtime=Join-Path $temp ('SAD_A0_01_'+[Guid]::NewGuid().ToString('N'))
 [void][IO.Directory]::CreateDirectory($runtime)
 $app=$null;$doc=$null;$problem=$null
@@ -217,8 +216,7 @@ try{
         $want=[long]$pair.qtd_internacao
         $results.Add([pscustomobject]@{case='P3.1';key="$year/$res/$serv";measure='internacoes';expected=$want;actual=$got;pass=($got -eq $want)})
     }
-    $results | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath
-        (Join-Path $evidence 'qlik_evaluations.json') -Encoding UTF8
+    $results | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence 'qlik_evaluations.json') -Encoding UTF8
     if($results.Count -ne 146 -or @($results | Where-Object {-not $_.pass}).Count -ne 0){
         throw 'Restricted A0 result mismatch (36 SIH + 108 LT + 2 pairs)'
     }
@@ -233,8 +231,7 @@ try{
         git_commit=$head
         git_branch=$branch
         scripts_sha256=$scriptHashes
-    } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath
-        (Join-Path $evidence 'execution_metadata.json') -Encoding UTF8
+    } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence 'execution_metadata.json') -Encoding UTF8
     Write-Output 'VERDICT=PASS_LOCAL_CANDIDATE_ONLY_NOT_FINAL_VISUAL'
 }catch{
     $problem=$_.Exception.Message
@@ -243,8 +240,7 @@ try{
     if($null -ne $doc){try{$null=$doc.CloseDoc()}catch{};try{[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($doc)}catch{}}
     if($null -ne $app){try{$app.Quit()}catch{};try{[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($app)}catch{}}
     $after=@(Snapshot)
-    $after | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath
-        (Join-Path $evidence 'protected_after.json') -Encoding UTF8
+    $after | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence 'protected_after.json') -Encoding UTF8
     if(-not(Same $before $after)){throw 'HARD_STOP: protected QVD/QVW/AE01/crosswalk hash drift'}
     Write-Output 'PROTECTED_SOURCES_SHA256_UNCHANGED=True'
 }
