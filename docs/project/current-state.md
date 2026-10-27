@@ -1,10 +1,11 @@
 # Current State — SAD Data Mart SUS PB
 
-## Proposta em revisão — 27/10/2026 | Aceite delimitado de escopo analítico
+## Decisão registrada em branch — 27/10/2026 | Escopo analítico D1–D3 aceito
 
-**Gate candidato:** `SAD-ANALYTICAL-SCOPE-ACCEPTANCE-01`, preparado **apenas documentalmente em branch/PR Draft**, sem aprovação das decisões de escopo D1–D3. [Matriz e contrato de 14 visuais](../discovery/sad-analytical-scope-acceptance-01-2026-10-27.md) confrontam AE01 (E1–E4), análise exploratória e A0 R1: **9 perguntas sustentadas com limitações; I06/I07 históricas não reauditadas; I12 condicionada**. Não registrar `SCOPE_ACCEPTED_RESTRICTED` antes do aceite explícito. O `EXTRATOS-ANALITICOS-READONLY-01` abaixo descreve o roteamento documental anterior, não autoriza sua repetição.
+**Estado restrito do responsável:** `SCOPE_ACCEPTED_RESTRICTED_BY_OWNER_IN_CHAT`; [PR #165](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/165) continua **Draft, não integrado na `main`**. A aprovação explícita “aprovado prossiga” aceita [D1–D3 e os contratos candidatos](../discovery/sad-analytical-scope-acceptance-01-2026-10-27.md): **5 visuais P1, 5 P2, 4 P3**; I06/I07 opcionais, sem nova auditoria AE01; I12/T24 adiado do núcleo visual, preservando `FATO_POPULACAO`, três fatos/oito dimensões e Capítulos 1–2. Matriz: nove perguntas sustentadas **nos recortes/evidências restritas**; duas históricas; uma condicionada. O antigo `EXTRATOS-ANALITICOS-READONLY-01` aparece abaixo como contexto, **não** como convite à repetição.
 
-**Próximo passo sugerido:** responsável revisar D1 (5+5+4 visuais por fonte), D2 (I06/I07 opcionais) e D3 (I12 adiada sem alterar `FATO_POPULACAO`/objetivo acadêmico). Nenhum merge, QVD/QVW, QlikView/COM, nova recarga, Fase IX ou homologação de filtros decorre deste documento. Manter G1/[Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157), contratos globais, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED` e `PRODUCTION_APPROVED=False`. A ordem física C2→C3→C4 do Boundary 7 não muda. Este cabeçalho só passa a integrar a `main` mediante revisão/merge autorizado.
+**Encaminhamento proposto — ainda não autorizado fisicamente:** revisar por escopo delimitado as lacunas de consumo/associação/UX **apenas dos 14 visuais** com evidências AE01/R1 já existentes, sem declarar homologação do QlikView/Link Key. Conferir sobreposição documental do [PR #162](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/162) antes de qualquer integração que edite este arquivo. Seguem abertos G1/[Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157), contratos de associações, medidas e filtros, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. Preservar Boundary 7/C2→C3→C4, 22 QVDs, 3 QVWs e a necessidade de aceite acadêmico quando houver mudança material. Nenhum merge ou execução decorre deste registro.
+
 
 ---
 
