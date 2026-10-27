@@ -1,9 +1,9 @@
 # SAD SUS PB — Escopo analítico restrito aprovado pelo responsável (2017–2019)
 
 **Gate:** `SAD-ANALYTICAL-SCOPE-ACCEPTANCE-01`  
-**Estado:** `SCOPE_ACCEPTED_RESTRICTED_BY_OWNER_IN_CHAT` / `PR_DRAFT_NOT_MERGED` — aceite **exclusivamente do escopo analítico D1–D3** em 27/10/2026; não homologa consumo QlikView global, filtros, KPI transversal, painel físico, Fase IX nem produção.  
+**Estado:** `SCOPE_ACCEPTED_RESTRICTED_BY_OWNER_IN_CHAT` / `MERGE_IS_DOCUMENTAL_NOT_PHYSICAL_APPROVAL` — aceite **exclusivamente do escopo analítico D1–D3** em 27/10/2026; não homologa consumo QlikView global, filtros, KPI transversal, painel físico, Fase IX nem produção.  
 **Base Git:** `main@db5d6e6e23371422ca1d2d77a8576150aaf63d03`, lida em 27/10/2026.  
-**Modo:** revisão documental READ-ONLY das evidências existentes; criação desta proposta em branch isolada. Nenhum QVD/QVW, script de transformação ou contrato acadêmico alterado.
+**Modo:** revisão documental READ-ONLY das evidências existentes; proposta elaborada e aceita em branch isolada, posteriormente selecionada para integração Git mediante autorização expressa distinta. Nenhum QVD/QVW, script de transformação ou contrato acadêmico alterado.
 
 ## 1. Objetivo, autoridade e limites
 
@@ -84,7 +84,7 @@ S = sustentada **nos extratos/limites indicados**, H = evidência histórica sem
 
 **D3 — APROVADA:** manter `FATO_POPULACAO`, três fatos/oito dimensões e a promessa acadêmica entregue, mas **não incluir I12/T24 no núcleo inicial dos visuais** até aceites de contrato. Confirmar alinhamento com o objetivo dos Capítulos 1–2; qualquer mudança material exige aprovação própria e, quando necessário, consulta ao professor.
 
-**Evidência do aceite:** em 27/10/2026, após o assistente apresentar o PR #165 e perguntar expressamente “Você aprova D1–D3 nesses termos?”, o responsável respondeu **“aprovado prossiga”**. Esta resposta aceita **D1, D2 e D3 nos termos exibidos acima**. É autoridade de escopo do responsável, não aceite docente, merge, execução física ou liberação da Fase IX. O registro nesta branch documenta a aprovação; somente um merge futuro e especificamente autorizado tornará este texto vigente na `main`.
+**Evidência do aceite:** em 27/10/2026, após o assistente apresentar o PR #165 e perguntar expressamente “Você aprova D1–D3 nesses termos?”, o responsável respondeu **“aprovado prossiga”**. Esta resposta aceita **D1, D2 e D3 nos termos exibidos acima**. É autoridade de escopo do responsável, não aceite docente, merge, execução física ou liberação da Fase IX. O registro foi elaborado e aprovado em branch; sua publicação na `main` é objeto de autorização **posterior e específica** do responsável (“realize uma revisão para não perder nada entre esses PRs e integre”). A integração não modifica o escopo da aprovação D1–D3.
 
 ## 6. Três lacunas prioritárias e handoff
 
@@ -99,7 +99,7 @@ S = sustentada **nos extratos/limites indicados**, H = evidência histórica sem
 - `PROPOSAL_READY_FOR_OWNER_REVIEW`: **etapa anterior concluída** com matriz 12/12, contratos 14/14, fontes/evidências e três lacunas.
 - `SCOPE_ACCEPTED_RESTRICTED_BY_OWNER_IN_CHAT`: **SIM, nesta branch**. D1–D3 aprovadas expressamente e registradas; alinhamento docente/Capítulos 1–2 continua condicionado caso uma alteração material se mostre necessária. **Não** é `PR_MERGED`, `PHASE_IX_GO` nem `PROD_APPROVED`.
 - `BLOCKED_EXTERNAL`: quando a decisão depender de fonte oficial ou docente; registrar questão e não inferir resposta.
-- **STOP nesta execução:** registro documental da aprovação D1–D3 na branch/PR Draft e encaminhamento do próximo gate, sem COM/reload/testes físicos, merge ou Fase IX. **Status encerrável agora:** `SCOPE_ACCEPTED_RESTRICTED_BY_OWNER_IN_CHAT` / `PR_DRAFT_NOT_MERGED`; nunca `PROD_APPROVED`.
+- **STOP deste gate de escopo:** registrar D1–D3 e encaminhamento sem COM/reload/testes físicos ou Fase IX. O merge foi autorizado **separadamente**, apenas para consolidar a documentação/código já revisados. **Status preservado:** `SCOPE_ACCEPTED_RESTRICTED_BY_OWNER_IN_CHAT` / `MERGE_IS_DOCUMENTAL_NOT_PHYSICAL_APPROVAL`; nunca `PROD_APPROVED`.
 
 Fontes de estado: [current-state](../project/current-state.md), [Boundary 7](boundary-7-implementation-plan.md), [direção](../project/analytical-direction-2026-10-27.md), [inventário](analytical-question-inventory-2026-10-27.md), [plano de suficiência](analytical-sufficiency-plan-2026-10-27.md), [caminho crítico](../project/final-delivery-critical-path.md), [PR #160](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/160), [PR #164](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/164).
 
