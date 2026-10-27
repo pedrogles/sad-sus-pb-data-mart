@@ -130,3 +130,15 @@
 - **STOP:** este pacote encerra a **preparação estática**. Não iniciar painéis, Fase IX, outras agregações, T24/T25/T26 ou nova Discovery.
 
 **Não alterar:** `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `C2_FULL=NO_GO_NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
+
+## Adendo de integração — resultado posterior à preparação estática (27/10/2026)
+
+**Esta seção não altera o relato histórico acima.** As frases de preparação “não executado”, “pendente” e “tentativa 01 bloqueada” descrevem os gates e momentos originais, **não** o resultado final da tentativa 02.
+
+- A tentativa 01, no commit `9aa8eeec46e470627c1b42cfc6bd6fe58b0693f7`, foi bloqueada por sintaxe Qlik `IF ... THEN`, sem exportar CSVs. A correção versionada e efetivamente utilizada depois foi `8633f12a910f422f6b2e9af5e0d06d622ff13497`. Preservar a cronologia de duas tentativas e respectivas autorizações.
+- **Tentativa 02 real, relatada pelo responsável em Windows/QlikView 12:** [Issue #161 — parecer AE01](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/161#issuecomment-6446935266). Foram fornecidos quatro CSVs, manifesto, metadados, log QlikView e inventários de proteção; o material foi auditado independentemente no escopo reportado, **sem reexecutar COM nem reabrir bytes de QVD/QVW originais**.
+- **Veredito restrito:** `EXPORTED_AND_RECONCILED_RESTRICTED`. E1/E2/E3: 566.672 registros RD, 555.089 internações novas, 11.583 continuidades, 36 competências consistentes; E4: 35.518 linhas LT, 36 snapshots, 3.464 município×mês SUS positivo, 97 zero observado e 4.467 sem linha em grade 223×36. Os snapshots somados sobre o tempo **não** são estoque anual.
+- **Proveniência:** manifesto SHA-256 `0B1AA7DA6EF10A08B0F698250F199666525672DC763D6774CA4498B2A3C488D2`; inventários pré/pós idênticos byte a byte no pacote de evidências SHA-256 `2EC2FB3E922623BA808FDEB2C27C25B4ED461BE41A1EB70E9587DBDF238FD78A`. O código deste PR será integrado sem alterar a identidade do commit que foi executado localmente.
+- **Limites que sobrevivem à integração:** não demonstra `LINK_KEY_CONTRACT`, medidas/denominadores globais, T24/T25/T26, natureza hospitalar de cada LT, T29 histórico, filtros P5/D2, dashboards ou produção. `PR_MERGED` não significa `PRODUCTION_APPROVED`; nenhuma reexecução autorizada por decorrência.
+
+**Condição de parada:** registrar a evidência posterior como adendo documental e encerrar a revisão de integração; nenhuma terceira tentativa, teste físico, modificação QVD/QVW ou Fase IX.
