@@ -64,9 +64,28 @@ function Snapshot {
     [pscustomobject]@{path=$f.FullName;bytes=[long]$f.Length;sha256=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash}
   })
 }
+# Compare actual manifest ROWS, not serialized JSON wrapper shapes.
+# The previous -Verify used @(... | ConvertFrom-Json), which can retain an
+# array as one nested object; that produced a false HARD_STOP on 26 matching SHAs.
 function Same($a,$b){
-  return ((ConvertTo-Json -InputObject @($a) -Depth 6 -Compress) -ceq
-    (ConvertTo-Json -InputObject @($b) -Depth 6 -Compress))
+  $left=@($a | ForEach-Object { $_ })
+  $right=@($b | ForEach-Object { $_ })
+  if($left.Count -ne 26 -or $right.Count -ne 26){
+    throw "HARD_STOP: expected 26 protected rows on each side; got $($left.Count) and $($right.Count)"
+  }
+  foreach($set in @($left,$right)){
+    $paths=@($set | ForEach-Object { [string]$_.path })
+    if(@($paths | Sort-Object -Unique).Count -ne 26){throw 'HARD_STOP: duplicate protected paths'}
+    foreach($item in $set){
+      if([string]::IsNullOrWhiteSpace([string]$item.path) -or
+         [long]$item.bytes -lt 0 -or
+         [string]$item.sha256 -notmatch '^[0-9A-Fa-f]{64}$'){
+        throw 'HARD_STOP: invalid protected manifest entry'
+      }
+    }
+  }
+  $diff=@(Compare-Object -ReferenceObject $left -DifferenceObject $right -Property path,bytes,sha256)
+  return ($diff.Count -eq 0)
 }
 if($Verify){
   if(-not(Test-Path -LiteralPath $evidence -PathType Container)){throw 'EvidenceRoot not found'}
@@ -90,7 +109,8 @@ if($Verify){
     throw 'Disposable QVW missing or outside TEMP: visual evidence cannot be bound to this run'
   }
   if([string]$metadata.temp_qvw_sha256 -notmatch '^[0-9A-Fa-f]{64}$'){throw 'Invalid prepared QVW SHA in metadata'}
-  $before=@(Get-Content -LiteralPath $beforePath -Raw | ConvertFrom-Json)
+  $parsedBefore=ConvertFrom-Json -InputObject (Get-Content -LiteralPath $beforePath -Raw)
+  $before=@($parsedBefore | ForEach-Object { $_ })
   $after=@(Snapshot)
   $after | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $afterPath -Encoding UTF8
   if(-not(Same $before $after)){throw 'HARD_STOP: protected QVD/QVW/crosswalk SHA drift'}
