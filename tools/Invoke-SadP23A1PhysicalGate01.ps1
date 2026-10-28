@@ -176,7 +176,7 @@ foreach($kv in $repl.GetEnumerator()){
   else{throw "Missing QVS token: $($kv.Key)"}
 }
 if(($model+"\n"+$island) -match '__[A-Z0-9_]+__'){throw 'Unresolved QVD placeholder'}
-$script=$model+"\r\n"+$island
+$script=$model+"`r`n"+$island
 $before=@(Snapshot)
 [void][IO.Directory]::CreateDirectory($evidence)
 $before | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $evidence 'protected_before.json') -Encoding UTF8
