@@ -1,10 +1,10 @@
 # SAD — Decisão mínima de arquitetura de consumo A0/A1 (27/10/2026)
 
 **Gate:** `SAD-ANALYTICAL-CONSUMPTION-ARCH-DECISION-01`  
-**Estado:** `ARCH_DIRECTION_APPROVED_BY_OWNER_IN_CHAT_DOCUMENTATION_ONLY` / `P2_3_A1_LOGICAL_CANDIDATE_APPROVED_IN_PRINCIPLE` / `PHYSICAL_VALIDATION_PENDING`  
+**Estado:** `ARCH_DIRECTION_APPROVED_BY_OWNER_IN_CHAT_DOCUMENTATION_ONLY` / `P2_3_A1_LOGICAL_CANDIDATE_APPROVED_IN_PRINCIPLE` / `PHYSICAL_VALIDATION_PENDING` / `MERGE_AUTHORIZED_SEPARATELY`  
 **Preflight:** `main@9b47abcc08e9765b8a50945d30babd82bb5d3021`, revalidada em 27/10/2026; nenhum PR aberto no instante do preflight.  
 **Agente/ambiente:** ChatGPT GPT-6 + GitHub, inspeção estática; esforço efetivo não exposto pelo ambiente; Windows, QlikView, COM e GUI não acessados.  
-**Autorização:** após o parecer da Discovery READ-ONLY e a explicação de que A0 deve ser mantida, com possível preparação derivada somente para P2.3, o responsável respondeu “autorizado, prossiga”. A autorização é aqui interpretada **estritamente como aceite da direção arquitetural e avanço documental**. **Não** é autorização de merge, materialização, novo script, QVD/QVW, COM, reload, interface, Fase IX, produção ou aprovação científica.
+**Autorização:** após o parecer da Discovery READ-ONLY e a explicação de que A0 deve ser mantida, com possível preparação derivada somente para P2.3, o responsável respondeu “autorizado, prossiga”. A primeira autorização é aqui interpretada **estritamente como aceite da direção arquitetural e avanço documental**. Posteriormente, o responsável solicitou expressamente “revise e realize as integrações”, autorizando **a revisão e o merge do PR #166** se não houver bloqueios documentais. **Nenhuma das duas autorizações** libera materialização, novo script, QVD/QVW, COM, reload, interface, Fase IX, produção ou aprovação científica.
 
 ## 1. Decisão vigente e alcance
 
@@ -42,7 +42,7 @@
 ## 3. Contrato restrito candidato para P2.3 (sem script novo)
 
 1. **Universo territorial:** exatamente os 223 municípios PB identificados na referência C5.2/VI-P4. VI-P4 utiliza os códigos presentes em `FATO_POPULACAO` como *referência de universo*, **sem consumir `POPULACAO_ESTIMADA` como medida**. Não admitir por inferência os residentes externos PB no eixo de leitos.
-2. **Universo temporal:** 36 competências `201701…201912`, explicitamente administrativas CNES/LT. Cada célula tem grão **município SERV/localização × competência**, com chave auxiliar isolada usada no VI-P4 `Hash128('P4-OBS',municipio,competencia)`; isso **não é `%LINK_KEY`**.
+2. **Universo temporal:** 36 competências `201701…201912`, explicitamente administrativas CNES/LT. Cada célula tem grão **município SERV/localização × competência**, com chave auxiliar isolada usada no VI-P4 `Hash128('P4-OBS',Trim(Text(MUNICIPIO)),Trim(Text(COMPETENCIA)))` (usando os eixos correspondentes do LOAD); isso **não é `%LINK_KEY`**.
 3. **Origem observada:** por município×competência, contar linhas LT e somar QT_SUS/QT_EXIST; preferir a reconciliação da FL com LT feita no VI-P4, sem presumir que E4 contém as ausências.
 4. **Três classes:** sem linha LT → `ABSENT_NOT_ZERO_PROVEN` com medidas **NULL**; linha LT e `QT_SUS=0` → `OBSERVED_ZERO_QT_SUS_SCOPE_UNVERIFIED`; linha e `QT_SUS>0` → `OBSERVED_POSITIVE_QT_SUS_SCOPE_UNVERIFIED`. `ZERO_REAL_COMPROVADO=NOT_PROVEN` e `COBERTURA_HOSPITALAR=NOT_VERIFIED` em todo o universo C4-F. Ausência associativa por filtro incompatível é classe distinta e **não** vira ausência de LT.
 5. **Controles existentes:** `223×36=8.028` células únicas; 3.561 pares com linha (3.464 positivos + 97 zeros observados); 4.467 sem linha; 35.518 linhas LT no subconjunto observado. Esses são **oráculos históricos C4-F/AE01**, não resultados de execução deste gate.
@@ -62,9 +62,9 @@
 
 **Próximo gate candidato:** `SAD-P2.3-CONSUMPTION-READINESS-01`, **READ-ONLY de desenho/critério**, restrito a decidir se a superfície P2.3 será uma projeção ilhada ou se A0 consegue fornecer a grade completa com segurança. Reutilizar `P4_MATRIX`, C4-F e oráculos; documentar impactos de filtros por papel e temporalidade sem implementar. Se futuramente for indispensável QVW temporário/QlikView, exigir autorização física **separada**, commit de script versionado, ambiente Windows autorizado, oráculo e invariantes SHA pré/pós. Não desenvolver R2/recarregar por decorrência.
 
-**Critério do gate documental atual:** decisão A0-base, exceção P2.3 condicional, limites e handoff formalizados sem mudança física. **Resultado:** `ARCH_DIRECTION_APPROVED_DOCUMENTED_PENDING_REVIEW`, não `PHYSICAL_PASS`.
+**Critério do gate documental atual:** decisão A0-base, exceção P2.3 condicional, limites e handoff formalizados sem mudança física. **Resultado após revisão:** `ARCH_DIRECTION_APPROVED_DOCUMENTED_REVIEWED`, com autorização de merge independente; não `PHYSICAL_PASS`. O status Git de integração deve ser comprovado pelo PR e pela `main`, não inferido deste registro.
 
-**STOP:** nenhum QVS/PowerShell/Python criado ou executado; nenhum QVD/QVW, script de produção, dado bruto, capítulo acadêmico, merge ou ambiente local modificado. O PR documental demanda revisão e autorização de merge próprias.
+**STOP (escopo deste gate):** nenhum QVS/PowerShell/Python criado ou executado; nenhum QVD/QVW, script de produção, dado bruto, capítulo acadêmico ou ambiente local modificado. A integração Git documental foi autorizada separadamente e não corresponde a execução QlikView ou aceite físico. Não iniciar outro gate por decorrência.
 
 ## Referências canônicas
 
