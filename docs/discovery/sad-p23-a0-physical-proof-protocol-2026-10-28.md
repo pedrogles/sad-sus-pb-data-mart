@@ -9,7 +9,7 @@
 
 Provar por **uma tentativa física** se um objeto Pivot Table sobre A0/16 tabelas representa o universo 223 municípios PB × 36 competências com ausências, zeros e positivos corretos. Reutilizar VI-P4/C4-F; não carregar `P4_MATRIX` no modelo, não criar fato/dimensão/QVD, não alterar Link Table, RN21/V2, QVWs originais nem outros 13 visuais. Permanecem independentes G1/#157, C2, P5/D2, T29, Link Key global, Fase IX e produção.
 
-Fontes: `AGENTS.md` → `docs/project/current-state.md` → `docs/academic/requirements.md` → `docs/project/analytical-consumption-architecture-approval-2026-10-27.md` → `docs/project/agent-model-routing.md` → `PAINEL/phase_vii_technical_model.qvs` → `TRANSFORMACAO/vi_p4_municipal_coverage.qvs` → `docs/discovery/phase-8-c4f-vi-p4-export-readback-2026-10-21.md` → V2 `62 e Boundary 7.
+Fontes: `AGENTS.md` → `docs/project/current-state.md` → `docs/academic/requirements.md` → `docs/project/analytical-consumption-architecture-approval-2026-10-27.md` → `docs/project/agent-model-routing.md` → `PAINEL/phase_vii_technical_model.qvs` → `TRANSFORMACAO/vi_p4_municipal_coverage.qvs` → `docs/discovery/phase-8-c4f-vi-p4-export-readback-2026-10-21.md` → V2 §62 e Boundary 7.
 
 ## 1. Preparo único do QVW descartável
 
@@ -34,7 +34,7 @@ Criar uma **Pivot Table** temporária com:
 - recorte dos **223 municípios PB** confirmado contra universo de C5.2/VI-P4, não presumido pela existência de `SERV_UF` ou `Show All Values`;
 - seleções neutras no cenário N0; sem resolver uma falta de par por associação adicional.
 
-Testar e fotografar opções QlikView 12 `Populate Missing Cells`, `Show All Values`, `Suppress Zero-Values` e `Suppress Missing`. A documentação oficial informa capacidade de preencher combinações faltantes com NULL, mas não garante a presença de 8.028 células no modelo atual.
+Testar e fotografar opções QlikView 12 `Populate Missing Cells`, `Show All Values`, `Suppress Zero-Values` e `Suppress Missing`. A documentação oficial do QlikView confirma que `Populate Missing Cells` pode mapear combinações faltantes para NULL e que `Show All Values` pode mostrar valores excluídos. Isso **não garante** 8.028 células no modelo atual nem prova ausência da fonte. Fonte: https://help.qlik.com/en-US/qlikview/September2025/Subsystems/Client/Content/QV_QlikView/Pivot_Table.htm (descrições de Presentation e Dimensions, conferidas em 28/10/2026).
 
 Expressões de **ensaio**, não aprovadas como medidas oficiais:
 1. linhas: `Count(SK_REGISTRO_CAPACIDADE_LEITO)`;
@@ -72,7 +72,7 @@ Após fechar QVW de ensaio, no **mesmo commit**:
 powershell.exe -NoProfile -File tools\Invoke-SadP23A0PhysicalProof01.ps1 -Root $Root -ExpectedCommit $Head -EvidenceRoot $EvidenceRoot -ExecutionAuthorizationRef 'chat-2026-10-28-p23-a0' -Verify
 ~~~
 
-`-Verify` somente confere os SHA dos QVDs/QVWs/crosswalk; **não** aprova exportação, expressões ou gráficos.
+`-Verify` somente confere os SHA dos QVDs/QVWs/crosswalk e registra o SHA final do QVW descartável em `temp_qvw_at_verification.json`, vinculando-o ao manifesto da preparação. Exige que o QVW TEMP ainda exista e não sobrescreve evidência anterior. **Não** aprova exportação, expressões ou gráficos.
 
 ### Critérios de parada
 
