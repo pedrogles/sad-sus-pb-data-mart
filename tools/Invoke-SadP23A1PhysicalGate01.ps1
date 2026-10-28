@@ -87,7 +87,8 @@ function Same($a,$b){
   if($left.Count -ne 26 -or $right.Count -ne 26){
     throw "HARD_STOP: expected 26 manifest rows, got $($left.Count) and $($right.Count)"
   }
-  foreach($set in @(@($left),@($right))){
+  foreach($side in @('left','right')){
+    if($side -ceq 'left'){$set=@($left)}else{$set=@($right)}
     $paths=@($set | ForEach-Object { [string]$_.path })
     if(@($paths | Sort-Object -Unique).Count -ne 26){throw 'HARD_STOP: duplicate protected paths'}
     foreach($v in $set){
@@ -168,7 +169,8 @@ $repl=[ordered]@{
 }
 foreach($kv in $repl.GetEnumerator()){
   if(-not(Test-Path -LiteralPath $kv.Value -PathType Leaf)){throw "Missing QVD: $($kv.Key)"}
-  if($kv.Value -match '[\]\r\n]'){throw "Unsupported path: $($kv.Key)"}
+  if($kv.Value.Contains(']') -or $kv.Value.Contains([char]10) -or
+     $kv.Value.Contains([char]13)){throw "Unsupported path: $($kv.Key)"}
   if($model.Contains($kv.Key)){$model=$model.Replace($kv.Key,$kv.Value)}
   elseif($island.Contains($kv.Key)){$island=$island.Replace($kv.Key,$kv.Value)}
   else{throw "Missing QVS token: $($kv.Key)"}
