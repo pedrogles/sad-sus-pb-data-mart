@@ -1,6 +1,8 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado operacional vigente — 27/10/2026 | Escopo analítico aceito e evidência preservada
+## Estado operacional vigente — 27/10/2026 | Escopo analítico aceito, direção de consumo A0 aprovada
+
+**Direção de consumo aceita pelo responsável após a Discovery:** `ARCH_DIRECTION_APPROVED_BY_OWNER_IN_CHAT_DOCUMENTATION_ONLY`. **A0 é o padrão para os 14 visuais candidatos**; uma **A1 exclusivamente lógica e condicionada para P2.3** pode representar os pares município×competência sem linha LT, se A0 não resolver isso com segurança. A autorização inicial “autorizado, prossiga” aprovou somente a direção; a solicitação posterior “revise e realize as integrações” autorizou separadamente **a revisão e integração documental do PR #166**, não execução física nem Fase IX. Contrato de decisão: [A0 + exceção P2.3](analytical-consumption-architecture-approval-2026-10-27.md). O estado efetivo do merge deve ser conferido no GitHub. Esta aprovação **não** transforma os 13 visuais A0-base em gráficos homologados nem decide a associação da eventual projeção.
 
 **Status do escopo:** `SCOPE_ACCEPTED_RESTRICTED_BY_OWNER_IN_CHAT` em [PR #165](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/165), decisões D1–D3 expressamente aprovadas. **Três painéis candidatos, 14 visuais:** produção hospitalar P1 (5), leitos **observados** P2 (5), fluxos administrativos RES→SERV P3 (4). I01–I05/I08–I11 têm sustentação **restrita a fontes/recortes descritos**; I06/I07 permanecem históricos/optativos; I12/T24 adiado do núcleo inicial, **sem retirar** `FATO_POPULACAO`, alterar três fatos/oito dimensões ou Capítulos 1–2. Conferir alinhamento acadêmico se houver mudança material de objetivo.
 
@@ -8,7 +10,7 @@
 
 **Alias obrigatório:** `P2.2` no gate A0 R1 = **série LT mensal**, correspondente a `P2.1` nos 14 visuais do PR #165. `P2.2` novo = **composição SUS/não-SUS por competência**, aproveita oráculos numéricos mensais, mas **não foi homologado como visual/UX**. `P3.1` de R1 foi testado **somente com dois pares**, nunca matriz territorial completa.
 
-**Próximo passo candidato, sem autorização física por este registro:** um gate READ-ONLY de decisão mínima de consumo A0 versus A1 **somente dos 14 visuais**, separando uso por fato, filtros não comprovados e cobertura/ausência LT; reutilizar os oráculos AE01/R1 em vez de repeti-los. A0 preferível enquanto A1 não provar ganho objetivo; não materializar A1 sem decisão. Nenhuma mudança na ordem física C2→C3→C4 do Boundary 7, nas regras V2/RN21 ou na ferramenta QlikView 12.
+**Próximo gate candidato (sem autorização física):** `SAD-P2.3-CONSUMPTION-READINESS-01`, READ-ONLY e delimitado à forma de representar ausências município×competência no P2.3, avaliando projeção ilhada vs. grade em A0, com reuso da `P4_MATRIX`/C4-F. O gate A0×A1 anterior já produziu a recomendação, sem homologar interface. Manter C2→C3→C4 conforme Boundary 7, V2/RN21, QlikView 12 e todas as pendências científicas/físicas; não iniciar Fase IX nem materializar A1 por decorrência.
 
 **Bloqueios preservados:** G1/[Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157) para T25/T26, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. Não executar COM/GUI/reload, não alterar 22 QVDs/3 QVWs canônicos, não mesclar fases de testes e não declarar produção. **Integração Git significa apenas preservação de documentação e scripts**, não aceite físico/global.
 
