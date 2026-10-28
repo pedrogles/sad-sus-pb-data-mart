@@ -73,7 +73,8 @@ function Same($a,$b){
   if($left.Count -ne 26 -or $right.Count -ne 26){
     throw "HARD_STOP: expected 26 protected rows on each side; got $($left.Count) and $($right.Count)"
   }
-  foreach($set in @($left,$right)){
+  foreach($side in @('reference','current')){
+    if($side -ceq 'reference'){$set=$left}else{$set=$right}
     $paths=@($set | ForEach-Object { [string]$_.path })
     if(@($paths | Sort-Object -Unique).Count -ne 26){throw 'HARD_STOP: duplicate protected paths'}
     foreach($item in $set){
