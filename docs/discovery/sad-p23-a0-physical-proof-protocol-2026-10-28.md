@@ -82,3 +82,20 @@ powershell.exe -NoProfile -File tools\Invoke-SadP23A0PhysicalProof01.ps1 -Root $
 - **HARD_STOP**: escrita em artefatos protegidos, SHA divergente, necessidade de alterar arquitetura/semântica ou falta de permissão.
 
 **STOP:** se A0 falhar por evidência concreta, apenas recomendar novo gate separado A1 lógica. Não implementar A1 por decorrência, não publicar novo QVD, não iniciar Fase IX, não declarar G1/C2/Link Key aprovados, não fazer merge automaticamente.
+
+
+## Adendo — R1 executada pelo responsável, 28/10/2026 (reconciliação pós-falha)
+
+**Distinção de evidências:** os comandos, resultados e imagens abaixo foram fornecidos na conversa pelo operador Windows; esta revisão GitHub **não acessou fisicamente** o QlikView, os manifestos JSON locais ou os QVDs/QVWs originais.
+
+**Commit executado:** `4321c101afa70467f3db3e9f775e9752b014e72c` (não confundir com correções posteriores do PR #167). **Ambiente reportado:** Windows/PowerShell + QlikView Desktop 12. A verificação de sintaxe via `Parser.ParseFile` foi `PASS` segundo o console enviado; `-Prepare` retornou `VERDICT=TEMP_MODEL_PREPARED_P23_VISUAL_NOT_TESTED`, criando uma cópia `SAD_P23_A0_DISPOSABLE.qvw` em TEMP e evidência em `Documents/SAD-EVIDENCIAS/P23_A0_R1`.
+
+**Observação de interface P2.3:** tabela dinâmica temporária montada sobre `SERV_COD_DATASUS_6`, `PERIODO_COMPETENCIA` e `Count(SK_REGISTRO_CAPACIDADE_LEITO)`; inicialmente apareceram códigos fora de PB, depois aplicou-se `SERV_UF=PB`. Para o caso N1 `251740`, o objeto mostrou competência `-` com contagem 0, **não demonstrando** explicitamente `201701`. Ao habilitar `Mostrar Todos os Valores`, surgiram meses `200801...` fora do universo aprovado 2017–2019, ainda com zeros; logo, a **configuração experimentada** não comprovou a grade 223×36 nem a distinção ausência/zero sob filtros. Não concluir impossibilidade universal de A0 a partir dessas capturas. N0 integral, N2/N3, F1–F3 e exportação pareada completa **não foram comprovados**.
+
+**Incidente do verificador:** o `-Verify` inicial do commit original terminou em `HARD_STOP: protected QVD/QVW/crosswalk SHA drift` depois de escrever `protected_after.json`, portanto **não** executá-lo novamente, nem sobrescrever os manifestos. A inspeção posterior do código identificou o uso de uma representação JSON potencialmente aninhada em `$before=@(Get-Content ... | ConvertFrom-Json)` comparada a 26 objetos de `Snapshot` por serialização, capaz de causar falso positivo.
+
+**Contra-verificação READ-ONLY fornecida pelo operador:** leitura normalizada de `protected_before.json`, `protected_after_preparation.json` e `protected_after.json`: **26 registros distintos em cada**, `Compare-Object -Property path,bytes,sha256` com **0 diferenças antes×preparação e 0 diferenças antes×verificação**. A evidência **suporta** `OPERATOR_RECONCILED_PROTECTED_HASHES_UNCHANGED` para 22 QVDs + 3 QVWs + 1 CSV; não foi auditada independentemente a partir dos JSON binários nesta sessão. O `HARD_STOP` original fica classificado como **falso positivo provável de serialização**, não como alteração demonstrada de fonte.
+
+**Correção versionada depois da R1:** o executor no PR #167 foi alterado para normalizar objetos, impor 26 entradas únicas e comparar `path,bytes,sha256` por linha, em vez de comparar o JSON serializado. **Correção apenas com inspeção estática remota; não reexecutada no Windows**. A correção não modifica os logs originais, não recupera o `VERDICT` faltante na execução original e não deve herdar `PASS` físico.
+
+**Veredito delimitado:** `R1_PREPARE_REPORTED_PASS / PROTECTED_HASHES_OPERATOR_RECONCILED / P2_3_A0_NOT_VALIDATED / A1_NOT_IMPLEMENTED`. **STOP** de R1; nenhum novo reload, nova tentativa do `-Verify`, merge ou implementação A1 por decorrência. Uma decisão separada deve indicar se é suficiente documentar a limitação do A0 observado e planejar A1 lógica como próximo gate.
