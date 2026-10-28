@@ -1,6 +1,20 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado operacional vigente — 27/10/2026 | Escopo analítico aceito, direção de consumo A0 aprovada
+## Estado operacional vigente — 28/10/2026 | P2.3 A1 documentada, implementação autorizada e validação física pendente
+
+**Fonte Git verificada:** `main@cdb6810c1e89b0fa86954f6478aaf9c49f2018ce` após o merge squash do [PR #168](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/168), exclusivamente documental. O [contrato lógico A1 P2.3](../discovery/sad-p23-a1-logical-design-2026-10-28.md) está na `main` com `DESIGN_READY_FOR_PHYSICAL_GATE`; não equivale a implementação, aprovação visual ou `PHYSICAL_PASS`.
+
+**R1 A0 fechada:** o [PR #167](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/167) continua Draft, sem merge, com `A0_NOT_VALIDATED` somente para P2.3. Os 26 artefatos protegidos da R1 foram reconciliados por hashes pelo operador; binários não auditados independentemente nesta sessão. Não reexecutar R1 nem corrigir o resultado por inferência.
+
+**Autorização atual (chat, 28/10/2026):** o responsável autorizou **corrigir este drift e implementar** a A1 candidata exclusivamente para o gate `SAD-P2.3-A1-PHYSICAL-GATE-01`. A autorização contempla preparar código versionável e protocolo restrito de teste em QVW descartável; **não** autoriza merge, escrita em QVW/QVD canônicos, alteração da constelação, novas fatos/dimensões/Link Key, Fase IX ou homologação automática. **Situação de execução neste snapshot:** `IMPLEMENTATION_AUTHORIZED / PHYSICAL_NOT_RUN`; execução Windows/QlikView/COM exige evidência real, commit fixado e proteção SHA antes/depois.
+
+**Roteamento imediato:** uma única A1 ilhada em memória, derivada da lógica de `P4_MATRIX`, com eixos P23 próprios, 223×36=8.028 pares e 4.467 ausências com medidas NULL, 97 zeros SUS observados, 3.464 positivos. Seleções globais não se confundem com ausência LT. A0 continua padrão para os outros 13 visuais. Se a implementação falhar na associação, no recorte ou no controle de integridade, parar em `BLOCKED` sem R2 automático. Não declarar `ZERO_REAL_COMPROVADO` ou completude hospitalar.
+
+**Invariantes vigentes:** `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. Preservar três fatos/oito dimensões, QlikView 12, V2/RN21 e Boundary 7.
+
+---
+
+## Snapshot anterior — 27/10/2026 | Escopo analítico aceito, direção de consumo A0 aprovada
 
 **Direção de consumo aceita pelo responsável após a Discovery:** `ARCH_DIRECTION_APPROVED_BY_OWNER_IN_CHAT_DOCUMENTATION_ONLY`. **A0 é o padrão para os 14 visuais candidatos**; uma **A1 exclusivamente lógica e condicionada para P2.3** pode representar os pares município×competência sem linha LT, se A0 não resolver isso com segurança. A autorização inicial “autorizado, prossiga” aprovou somente a direção; a solicitação posterior “revise e realize as integrações” autorizou separadamente **a revisão e integração documental do PR #166**, não execução física nem Fase IX. Contrato de decisão: [A0 + exceção P2.3](analytical-consumption-architecture-approval-2026-10-27.md). O estado efetivo do merge deve ser conferido no GitHub. Esta aprovação **não** transforma os 13 visuais A0-base em gráficos homologados nem decide a associação da eventual projeção.
 
