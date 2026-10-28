@@ -57,3 +57,14 @@ powershell.exe -NoProfile -File tools\Invoke-SadP23A1PhysicalGate01.ps1 -Root $R
 `-Verify` checa hashes dos 26 artefatos e registra SHA do QVW temporário, **não** declara visual aprovado. A decisão após revisão das evidências será `PASS_LOCAL_A1_P23_CANDIDATE_ONLY`, `BLOCKED` ou `INCONCLUSIVE`; nenhum destes é `PRODUCTION_APPROVED`.
 
 **STOP:** não abrir R2, repetir R1 A0, mesclar automaticamente, sobrescrever QVD/QVW, iniciar Fase IX/G1/T24–T26, alterar RN21/V2, Link Key ou modelo acadêmico. **Esta sessão criou apenas código e documentação no GitHub; Windows/QlikView/COM não foram executados.**
+
+
+## Adendo — R1 bloqueada por sintaxe QVS (28/10/2026)
+
+**EVIDÊNCIA DE OPERADOR (Windows/QlikView 12, console + trechos de log fornecidos na conversa):** execução `-Prepare` no commit `82ab0d644822134add964e61a1a168fa3329ede5`, diretório de evidências `SAD-EVIDENCIAS/P23_A1_R1`. `PARSER=PASS` do PowerShell; o log retornou `VII_PASS=1`, `A1_PASS=0`, `BLOCKED=0`, `ASSOCIATION_WARNING=0`. O modelo VII marcou `MODEL_TABLES=16 SYN_TABLES=0`. A ilha iniciou e passou a construção da população 669/223/669 e carregamento de 35.518 LT. No ponto `P23_LT_AUDIT`, o log exibiu `35.518=35.518`, `36=36`, `270076=270076`, `337147=337147`, `67071=67071`, `0=0`, mas interrompeu **antes de avaliar o IF completo**, apontando `Erro: Comando desconhecido` ao encontrar o `OR` na linha seguinte. Não houve `P23_A1_ISLAND` final provada.
+
+**CAUSA RAIZ DELIMITADA:** no QVS da R1, **três comandos IF de controle** ultrapassavam a linha física de script (LT/fato, prejoin, oráculo final). A regra oficial de `if..then` no QlikView exige a cláusula `IF condição THEN` em uma só linha; quebras dentro de funções `If(...)` usadas em LOAD não se confundem com comandos de controle. Corrigidas as três condições em linha única na branch de implementação, **sem modificar operadores, números, campos ou oráculos**, conforme diff do PR #170.
+
+**VEREDITO:** `R1=BLOCKED_QVS_IF_SYNTAX`; a contagem de LT e suas somas até o erro **não** são `PHYSICAL_PASS` da A1. `R1_PROTECTED_HASHES=NEEDS_MANIFEST_COMPARISON`: os arquivos `protected_before.json` e `protected_after_preparation.json` foram gerados, mas a integridade precisa ser comparada a partir dos manifestos originais; tamanhos de arquivos iguais não bastam. Não repetir `-Prepare` nem executar `-Verify` contra `P23_A1_R1`.
+
+**UM único reteste candidato, se executado:** antes, comparar os 26 registros `path,bytes,sha256` do R1 e bloquear divergências; após `git fetch` e checkout do **novo HEAD revisado**, usar **pasta de evidências NOVA**, por exemplo `P23_A1_R2` (não reutilizar a R1), e repetir um único `-Prepare`. Se houver novo bloqueio, preservar log, classificar causa e STOP; não encadear R3 automático. Esta correção em Git é revisão estática, **não reexecução QlikView**. PR permanece Draft, sem merge.
