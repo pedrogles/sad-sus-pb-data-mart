@@ -19,4 +19,39 @@
 
 ## Resultado
 
-Pendente da execução a partir do commit versionado. `GATE_PASS=False`, `PR_MERGED=False`, `PRODUCTION_APPROVED=False`.
+**FATO VERIFICADO — execução local Python, 29/10/2026 às 15:26:31 America/Sao_Paulo (18:26:31 UTC): `PASS_RESTRICTED`, exit=0.** Commit executado: `51c55d8e5576ad665b6ba91fe2811cb268e022e8`, criado antes da execução. O runner verificou presença dos dois scripts nesse commit e ausência de diferenças contra as cópias locais antes de processar a fonte.
+
+- E1: 1.016.979 bytes; SHA antes/depois e após negativo idêntico ao pin; schema exato, 30.255 grãos únicos no original, zero duplicações, medidas inteiras não negativas e decomposição consistente. Validações estruturais abrangem o arquivo; não reexecutam os produtos P1/P2.
+- Recorte 2018: 10.078 linhas mensais, 12 competências coerentes; **1.944 pares direcionados observados**, incluindo **2 pares com zero internações novas**. Não materializa produto cartesiano nem imputa zero a pares ausentes.
+- Totais: **187.293 registros AIH = 183.311 internações novas + 3.982 continuidades**. Somas por par, mês e anual coincidem nas três medidas. Readback do CSV integral coincide com os 1.944 registros calculados, campo a campo.
+- Testemunhos: `250180→250750=3.806`; `250750→250750=39.060`. Ambos coincidem; não substituíram a validação integral.
+- Negativo: cópia `negative_e1_altered.csv` com LF adicional rejeitada pela mesma função de validação, com `E1_SHA256_MISMATCH`. Rejeição capturada no audit/log; não houve processo separado com exit=2. O processo completo retornou 0 porque o negativo foi rejeitado como esperado. Este teste cobre integridade, não constitui bateria de mutações de schema/medidas.
+- Divergências: nenhuma. Nenhuma hipótese adicional de modelagem adotada. `GATE_PASS=True`, **`PR_MERGED=False`**, **`PRODUCTION_APPROVED=False`**. Sem aceite visual ou independente/CI.
+
+## Evidências persistentes e SHA-256
+
+Raiz absoluta: `C:/Users/pedro/Documents/programming/sad-sus-pb-data-mart/.p31-evidence/20261029-01/`. Arquivos derivados permanecem fora do índice Git, excluídos por `.git/info/exclude`, sem cópia para a fonte original.
+
+| Artefato | SHA-256 |
+| --- | --- |
+| `p31_matrix_2018.csv` | `0BB265A52B097E3FC77B800BA546432423C1EE5D7A11440957D3B2894CF9EE19` |
+| `p31_audit.json` | `91F5D0DA85E577329F84DE0C72182A50678EE5CE551EF998C9C66761E3BB327F` |
+| `execution.log` (mesmo relatório estruturado) | `91F5D0DA85E577329F84DE0C72182A50678EE5CE551EF998C9C66761E3BB327F` |
+| `negative_e1_altered.csv` | `A09E49472C4A42D8E41DEE264EBD9C201575B69EB82E6C1DCAE4163F74906514` |
+| `sha256_manifest.json` | `277933D1129B9DA3E26D3E8371EF5F7C967D99978E5EE90FCDA63B78F7572331` |
+| Script P3.1 executado | `AD1C2E005BE463F2106A6ACA68FDE8E9FE5236F5E869528A6ECF2900200EF7E5` |
+| Módulo P1.3 reutilizado | `80B18B9C58EB1AB8DF3EDFD651A78D0DFB90934082281E33CE754CDB300C9CD5` |
+
+Comando executado no checkout da branch:
+
+```powershell
+python -B tools/validate_sad_p31_res_serv_matrix01.py --e1 C:/Users/pedro/SAD_EVIDENCIAS/AE01_20261027_02/sih_fluxo_competencia.csv --output-dir .p31-evidence/20261029-01 --source-commit 51c55d8e5576ad665b6ba91fe2811cb268e022e8
+```
+
+Não repetir a execução encerrada. O runner recusa diretório de saída preexistente. Hashes dos scripts referem-se aos bytes locais efetivamente executados; checkout com conversão LF/CRLF pode ter hash de arquivo distinto, embora o blob Git seja equivalente.
+
+## Fechamento e handoff
+
+P3.1 numérico concluído. **DECISÃO PENDENTE:** confirmação específica para push desta branch e criação do PR Draft, exigida pelas regras globais fornecidas no bootstrap. Nenhuma publicação remota realizada neste fechamento; o estado de integração deve ser consultado novamente após eventual publicação. Merge não autorizado.
+
+Sem bloqueio técnico remanescente de P3.1. Próximo gate candidato **P3.2**, não executado. Restrições de QlikView/COM, visual, associações globais, Fase IX e produção continuam vigentes. O histórico operacional permanece em Discovery e Git; current-state recebe somente o snapshot atual.
