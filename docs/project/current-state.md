@@ -1,5 +1,17 @@
 # Current State — SAD Data Mart SUS PB
 
+## Estado operacional vigente — 29/10/2026 | P2.3 integrado; P2.4 preparado e bloqueado para PASS formal
+
+**FATO GIT VERIFICADO:** `main@9a2b6b68869279ac40002c4670ebeab0c74ff114` após integração squash do [PR #187](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/187). P2.3 possui `PASS_E4_P23_OBSERVABILITY_RECONCILED_RESTRICTED_REUSE`, com controles 223×36, 8.028 pares, 3.464 positivos, 97 zeros SUS observados com linha, 4.467 sem linha. Este PASS é numérico, não UI/produção.
+
+**Gate candidato P2.4 — branch/PR próprio, ainda não integrado:** `SAD-P24-LT-MUNICIPAL-RANKING-201912-READONLY-01`, `BLOCKED_VERSIONED_EXECUTION_INPUT_BYTES_UNAVAILABLE`. Leitura **exploratória** de 223 municípios na exportação A1 R2 de 201912 reconciliou 95 com LT, 93 SUS positivo, 2 zeros com linha, 128 sem linha, 964 linhas LT, 9.065 leitos existentes, 7.140 SUS. Top 10 preliminar de códigos soma 4.812 SUS (67,3950%); não é PASS do validador P2.4. O validador `tools/validate_sad_p24_lt_municipal_ranking01.py` foi commitado **antes da execução formal pendente** na branch em `d47b4adbf43c25050fb98e77797986e648b7a9c2`. Ver [protocolo de gate P2.4](../discovery/sad-p24-lt-municipal-ranking-201912-readonly-init-2026-10-29.md).
+
+**Bloqueio de execução:** os originais E4 e A1 R2 permanecem legíveis por trechos no acervo, mas não materializáveis em bytes integrais para execução Python neste ambiente. A transformação parcial em texto não preserva o SHA-256 pinado. Necessária execução do validador versionado com os dois arquivos originais, evidência externa, teste negativo e closeout antes de `PASS_RESTRICTED`. **Não iniciar P2.5 ou COM em decorrência.**
+
+**Invariantes:** QlikView 12, fluxo BASE→EXTRACAO→QVD→TRANSFORMACAO→QVD→PAINEL, Star/constelação, três fatos/oito dimensões e Boundary 7 preservados. `ZERO_REAL_COMPROVADO=NOT_PROVEN`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+---
+
 ## Estado operacional vigente — 29/10/2026 | P2.3 observabilidade reconciliada; próximo candidato P2.4
 
 **FATO GIT VERIFICADO:** `main@0fdd68f2913253e1075ef01f0feb07f74fc03f9c`, após integração por squash do [PR #186](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/186) (P2.2 CNES/LT em `201912`, `PASS_RESTRICTED`). P2.1 foi integrado no [PR #185](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/185) com `PASS_E4_P21_MONTHLY_RECONCILED_RESTRICTED`. Não houve autorização para produção, alterações em QVD/QVW/QVS ou Fase IX.
