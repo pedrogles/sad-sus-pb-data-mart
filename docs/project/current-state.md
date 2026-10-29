@@ -1,5 +1,15 @@
 # Current State — SAD Data Mart SUS PB
 
+## Estado operacional vigente — 29/10/2026 | P2.4 integrado; P2.5 validado numericamente em PR Draft
+
+**Git confirmado:** `main@9c7b2a1ae23ad63100273d04804889b958fb51cc`, após merge squash do [PR #188](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/188). Gate P2.4 permanece `PASS_RESTRICTED_E4_R2_201912_RANKING` **numérico**, não `VISUAL_ACCEPTED` ou `PRODUCTION_APPROVED`.
+
+**Gate corrente P2.5 em branch `test/sad-p25-lt-cnes-type-code-201912-readonly-01`, PENDENTE DE INTEGRAÇÃO:** `SAD-P25-LT-CNES-TYPE-CODE-201912-READONLY-01` / `PASS_RESTRICTED_E4_P25_CNES_TYPE_CODE_201912`. Executor `tools/validate_sad_p25_lt_cnes_type_code01.py` foi commitado **antes da execução** (`0f19fa85367dc11919a524705fbf12af8c72cc23`, SHA-256 `BE81FFAC08BBDA0FBE343078AE00674B0BCDBFFCBFF20E0BDAA83EE746C3CBFC`). E4 e CSV P2.4 foram conferidos contra pins: `BE076441…` e `90058AEA…`. Execução 201912 `exit=0`, **964 registros e chaves únicas** `CNES×TP_LEITO×CODLEITO`, 204 IDs CNES distintos, 7 códigos brutos de tipo, 56 pares tipo×código, 9.065 existentes/7.140 SUS/1.925 não SUS; 95 municípios reconciliados contra P2.4 sem diferenças. Negativos de cópias E4/P2.4 alteradas: dois `exit=2`. [Closeout P2.5](../discovery/sad-p25-lt-cnes-type-code-201912-readonly-closeout-2026-10-29.md). ZIP externo `sad-p25-201912-evidence.zip` SHA-256 `79F28481EEB6FC5254A43E621EA103C8D2E0AB2E97E11724DE5CFD134867F411`, não incluído no Git.
+
+**Próximo candidato, somente após revisão/autorização de integração deste PR:** P3.1 matriz SIH/RD RES→SERV por período delimitado. **Não executar automaticamente.** `T29_HISTORICAL=NOT_APPROVED`; os 204 CNES são identificadores observados, **não** hospitais ativos comprovados. `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `ZERO_REAL_COMPROVADO=NOT_PROVEN`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. QlikView 12, BASE→EXTRACAO→QVD→TRANSFORMACAO→QVD→PAINEL e modelagem acadêmica intocados; nenhum QVD/QVW/QVS alterado.
+
+---
+
 ## Estado operacional vigente — 29/10/2026 | P2.4 ranking LT 201912 passou validação numérica; PR #188 Draft
 
 **FATO GIT VERIFICADO:** `main@9a2b6b68869279ac40002c4670ebeab0c74ff114` após merge do PR #187 (P2.3). P2.4 está **somente** na branch `test/sad-p24-lt-municipal-ranking-201912-readonly-01`, [PR #188](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/188), **não integrado**. A nova execução Python foi concluída em `2026-10-29T17:30:58.498803+00:00`, com veredito `PASS_RESTRICTED_E4_R2_201912_RANKING`, `exit=0`. Ver [closeout P2.4](../discovery/sad-p24-lt-municipal-ranking-201912-readonly-closeout-2026-10-29.md).
