@@ -1,9 +1,11 @@
 # SAD — Gate proposto: CONSUMPTION-ARCH-DISCOVERY-01 (READ-ONLY)
 
 **Identificador:** SAD-ANALYTICAL-CONSUMPTION-DISCOVERY-01
-**Estado:** PREPARADO_NAO_EXECUTADO; **a autorização de documentar e preparar não autoriza uma implementação**. 
+**Estado em 27/10 (histórico do protocolo):** PREPARADO_NAO_EXECUTADO; **a autorização de documentar e preparar não autorizava implementação**. Este documento foi integrado pelo [PR #162](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/162); sua pergunta arquitetural foi depois resolvida **documentalmente** pelo [PR #166](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/166): A0-base e A1 condicional apenas em P2.3. Este protocolo não deve ser reiniciado. 
 **Baseline da preparação:** main@db5d6e6e23371422ca1d2d77a8576150aaf63d03 em 27/10/2026. A branch Draft precisa ser inspecionada novamente no novo chat; somente a main integrada governa o projeto.
 **Agente/ambiente recomendado:** ChatGPT + GitHub READ-ONLY (esforço Medium quando disponível). Para muitos arquivos, Work Cloud apenas se o acesso contribuir; para COM/QlikView seria Codex Local Windows **somente em gate próprio autorizado**. Escalar para High apenas se houver contradição semântica real que demande raciocínio especializado; não é requisito prévio.
+
+**Evidência posterior sem extrapolação:** P2.3 A1 R2 foi testado no escopo restrito do [protocolo físico](sad-p23-a1-physical-gate-protocol-2026-10-28.md), integrado via PRs #170/#169 e ainda **não** aceito globalmente. A revisão seguinte é de **lacunas residuais de consumo dos 14 visuais** e não de A0×A1 desde o zero; seguir [current-state](../project/current-state.md).
 
 ## 1. Pergunta de decisão delimitada
 
