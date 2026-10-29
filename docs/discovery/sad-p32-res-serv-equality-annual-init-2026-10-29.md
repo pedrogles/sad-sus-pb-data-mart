@@ -11,7 +11,7 @@
 - **Agente da preparação:** ChatGPT + GitHub, GPT-6; esforço exato da sessão não exposto. **Executor proposto:** Python no Windows local, operador/ Codex Local somente se necessário; modelo/esforço efetivos a registrar na execução. Não pressupor acesso do ChatGPT ao filesystem Windows.
 - **Fonte de entrada imutável:** `C:/Users/pedro/SAD_EVIDENCIAS/AE01_20261027_02/sih_fluxo_competencia.csv` (E1), SHA-256 esperado `F14BC0C5C2A35F584EF15117C88D97B9A54C9CFFCFE0DB0E7194DDA5A391B615`, grão `competencia × ano × municipio_res × municipio_serv`, 30.255 registros. Nome do arquivo e pin são do gate E1 previamente validado, **não bytes verificados nesta preparação remota**.
 - **Schema fechado:** `competencia;ano;municipio_res;municipio_serv;qtd_registro_aih;qtd_internacao;qtd_continuidade`. Controle: `qtd_registro_aih = qtd_internacao + qtd_continuidade`; `IDENT=5` não é internação nova.
-- **Validador versionado antes de qualquer execução:** `tools/validate_sad_p32_res_serv_equality01.py`, commit `d0437284dbf709efffa6def5051f4fb37b5d9651`. Reutiliza as constantes/funções do `tools/validate_sad_p13_serv_ranking01.py` na `main`; sem reexecutar o ranking P1.3.
+- **Validador versionado antes de qualquer execução:** `tools/validate_sad_p32_res_serv_equality01.py`, commit inicial `d0437284dbf709efffa6def5051f4fb37b5d9651` e correção de classe mensal ausente `7cab8c12eaf2d6424dceb52f64aafaf50d623d2c` (**revisão executável proposta**). Reutiliza as constantes/funções do `tools/validate_sad_p13_serv_ranking01.py` na `main`; sem reexecutar o ranking P1.3.
 - **Escopo tocável:** script e este protocolo em branch isolada. E1, QVD, QVW, QVS, modelo acadêmico e `main` **somente leitura**. Não alterar `current-state.md` da `main` antes do resultado da execução e da integração de P3.1.
 - **RUNTIME_TEMP:** não aplicável. **EVIDENCE_ROOT candidato:** `C:/Users/pedro/SAD_EVIDENCIAS/P32_20261029_01/` (novo e persistente, separado da pasta original E1 e fora do Git). Confirmar inexistência e espaço antes de executar.
 - **Orçamento:** uma execução positiva, uma cópia E1 alterada (LF anexado) para negativa integrada, readback CSV e hashes; investigar falha concreta antes de propor segunda tentativa. Nenhuma chamada QlikView/COM ou P3.3/P3.4.
@@ -36,7 +36,7 @@ git -C $repo pull --ff-only origin test/sad-p32-sih-res-serv-equality-annual-rea
 python -B "$repo\tools\validate_sad_p32_res_serv_equality01.py" `
     --e1 "C:\Users\pedro\SAD_EVIDENCIAS\AE01_20261027_02\sih_fluxo_competencia.csv" `
     --output-dir "C:\Users\pedro\SAD_EVIDENCIAS\P32_20261029_01" `
-    --source-commit d0437284dbf709efffa6def5051f4fb37b5d9651
+    --source-commit 7cab8c12eaf2d6424dceb52f64aafaf50d623d2c
 ```
 
 **Atenção:** `git switch` deve ser usado somente se `git status --short` estiver limpo e a branch local não contiver trabalho divergente; caso contrário, STOP e resolver a divergência sem `reset --hard`, `git clean`, `stash -u` ou descarte de artefatos. Os arquivos CSV/JSON gerados **não devem entrar no Git**.
