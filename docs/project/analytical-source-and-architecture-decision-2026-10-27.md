@@ -1,8 +1,10 @@
 # SAD — Decisão de racionalização das fontes e camada analítica (27/10/2026)
 
-**Estado:** DIRECIONAMENTO_APROVADO_EM_CHAT_PARA_DOCUMENTAR_E_PREPARAR_DISCOVERY; **SEM MUDANÇA ARQUITETURAL APROVADA**. Proposta documental em branch/PR Draft, não vigente na main até integração autorizada.
+**Estado na elaboração de 27/10 (histórico):** DIRECIONAMENTO_APROVADO_EM_CHAT_PARA_DOCUMENTAR_E_PREPARAR_DISCOVERY; **SEM MUDANÇA FÍSICA APROVADA**. O texto original foi proposto como Draft, mas sua integração posterior à `main` ocorreu por [PR #162](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/162) **MERGED**. A aprovação documental subsequente A0-base/A1 condicional consta no [PR #166](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/166) e substitui a expressão histórica “decisão A0×A1 pendente”; não homologa QlikView nem A2.
 **Baseline inspecionada:** main@db5d6e6e23371422ca1d2d77a8576150aaf63d03; fontes obrigatórias AGENTS.md, docs/project/current-state.md, docs/academic/requirements.md.
 **Objetivo:** decidir o próximo trabalho mínimo após AE01 e a análise exploratória das 12 perguntas, sem reconstruir a modelagem acadêmica.
+
+**Estado operacional confirmado em 29/10:** A0 é o padrão para os 14 visuais, com exceção lógica A1 **somente se necessária em P2.3**; o piloto A1 R2 obteve PASS físico restrito candidato (PRs #168, #169, #170 integrados), sem UI ou produção. Nenhuma redecisão A0×A1 é necessária na próxima revisão incremental. Ver [current-state](current-state.md) e [decisão de arquitetura de consumo](analytical-consumption-architecture-approval-2026-10-27.md).
 
 ## 1. Decisão e fundamentação
 

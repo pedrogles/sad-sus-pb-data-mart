@@ -1,10 +1,13 @@
 # SAD — Decisão mínima de arquitetura de consumo A0/A1 (27/10/2026)
 
 **Gate:** `SAD-ANALYTICAL-CONSUMPTION-ARCH-DECISION-01`  
-**Estado:** `ARCH_DIRECTION_APPROVED_BY_OWNER_IN_CHAT_DOCUMENTATION_ONLY` / `P2_3_A1_LOGICAL_CANDIDATE_APPROVED_IN_PRINCIPLE` / `PHYSICAL_VALIDATION_PENDING` / `MERGE_AUTHORIZED_SEPARATELY`  
+**Estado da decisão em 27/10 (histórico):** `ARCH_DIRECTION_APPROVED_BY_OWNER_IN_CHAT_DOCUMENTATION_ONLY` / `P2_3_A1_LOGICAL_CANDIDATE_APPROVED_IN_PRINCIPLE` / `PHYSICAL_VALIDATION_PENDING` / `MERGE_AUTHORIZED_SEPARATELY`  
 **Preflight:** `main@9b47abcc08e9765b8a50945d30babd82bb5d3021`, revalidada em 27/10/2026; nenhum PR aberto no instante do preflight.  
 **Agente/ambiente:** ChatGPT GPT-6 + GitHub, inspeção estática; esforço efetivo não exposto pelo ambiente; Windows, QlikView, COM e GUI não acessados.  
 **Autorização:** após o parecer da Discovery READ-ONLY e a explicação de que A0 deve ser mantida, com possível preparação derivada somente para P2.3, o responsável respondeu “autorizado, prossiga”. A primeira autorização é aqui interpretada **estritamente como aceite da direção arquitetural e avanço documental**. Posteriormente, o responsável solicitou expressamente “revise e realize as integrações”, autorizando **a revisão e o merge do PR #166** se não houver bloqueios documentais. **Nenhuma das duas autorizações** libera materialização, novo script, QVD/QVW, COM, reload, interface, Fase IX, produção ou aprovação científica.
+
+
+**Atualização factual de 29/10/2026 — NÃO altera a decisão:** [PR #166](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/166) **MERGED**, A0 permanece padrão documental para **os 14 visuais**, com A1 **condicional e exclusiva** a P2.3. O [desenho lógico #168](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/168) e as integrações [#170](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/170) e [#169](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/169) registram **P2.3 A1 R2 com PASS físico candidato restrito e auditoria de readback**, não aceite de UI/produção. O [PR #167](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/167) permanece **OPEN/Draft** (`A0_NOT_VALIDATED` somente em R1 P2.3). O **próximo gate antigo abaixo era uma proposta de 27/10** e não deve ser reexecutado como Discovery A0×A1: seguir o [current-state](current-state.md) para o delta READ-ONLY dos 14 visuais.
 
 ## 1. Decisão vigente e alcance
 

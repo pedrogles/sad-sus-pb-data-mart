@@ -1,9 +1,11 @@
 # SAD SUS PB — Plano de suficiência analítica e extratos (27/10/2026)
 
 **Meta:** `SAD-ANALYTICAL-SUFFICIENCY-01`. **Primeiro gate:** `EXTRATOS-ANALITICOS-READONLY-01`.
-**Estado:** PLAN_APPROVED_DIRECTION_CHAT / EXECUTION_NOT_RUN. Documento de planejamento versionado; a integração na `main` não constitui permissão para alterar dados ou executar QlikView.
+**Estado deste plano em 27/10 (histórico):** PLAN_APPROVED_DIRECTION_CHAT / EXECUTION_NOT_RUN. O marcador `EXECUTION_NOT_RUN` referia-se **a esta preparação**, não ao estado atual dos gates P1–P3. A integração documental não concede permissão para alterar dados ou executar QlikView.
 **Proveniência:** `main@9f4fc0ea43dfe8b6f20f7b6254bc7f965f6a9c04`; revalidar branch/PR/main ao executar.
 **Escopo:** 2017–2019; `FATO_INTERNACAO`, `FATO_CAPACIDADE_LEITO`, `FATO_POPULACAO`, dimensões e exportações/manifestos já existentes.
+
+**Handoff vigente em 29/10:** as evidências AE01/A0/P1–P3 já disponíveis devem ser **reutilizadas**, não reextraídas. A revisão seguinte é incremental e limitada aos **14 visuais D1–D3**, segundo [current-state](../project/current-state.md) e [auditoria de drifts](sad-operational-documentation-drift-audit-2026-10-29.md). Decisão A0 padrão/A1 condicional P2.3 já documentada; nenhuma reexecução física autorizada.
 
 ## 1. Pergunta operacional única
 
