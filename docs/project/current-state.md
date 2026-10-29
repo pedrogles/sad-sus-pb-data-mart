@@ -1,12 +1,12 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado operacional vigente — 29/10/2026 | P3.1 fechado localmente; PR #190 Draft
+## Estado operacional vigente — 29/10/2026 | P3.1 integrado; P3.2 preparado e não executado
 
-**Git verificado:** `main@6f35f86b1d672949d9921cb948463000e02aacdd` ([PR #189](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/189) integrado). O **[PR #190](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/190)** está **aberto em Draft**, na branch `test/sad-p31-sih-res-serv-matrix-2018-readonly-01`, à frente da `main`; **não integrado**. Validador executado a partir do commit `51c55d8e5576ad665b6ba91fe2811cb268e022e8`; fechamento local no commit `de7772c02002b55d3270be7083e5ea54cf3b3e6e`. Correções documentais posteriores ao fechamento não representam nova execução do validador.
+**Git verificado:** `main@8a3144263e424078dbab6038d8a8b7089e3a40b2`, após squash do [PR #190](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/190), **integrado**. P3.1 executou o validador de `51c55d8e5576ad665b6ba91fe2811cb268e022e8` e foi fechado em `de7772c02002b55d3270be7083e5ea54cf3b3e6e`; atualizações documentais e squash não reexecutaram o gate. [PR #191 (P3.2)](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/191) está **Draft, não integrado**, em branch isolada sincronizada por merge commit `cd648d7ec52244ada62408031f12f7ee3b71f1d7`. Estado de execução P3.2: `NOT_RUN`.
 
 **P3.1 — `PASS_RESTRICTED` LOCAL REPORTADO:** matriz SIH/RD E1 de **2018**, por código de município de residência **RES → SERV** (atendimento), com **1.944 pares direcionados observados**, **12 competências**, **183.311 internações novas** e **2 pares observados com zero novas**. Integridade SHA/schema/grão, fechamento anual, dois testemunhos, readback e rejeição de cópia adulterada foram reportados sem divergências. **Não** é auditoria independente/CI, prova de todos os filtros QlikView ou produção. Evidências externas, hashes, limitações e distinção `qtd_registro_aih`/`qtd_internacao`/`qtd_continuidade`: [closeout P3.1](../discovery/sad-p31-res-serv-matrix-2018-readonly-2026-10-29.md). Não executar novamente este gate.
 
-**Estados separados:** `GATE_PASS=True` **somente no alcance numérico local** · `PR_MERGED=False` · `VISUAL_ACCEPTED_GLOBAL=False` · `PRODUCTION_APPROVED=False`. O estado do PR e da `main` deve ser reconferido no GitHub após qualquer mudança futura.
+**Estados separados:** **P3.1** `GATE_PASS=True` (local/restrito), `PR_MERGED=True`; **P3.2** `GATE_PASS=False (NOT_RUN)`, `PR_MERGED=False`. Ambos: `VISUAL_ACCEPTED_GLOBAL=False` e `PRODUCTION_APPROVED=False`. Confirmar novamente o estado Git antes de decisões futuras.
 
 ## Rastreabilidade mínima — não é nova homologação
 
@@ -26,4 +26,4 @@
 
 **Fronteiras abertas:** `T29_HISTORICAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `ZERO_REAL_COMPROVADO=NOT_PROVEN`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. Escopo aprovado dos 14 visuais: [D1–D3](../discovery/sad-analytical-scope-acceptance-01-2026-10-27.md); não equivale a implantação.
 
-**Próxima decisão:** revisar o **PR #190 Draft** e autorizar ou não seu merge em ato separado. **Próximo gate candidato, não iniciado:** P3.2 — **RES=SERV versus RES≠SERV por ano**, sobre E1, com `SUM(qtd_internacao)` e sem interpretar códigos distintos como deslocamento físico comprovado. Exige bootstrap/branch/critério próprios, reuso dos controles E1 e nenhuma repetição automática de P3.1/P1/P2. **STOP do P3.1 permanece cumprido.**
+**Próxima ação operacional:** executar **uma vez** o P3.2 — **RES=SERV versus RES≠SERV por ano (2017–2019)** — somente no Windows local com o E1 original SHA pinado, o script previamente versionado e saída externa ao Git. Contrato, preflight, oráculos e STOP: [protocolo P3.2](../discovery/sad-p32-res-serv-equality-annual-init-2026-10-29.md) no [PR #191](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/191). A indisponibilidade dos bytes E1 neste ambiente impede execução remota, não invalida o P3.1. Após evidência válida, fechar P3.2 na própria branch e revisar o PR, sem merge automático. P3.3/P3.4, QlikView/COM e Fase IX fora de escopo.
