@@ -158,7 +158,7 @@ if (-not $CorrectiveManifestPath -or -not [IO.Path]::IsPathRooted($CorrectiveMan
   throw 'BLOCKED_CORRECTIVE_MANIFEST_ABSOLUTE'
 }
 $manifestPath=Full $CorrectiveManifestPath
-if (Inside $manifestPath $repo -or -not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+if ((Inside $manifestPath $repo) -or -not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
   throw 'BLOCKED_CORRECTIVE_MANIFEST_LOCATION'
 }
 $m=Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -168,7 +168,7 @@ if ($m.Gate -cne $correctiveGate -or $m.GitHead -cne $correctiveHead -or
   throw 'BLOCKED_CORRECTIVE_PROVENANCE'
 }
 $parentPath=Full ([string]$m.ParentManifest)
-if (Inside $parentPath $repo -or -not (Test-Path -LiteralPath $parentPath -PathType Leaf)) {
+if ((Inside $parentPath $repo) -or -not (Test-Path -LiteralPath $parentPath -PathType Leaf)) {
   throw 'BLOCKED_PARENT_MANIFEST_LOCATION'
 }
 $p=Get-Content -LiteralPath $parentPath -Raw -Encoding UTF8 | ConvertFrom-Json
