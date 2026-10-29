@@ -1,5 +1,7 @@
 # SAD — P2.4 ranking municipal de leitos SUS, competência 201912
 
+> **Adendo de estado (29/10/2026):** o bloqueio de bytes originais deste preflight foi resolvido por novos anexos integrais cujos SHA-256 corresponderam aos pins. O validador foi corrigido (hex de SHA R2), versionado antes da execução e retornou `PASS_RESTRICTED_E4_R2_201912_RANKING`. Este documento conserva o **estado inicial histórico**; o status operacional atual e as evidências estão no [closeout P2.4](sad-p24-lt-municipal-ranking-201912-readonly-closeout-2026-10-29.md) e no `current-state.md`. O PR #188 continua Draft, sem merge ou autorização de produção.
+
 **Gate:** `SAD-P24-LT-MUNICIPAL-RANKING-201912-READONLY-01`  
 **Modo:** READ-ONLY / SINGLE-COMPETENCY NUMERIC VALIDATION  
 **Baseline:** `main@9a2b6b68869279ac40002c4670ebeab0c74ff114` (PR #187 integrado).  
