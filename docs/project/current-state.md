@@ -1,10 +1,10 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado operacional — 29/10/2026 | P2.1 E4 mensal reconciliado; PR técnico pendente de revisão
+## Estado operacional vigente — 29/10/2026 | P2.1 E4 mensal reconciliado; próximo candidato P2.2
 
 **FATO GIT VERIFICADO:** `main@63a5ace632c639b45881cd27f0fe738a816d41cb` após integração por squash dos [PRs #183](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/183) (P1.5/E3) e [#184](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/184) (contrato inicial P2.1). P1.3/E1, P1.4/E2 e P1.5/E3 possuem PASS **numérico restrito**, não equivalem a aprovação visual/QlikView/produção.
 
-**Gate corrente:** `SAD-P21-LT-MONTHLY-OBSERVED-READONLY-01` em branch isolada, `PASS_E4_P21_MONTHLY_RECONCILED_RESTRICTED`, **não integrado ainda nesta evidência**. E4 original SHA `BE07644115D16F10A6E6084991CB42C01C4FD5F12C2A831AC36B843CE445BB88`. Validador Python `tools/validate_sad_p21_lt_monthly01.py` commitado **antes de executar** no commit `0a2019a0f11dd1f118ef9b82b57774338d2c362a`. 35.518 grãos LT distintos, 36 competências, `qt_exist=qt_sus+qt_nsus` em todas as linhas, 3.561 pares município×mês com linha, 3.464 pares com SUS positivo e 97 zeros SUS observados. Série completa de 36 meses, três medidas, confrontada **108/108** com o oráculo A0 versionado **calculado do mesmo E4**; NÃO é teste independente de exportação ou UI QlikView. Negativos de SHA E4 e oracle divergente recusados corretamente. Ver [closeout P2.1](../discovery/sad-p21-lt-monthly-readonly-closeout-2026-10-29.md).
+**Gate corrente:** `SAD-P21-LT-MONTHLY-OBSERVED-READONLY-01` em branch isolada, `PASS_E4_P21_MONTHLY_RECONCILED_RESTRICTED`, com evidências originalmente em branch/PR #185, cujo estado de integração deve ser conferido no GitHub. E4 original SHA `BE07644115D16F10A6E6084991CB42C01C4FD5F12C2A831AC36B843CE445BB88`. Validador Python `tools/validate_sad_p21_lt_monthly01.py` commitado **antes de executar** no commit `0a2019a0f11dd1f118ef9b82b57774338d2c362a`. 35.518 grãos LT distintos, 36 competências, `qt_exist=qt_sus+qt_nsus` em todas as linhas, 3.561 pares município×mês com linha, 3.464 pares com SUS positivo e 97 zeros SUS observados. Série completa de 36 meses, três medidas, confrontada **108/108** com o oráculo A0 versionado **calculado do mesmo E4**; NÃO é teste independente de exportação ou UI QlikView. Negativos de SHA E4 e oracle divergente recusados corretamente. Ver [closeout P2.1](../discovery/sad-p21-lt-monthly-readonly-closeout-2026-10-29.md).
 
 **STOP:** P2.1 **somente análise numérica/observacional** concluída; próximo candidato P2.2 (composição de SUS vs. não SUS em **uma competência explícita**) depende de decisão e execução própria. Nome `P2.2` no histórico A0 R1 designava a série mensal que hoje é P2.1. Os totais das 36 competências são **somente controles**, não estoque de leitos. Nenhuma revalidação do crosswalk de 223 municípios, hospital-only, T29 histórica, ocupação, P2.2 ou QlikView/COM nesta etapa.
 
@@ -12,7 +12,7 @@
 
 ---
 
-## Estado operacional — 29/10/2026 | P1.5 E3 reconciliado; P2/LT próximo candidato
+## Snapshot histórico — 29/10/2026 | P1.5 E3 reconciliado; P2/LT então pendente
 
 **FATO GIT VERIFICADO:** `main@b644f70686ee825ae5356456cf3744f288407ad7` após merge squash do [PR #182](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/182). P1.4/E2 permanece `PASS_E2_P14_RECONCILED_RESTRICTED`, com 21.031 grupos, 1.249 códigos PROC_REA, total 555.089 e Top 10 225.636. P1.3/E1 já integrado anteriormente (PR #180).
 
