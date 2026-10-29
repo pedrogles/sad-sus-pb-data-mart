@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
-GATE = 'SAD-P15-PROC-RANKING-READONLY-01'
+GATE = 'SAD-P15-DIAG-RANKING-READONLY-01'
 PIN = '3FC6C78746D74F815EBED62F1AF88D950F6BFB303343FBD199AA436E2AE7D230'
 FIELDS = ('competencia', 'ano', 'diag_princ', 'qtd_registro_aih', 'qtd_internacao', 'qtd_continuidade')
 MONTHS = {f'{y}{m:02}' for y in range(2017, 2020) for m in range(1, 13)}
@@ -110,7 +110,7 @@ def validate(source: Path) -> dict:
                     'observed_count': diagnosis.get(EXPLORATORY_OTHER_CODE, 0),
                     'matches': diagnosis.get(EXPLORATORY_OTHER_CODE, 0) == EXPLORATORY_OTHER_COUNT}},
             'limitations': ['E3 aggregates are not patients or clinical admissions',
-                            'Only codes, no historical SIGTAP labels', 'No E3 RES/SERV dimension',
+                            'Only codes, no historical CID labels', 'No E3 RES/SERV dimension',
                             'No QlikView, UX, cross-fact, or production approval']}
 
 
