@@ -1,7 +1,7 @@
 # P3.3 — Ranking de pares observados RES≠SERV | Closeout restrito (29/10/2026)
 
 **Gate:** `SAD-P33-SIH-RES-NE-SERV-PAIR-RANKING-READONLY-01`  
-**Estado:** `PASS_RESTRICTED` **reportado pelo operador em Windows/Python e conferido aritmeticamente no transcript**; `GATE_PASS=True`, `PR_MERGED=False`, `PRODUCTION_APPROVED=False`. Sem leitura independente dos bytes E1/CSVs/manifesto ou teste QlikView.  
+**Estado:** `PASS_RESTRICTED` **reportado pelo operador em Windows/Python e conferido aritmeticamente no transcript**; `GATE_PASS=True`, `PR_MERGED=False`, `PRODUCTION_APPROVED=False`. O JSON de auditoria e o **CSV do ranking** anexados foram posteriormente lidos e conferidos byte a byte (ver adendo). E1 original, CSV anual e manifesto permanecem sem inspeção independente; sem teste QlikView.  
 **Base Git:** `main@ce9a1f5ee1f3221a3b64c93b692402d768396148` ([PR #191](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/191) integrado); [PR #192](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/192) permanece Draft/não integrado neste fechamento.  
 **Script versionado antes do teste:** `tools/validate_sad_p33_res_ne_serv_pairs01.py` no commit executado `bd4454c5ff088c9d41873de8c7211987f73d322a`. Execução reportada: `2026-10-29T20:44:44.730818+00:00`, Python 3.14.8, `exit_code=0`.
 
@@ -26,15 +26,27 @@
 | Pares triênio observados com zero novas | **0** |
 | Testemunho direcionado `251370→250750` | **12.176**, igual ao esperado |
 
-Reconciliações visíveis no transcript: `84949+86250+89255=260454`, `55353+205101=260454`, `12176=12176`; `divergences=[]`. O runner também informa reconciliações por mês, ano e par nas três medidas, ordenação determinística e readback dos dois CSVs; **os próprios CSVs ainda não foram inspecionados nesta sessão**.
+Reconciliações visíveis no transcript: `84949+86250+89255=260454`, `55353+205101=260454`, `12176=12176`; `divergences=[]`. O runner também informa reconciliações por mês, ano e par nas três medidas, ordenação determinística e readback dos dois CSVs; o CSV do ranking foi **posteriormente recebido e conferido diretamente** no adendo, mas o CSV anual não foi disponibilizado.
 
 - CSV ranking `p33_ranking_res_ne_serv_trienio.csv`, SHA-256 reportado `9163AE95EEF5226D026D22120F4F95D1D4805D5EF47F2099ED55D11AF1598DEA`.
 - CSV pares × ano `p33_pairs_annual_observed.csv`, SHA-256 reportado `9CE2A2C26C3EBEC2B7B3C6807B1B5E0DDDEB06D4E5E6397C8DB572C81E358D16`.
 - Teste negativo em **cópia E1** com LF adicional rejeitado por `E1_SHA256_MISMATCH` (`negative_test.rejected=true`), cópia SHA-256 `A09E49472C4A42D8E41DEE264EBD9C201575B69EB82E6C1DCAE4163F74906514`; não representa processo negativo independente com exit=2.
-- Evidências persistentes **declaradas** em `C:/Users/pedro/SAD_EVIDENCIAS/P33_20261029_01/`, fora do Git: `p33_audit.json`, `execution.log`, `sha256_manifest.json`, dois CSVs e cópia negativa. **Até este fechamento, foi recebido o transcript colado, não esses arquivos brutos**.
+- Evidências persistentes **declaradas** em `C:/Users/pedro/SAD_EVIDENCIAS/P33_20261029_01/`, fora do Git: `p33_audit.json`, `execution.log`, `sha256_manifest.json`, dois CSVs e cópia negativa. **No fechamento inicial havia apenas transcript; posteriormente foram recebidos e auditados o JSON e o CSV de ranking como anexos, conforme adendo.**
 
 ## Limites semânticos e STOP
 
 O ranking cobre **pares direcionados com observação**, inclusive linhas com eventuais continuidades; ausência de linha para par/ano **não equivale a zero comprovado**. O resultado de zero pares observados sem novas internações no triênio não autoriza imputar zeros. `RES!=SERV` compara códigos, **não** comprova deslocamento individual, distância, pacientes únicos ou demanda reprimida; residentes externos à PB permanecem sem denominador populacional PB artificial. Não houve crosswalk/legenda municipal histórica verificada, validação física associativa, UI/COM QlikView 12, `%LINK_KEY`, alterações QVD/QVW/QVS ou aprovação de produção.
 
 **STOP P3.3 cumprido no escopo numérico local reportado.** Não reexecutar sem divergência concreta; não iniciar automaticamente P3.4. Próxima ação: revisão do [PR #192](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/192), conferência opcional do `p33_audit.json` original e **autorização separada** para eventual merge. `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+## Adendo de auditoria independente dos anexos — 29/10/2026
+
+Foram recebidos os arquivos `p33_audit.json` e `p33_ranking_res_ne_serv_trienio.csv` diretamente no chat. Os bytes **dos anexos recebidos** foram inspecionados, sem reexecutar o E1/Python:
+
+- JSON: **2.906 bytes**, SHA-256 **`89E5E14EF67469B39C24D12BF8A6C0CB27571876D8716A4358960C8F7067B354`**; parse válido, mesmo gate/commit/executor, `PASS_RESTRICTED`, `exit_code=0`, `divergences=[]` e controle negativo reportado como rejeitado.
+- CSV: **104.502 bytes**, SHA-256 **`9163AE95EEF5226D026D22120F4F95D1D4805D5EF47F2099ED55D11AF1598DEA`**, **igual ao `ranking_sha256` inscrito no JSON**; cabeçalho de sete colunas, 3.108 linhas, posições 1–3.108 sem lacuna, 3.108 pares únicos dirigidos RES≠SERV e ordenação válida: `qtd_internacao_trienio` decrescente, empates por RES/SERV crescentes.
+- Recontagem independente **das linhas do CSV anexo**: `qtd_registro_aih=267010`, `qtd_internacao=260454`, `qtd_continuidade=6556`. Todas as 3.108 linhas respeitam `registro=internacao+continuidade`, têm medidas inteiras não negativas e percentuais individuais correspondentes ao denominador 260.454 com quatro casas decimais.
+- Ranking conferido: **Top 10 = 55.353**, restantes **205.101**; ambos somam **260.454**, parcela Top 10 = **21,2525%**. Testemunho `251370→250750` é a primeira posição, com **12.176** novas internações, 12.616 AIH e 440 continuidades. Zero pares observados com novas=0, **sem inferir zeros para pares ausentes**.
+- O JSON reporta **5.715** pares-ano e reconciliações anuais, mas **o CSV anual não foi anexado**; portanto, esses valores permanecem evidência de execução local relatada, não conferência independente. Também não foram recebidos E1 original nem manifesto. Os hashes dos anexos comprovam **a integridade desses bytes recebidos**, não a identidade entre anexos e os originais residentes no Windows.
+
+**Resultado da auditoria complementar:** sem divergências verificadas nos dois anexos; `GATE_PASS=True` exclusivamente no escopo numérico local + conferência do ranking entregue. Não promover a aceite visual/semântico de QlikView, `PR_MERGED` ou produção automaticamente. STOP P3.3 segue cumprido.
