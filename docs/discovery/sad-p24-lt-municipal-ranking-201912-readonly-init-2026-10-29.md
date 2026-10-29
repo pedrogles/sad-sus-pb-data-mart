@@ -12,7 +12,7 @@ Validar `SUM(qt_sus)` por `municipio_serv` na competência **201912**, ordenar p
 **Fontes físicas obrigatórias:**
 - E4 original `lt_cnes_leito_competencia(1).csv`, SHA-256 `BE07644115D16F10A6E6084991CB42C01C4FD5F12C2A831AC36B843CE445BB88` (P2.1).
 - Exportação A1 R2 original `P23_A1_R2_export.tsv.txt`, SHA-256 `593b8812eaed2df9c3e6ca49f84b8c750a133966af36724963d8de2815636c42` (P2.3 histórico).
-- Validador **previamente commitado na branch do gate:** `tools/validate_sad_p24_lt_municipal_ranking01.py`, commit `d47b4adbf43c25050fb98e77797986e648b7a9c2`. Nenhuma execução deste script contra fontes originais ocorreu nesta sessão.
+- Validador **previamente commitado na branch do gate:** `tools/validate_sad_p24_lt_municipal_ranking01.py`, commit `e59f1ad9f30eea6dbd74f34801bfe0b3a487dfc1`. Nenhuma execução deste script contra fontes originais ocorreu nesta sessão.
 
 **Critério do gate:** SHA de ambos os arquivos MATCH; esquema exato; 964 grãos E4 em 201912; 9.065 existentes/7.140 SUS/1.925 não SUS; 223 municípios na grade R2 (95 com LT, 128 sem linha; 93 positivos e 2 zeros observados); comparação **municipal integral** E4×R2, sem divergência; ranking reproduzível em CSV + auditoria JSON fora do Git, registrando commit/hash do validador e integridade dos insumos; teste de rejeição de fonte alterada. `PASS_RESTRICTED` só após essa execução rastreável. Falha de SHA ou medida = `HARD_STOP`. Falta de fonte = `BLOCKED`.
 
