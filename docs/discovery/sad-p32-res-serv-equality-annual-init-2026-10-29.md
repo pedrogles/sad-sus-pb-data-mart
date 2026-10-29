@@ -1,7 +1,7 @@
 # P3.2 — RES=SERV versus RES≠SERV anual (2017–2019) | Protocolo READ-ONLY
 
 **Gate:** `SAD-P32-SIH-RES-SERV-EQUALITY-ANNUAL-READONLY-01`  
-**Estado de preparação:** `SCRIPT_VERSIONED / EXECUTION_NOT_RUN / READY_FOR_LOCAL_E1` (29/10/2026). **Não é PASS.**  
+**Estado de preparação original (histórico):** `SCRIPT_VERSIONED / EXECUTION_NOT_RUN / READY_FOR_LOCAL_E1` (29/10/2026). Naquele momento **não era PASS**; a execução posterior está no adendo e no closeout.  
 **Proveniência Git:** criada a partir de `main@6f35f86b1d672949d9921cb948463000e02aacdd`. O [PR #190 (P3.1)](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/190) foi integrado por squash em `main@8a3144263e424078dbab6038d8a8b7089e3a40b2`; P3.2 foi sincronizada por merge commit `cd648d7ec52244ada62408031f12f7ee3b71f1d7`, sem force push e sem alterar `main`. A árvore de P3.2 conserva exclusivamente os dois arquivos novos na comparação com a `main`.
 
 ## Roteamento e contrato de execução
@@ -21,7 +21,7 @@
 - **PASS_RESTRICTED (somente numérico):** arquivo E1 pinado; schema, 36 competências, unicidade e decomposição corretos; seis linhas (três anos × duas classes), sem pares descartados; somas anuais 2017 `183532`, 2018 `183311`, 2019 `188246`; total `555089`; classes do triênio `RES_EQ_SERV=294635` e `RES_NE_SERV=260454` (46,92% para a segunda classe, arredondado); reconciliação mensal/anual/triênio nas três medidas; CSV readback; cópia negativa rejeitada; fonte preservada. Esses valores são **controles históricos exploratórios a confrontar**, não novo resultado validado nesta preparação.
 - **BLOCKED:** E1 original inacessível no Windows local, checkout divergente, erro de ambiente ou evidência essencial ausente. A dependência de integração do P3.1 está resolvida. **HARD_STOP/INCONCLUSIVE:** SHA, schema, soma, grão, medida, período ou classe divergente. Nunca corrigir dados para forçar PASS.
 - **Entregáveis derivados fora do Git:** `p32_res_serv_annual.csv` (6 linhas), `p32_audit.json`, `execution.log`, `negative_e1_altered.csv`, `sha256_manifest.json`. O negativo é uma rejeição de cópia **dentro do processo**, não um segundo processo independente com `exit=2`.
-- **Status atual:** `GATE_PASS=False (NOT_RUN)`, `PR_MERGED=False`, `PRODUCTION_APPROVED=False`. Sem aprovação visual, científica inter-fatos ou de produção.
+- **Estado anterior à execução:** `GATE_PASS=False (NOT_RUN)`, `PR_MERGED=False`, `PRODUCTION_APPROVED=False`. Critério do protocolo histórico, superado somente pelo resultado local restrito registrado no closeout.
 
 ## Execução local — checkout seguro e um único gate
 
@@ -62,3 +62,7 @@ if ($LASTEXITCODE -ne 0) { throw "P32_VALIDATOR_NONZERO" }
 2. Executar uma vez o validador **já versionado**, preservando logs e hashes fora do Git; inspecionar `p32_audit.json` e reportar resultado sem chamar a preparação de PASS.
 3. Somente com provas válidas, adicionar closeout e atualizar o `current-state.md` na branch P3.2, abrir/revisar PR Draft separado, sem merge automático.
 4. **STOP do P3.2:** PASS_RESTRICTED documentado ou BLOCKED/HARD_STOP explícito. P3.3 é apenas candidato futuro.
+
+## Adendo pós-execução — 29/10/2026
+
+A execução única no Windows local reportou `PASS_RESTRICTED`, `exit_code=0`, com os totais e controles esperados reconciliados; transcript e JSON completo inspecionados nesta sessão. **Fonte de prova e limites:** [closeout P3.2](sad-p32-res-serv-equality-annual-closeout-2026-10-29.md). O script previamente versionado foi executado a partir de `7cab8c12eaf2d6424dceb52f64aafaf50d623d2c`, sem reexecução das demais etapas. `GATE_PASS=True` exclusivamente numérico/local; `PR_MERGED=False`; `PRODUCTION_APPROVED=False`. STOP do gate cumprido. O bloco PowerShell acima é **histórico/reprodutivo**, não instrução para reexecutar automaticamente.
