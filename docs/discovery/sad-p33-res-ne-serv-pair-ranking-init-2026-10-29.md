@@ -1,7 +1,7 @@
 # P3.3 — Ranking de pares RES≠SERV observados (2017–2019)
 
 **Gate:** `SAD-P33-SIH-RES-NE-SERV-PAIR-RANKING-READONLY-01`  
-**Estado:** `SCRIPT_VERSIONED / NOT_RUN / READY_FOR_LOCAL_E1`, 29/10/2026. Não é PASS.  
+**Estado inicial (histórico):** `SCRIPT_VERSIONED / NOT_RUN / READY_FOR_LOCAL_E1`, 29/10/2026. O fechamento local posterior está descrito no adendo e no [closeout P3.3](sad-p33-res-ne-serv-pair-ranking-closeout-2026-10-29.md).  
 **Baseline:** `main@ce9a1f5ee1f3221a3b64c93b692402d768396148`, PR #191 (P3.2) **merged**.  
 **Roteamento:** ChatGPT GPT-6 + GitHub (preparação; esforço não exposto); operador/PowerShell/Python local para execução. Escalonar a Codex Local apenas se houver erro concreto. QlikView/COM não aplicáveis.
 
@@ -63,4 +63,7 @@ if ($LASTEXITCODE -ne 0) { throw "P33_VALIDATOR_NONZERO" }
 
 ## Handoff e STOP
 
-`GATE_PASS=False (NOT_RUN)` · `PR_MERGED=False` · `PRODUCTION_APPROVED=False`. Executar uma vez com E1 original no Windows, inspecionar JSON/CSV/manifesto e documentar **closeout próprio** antes de decidir integração do PR Draft. P3.4 é candidato futuro e não foi iniciado.
+**Estado do protocolo antes da execução:** `GATE_PASS=False (NOT_RUN)`; após execução, ver adendo abaixo. Não repetir o gate. P3.4 é somente candidato futuro.
+## Adendo pós-execução — 29/10/2026
+
+Execução local única reportada em `2026-10-29T20:44:44.730818+00:00`: `PASS_RESTRICTED`, `exit_code=0`, 3.108 pares observados, 260.454 internações novas RES≠SERV, Top 10 de 55.353 e testemunho 12.176 reconciliado. O transcript apresenta SHA de E1 preservado, readbacks e negativo integrado em cópia; **não houve auditoria remota dos arquivos Windows**. A documentação de prova e limites está no [closeout P3.3](sad-p33-res-ne-serv-pair-ranking-closeout-2026-10-29.md). `GATE_PASS=True` local/restrito; `PR_MERGED=False`, `PRODUCTION_APPROVED=False`. **STOP P3.3 cumprido**: o bloco de PowerShell acima passa a ser histórico/reprodutivo, não uma solicitação de reexecução.
