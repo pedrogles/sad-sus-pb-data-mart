@@ -3,7 +3,7 @@
 **Gate candidato:** `SAD-P21-LT-MONTHLY-OBSERVED-READONLY-01`  
 **Data:** 29/10/2026  
 **Estado:** `INIT_SOURCE_PROFILED_NO_GATE_EXECUTION`; os números de inspeção abaixo são `EXPERIMENTAL_NOT_GATE_EVIDENCE` até confronto por validador commitado e execução versionada.  
-**Baseline:** `main@b644f70686ee825ae5356456cf3744f288407ad7` (merge confirmado de P1.4/PR #182); P1.5/E3 foi executado em branch separada e está em PR Draft #183, **não integrado** até comprovação Git.  
+**Baseline:** `main@b644f70686ee825ae5356456cf3744f288407ad7` (merge confirmado de P1.4/PR #182); P1.5/E3 foi executado em branch separada; **o PR #183 foi posteriormente integrado** por squash, confirmado em `main@b60981e9674dffc5f892e35a931d775f877516df`. Esta nota reflete a revisão de 29/10 e não altera a natureza exploratória do P2.1.  
 **Autoridade:** responsável solicitou prosseguir na sequência P1.4 → P1.5 → início de P2; restrito a inventário do insumo, perfil diagnóstico read-only e contrato do gate. Nenhuma carga, publicação, QVW/QVD/QVS, alteração acadêmica ou produção.
 
 ## 1. Objetivo delimitado
@@ -43,7 +43,7 @@ Sem autorização para chamar o recorte de **hospital-only**: `CNES_HOSPITAL_SCO
 
 - P1.3/E1: integrado anteriormente, PASS numérico restrito.
 - P1.4/E2: integrado PR #182, PASS numérico restrito.
-- P1.5/E3: PASS numérico restrito **em PR Draft #183**, sujeito a revisão/integração separada.
+- P1.5/E3: PASS numérico restrito **integrado pelo PR #183**, sem aprovação física/UI/produção.
 - **P2.1/E4: apenas iniciado/perfilado, sem gate PASS.**
 - QlikView 12, três fatos, oito dimensões, esquema Star por processo/constelação e fluxo acadêmico obrigatórios.
 - `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `C2_FULL=NO_GO_NOT_APPROVED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False` inalterados.
