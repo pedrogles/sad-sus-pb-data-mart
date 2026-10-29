@@ -1,6 +1,16 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado operacional vigente — 29/10/2026 | P1.1/P1.2 experimental encerrado; próximo gate P1.3 READ-ONLY
+## Estado operacional vigente — 29/10/2026 | P1.3 numérico integrado; P1.4 iniciado READ-ONLY e bloqueado por E2 inacessível
+
+**FATO GIT VERIFICADO:** `main@a75de8461ff7d2a7488b9604cdd4394a1e0cd171` após merge squash do [PR #180](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/180). `tools/validate_sad_p13_serv_ranking01.py` e o [closeout P1.3](../discovery/sad-p13-serv-ranking-readonly-closeout-2026-10-29.md) estão integrados; E1 original SHA-256 `F14BC0C5C2A35F584EF15117C88D97B9A54C9CFFCFE0DB0E7194DDA5A391B615`, 30.255 grupos, 36 competências, 65 códigos SERV e soma 555.089. Top 10=464.962 (83,7635%); demais 55=90.127 (16,2365%). Validador foi commitado antes de executar (commit `63359e9e07106446984e99937750cffcf2ec92b6`); execução em contêiner/CSV e teste negativo de SHA reportados PASS numérico restrito. Crosswalk C5.2 é evidência histórica, não revalidado nesta execução. `P13_E1_NUMERIC_GATE=PASS_RESTRICTED`; `PR180_MERGED=True`; `VISUAL_ACCEPTED_GLOBAL=False`; `PRODUCTION_APPROVED=False`.
+
+**Próximo gate em andamento:** `SAD-P14-PROC-RANKING-READONLY-01`, ranking de procedimentos realizados por `proc_rea`, E2 e `sum(qtd_internacao)` em 2017–2019. **Estado:** `BLOCKED_SOURCE_NOT_ACCESSIBLE_IN_THIS_SESSION`, não falha do conteúdo. O E2 `sih_procedimento_competencia.csv` (SHA de referência AE01 `81FCBD576EFE48560EE1666A443E3E73158179972E38241A48928C904D03B6A2`) não está disponível nos anexos, Library, Drive conectado nem no Git. Solicitar **somente o E2 original**; provável local a verificar pelo operador: mesma pasta AE01 onde E1 foi achado. O contrato inicial e os critérios de STOP estão em [P1.4 — início read-only](../discovery/sad-p14-proc-ranking-readonly-init-2026-10-29.md). Nenhum ranking P1.4 executado/homologado e nenhum novo extrato criado.
+
+**Permissões/ordem preservadas:** QlikView 12, Star/constelação, três fatos/oito dimensões, fluxo BASE→EXTRACAO→QVD→TRANSFORMACAO→QVD→PAINEL, Boundary 7; P1.1/P1.2 encerrados sem reexecução; P1.5 e demais fases não iniciados. Bloqueios `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `ZERO_REAL_COMPROVADO=NOT_PROVEN`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False` inalterados.
+
+---
+
+## Snapshot histórico — 29/10/2026 | P1.1/P1.2 experimental encerrado; P1.3 então pendente
 
 **FATO GIT VERIFICADO:** `main@221d2c96adb1f4320b6b8adba8e6a0f5694e3e41` após integração documental dos [PRs #176](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/176) e [#178](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/178). A cadeia P1.1/P1.2 está consolidada no [closeout físico/documental](../discovery/sad-p11-p12-physical-closeout-2026-10-29.md). Os PRs experimentais #172, #173, #174, #175 e #177 foram **fechados sem merge**, com comentários de destinação; branches e commits preservados. Seus protocolos são evidências históricas de tentativa/execução com estados diferentes e **não** homologam produção.
 
