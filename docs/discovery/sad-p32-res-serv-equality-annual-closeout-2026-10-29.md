@@ -1,7 +1,7 @@
 # P3.2 — RES=SERV × RES≠SERV anual (2017–2019) | Closeout numérico restrito
 
 **Gate:** `SAD-P32-SIH-RES-SERV-EQUALITY-ANNUAL-READONLY-01`  
-**Veredito:** `PASS_RESTRICTED` **em execução local Windows/Python reportada pelo responsável**, com stdout e JSON colado inspecionados nesta sessão; **não** é execução independente/CI, aceite visual, associação cross-fact ou homologação de produção.  
+**Veredito:** `PASS_RESTRICTED` **em execução local Windows/Python reportada pelo responsável**, com stdout, JSON colado e arquivo `p32_audit.json` posteriormente enviado e conferido diretamente nesta sessão; **não** é execução independente/CI, aceite visual, associação cross-fact ou homologação de produção.  
 **Data:** 29/10/2026, execução registrada em `2026-10-29T20:15:49.771299+00:00` (17:15:49 UTC−03).  
 **Git:** baseline integrada `main@8a3144263e424078dbab6038d8a8b7089e3a40b2` ([PR #190](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/190) MERGED); gate P3.2 na branch `test/sad-p32-sih-res-serv-equality-annual-readonly-01`, [PR #191](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/191) Draft **não integrado**. Fonte do script executado: `7cab8c12eaf2d6424dceb52f64aafaf50d623d2c`, previamente versionado; correções documentais posteriores não representam nova execução.
 
@@ -17,10 +17,16 @@
 
 ## Interpretação e limites
 
-**FATO REPORTADO VALIDADO ARITMETICAMENTE NO TRANSCRIPT:** os três totais anuais e as duas classes somam 555.089, e novas + continuidades somam 566.672; sem divergência emitida pelo runner. A conferência desta sessão não leu o E1 original nem os derivados locais. A validação é **numérica/observacional**; `RES!=SERV` compara códigos, **não** comprova viagem individual; casos de residência externa à PB continuam no universo e não recebem denominador populacional artificial. `IDENT=5` não é internação nova; SIH/RD não mede pacientes únicos ou demanda reprimida. Não atesta filtros globais, UI, QlikView, `%LINK_KEY`, contratos de medidas/denominadores ou produção.
+**FATO REPORTADO VALIDADO ARITMETICAMENTE NO TRANSCRIPT:** os três totais anuais e as duas classes somam 555.089, e novas + continuidades somam 566.672; sem divergência emitida pelo runner. A conferência desta sessão **leu os bytes do `p32_audit.json` anexado** (2.431 bytes, JSON válido), mas não leu o E1 original, o CSV derivado nem o manifesto local. A validação é **numérica/observacional**; `RES!=SERV` compara códigos, **não** comprova viagem individual; casos de residência externa à PB continuam no universo e não recebem denominador populacional artificial. `IDENT=5` não é internação nova; SIH/RD não mede pacientes únicos ou demanda reprimida. Não atesta filtros globais, UI, QlikView, `%LINK_KEY`, contratos de medidas/denominadores ou produção.
 
 ## Fechamento e próxima decisão
 
 - `GATE_PASS=True` **somente no escopo local restrito**; `PR_MERGED=False` para o PR #191 neste fechamento; `VISUAL_ACCEPTED_GLOBAL=False`; `PRODUCTION_APPROVED=False`.
 - **STOP P3.2 cumprido:** não executar novamente o E1/P3.2 para confirmar o mesmo resultado sem divergência concreta; não abrir múltiplas iterações por conveniência. Nenhum QVD, QVW, QVS, dado original, esquema acadêmico ou contrato físico alterado.
 - **Próximo passo:** revisar o diff completo do [PR #191](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/191) e decidir integração separadamente. Próximo candidato analítico após fechamento de integração: **P3.3 — ranking dos pares observados `RES!=SERV`**, gate próprio e reuso do E1, sem iniciar automaticamente. Fase IX não autorizada.
+
+## Adendo — conferência direta do JSON anexado (29/10/2026)
+
+O responsável anexou `p32_audit.json` separadamente do transcript. Os **bytes do arquivo recebido** foram lidos diretamente: **2.431 bytes**, SHA-256 `1F6FF6A45283D7201E667BC9E55EEDCFD2118C0E4B290232E0EF69DF44E78271`, JSON sintaticamente válido. Os campos do arquivo coincidem com os resultados registrados no transcript (gate, commit executado, SHA E1, 36 competências, 30.255 grãos, seis linhas de saída declaradas, totais, rejeição negativa, hash do CSV, `exit_code=0`, `divergences=[]`). Conferência aritmética independente do **conteúdo do JSON**: 183.532+183.311+188.246 = 555.089; 294.635+260.454 = 555.089; 555.089+11.583 = 566.672; percentual calculado 46,921124…% confere com 46,9211% reportado.
+
+**Escopo da verificação adicional:** conferência dos bytes **do anexo recebido**, sem prova de que ele seja byte a byte idêntico ao arquivo Windows original, e sem reexecutar o Python, ler o CSV E1/CSV P3.2 original ou validar os QVDs/QVWs. Aumenta a evidência de consistência do relatório; não altera `PASS_RESTRICTED` para aprovação física, visual ou de produção, nem autoriza merge automático.
