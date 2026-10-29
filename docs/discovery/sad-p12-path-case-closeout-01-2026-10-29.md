@@ -48,3 +48,13 @@ Reutilizar a cópia já salva. Não há nova preparação, novo QVW, reload, COM
 - STOP após parser, uma rodada sintética e uma leitura real. Preservar stdout e todos os artefatos; não executar novamente o -Verify de #174 nem reclassificar retroativamente os HARD_STOPs anteriores.
 
 Status de alcance: LINK_KEY_CONTRACT=NOT_APPROVED; MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED; C2_FULL=NO_GO_NOT_APPROVED; P5_D2_UI=NOT_TESTED_GLOBAL; PHASE_IX=NOT_AUTHORIZED; PRODUCTION_APPROVED=False. Revisão de UX/legibilidade e eventual merge são decisões separadas.
+
+## Falha na primeira execução nativa e correção versionada
+
+**Evidência reportada pelo operador (29/10/2026):** checkout HEAD b156e894ba54c63327ec85b1a0497f4d1e40ecdd, parser PowerShell 5.1 PASS, SHA-256 do runner 522FDFD0E13C143F0897848F688E59576B4653CD97EF7AD3920144C778ADCF39, chamada única -SelfTest. A execução parou antes do primeiro caso com PropertyNotFoundStrict: propriedade Issues não encontrada. Nenhuma varredura de QVD/QVW executada nessa chamada, apenas fixtures sintéticos.
+
+**Causa identificada por inspeção estática e documentação oficial:** o script declarava function Compare mas invocava Compare com nome sem qualificação. No Windows PowerShell 5.1, compare é alias interno de Compare-Object, e aliases precedem funções na resolução de comandos. Como o primeiro fixture compara dois arrays idênticos, Compare-Object retorna sem objeto por padrão; então a leitura de $res.Issues em modo StrictMode falha. Fontes: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/compare-object?view=powershell-5.1 ; https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_command_precedence?view=powershell-5.1 .
+
+**Correção versionada:** somente renomear a função e suas três chamadas para Compare-SadP12Records, mantendo os critérios de identidade Windows, tamanho e SHA-256. O commit corrigido não herda PASS do commit bloqueado. Inspeção estática não é parser nativo ou execução local.
+
+**Estado anterior:** SELFTEST=BLOCKED_COMMAND_ALIAS_COLLISION, PROTECTED_SCAN=NOT_RUN, STOP preservado. Um novo teste local do commit corrigido requer autorização específica; sem merge, sem modificação de binários ou alteração de scripts dos PRs anteriores.
