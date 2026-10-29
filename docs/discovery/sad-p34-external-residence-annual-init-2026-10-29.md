@@ -1,7 +1,7 @@
 # P3.4 — Residentes fora da referência municipal PB por ano (2017–2019) | READ-ONLY
 
 **Gate:** `SAD-P34-SIH-EXTERNAL-RESIDENCE-ANNUAL-READONLY-01`  
-**Estado:** `SCRIPT_VERSIONED / NOT_RUN / READY_FOR_LOCAL_INPUTS` — não é PASS.  
+**Estado inicial (histórico):** `SCRIPT_VERSIONED / NOT_RUN / READY_FOR_LOCAL_INPUTS`, antes da execução. Resultado posterior em [closeout P3.4](sad-p34-external-residence-annual-closeout-2026-10-29.md).  
 **Baseline:** `main@ab76cb24f27fb3521ad30c3118c04e0fc93ec91c`, após integração por squash do [PR #192](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/192) (P3.3).  
 **Agente primário:** ChatGPT GPT-6 + GitHub para preparação documental e script; esforço exato indisponível. **Execução planejada:** operador Windows PowerShell + Python. Escalonar a Codex Local apenas diante de erro real. Sem QlikView/COM/GUI e sem alteração de dado.
 
@@ -74,4 +74,8 @@ Se qualquer pré-verificação falhar, **parar** e compartilhar apenas o erro/di
 
 ## Handoff
 
-Enviar `p34_audit.json` e, se possível, `p34_residence_class_annual.csv` e `p34_external_residents_annual.csv`. Conferir hashes, números e limitações; preparar closeout no PR Draft e uma revisão de integração **separada**, sem merge automático. Estado de preparação: `GATE_PASS=False (NOT_RUN)` · `PR_MERGED=False` · `PRODUCTION_APPROVED=False`. O P3.4 conclui o escopo analítico P3 delimitado; qualquer próximo gate precisa de nova decisão.
+Enviar `p34_audit.json` e, se possível, `p34_residence_class_annual.csv` e `p34_external_residents_annual.csv`. Conferir hashes, números e limitações; preparar closeout no PR Draft e uma revisão de integração **separada**, sem merge automático. **Estado antes da execução (histórico):** `GATE_PASS=False (NOT_RUN)`. O fechamento P3.4 consta no adendo; não repetir o executor por conveniência. Qualquer novo gate após P3.4 exige decisão própria.
+
+## Adendo pós-execução — 29/10/2026
+
+A execução única no Windows reportou `PASS_RESTRICTED`, `exit_code=0`, `divergences=[]`, 5.202 registros AIH e 5.067 novas internas às classes externas da referência C5.2 PB, com três anos reconciliados. Em seguida, os **três anexos reais** (`p34_audit.json`, CSV ano×classe e CSV anual externo) foram auditados independentemente em bytes/estrutura/hashes e suas medidas reconciliadas. Detalhes no [closeout P3.4](sad-p34-external-residence-annual-closeout-2026-10-29.md). **`GATE_PASS=True` restrito numérico/local; `PR_MERGED=False`, `PRODUCTION_APPROVED=False`. STOP P3.4 cumprido.** O bloco PowerShell permanece como referência histórica, não indicação de reexecução.
