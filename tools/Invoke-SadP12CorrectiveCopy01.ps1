@@ -90,7 +90,7 @@ $evidence=Full $EvidenceRoot
 $self=Full (Join-Path $repo $scriptRel)
 if ($self -ine (Full $PSCommandPath)) { throw 'BLOCKED_RUN_COMMITTED_SCRIPT' }
 if (-not (Test-Path -LiteralPath (Join-Path $repo 'AGENTS.md') -PathType Leaf)) { throw 'BLOCKED_ROOT' }
-if (Inside $runtime $repo -or Inside $evidence $repo -or Inside $parentPath $repo) { throw 'BLOCKED_OUTPUT_INSIDE_REPO' }
+if ((Inside $runtime $repo) -or (Inside $evidence $repo) -or (Inside $parentPath $repo)) { throw 'BLOCKED_OUTPUT_INSIDE_REPO' }
 $head=([string](& git -C $repo rev-parse HEAD)).Trim()
 $branch=([string](& git -C $repo branch --show-current)).Trim()
 if ($LASTEXITCODE -ne 0 -or $head -cne $ExpectedCommit -or $branch -cne $requiredBranch) {
@@ -108,7 +108,7 @@ if ($parent.Gate -cne $oldGate -or $parent.GitHead -cne $oldCommit -or $parent.R
  throw 'BLOCKED_PARENT_MANIFEST_PROVENANCE'
 }
 $source=Full ([string]$parent.Copy)
-if ([IO.Path]::GetFileName($source) -cne $oldCopyName -or Inside $source $repo) {
+if ([IO.Path]::GetFileName($source) -cne $oldCopyName -or (Inside $source $repo)) {
  throw 'BLOCKED_EXPECTED_OLD_TEST_COPY'
 }
 if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { throw 'BLOCKED_OLD_TEST_COPY_MISSING' }
