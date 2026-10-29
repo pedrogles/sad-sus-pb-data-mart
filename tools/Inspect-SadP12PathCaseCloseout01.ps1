@@ -39,7 +39,7 @@ function ParseEntry([string]$line) {
   return (Entry $m.Groups['path'].Value ([long]::Parse($m.Groups['bytes'].Value)) $m.Groups['sha'].Value '' $false)
 }
 # Path identity is OrdinalIgnoreCase on Windows; content size and SHA remain strict.
-function Compare([object[]]$before,[object[]]$after) {
+function Compare-SadP12Records([object[]]$before,[object[]]$after) {
   $a=[Collections.Generic.Dictionary[string,object]]::new([StringComparer]::OrdinalIgnoreCase)
   $b=[Collections.Generic.Dictionary[string,object]]::new([StringComparer]::OrdinalIgnoreCase)
   foreach($r in $before) {
@@ -67,7 +67,7 @@ function Compare([object[]]$before,[object[]]$after) {
   return [pscustomobject]@{ Issues=@($issues); CaseOnly=@($caseOnly) }
 }
 function Expect([string]$name,[object[]]$old,[object[]]$now,[int]$blocking,[int]$caseCount) {
-  $res=Compare $old $now
+  $res=Compare-SadP12Records $old $now
   if ($res.Issues.Count -ne $blocking -or $res.CaseOnly.Count -ne $caseCount) {
     throw ('SELFTEST_FAIL_'+$name+'_ISSUES='+$res.Issues.Count+'_CASE='+$res.CaseOnly.Count)
   }
@@ -193,13 +193,13 @@ $oldBase=@($p.ProtectedBefore | ForEach-Object { ParseEntry ([string]$_) })
 $newBase=@($m.ProtectedBefore | ForEach-Object { ParseEntry ([string]$_) })
 Assert-Baseline $oldBase $repo
 Assert-Baseline $newBase $repo
-$between=Compare $oldBase $newBase
+$between=Compare-SadP12Records $oldBase $newBase
 if ($between.Issues.Count -gt 0) { throw 'HARD_STOP_MANIFEST_BASELINES_DIVERGE' }
 Write-Output ('MANIFEST_PATH_CASE_VARIATIONS='+$between.CaseOnly.Count)
 
 # Exactly one current scan of the 25 protected originals. No source or test-copy mutation.
 $current=@(Inventory $repo)
-$result=Compare $oldBase $current
+$result=Compare-SadP12Records $oldBase $current
 Write-Output ('PROTECTED_FILES_CHECKED='+$current.Count)
 Write-Output ('PROTECTED_PATH_CASE_ONLY='+$result.CaseOnly.Count)
 Write-Output ('PROTECTED_BLOCKING_ISSUES='+$result.Issues.Count)
