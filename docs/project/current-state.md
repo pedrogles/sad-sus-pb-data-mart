@@ -1,6 +1,20 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado operacional vigente — 28/10/2026 | P2.3 A1 R2 com PASS local restrito; código/evidências integrados
+## Estado operacional vigente — 29/10/2026 | P1.1/P1.2 experimental encerrado; próximo gate P1.3 READ-ONLY
+
+**FATO GIT VERIFICADO:** `main@92403e1a1d26137c773e994c79155c6c538778ca` após merge documental do [PR #176](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/176); a presente consolidação está proposta em PR separado e **não é parte da main antes do seu merge**. Roteamento pós-integração: [closeout físico/documental P1.1/P1.2](../discovery/sad-p11-p12-physical-closeout-2026-10-29.md). Os protocolos originais nos PRs #172–#177 são evidência de tentativa/execução com estados diferentes e **não** homologam produção.
+
+**Resultado material P1.1/P1.2:** quatro cartões candidatos em QVW TEMP renderizaram **183.532, 183.311, 188.246, 555.089** internações administrativas novas (2017, 2018, 2019, total). O P1.2 CH02 corrigido exibiu 36 competências `201701..201912`, reconciliadas 36/36 contra E1; export pós-polimento byte a byte igual à export pré-polimento (SHA `800B73A234C607604A69CD0EF4CBC7C4BB7D744D020CC159EA38C0DC0FC2899F`). O closeout local #177 reportou 25/25 arquivos protegidos sem alterações e cópia QVW salva SHA `B3BEDCD6F07D11456383F4C6996992804BFFDDCCA52E7B80C50344AB9FE9454C`. Capturas demonstraram legibilidade melhorada e aviso metodológico SIH/RD, mas **somente como PoC**. Os `HARD_STOP` históricos dos PRs #172 e #174 permanecem válidos para suas tentativas.
+
+**Estado vigente:** `P11_P12_EXPERIMENTAL_GATE=CLOSED_PASS_RESTRICTED`; `P12_MONTHLY_36_OF_36=PASS_FILE_RECONCILED`; `P11_P12_COPY_INTEGRITY=PASS_LOCAL_RESTRICTED`; `VISUAL_ACCEPTED_GLOBAL=False`; `PRODUCTION_APPROVED=False`. Nenhum QVD/QVW canônico foi intencionalmente escrito pelos runners; QVW de produção **não foi** alterado. Nenhuma nova etapa P1.3 ou novo teste de GUI executado por esta consolidação.
+
+**Próxima tarefa candidata (autorização de execução distinta):** **P1.3 — ranking de internações novas por município de atendimento/SERV**, `READ-ONLY / E1`, 2017–2019, sem novos extratos se o E1 já for suficiente. Entregar uma tabela de códigos municipais SERV, `qtd_internacao`, universo e denominador explicitados, conferindo total 555.089, separando dados exploratórios anteriores de validação nova. **STOP** após uma tabela reconciliada e parecer de suficiência, antes de P1.4 ou intervenção QlikView. Depois P1.4 (E2/procedimentos), P1.5 (E3/diagnósticos), P2 leitos observados e P3 fluxos RES→SERV, conforme [escopo analítico aprovado](../discovery/sad-analytical-scope-acceptance-01-2026-10-27.md) e Boundary 7.
+
+**Bloqueios independentes e não alterados:** `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `ZERO_REAL_COMPROVADO=NOT_PROVEN`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. A0 permanece padrão dos outros visuais, com A1 apenas ilha experimental P2.3. Preservar QlikView 12, três fatos, oito dimensões, Boundary 7 e relatórios acadêmicos dos Capítulos 1–2. O professor ainda não avaliou formalmente a entrega.
+
+---
+
+## Snapshot histórico — 28/10/2026 | P2.3 A1 R2 com PASS local restrito; código/evidências integrados
 
 **FATO GIT VERIFICADO:** `main@11190c6dfacbbfa7ae5ad28193039d233203e71e` após merge squash do [PR #170](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/170), em 28/10/2026. O contrato lógico A1 de [PR #168](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/168) já estava na `main`; agora o QVS em memória, executor temporário, auditor versionado e [closeout físico R2](../discovery/sad-p23-a1-physical-gate-protocol-2026-10-28.md) também estão versionados na `main`. O presente ajuste do estado operacional é objeto do [PR #169](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/169); conferir seu merge antes de tratar este cabeçalho como vigente na `main`. **Merge documental/de scripts não instala a A1 no QVW final nem aprova produção.**
 
