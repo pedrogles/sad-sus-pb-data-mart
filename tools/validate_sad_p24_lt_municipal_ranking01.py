@@ -195,9 +195,15 @@ def main() -> int:
         print(json.dumps({k: v for k, v in result.items() if k != "ranking"},
                          ensure_ascii=False, indent=2))
         return 0
-    except (OSError, ValueError, csv.Error, KeyError, TypeError) as exc:
-        print(f"VERDICT=FAIL_OR_BLOCKED: {exc}", file=sys.stderr)
+    except (FileNotFoundError, PermissionError) as exc:
+        print(f"VERDICT=BLOCKED_SOURCE_OR_PATH_UNAVAILABLE: {exc}", file=sys.stderr)
+        return 3
+    except (ValueError, csv.Error, KeyError, TypeError) as exc:
+        print(f"VERDICT=HARD_STOP_VALIDATION_DIVERGENCE: {exc}", file=sys.stderr)
         return 2
+    except OSError as exc:
+        print(f"VERDICT=BLOCKED_IO_FAILURE: {exc}", file=sys.stderr)
+        return 3
 
 
 if __name__ == "__main__":
