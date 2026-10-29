@@ -10,7 +10,7 @@
 
 ---
 
-## Snapshot histórico — 29/10/2026 | P1.4 iniciado READ-ONLY e então bloqueado por fonte E2
+## Snapshot histórico — 29/10/2026 | P1.1/P1.2 experimental encerrado; P1.3 então pendente
 
 
 **FATO GIT VERIFICADO:** `main@221d2c96adb1f4320b6b8adba8e6a0f5694e3e41` após integração documental dos [PRs #176](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/176) e [#178](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/178). A cadeia P1.1/P1.2 está consolidada no [closeout físico/documental](../discovery/sad-p11-p12-physical-closeout-2026-10-29.md). Os PRs experimentais #172, #173, #174, #175 e #177 foram **fechados sem merge**, com comentários de destinação; branches e commits preservados. Seus protocolos são evidências históricas de tentativa/execução com estados diferentes e **não** homologam produção.
