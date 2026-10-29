@@ -90,7 +90,7 @@ def validate(source: Path) -> tuple[dict, list[dict]]:
         for year in YEARS:
             require(sum(by_year_class[(year, cls)][field] for cls in CLASSES)
                     == by_year[year][field], f"YEAR_CLASS_SUM:{year}:{field}")
-            require(sum(by_month_class[(f"{year}{m:02d}", cls)][field]
+            require(sum(by_month_class.get((f"{year}{m:02d}", cls), Counter())[field]
                         for m in range(1, 13) for cls in CLASSES)
                     == by_year[year][field], f"MONTHLY_SUM:{year}:{field}")
     require(share(by_class[CLASSES[1]]["qtd_internacao"],
