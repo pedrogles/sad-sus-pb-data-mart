@@ -57,7 +57,7 @@ New-Item -ItemType Directory -Path $runtime,$evidence -Force | Out-Null
 
 $runner = Join-Path $repo 'tools\Invoke-SadC2VisualCompatibilityCopy01.ps1'
 $tokens = $null; $errors = $null
-[void][Management.Automation.Language.Parser]::ParseFile($runner,[ref]$tokens,[ref]$errors)
+[void][System.Management.Automation.Language.Parser]::ParseFile($runner,[ref]$tokens,[ref]$errors)
 if ($errors.Count -gt 0) { $errors | ForEach-Object {$_.ToString()}; throw 'BLOCKED_PARSER' }
 
 powershell.exe -NoProfile -File $runner -Root $repo -P11P12Qvw $p11 -C2kQvw $c2k -RuntimeRoot $runtime -EvidenceRoot $evidence -Prepare
