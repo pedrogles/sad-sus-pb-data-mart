@@ -71,6 +71,34 @@ powershell.exe -NoProfile -File $runner -Root $repo -P11P12Qvw $p11 -C2kQvw $c2k
 
 **Comandos acima não foram executados nesta sessão.** Não prosseguir se `-Prepare` não emitir `PASS_COPIES_PREPARED_ONLY_GUI_NOT_TESTED` ou se alguma fonte/protegido divergir.
 
+## 4.1. Bloqueio observado no primeiro Prepare e correção versionada
+
+**Evidência do operador:** checkout em `347e350f487d2656b0802aadd9cb569803c68902` e parser PowerShell 5.1 `PARSER=PASS`. O primeiro `-Prepare` terminou `BLOCKED_PREPARE_EXECUTION` com erro de comando nativo encapsulado em `NativeCommandError`; a saída original do filho não foi capturada por `Tee-Object`, `prepare_stdout.txt` não existe e nenhum subdiretório foi exibido em `EVIDENCE_ROOT`. Não há PASS de Prepare/GUI/Verify.
+
+**Defeito estático identificado no runner original:** `function H` (cálculo SHA) colidia com o alias nativo PowerShell `h` → `Get-History`. Aliases têm precedência sobre funções; portanto chamadas `H $p11` etc. não referiam o helper SHA de forma segura. Essa colisão é **causa técnica demonstrável no código, compatível com a parada antes do primeiro Write-Output**, mas a mensagem nativa original não foi recuperada. Não atribuir a causa de modo exclusivo sem um log conclusivo. Corrigido **na mesma branch** alterando exclusivamente o nome do helper para `Get-SadC2FileSha256` em todos os pontos de chamada, por commit adicional; o resultado físico dessa correção ainda depende de nova execução versionada.
+
+**Protocolo para obter log em eventual tentativa após aprovação do patch:** o pai PowerShell tinha `$ErrorActionPreference='Stop'`; em Windows PowerShell 5.1, `2>&1 | Tee-Object` pode transformar o stderr de `powershell.exe` em `NativeCommandError` antes de gravar o log. Temporariamente usar `Continue` **somente ao redor da chamada nativa**, restaurar a preferência e conferir `$LASTEXITCODE` imediatamente:
+
+~~~powershell
+$previousPreference = $ErrorActionPreference
+$childExit = $null
+try {
+    $ErrorActionPreference = 'Continue'
+    & powershell.exe -NoProfile -File $runner -Root $repo `
+        -P11P12Qvw $p11 -C2kQvw $c2k `
+        -RuntimeRoot $runtime -EvidenceRoot $evidence -Prepare 2>&1 |
+        Tee-Object -FilePath (Join-Path $evidence 'prepare_stdout.txt')
+    $childExit = $LASTEXITCODE
+} finally {
+    $ErrorActionPreference = $previousPreference
+}
+if ($childExit -ne 0) {
+    throw ('BLOCKED_PREPARE_EXIT_' + $childExit + '_READ_STDOUT_BEFORE_RETRY')
+}
+~~~
+
+**Não executar este bloco com o HEAD antigo.** Conferir branch/commit remoto efetivo do PR após o patch, `git status` limpo, `git fetch` e atualização não destrutiva do checkout. Os scripts antigos versionados permanecem no histórico. A nova tentativa física, se efetuada, inicia **um novo resultado vinculado ao SHA corrigido**; não herdar PASS. Não insistir após nova falha, preservar stderr e stdout; não abrir QVW enquanto `-Prepare` estiver bloqueado.
+
 ## 5. Critérios de encerramento e decisão posterior
 
 | Veredito | Quando pode ser atribuído |
