@@ -28,7 +28,7 @@ function Full([string]$v) {
 function Under([string]$v,[string]$root) {
  return ($v -ieq $root -or $v.StartsWith($root+'\',[StringComparison]::OrdinalIgnoreCase))
 }
-function H([string]$p) {return (Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToUpperInvariant()}
+function Get-SadC2FileSha256([string]$p) {return (Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToUpperInvariant()}
 function Snap([string]$repo) {
  $aDir=Join-Path $repo 'EXTRACAO\QVD'
  $bDir=Join-Path $repo 'TRANSFORMACAO\QVD'
@@ -45,7 +45,7 @@ function Snap([string]$repo) {
  }
  if ($files.Count -ne 25) {throw 'BLOCKED_25_FILE_COUNT'}
  return @($files | Sort-Object FullName | ForEach-Object {
-   '{0}|{1}|{2}' -f $_.FullName,$_.Length,(H $_.FullName)
+   '{0}|{1}|{2}' -f $_.FullName,$_.Length,(Get-SadC2FileSha256 $_.FullName)
  })
 }
 if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {throw 'BLOCKED_WINDOWS_REQUIRED'}
@@ -84,8 +84,8 @@ $tracked=@(& git -C $repo ls-files --error-unmatch -- $rel 2>$null)
 if ($LASTEXITCODE -ne 0 -or $tracked.Count -ne 1) {throw 'BLOCKED_RUNNER_NOT_TRACKED'}
 $dirty=@(& git -C $repo status --porcelain --untracked-files=all)
 if ($LASTEXITCODE -ne 0 -or $dirty.Count -gt 0) {throw 'BLOCKED_DIRTY_WORKTREE'}
-if ((H $p11) -cne $p11Sha -or (H $c2k) -cne $c2kSha) {throw 'HARD_STOP_SOURCE_SHA_DRIFT'}
-$runnerSha=H $self
+if ((Get-SadC2FileSha256 $p11) -cne $p11Sha -or (Get-SadC2FileSha256 $c2k) -cne $c2kSha) {throw 'HARD_STOP_SOURCE_SHA_DRIFT'}
+$runnerSha=Get-SadC2FileSha256 $self
 Write-Output ('VERSIONED_GIT_HEAD='+$head)
 Write-Output ('RUNNER_SHA256='+$runnerSha)
 Write-Output 'QLIK_COM_CALLS=0 RELOAD_CALLS=0 AUTOMATED_UI_EDITS=0'
@@ -103,7 +103,7 @@ if ($Prepare) {
  try {
   Copy-Item -LiteralPath $p11 -Destination $outP11 -ErrorAction Stop
   Copy-Item -LiteralPath $c2k -Destination $outC2k -ErrorAction Stop
-  if ((H $outP11) -cne $p11Sha -or (H $outC2k) -cne $c2kSha) {throw 'HARD_STOP_COPY_HASH'}
+  if ((Get-SadC2FileSha256 $outP11) -cne $p11Sha -or (Get-SadC2FileSha256 $outC2k) -cne $c2kSha) {throw 'HARD_STOP_COPY_HASH'}
   [ordered]@{
    Gate=$gate;GitHead=$head;GitBranch=$branch;RunnerSha256=$runnerSha
    SourceP11=$p11;SourceC2k=$c2k;SourceP11Sha256=$p11Sha;SourceC2kSha256=$c2kSha
@@ -114,7 +114,7 @@ if ($Prepare) {
  } finally {
   $after=@(Snap $repo)
   if (($before -join [Environment]::NewLine) -cne ($after -join [Environment]::NewLine) -or
-      (H $p11) -cne $p11Sha -or (H $c2k) -cne $c2kSha) {throw 'HARD_STOP_PREPARE_INTEGRITY'}
+      (Get-SadC2FileSha256 $p11) -cne $p11Sha -or (Get-SadC2FileSha256 $c2k) -cne $c2kSha) {throw 'HARD_STOP_PREPARE_INTEGRITY'}
  }
  Write-Output ('RUNTIME_P11_COPY='+$outP11)
  Write-Output ('RUNTIME_C2K_COPY='+$outC2k)
@@ -144,9 +144,9 @@ foreach ($p in @($outP11,$outC2k)) {
 $before=@($m.ProtectedBefore | ForEach-Object {[string]$_})
 $after=@(Snap $repo)
 $protectedOk=(($before -join [Environment]::NewLine) -ceq ($after -join [Environment]::NewLine))
-$sourcesOk=((H $p11) -cne $p11Sha -and (H $c2k) -cne $c2kSha)
-$copiedP11=H $outP11
-$copiedC2k=H $outC2k
+$sourcesOk=((Get-SadC2FileSha256 $p11) -cne $p11Sha -and (Get-SadC2FileSha256 $c2k) -cne $c2kSha)
+$copiedP11=Get-SadC2FileSha256 $outP11
+$copiedC2k=Get-SadC2FileSha256 $outC2k
 $copiesOk=($copiedP11 -cne $p11Sha -and $copiedC2k -cne $c2kSha)
 Write-Output ('PROTECTED_25_UNCHANGED='+$protectedOk)
 Write-Output ('BOTH_SOURCES_UNCHANGED='+$sourcesOk)
