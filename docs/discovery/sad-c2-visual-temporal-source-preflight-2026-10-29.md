@@ -70,3 +70,16 @@ Esses comandos são **instruções para execução nativa futura**, não resulta
 **Fronteiras inalteradas:** `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED_GLOBAL`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
 
 **Handoff de evidência:** [Issue #196](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/196); anexar os valores de saída e caminhos (sem subir QVW/QVD/dados), classe final e eventual causa objetiva de bloqueio. Não repetir C2-J, C2-K, AE01, A0 R1, P1.1/P1.2 ou P2.3 R2.
+
+## Closeout — execução Windows comprovada por anexos do operador (30/10/2026)
+
+**Este adendo atualiza o estado inicial “não executado” acima, que permanece como histórico da preparação.** O responsável executou o runner versionado no PowerShell 5.1 e entregou três anexos para análise: transcrição PowerShell, `preflight_stdout.txt` e `preflight_manifest.json`. Os **arquivos de evidência** foram reconciliados quanto a HEAD, hashes e veredito; os binários locais originais **não** foram lidos independentemente pelo agente.
+
+- Branch/HEAD executado: `test/sad-c2-visual-temporal-preflight-20261029@ea8c659a157fbf8548e024a933478d4a85dad537`; parser `PASS` reportado.
+- Runner `SHA256=2D5141A790B7F14594548AEE0F31B36C549B29716CCCA9619DEFA15C877B8F81`; QlikView 12 `ProductVersion=12.0.20000.0` detectado, sem invocá-lo.
+- P1.1/P1.2 QVW `B3BEDCD6F07D11456383F4C6996992804BFFDDCCA52E7B80C50344AB9FE9454C`; C2-K QVW `9896D55ED7F98CFA480A0626484A04C3A937E2F64EBF238011D3CDEF4E1E21FA`.
+- Manifesto enumera **25 entradas** (10 QVD extração +12 QVD transformação + 3 QVWs canônicos) com hashes SHA-256; `PROTECTED_25_UNCHANGED_DURING_PREFLIGHT=True` reportado.
+- `QLIK_COM_CALLS=0 RELOAD_CALLS=0 QVW_COPIES=0`; `COMBINED_QVW_COMPATIBILITY=NOT_TESTED`.
+- **STOP atingido:** `SAD-C2-SOURCE-PREFLIGHT-01=PASS_IDENTITY_AND_HASH_INVENTORY_ONLY_NOT_UI` (prova restrita local, com auditoria dos três anexos). Sem nova execução deste subgate.
+
+**Rastreabilidade:** [Issue #196 — closeout de evidência](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/196#issuecomment-6512555071), [PR #197](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/197). **Aprovação de UI/seleção/produção não decorre deste PASS.** `C2_FULL=NO_GO_NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
