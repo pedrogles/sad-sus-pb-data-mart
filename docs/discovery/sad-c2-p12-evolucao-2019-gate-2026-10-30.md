@@ -69,6 +69,22 @@ if ($exit -ne 0) {throw 'BLOCKED_PREPARE_READ_STDOUT_AND_STOP'}
 
 **Evidências persistentes:** `gui_before.png`, `gui_after.png`, `p12_2019_chart.png` (quando aplicável), `p12_2019_export.tsv` (se possível), `gui_notes.txt` com ações realmente executadas, `prepare_stdout.txt`, `p12_2019_prepare.json`, `verify_stdout.txt`, `p12_2019_verify.json`, hashes e HEAD. Evidências não devem ir para Git.
 
+## 4.1. Resultado físico observado e recuperação restrita (30/10/2026)
+
+**Fonte:** captura do QlikView x64 Personal Edition na QVW TEMP, e transcrições PowerShell completas coladas pelo operador. Não foi realizada leitura independente dos binários QVD/QVW ou do JSON de evidência.
+
+- `Prepare` original em `9bae813940fa85bcd01cfbdf8519bb5802253d18`, runner SHA `239532A9190DC5C8018FCF809A93DE4F3BF638CE69FC9D0812B2D40BA567BC2F`: `PASS_PROTECTED_COPY_PREPARED_ONLY_NO_GUI`. Diretório único: `SAD_C2_P12_2019_d1b3fe5814c34094861366e33b6bfd7c`.
+- **GUI:** proposta `EVOLUCAO/2019`, `ANO REAL: SEM SELECAO | Qtd 0`, `COMPETENCIA REAL: SEM SELECAO | Qtd 0`, botão `Aplicar Ano 2019` desabilitado. **`GUI_2019=BLOCKED_GUIDED_ACTION_UNAVAILABLE`**; não houve prova de 12 pontos, nem edição do gráfico, nem autorização para contornar a ação pela lista manual.
+- **Primeiro Verify:** `BLOCKED_CLOSE_QLIKVIEW_FIRST`, porque a aplicação estava aberta. Guarda correta, sem auditoria de hashes; não considerar corrupção.
+- **Segundo Verify:** após fechar o QlikView, com HEAD original, reportou `PROTECTED_25_UNCHANGED=True`, `SOURCE_UNCHANGED=True`, `COPY_NOT_SAVED=True`, SHA da cópia `B3BEDCD6F07D11456383F4C6996992804BFFDDCCA52E7B80C50344AB9FE9454C` idêntico à origem. **Mas `VERIFY_EXIT_CODE=1`** antes do JSON final: mensagem `Não é possível converter ... System.String ... System.Management.Automation.SwitchParameter`.
+- **Defeito real de código:** `[switch]$Verify` é parâmetro do script; próximo da gravação, a antiga atribuição `$verify=Join-Path ...` reutilizava **o mesmo nome insensível à caixa** e tentava converter string em SwitchParameter. Isso explica a falha **depois** dos hashes `True`. Nenhum `p12_2019_verify.json` foi confirmado como criado por essa tentativa.
+
+**Patch versionado, ainda NÃO executado no Windows:** renomeou o destino de JSON para `$verifyEvidencePath` e manteve `-Prepare` e as verificações de hash inalteradas. Como os hashes do runner e HEAD mudaram no patch, `-Verify` admite **somente** o manifesto original (HEAD `9bae813...`, SHA de runner `239532...`) associado ao **runDir exato `SAD_C2_P12_2019_d1b3fe5814c34094861366e33b6bfd7c`**, sob `VERIFY_PREPARE_PROVENANCE=PATCHED_LEGACY_PREPARE` e ancestralidade Git. A exceção não alcança outras preparações, fontes, paths ou hashes; o objetivo é **concluir a integridade desta mesma execução sem repetir GUI ou Prepare**.
+
+**Próxima e última ação física desta subetapa:** atualizar a mesma branch por fast-forward com worktree limpo, confirmar HEAD exato do patch, parser PowerShell 5.1 e Qlik fechado. Rodar uma única verificação `-Verify` apontando para o manifesto anterior, gravando a nova saída em `verify_patched_stdout.txt` (não sobrescrever `verify_stdout.txt` ou `verify_after_close_stdout.txt`). Se `p12_2019_verify.json` já existir, STOP e conferir antes de qualquer tentativa. Conferir `PROTECTED_25_UNCHANGED=True`, `SOURCE_UNCHANGED=True`, `COPY_NOT_SAVED=True` e `VERDICT=PASS_PROTECTED_COPY_INTEGRITY_ONLY_NOT_GUI`. Se falhar, **STOP**, sem retries adicionais.
+
+**Estados até a nova prova:** `GUI_2019=BLOCKED_GUIDED_ACTION_UNAVAILABLE`, `P12_EVOLUTION_12_MONTHS=NOT_TESTED`, `INTEGRITY_HASHES=PASS_LOCAL_REPORTED`, `VERIFY_JSON_CLOSEOUT=BLOCKED_RUNNER_NAME_COLLISION`, `C2_FULL=NO_GO_NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
 ## 5. Verificar integridade após fechar QlikView
 
 No **mesmo commit e branch**, `RunDir` deve ser exatamente `EVIDENCE_DIR` emitido no Prepare:
