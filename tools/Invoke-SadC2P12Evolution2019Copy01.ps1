@@ -133,12 +133,28 @@ if (-not (Test-SadUnder $ev $evidence) -or $ev -ieq $evidence) {throw 'BLOCKED_I
 $manifest=Join-Path $ev 'p12_2019_prepare.json'
 if (-not (Test-Path -LiteralPath $manifest -PathType Leaf)) {throw 'BLOCKED_PREPARE_MANIFEST_MISSING'}
 $m=Get-Content -LiteralPath $manifest -Raw | ConvertFrom-Json
-if ($m.Gate -cne $gate -or $m.GitHead -cne $head -or $m.GitBranch -cne $branch -or
-    $m.RunnerSha256 -cne $runnerSha -or $m.SourceQvw -ine $source -or
+# Exact one-time recovery of the original Prepare: its QVW, hashes and run ID stay pinned.
+# The prior Verify had a [switch]$Verify / $verify assignment collision AFTER all hashes passed.
+# This exception applies ONLY to the unique already-prepared run; it never permits re-Prepare.
+$legacyPrepareHead='9bae813940fa85bcd01cfbdf8519bb5802253d18'
+$legacyPrepareRunnerSha='239532A9190DC5C8018FCF809A93DE4F3BF638CE69FC9D0812B2D40BA567BC2F'
+$legacyRunId='SAD_C2_P12_2019_d1b3fe5814c34094861366e33b6bfd7c'
+$directProvenance=($m.GitHead -ceq $head -and $m.RunnerSha256 -ceq $runnerSha)
+$legacyProvenance=($ev -ieq (Join-Path $evidence $legacyRunId) -and
+                   $m.GitHead -ceq $legacyPrepareHead -and
+                   $m.RunnerSha256 -ceq $legacyPrepareRunnerSha)
+if ($legacyProvenance) {
+ & git -C $repo merge-base --is-ancestor $legacyPrepareHead HEAD
+ if ($LASTEXITCODE -ne 0) {throw 'BLOCKED_LEGACY_PREPARE_NOT_ANCESTOR'}
+}
+if ($m.Gate -cne $gate -or (-not $directProvenance -and -not $legacyProvenance) -or
+    $m.GitBranch -cne $branch -or $m.SourceQvw -ine $source -or
     $m.SourceSha256 -cne $sourcePin -or $m.QlikExe -ine $qlik -or
     $m.RuntimeRoot -ine $runtime -or $m.EvidenceRoot -ine $evidence) {
  throw 'BLOCKED_PREPARE_PROVENANCE_MISMATCH'
 }
+$provenanceMode=if ($legacyProvenance) {'PATCHED_LEGACY_PREPARE'} else {'CURRENT_PREPARE'}
+Write-Output ('VERIFY_PREPARE_PROVENANCE='+$provenanceMode)
 $copy=Resolve-SadPath ([string]$m.CopyQvw)
 if (-not (Test-SadUnder $copy $runtime) -or $copy -ieq $runtime -or
     [IO.Path]::GetFileName($copy) -cne $copyName -or
@@ -159,13 +175,15 @@ Write-Output ('COPY_NOT_SAVED='+$copyOk)
 Write-Output ('COPY_SHA256='+$copyAfter)
 if (-not $protectedOk -or -not $sourceOk) {throw 'HARD_STOP_INPUT_INTEGRITY'}
 if (-not $copyOk) {throw 'BLOCKED_COPY_CHANGED_DURING_GUI'}
-$verify=Join-Path $ev 'p12_2019_verify.json'
-if (Test-Path -LiteralPath $verify -PathType Leaf) {throw 'BLOCKED_VERIFY_ALREADY_RECORDED'}
+$verifyEvidencePath=Join-Path $ev 'p12_2019_verify.json'
+if (Test-Path -LiteralPath $verifyEvidencePath -PathType Leaf) {throw 'BLOCKED_VERIFY_ALREADY_RECORDED'}
 [ordered]@{
  Gate=$gate; GitHead=$head; RunnerSha256=$runnerSha
+ PrepareGitHead=$m.GitHead; PrepareRunnerSha256=$m.RunnerSha256
+ PrepareProvenanceMode=$provenanceMode
  Protected25Unchanged=$protectedOk; SourceUnchanged=$sourceOk; CopyNotSaved=$copyOk
  CopySha256=$copyAfter; GuidedSelection='NOT_ASSESSED_BY_RUNNER'
  Verdict='PASS_PROTECTED_COPY_INTEGRITY_ONLY_NOT_GUI'
-} | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $verify -Encoding UTF8
+} | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $verifyEvidencePath -Encoding UTF8
 Write-Output ('EVIDENCE_DIR='+$ev)
 Write-Output 'VERDICT=PASS_PROTECTED_COPY_INTEGRITY_ONLY_NOT_GUI'
