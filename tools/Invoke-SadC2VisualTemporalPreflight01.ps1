@@ -90,7 +90,7 @@ if (-not (Test-Path -LiteralPath $qlik -PathType Leaf) -or
     throw 'BLOCKED_QV_EXE_NOT_VERIFIED'
 }
 $qlikVersion = [string](Get-Item -LiteralPath $qlik).VersionInfo.ProductVersion
-if ($qlikVersion -notmatch '^12(\\.|$)') {
+if ($qlikVersion -notmatch '^12(\.|$)') {
     throw 'BLOCKED_QLIKVIEW_12_VERSION_UNCONFIRMED'
 }
 foreach ($p in @($p11,$c2k)) {
