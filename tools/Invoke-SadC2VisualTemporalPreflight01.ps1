@@ -89,6 +89,10 @@ if (-not (Test-Path -LiteralPath $qlik -PathType Leaf) -or
     [IO.Path]::GetFileName($qlik) -ine 'Qv.exe') {
     throw 'BLOCKED_QV_EXE_NOT_VERIFIED'
 }
+$qlikVersion = [string](Get-Item -LiteralPath $qlik).VersionInfo.ProductVersion
+if ($qlikVersion -notmatch '^12(\\.|$)') {
+    throw 'BLOCKED_QLIKVIEW_12_VERSION_UNCONFIRMED'
+}
 foreach ($p in @($p11,$c2k)) {
     if (-not (Test-Path -LiteralPath $p -PathType Leaf) -or
         [IO.Path]::GetExtension($p) -ine '.qvw') {
@@ -150,7 +154,7 @@ $manifest = [ordered]@{
     GitBranch = $branch
     RunnerSha256 = $runnerSha
     QlikExe = $qlik
-    QlikExeProductVersion = (Get-Item -LiteralPath $qlik).VersionInfo.ProductVersion
+    QlikExeProductVersion = $qlikVersion
     P11P12Qvw = $p11
     P11P12Sha256 = $sourceHashP11
     C2kQvw = $c2k
