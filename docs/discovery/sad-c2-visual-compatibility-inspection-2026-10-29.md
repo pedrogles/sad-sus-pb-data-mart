@@ -99,6 +99,29 @@ if ($childExit -ne 0) {
 
 **Não executar este bloco com o HEAD antigo.** Conferir branch/commit remoto efetivo do PR após o patch, `git status` limpo, `git fetch` e atualização não destrutiva do checkout. Os scripts antigos versionados permanecem no histórico. A nova tentativa física, se efetuada, inicia **um novo resultado vinculado ao SHA corrigido**; não herdar PASS. Não insistir após nova falha, preservar stderr e stdout; não abrir QVW enquanto `-Prepare` estiver bloqueado.
 
+## 4.2. Inspeção GUI recebida e bloqueio de Verify (29–30/10/2026)
+
+**Fontes verificadas nesta conversa:** cinco capturas PNG do QlikView x64 Personal Edition nas duas **cópias TEMP** e transcrição textual integral do PowerShell `-Verify`; nenhum QVW/QVD original foi lido diretamente por este agente. **Imagens não versionadas no Git.**
+
+**Observação visual efetiva (sem extrapolar comportamento):**
+
+| Cópia | Captura observada | Limite |
+| --- | --- | --- |
+| `SAD_C2_COMPAT_P11P12_COPY.qvw` | Folhas `Principal`, `POC - Interface Guiada` e `POC P1.1-P1.2 - Internações`. Quatro KPIs `183.532`, `183.311`, `188.246`, `555.089`; gráfico de evolução mensal 2017–2019; na aba guiada, botões `Mensal`, `Anual`, `Evolução` e diagnóstico de seleção real | A interface mostra proposta `Modo: EVOLUCAO | Ano: 2019 | Mês: 1`, mas `ANO REAL: SEM SELECAO | Qtd: 0` e `COMPETENCIA REAL: SEM SELECAO | Qtd: 0`. Portanto, presença conjunta de controles+objetos **não** prova filtro efetivamente aplicado ou gráfico de 12 competências |
+| `SAD_C2_COMPAT_C2K_COPY.qvw` | Folhas `Principal` e `POC - Interface Guiada`; controles guiados, ano real `2019`, município SERV `250750`, `P5: B - INDICADOR RES INDISPONIVEL` | Sem folha P1.1/P1.2 visível nas capturas; não há prova do gráfico P1.2 nessa QVW. O estado do filtro é apenas o observado, não homologação de P5 |
+
+**Decisão restrita sobre presença:** `CANDIDATE_SINGLE_QVW_IDENTIFIED=P11P12_COPY` **com confiança visual limitada a existência conjunta, em abas diferentes**. IDs e expressões físicos dos objetos não foram inspecionados; `P12_DIMENSION=NOT_READ_FROM_PROPERTIES`, `P12_MEASURE=NOT_READ_FROM_PROPERTIES`. **Nenhum teste novo `EVOLUCAO/2019` ou contagem de 12 pontos foi realizado.**
+
+**Verify realizado pelo operador após GUI:** `VERSIONED_GIT_HEAD=378f32883b9ab51b42eec52107eddb5e78e2377e`, `RUNNER_SHA256=277B6C3CFDEB51B8D6A258AEAF82D1A5B02C2229BDF347051CBD287745CC0FD0`, `VERIFY_EXIT_CODE=1`; `PROTECTED_25_UNCHANGED=True`, `BOTH_SOURCES_UNCHANGED=False`, `BOTH_COPIES_UNSAVED=False`, e hashes das duas cópias **iguais exatamente** aos hashes fixos históricos. O runner encerrou com `HARD_STOP_INTEGRITY` e **não** produziu `compat_verify.json`. Esse texto é **resultado reportado, não evidência de corrupção**.
+
+**Bug real identificado no código versionado de Verify:** havia `-cne` (diferença) na definição de `$sourcesOk` e `$copiesOk`, mas a variável significava `UNCHANGED`. Isso devolvia `False` quando os dois hashes eram **iguais** ao esperado. Corrigido para `-ceq` nos dois checks, e acrescentada saída explícita de hashes das origens. O `-Prepare`, que usava `-cne` corretamente como guardião de desvio, **não** foi modificado.
+
+**Proveniência entre commits:** o manifesto foi produzido no `Prepare` original (`GitHead=378f328...`, `RunnerSha256=277B6C...`). O patch altera o hash do runner e o HEAD, portanto um Verify normal rejeitaria o manifesto por proveniência. O novo `-Verify` aceita **somente** a tupla já observada `378f328...` + `277B6C...` **e** o diretório `SAD_C2_COMPAT_309e2bb9c3da41b1a9ea28c0a1a30b40`, exige ancestralidade do antigo commit e conserva todas as demais verificações (duas origens/hashes, estrutura, cópias, 25 protegidos, branch limpa). Emitirá `VERIFY_PREPARE_PROVENANCE=PATCHED_LEGACY_RUN`; isso não autoriza uso genérico de manifestos antigos ou montagem de novos QVWs.
+
+**Próximo comando físico permitido após revisão e atualização da branch:** `-Verify -RunDir` *uma única vez*, sem `-Prepare` e sem reabrir QlikView, com stdout **em novo arquivo** `verify_patch_stdout.txt` para não sobrescrever o erro anterior. Depois anexar `compat_verify.json` e ambos os logs para conciliação.
+
+**Estado enquanto Verify corrigido não executado:** `PREPARE=PASS_LOCAL_REPORTED`, `GUI_OBJECT_INVENTORY=CANDIDATE_P11P12_IDENTIFIED_LIMITED`, `VERIFY=BLOCKED_RUNNER_LOGIC_BUG`, `COPY_INTEGRITY_PASS=NOT_GRANTED`, `C2_FULL=NO_GO_NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
 ## 5. Critérios de encerramento e decisão posterior
 
 | Veredito | Quando pode ser atribuído |
