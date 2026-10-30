@@ -85,6 +85,27 @@ if ($exit -ne 0) {throw 'BLOCKED_PREPARE_READ_STDOUT_AND_STOP'}
 
 **Estados até a nova prova:** `GUI_2019=BLOCKED_GUIDED_ACTION_UNAVAILABLE`, `P12_EVOLUTION_12_MONTHS=NOT_TESTED`, `INTEGRITY_HASHES=PASS_LOCAL_REPORTED`, `VERIFY_JSON_CLOSEOUT=BLOCKED_RUNNER_NAME_COLLISION`, `C2_FULL=NO_GO_NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
 
+## 4.2. Closeout — Verify corrigido PASS restrito, fluxo guiado BLOCKED
+
+**Evidência recebida em 30/10/2026:** transcrição textual completa do PowerShell Windows 5.1 compartilhada pelo operador, além de captura prévia do QlikView x64 Personal Edition. **`verify_patched_stdout.txt`, `p12_2019_prepare.json`, `p12_2019_verify.json` e os binários QVW/QVD não foram anexados nesta conversa ou lidos independentemente**. Não atribuir execução física ao agente GitHub.
+
+| Verificação | Evidência local reportada | Interpretação |
+| --- | --- | --- |
+| Checkout/parser | `CHECKOUT=PASS`, `PARSER=PASS`, HEAD `4dd28246eda3beed27faeeaf3818c8405972acaf` | Script corrigido, não `main` |
+| Identidade do runner | `RUNNER_SHA256=5993A3039E90A822EBE8A1BD7A0D649A86E9965EA4804D65C3851BB09220967D` | Execução atribuída ao patch |
+| Fonte | `SOURCE_SHA256=B3BEDCD6F07D11456383F4C6996992804BFFDDCCA52E7B80C50344AB9FE9454C` | QVW pinado P1.1/P1.2 |
+| Proveniência do Prepare | `VERIFY_PREPARE_PROVENANCE=PATCHED_LEGACY_PREPARE` | Somente o manifesto/runDir original com HEAD/runner anteriores |
+| Arquivos canônicos | `PROTECTED_25_UNCHANGED=True` | 10 QVD extração + 12 QVD transformação + 3 QVWs, conforme verificador local |
+| Fonte e cópia descartável | `SOURCE_UNCHANGED=True`, `COPY_NOT_SAVED=True`, `COPY_SHA256=B3BEDCD6F07D11456383F4C6996992804BFFDDCCA52E7B80C50344AB9FE9454C` | Sem divergência de conteúdo detectada na execução local |
+| Finalização do Verify | `VERDICT=PASS_PROTECTED_COPY_INTEGRITY_ONLY_NOT_GUI`, `VERIFY_EXIT_CODE=0` | **PASS restrito de integridade**, não aceite visual |
+| Ação guiada real | Captura: botão `Aplicar Ano 2019` desabilitado, `ANO REAL: SEM SELECAO`, `COMPETENCIA REAL: SEM SELECAO` | **`BLOCKED_GUIDED_ACTION_UNAVAILABLE`**, gráfico com 12 competências **`NOT_TESTED`** |
+
+**Veredito final deste gate:** `SAD-C2-P12-EVOLUTION-2019-01=CLOSED_WITH_FUNCTIONAL_BLOCKER_AND_HASH_PASS_RESTRICTED_LOCAL_REPORTED`. O bloqueio funcional de aplicação do ano **não** foi resolvido. Os erros históricos de `-Verify` permanecem documentados (§4.1), mas a execução final em commit corrigido chegou a `exit=0`. A evidência não demonstra a causa do botão desabilitado: possíveis condições de habilitação, variáveis, ações ou contexto de seleção são **hipóteses de investigação**, não diagnóstico confirmado. A expressão histórica de CH02 com `PERIODO_ANO={2017,2018,2019}` tampouco foi testada sob seleção real 2019.
+
+**STOP atingido:** não repetir `Prepare`, `Verify`, teste guiado, 36 meses históricos ou 25 hashes neste gate. Preservar os artefatos locais de evidência, sem commit de QVW/QVD, e não alterar retroativamente a documentação do ensaio inicial. O próximo trabalho **proposto, independente e ainda não executado** é uma discovery **READ-ONLY** do motivo de `Aplicar Ano 2019` estar desabilitado, inspecionando condições e ações de objeto na QVW experimental/código/relatórios já existentes antes de autorizar qualquer correção. Se não houver acesso à propriedade original sem mutação, classificar como `INCONCLUSIVE`.
+
+**Governança:** [PR #199](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/199) permanece Draft/sem merge até revisão separada. `C2_FULL=NO_GO_NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
 ## 5. Verificar integridade após fechar QlikView
 
 No **mesmo commit e branch**, `RunDir` deve ser exatamente `EVIDENCE_DIR` emitido no Prepare:
