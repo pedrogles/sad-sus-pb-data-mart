@@ -122,6 +122,26 @@ if ($childExit -ne 0) {
 
 **Estado enquanto Verify corrigido não executado:** `PREPARE=PASS_LOCAL_REPORTED`, `GUI_OBJECT_INVENTORY=CANDIDATE_P11P12_IDENTIFIED_LIMITED`, `VERIFY=BLOCKED_RUNNER_LOGIC_BUG`, `COPY_INTEGRITY_PASS=NOT_GRANTED`, `C2_FULL=NO_GO_NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
 
+## 4.3. Closeout após Verify corrigido — evidência local reportada
+
+**Origem da prova:** transcript completo do PowerShell 5.1 colado pelo operador nesta conversa, após a inspeção visual da §4.2. **Não foram recebidos como anexos independentes** `verify_patch_stdout.txt`, `compat_manifest.json` e `compat_verify.json`; consequentemente, a reconciliação é do texto de saída e capturas já inspecionadas, não auditoria do JSON, executável ou QVWs/QVDs locais.
+
+| Critério | Evidência recebida | Estado |
+| --- | --- | --- |
+| Git/runner versionados | Fast-forward `378f328..1a7ddb6`; HEAD `1a7ddb6c0488387fa69eee4932b2769e4fb767f8`; SHA runner `95437277EDCFD031C37D70D0DFD89BACC92552474DB8E52939CEF86284EA40D3` | **PASS local reportado**, não confirmado por execução do agente |
+| Proveniência de Prepare anterior | `VERIFY_PREPARE_PROVENANCE=PATCHED_LEGACY_RUN` | **PASS local reportado**, restrito à tupla/RunDir pinados |
+| Inventário protegido | `PROTECTED_25_UNCHANGED=True` | **PASS local reportado** para 10+12 QVDs + 3 QVWs |
+| Origens P11 e C2K | `BOTH_SOURCES_UNCHANGED=True` e `SOURCE_P11_SHA256=B3BEDCD6F07D11456383F4C6996992804BFFDDCCA52E7B80C50344AB9FE9454C`, `SOURCE_C2K_SHA256=9896D55ED7F98CFA480A0626484A04C3A937E2F64EBF238011D3CDEF4E1E21FA` | **PASS local reportado** |
+| Cópias temporárias | `BOTH_COPIES_UNSAVED=True` e os dois `COPY_*_SHA256` correspondentes às origens | **PASS local reportado** |
+| Executor Verify | `VERIFY_EXIT_CODE=0`; `VERDICT=PASS_COPY_INTEGRITY_ONLY_NOT_UI` | **PASS restrito local reportado** |
+| Verificação de comportamento do modo `EVOLUCAO/2019` | Não realizada; a captura da QVW P11P12 mostrava proposta EVOLUCAO/2019, mas `ANO REAL: SEM SELECAO` | **NOT_TESTED** |
+
+**Classificação final da subetapa:** `SAD-C2-VISUAL-COMPATIBILITY-01=PASS_RESTRICTED_LOCAL_REPORTED_WITH_VISUAL_SCREENSHOTS`, com **candidata de QVW única P11P12** por presença de interface guiada e gráficos em folhas distintas; `COPY_INTEGRITY=PASS_LOCAL_REPORTED`; `PHYSICAL_COMBINED_BEHAVIOR=NOT_TESTED`. O `HARD_STOP_INTEGRITY` anterior foi atribuído ao bug de predicado `-cne` e **substituído por novo veredito em commit distinto**, não apagado do histórico.
+
+**Condição de STOP atingida:** nenhuma execução adicional de `Prepare`, `Verify` ou inspeção desta subetapa deve ser iniciada. O próximo gate **separado e ainda não autorizado** deverá testar se o controle guiado realmente aplica ano e se o gráfico P1.2 reage exibindo exatamente as 12 competências de 2019, contra o oráculo histórico já arquivado, sempre em QVW descartável. Não herdar PASS desse teste não executado.
+
+**Estados de governança preservados:** PR #198 aberto/Draft, `PR_MERGED=False`, `C2_FULL=NO_GO_NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
 ## 5. Critérios de encerramento e decisão posterior
 
 | Veredito | Quando pode ser atribuído |
