@@ -24,7 +24,7 @@ Fontes consultadas e precedência operacional:
 | --- | --- | --- |
 | `BU13` — `Aplicar Ano 2019` | Capturas QlikView 12 do operador mostram o ID `BU13` e a condição literal abaixo. | `VERIFIED_BY_OPERATOR_SCREENSHOTS`; não leitura do QVW pelo agente GitHub |
 | Condição do `BU13` | Exige modo `ANUAL`, ano proposto `2019`, um ano real `2018` e uma competência real `201801`. | `VERIFIED_BY_OPERATOR_SCREENSHOTS`; coincide com C2-K |
-| Ação do `BU13` | Uma ação `Selecionar no Campo`: campo `PERIODO_ANO`, pesquisa ``=Num($(vSAD_POC_Year))``. Ordem de uma única ação visível; estado alternativo não demonstrado. | `VERIFIED_BY_OPERATOR_SCREENSHOTS` / estado alternativo `UNKNOWN` |
+| Ação do `BU13` | Uma ação `Selecionar no Campo`: campo `PERIODO_ANO`, pesquisa `=Num($(vSAD_POC_Year))`. Ordem de uma única ação visível; estado alternativo não demonstrado. | `VERIFIED_BY_OPERATOR_SCREENSHOTS` / estado alternativo `UNKNOWN` |
 | Proposta e seleção real | `vSAD_POC_Mode=EVOLUCAO`, `vSAD_POC_Year=2019`, `vSAD_POC_Month=1`, `vSAD_POC_Analysis=RES`; indicadores na folha exibem `ANO REAL: SEM SELECAO` e `COMPETENCIA REAL: SEM SELECAO`. | `VERIFIED_BY_OPERATOR_SCREENSHOTS` |
 | Causa local do desabilitamento | O estado observado não satisfaz a guarda do `BU13` (modo incorreto e contagens temporais iguais a zero). | `VERIFIED_FOR_OBSERVED_STATE`; não prova causa de quaisquer outros botões/estados |
 | `CH02` histórico | ID `CH02`, linha com dimensão `PERIODO_COMPETENCIA`, expressão abaixo; sem condição de cálculo nem limite de dimensão; ocultar zeros/faltantes habilitado. | `VERIFIED_BY_OPERATOR_SCREENSHOTS`; estado alternativo `UNKNOWN` |
@@ -44,7 +44,7 @@ Condição **literal** registrada nas propriedades de `BU13`:
  1,0)
 ```
 
-Ação literal registrada: `Selecionar no Campo` → `PERIODO_ANO` → ``=Num($(vSAD_POC_Year))``. Essa configuração é **uma prova de conceito de transição específica**; não é uma guarda dinâmica genérica.
+Ação literal registrada: `Selecionar no Campo` → `PERIODO_ANO` → `=Num($(vSAD_POC_Year))`. Essa configuração é **uma prova de conceito de transição específica**; não é uma guarda dinâmica genérica.
 
 `CH02`, expressão física observada:
 
@@ -95,7 +95,7 @@ A solução completa ainda precisa especificar e testar o tratamento das **rotas
 ## 4. Contrato de consumo P1.1/P1.2 — sem mutação nesta etapa
 
 - **Histórico P1.2:** preservar `CH02` e o oráculo reconciliado de `36 competências 201701..201912` **no estado histórico de referência**. Não prometer que esse objeto permaneça invariável sob quaisquer filtros.
-- **EVOLUCAO guiada:** **candidato separado** para `12 competências` do ano real aplicado, com dimensão `PERIODO_COMPETENCIA` e mesma medida semântica `QTD_INTERNACAO`. `Sum(QTD_INTERNACAO)`, sem modificador fixo de ano, é apenas **expressão candidata para estudo**, não homologação, nem implementação neste gate.
+- **EVOLUCAO guiada:** **candidato separado** para `12 competências` do ano real aplicado, com dimensão `PERIODO_COMPETENCIA` e mesma medida semântica `QTD_INTERNACAO`. `Sum(QTD_INTERNACAO)`, sem modificador fixo de ano, é apenas **hipótese de expressão** para estudo, não homologação nem implementação. **Risco adicional:** o piloto P1.2 só conseguiu exibir a série histórica depois de adotar o modificador fixo de anos; não presumir que removê-lo fará um gráfico guiado funcionar. Investigar dependências de associação/estado do objeto em gate posterior, sem alterar o histórico.
 - **ANUAL:** um KPI do ano aplicado; não expor `555.089` trienal como um KPI anual. `MENSAL`: valor de uma competência, sem chamá-lo de tendência.
 - Prova futura do gráfico `EVOLUCAO` exige 12 pontos e reconciliação linha a linha contra o **subconjunto de 2019** do TSV histórico já arquivado (SHA-256 documentado `800B73A234C607604A69CD0EF4CBC7C4BB7D744D020CC159EA38C0DC0FC2899F`); não repetir 36/36 nem recalcular a fato.
 - Alternativa de estado `CH02` e tratamento sob filtros `UNKNOWN`; se inviabilizarem isolamento entre as duas superfícies, parar antes de redesenhar.
@@ -139,7 +139,7 @@ A solução completa ainda precisa especificar e testar o tratamento das **rotas
 
 ## 7. Resultado desta revisão e governança
 
-`DESIGN_DOCUMENTED_ONLY=True`; `STATIC_REVIEW_REQUIRED_IN_PR=True`; `PHYSICAL_DISPATCH=NOT_TESTED`; `PR_199=OPEN_DRAFT_NOT_MERGED`; `NEW_GATE_AUTHORIZED=False`.
+`DESIGN_DOCUMENTED_ONLY=True`; `STATIC_REVIEW_IN_PR=PENDING_AT_COMMIT`; `PHYSICAL_DISPATCH=NOT_TESTED`; `PR_199=OPEN_DRAFT_NOT_MERGED`; `NEW_GATE_AUTHORIZED=False`.
 
 Estados preservados: `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`. Nenhum merge/alteração física decorre deste documento.
 
