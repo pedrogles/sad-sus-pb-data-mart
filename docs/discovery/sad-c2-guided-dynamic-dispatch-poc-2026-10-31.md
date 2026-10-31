@@ -2,7 +2,7 @@
 
 **Gate:** `SAD-C2-GUIDED-DYNAMIC-DISPATCH-POC-01`  
 **Baseline:** `main@238d4f70c5cf4576808fdd43af4a3d72b4e0b7cc` (PR #200 integrado).  
-**Estado de fechamento documentado em 31/10/2026:** `PASS_VISUAL_RESTRICTED_SINGLE_NO_SELECTION_TO_EVOLUTION_2019` — prova local/visual restrita; preparação histórica descrita abaixo; PR #201 continua Draft/sem merge, sem homologação global.  
+**Estado de fechamento documentado em 31/10/2026:** `PASS_VISUAL_RESTRICTED_SINGLE_NO_SELECTION_TO_EVOLUTION_2019` — prova local/visual restrita; preparação histórica descrita abaixo; integração documental do PR #201 não homologa o C2 global.  
 **Agente:** Codex Local no Windows (PowerShell 5.1 + QlikView 12); fallback: operador humano. Registrar modelo/esforço realmente disponíveis na execução. GPT-6/GitHub elaborou este protocolo, sem acesso à GUI local.
 
 ## Objetivo único e STOP
@@ -124,7 +124,7 @@ if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_VERIFY_STOP' }
 
 **Veredito deste gate específico:** `PASS_VISUAL_RESTRICTED_SINGLE_NO_SELECTION_TO_EVOLUTION_2019`, baseado na triangulação de capturas e relatório local, **não** `C2_FULL=PASS`. A demonstração cobre somente o estado inicial sem seleção temporal explícita, proposta `EVOLUCAO/2019` e **uma** ação real de ano; não prova preservação de qualquer outro filtro não mostrado, caminhos alternativos de seleção, cobertura D2/P5 global ou 12 pontos em gráfico P1.2.
 
-**STOP observado:** não repetir `Prepare`, clique, `Verify`, C2-J/K, testes AE01 ou validação 36/36. PR #201 permanece Draft/sem merge; aprovação de integração é decisão independente. As evidências binárias ficam no `EVIDENCE_DIR` local, não no Git; manter os caminhos/SHAs de proveniência.
+**STOP observado:** não repetir `Prepare`, clique, `Verify`, C2-J/K, testes AE01 ou validação 36/36. A integração posterior do PR #201 não amplia o PASS restrito nem autoriza execução adicional. As evidências binárias ficam no `EVIDENCE_DIR` local, não no Git; manter os caminhos/SHAs de proveniência.
 
 **Handoff mínimo:** após revisão de integração documental, tratar em **novo gate** o consumo do gráfico de 12 competências `201901..201912` contra oráculo de P1.2 já arquivado, verificando o contexto real do ano e sem refazer o teste do despacho. Não iniciar esse gate automaticamente; exige autorização própria no Windows. Sem decisão sobre C2 global, C3, C4, Fase IX ou produção.
 
