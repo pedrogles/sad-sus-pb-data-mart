@@ -2,7 +2,7 @@
 
 **Gate:** `SAD-C2-GUIDED-DYNAMIC-DISPATCH-POC-01`  
 **Baseline:** `main@238d4f70c5cf4576808fdd43af4a3d72b4e0b7cc` (PR #200 integrado).  
-**Estado desta preparação:** `SCRIPT_VERSIONED_BRANCH_ONLY / WINDOWS_NOT_RUN / PHYSICAL_NOT_AUTHORIZED_BY_THIS_DOCUMENT`.  
+**Estado de fechamento documentado em 31/10/2026:** `PASS_VISUAL_RESTRICTED_SINGLE_NO_SELECTION_TO_EVOLUTION_2019` — prova local/visual restrita; preparação histórica descrita abaixo; PR #201 continua Draft/sem merge, sem homologação global.  
 **Agente:** Codex Local no Windows (PowerShell 5.1 + QlikView 12); fallback: operador humano. Registrar modelo/esforço realmente disponíveis na execução. GPT-6/GitHub elaborou este protocolo, sem acesso à GUI local.
 
 ## Objetivo único e STOP
@@ -102,3 +102,30 @@ if ($LASTEXITCODE -ne 0) { throw 'BLOCKED_VERIFY_STOP' }
 **STOP:** exatamente uma cópia, um botão candidato, uma ação temporal e um `Verify`; sem repetir gates antigos, validar 12 meses, recalcular fatos, alterar C2→C3→C4 ou promover produção.
 
 **Estados preservados:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+
+---
+
+## 8. Closeout físico restrito — 31/10/2026 (posterior ao roteiro de preparação)
+
+**FATO VERIFICADO no GitHub:** [comentário de fechamento PR #201](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/201#issuecomment-6549181674), anexado ao relato do operador. A presente revisão é **documental**: não executou novamente QlikView/PowerShell, não abriu QVD/QVW nem auditou o conteúdo binário de `dispatch_verify.json`. Os comandos `-Prepare`/`-Verify` acima são **histórico de execução**, não instrução de repetição.
+
+**Origem da evidência:** cinco capturas QlikView compartilhadas diretamente em conversa e transcript completo do PowerShell 5.1 fornecido pelo operador; arquivos de imagem, notas, `dispatch_prepare.json` e `dispatch_verify.json` foram mantidos em pasta externa ao Git. A presença dos quatro arquivos GUI foi confirmada pelo runner; essa checagem de presença não valida os bytes/conteúdo das imagens. `gui_notes.txt` foi produzido após o teste com base na revisão das capturas; não é log contemporâneo do clique. Isso limita a independência da prova, sem exigir repetição.
+
+**Identidade executada (imutável):** branch `test/sad-c2-guided-dynamic-dispatch-poc-20261031` @ `31564de14417fd25d666ea49f743ad1c6bdd1a15`; runner `SHA256=5D4894682C3FD79F3DE38A8C125966163A0D1D647B4E5C3716E637757152825B`; `Qv.exe` produto `12.0.20000.0`. O hash deste runbook atualizado/HEAD do PR pode diferir do commit executado; **nenhum PASS é atribuído a executores novos**.
+
+| Etapa | Evidência recebida | Classificação |
+| --- | --- | --- |
+| GUI — configuração | Botão novo `BU15`, separado de `BU13`; ação única `Selecionar no Campo(PERIODO_ANO)`, pesquisa `=Num($(vSAD_POC_Year))`; condição candidata com indicador `Expression OK` | `VISUAL_OPERATOR_SCREENSHOTS_REVIEWED` |
+| Antes | `EVOLUCAO / 2019` proposto; ano real sem seleção (Qtd 0); competência real sem seleção (Qtd 0); serviço sem seleção (Qtd 0) | `VISUAL_OPERATOR_SCREENSHOTS_REVIEWED` |
+| Depois | `ANO REAL=2019 / Qtd 1`; competência real sem seleção (Qtd 0); serviço sem seleção (Qtd 0); `BU15` desabilitado | `VISUAL_OPERATOR_SCREENSHOTS_REVIEWED` |
+| Integridade `-Verify` | `PROTECTED_25_UNCHANGED=True`; `SOURCE_UNCHANGED=True`; `COPY_CHANGED_FROM_SOURCE=True`; `GUI_EVIDENCE_MISSING=`; `VERIFY_EXIT_CODE=0` | `PASS_PROTECTED_INTEGRITY_ONLY_NOT_GUI` (execução local reportada) |
+| Cópia TEMP | `COPY_SHA256=D5E427E8DCB040647E9879E97A0926793F18E14B09BF0831562632ED4CF0904B` | Hash reportado; alteração binária da TEMP, não prova independente de comportamento |
+
+**Veredito deste gate específico:** `PASS_VISUAL_RESTRICTED_SINGLE_NO_SELECTION_TO_EVOLUTION_2019`, baseado na triangulação de capturas e relatório local, **não** `C2_FULL=PASS`. A demonstração cobre somente o estado inicial sem seleção temporal explícita, proposta `EVOLUCAO/2019` e **uma** ação real de ano; não prova preservação de qualquer outro filtro não mostrado, caminhos alternativos de seleção, cobertura D2/P5 global ou 12 pontos em gráfico P1.2.
+
+**STOP observado:** não repetir `Prepare`, clique, `Verify`, C2-J/K, testes AE01 ou validação 36/36. PR #201 permanece Draft/sem merge; aprovação de integração é decisão independente. As evidências binárias ficam no `EVIDENCE_DIR` local, não no Git; manter os caminhos/SHAs de proveniência.
+
+**Handoff mínimo:** após revisão de integração documental, tratar em **novo gate** o consumo do gráfico de 12 competências `201901..201912` contra oráculo de P1.2 já arquivado, verificando o contexto real do ano e sem refazer o teste do despacho. Não iniciar esse gate automaticamente; exige autorização própria no Windows. Sem decisão sobre C2 global, C3, C4, Fase IX ou produção.
+
+**Invariantes:** `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
