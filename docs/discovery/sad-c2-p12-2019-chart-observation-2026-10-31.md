@@ -123,26 +123,26 @@ Critérios de integridade do runner: `PROTECTED_25_UNCHANGED=True`, `SOURCE_UNCH
 
 ## 8. Closeout da única tentativa Windows — 31/10/2026
 
-**Veredito delimitado:** \`CLOSED_BLOCKED_INITIAL_STATE_PERSISTED_AND_CH02_NOT_GUIDED_12_WITH_HASH_PASS_RESTRICTED_LOCAL_REPORTED\`. A observação física foi realizada e interrompida sem atingir o PASS visual de 12 competências; a verificação de integridade foi posteriormente concluída. **O teste de despacho BU15 não foi executado novamente neste gate.**
+**Veredito delimitado:** `CLOSED_BLOCKED_INITIAL_STATE_PERSISTED_AND_CH02_NOT_GUIDED_12_WITH_HASH_PASS_RESTRICTED_LOCAL_REPORTED`. A observação física foi realizada e interrompida sem atingir o PASS visual de 12 competências; a verificação de integridade foi posteriormente concluída. **O teste de despacho BU15 não foi executado novamente neste gate.**
 
 ### Identidade e proveniência
 
-- **Branch/HEAD efetivamente executado no Windows (preflight, Prepare, Verify):** \`test/sad-c2-p12-2019-chart-observation-20261031@d4b4f0fb68e52869051978273136321f5046ea2b\`.
-- **Runner SHA-256 reportado localmente:** \`0D3C91647ACD5C4364EC47B68D483C04E2E4F270A5E37751CCB1840AA96F049C\`, QlikView \`12.0.20000.0\`.
-- **Fonte:** \`SAD_C2_DYNAMIC_DISPATCH_TEMP.qvw\`, SHA-256 \`D5E427E8DCB040647E9879E97A0926793F18E14B09BF0831562632ED4CF0904B\`.
-- **RunId exclusivo:** \`SAD_C2_P12_OBSERVE_89c60aac5d9b4986a01c01e23fb2c13e\`. Evidências e manifestos externos ao Git: \`C:\Users\pedro\Documents\SAD_C2_P12_OBSERVE_EVIDENCIAS\SAD_C2_P12_OBSERVE_89c60aac5d9b4986a01c01e23fb2c13e\`.
-- **Origem da prova:** capturas de tela e transcripts completos de PowerShell fornecidos pelo operador em conversa. **Não recebidos/abertos independentemente os binários QVW/QVD ou o arquivo \`p12_observe_verify.json\`**. O transcript comprova a saída declarada pelo runner, não uma auditoria direta dos bytes pelo agente GitHub.
+- **Branch/HEAD efetivamente executado no Windows (preflight, Prepare, Verify):** `test/sad-c2-p12-2019-chart-observation-20261031@d4b4f0fb68e52869051978273136321f5046ea2b`.
+- **Runner SHA-256 reportado localmente:** `0D3C91647ACD5C4364EC47B68D483C04E2E4F270A5E37751CCB1840AA96F049C`, QlikView `12.0.20000.0`.
+- **Fonte:** `SAD_C2_DYNAMIC_DISPATCH_TEMP.qvw`, SHA-256 `D5E427E8DCB040647E9879E97A0926793F18E14B09BF0831562632ED4CF0904B`.
+- **RunId exclusivo:** `SAD_C2_P12_OBSERVE_89c60aac5d9b4986a01c01e23fb2c13e`. Evidências e manifestos externos ao Git: `C:\Users\pedro\Documents\SAD_C2_P12_OBSERVE_EVIDENCIAS\SAD_C2_P12_OBSERVE_89c60aac5d9b4986a01c01e23fb2c13e`.
+- **Origem da prova:** capturas de tela e transcripts completos de PowerShell fornecidos pelo operador em conversa. **Não recebidos/abertos independentemente os binários QVW/QVD ou o arquivo `p12_observe_verify.json`**. O transcript comprova a saída declarada pelo runner, não uma auditoria direta dos bytes pelo agente GitHub.
 
 ### Observações na interface
 
-1. **Estado inicial divergente:** ao abrir a NOVA QVW TEMP preparada (sem clicar nenhum botão nesta tentativa), o diagnóstico já indicava \`Modo=EVOLUCAO\`, \`Ano proposto=2019\`, \`ANO REAL=2019 / Qtd 1\`, \`COMPETENCIA REAL=SEM SELECAO / Qtd 0\`, \`SERVICO=SEM SELECAO / Qtd 0\`. O operador confirmou que **não clicou no BU15 na nova cópia**; a seleção real persistia do documento-fonte salvo na tentativa anterior. Portanto, os passos \`gui_before.png\` (sem seleção) e \`gui_selected_2019.png\` (nova ação) não ocorreram. Não preencher retroativamente.
-2. **Achado do gráfico:** na aba P1.1/P1.2, o \`CH02\` continuou exibindo curva e rótulos abrangendo \`2017–2019\`, com os quatro cartões históricos \`183.532 / 183.311 / 188.246 / 555.089\`, embora o diagnóstico mostrado na captura anterior indicasse ano real 2019. Isso **refuta visualmente a alegação de que a superfície atual já é uma evolução guiada exclusivamente dos 12 meses de 2019**; as capturas não enumeram formalmente os 36 pares e não fornecem export da nova sessão. A expressão histórica fixa \`PERIODO_ANO={2017,2018,2019}\` é **hipótese técnica plausível**, não causa exclusiva demonstrada.
-3. **Oráculo:** nenhum TSV novo de 12 meses foi exportado/comparado. O oráculo histórico SHA-256 \`800B73A234C607604A69CD0EF4CBC7C4BB7D744D020CC159EA38C0DC0FC2899F\` permanece preservado; \`P12_2019_12_OF_12=NOT_VALIDATED\`.
-4. **Capturas obrigatórias:** \`GUI_EVIDENCE_MISSING=gui_before.png,gui_selected_2019.png\` no Verify final. Essa ausência é consistente com o estado inicial já aplicado; a captura de diagnóstico e a do gráfico foram compartilhadas na conversa, mas a presença física e conteúdo de cada imagem no diretório local não foram auditados independentemente aqui. Não inventar screenshots para satisfazer checklist.
+1. **Estado inicial divergente:** ao abrir a NOVA QVW TEMP preparada (sem clicar nenhum botão nesta tentativa), o diagnóstico já indicava `Modo=EVOLUCAO`, `Ano proposto=2019`, `ANO REAL=2019 / Qtd 1`, `COMPETENCIA REAL=SEM SELECAO / Qtd 0`, `SERVICO=SEM SELECAO / Qtd 0`. O operador confirmou que **não clicou no BU15 na nova cópia**; a seleção real persistia do documento-fonte salvo na tentativa anterior. Portanto, os passos `gui_before.png` (sem seleção) e `gui_selected_2019.png` (nova ação) não ocorreram. Não preencher retroativamente.
+2. **Achado do gráfico:** na aba P1.1/P1.2, o `CH02` continuou exibindo curva e rótulos abrangendo `2017–2019`, com os quatro cartões históricos `183.532 / 183.311 / 188.246 / 555.089`, embora o diagnóstico mostrado na captura anterior indicasse ano real 2019. Isso **refuta visualmente a alegação de que a superfície atual já é uma evolução guiada exclusivamente dos 12 meses de 2019**; as capturas não enumeram formalmente os 36 pares e não fornecem export da nova sessão. A expressão histórica fixa `PERIODO_ANO={2017,2018,2019}` é **hipótese técnica plausível**, não causa exclusiva demonstrada.
+3. **Oráculo:** nenhum TSV novo de 12 meses foi exportado/comparado. O oráculo histórico SHA-256 `800B73A234C607604A69CD0EF4CBC7C4BB7D744D020CC159EA38C0DC0FC2899F` permanece preservado; `P12_2019_12_OF_12=NOT_VALIDATED`.
+4. **Capturas obrigatórias:** `GUI_EVIDENCE_MISSING=gui_before.png,gui_selected_2019.png` no Verify final. Essa ausência é consistente com o estado inicial já aplicado; a captura de diagnóstico e a do gráfico foram compartilhadas na conversa, mas a presença física e conteúdo de cada imagem no diretório local não foram auditados independentemente aqui. Não inventar screenshots para satisfazer checklist.
 
 ### Verificação de integridade — saída local reportada
 
-O primeiro comando \`-Verify\` foi bloqueado por \`BLOCKED_CLOSE_QLIKVIEW_FIRST\` enquanto a aplicação estava aberta; um bloco PowerShell anterior também foi colado em partes e produziu erro de sintaxe \`elseif/else\` sem chamar o runner. **Nenhum desses eventos é prova de modificação de artefatos ou de hash PASS.** Após fechar QlikView, houve um Verify bem-sucedido **uma única vez** no mesmo HEAD/runner:
+O primeiro comando `-Verify` foi bloqueado por `BLOCKED_CLOSE_QLIKVIEW_FIRST` enquanto a aplicação estava aberta; um bloco PowerShell anterior também foi colado em partes e produziu erro de sintaxe `elseif/else` sem chamar o runner. **Nenhum desses eventos é prova de modificação de artefatos ou de hash PASS.** Após fechar QlikView, houve um Verify bem-sucedido **uma única vez** no mesmo HEAD/runner:
 
 ~~~text
 PREFLIGHT_VERIFY=PASS
@@ -161,12 +161,12 @@ VERDICT=PASS_PROTECTED_COPY_INTEGRITY_ONLY_NOT_GUI
 VERIFY_EXIT_CODE=0
 ~~~
 
-**Três classificações distintas:** \`INTEGRITY=PASS_LOCAL_REPORTED\`; \`OBSERVATION=HISTORICAL_2017_2019_STILL_VISIBLE_WITH_YEAR_REAL_2019\`; \`GUIDED_12_MONTHS=BLOCKED_NOT_VALIDATED\`. Não atribuir \`PASS_VISUAL_RESTRICTED_P12_2019_12_OF_12\` nem \`C2_FULL=PASS\`.
+**Três classificações distintas:** `INTEGRITY=PASS_LOCAL_REPORTED`; `OBSERVATION=HISTORICAL_2017_2019_STILL_VISIBLE_WITH_YEAR_REAL_2019`; `GUIDED_12_MONTHS=BLOCKED_NOT_VALIDATED`. Não atribuir `PASS_VISUAL_RESTRICTED_P12_2019_12_OF_12` nem `C2_FULL=PASS`.
 
 ### STOP e próximo gate independente
 
-Esta tentativa está consumida e encerrada. **Não repetir Prepare, Verify, clique BU15, limpeza de filtros, extração de oráculo nem o teste histórico CH02**. Os \`p12_observe_prepare.json\`, \`p12_observe_verify.json\`, capturas e notas devem permanecer no EVIDENCE_DIR local. Uma atualização posterior deste runbook altera o HEAD do PR, **não** o commit/runner executado; nenhum PASS físico é herdado por novo código.
+Esta tentativa está consumida e encerrada. **Não repetir Prepare, Verify, clique BU15, limpeza de filtros, extração de oráculo nem o teste histórico CH02**. Os `p12_observe_prepare.json`, `p12_observe_verify.json`, capturas e notas devem permanecer no EVIDENCE_DIR local. Uma atualização posterior deste runbook altera o HEAD do PR, **não** o commit/runner executado; nenhum PASS físico é herdado por novo código.
 
-**Handoff recomendado, a autorizar e versionar separadamente:** \`SAD-C2-P12-GUIDED-CHART-DESIGN-01\` — discovery **READ-ONLY** para definir o objeto guiado separado do \`CH02\` histórico, sua condição de exibição, expressão candidata, filtros reais e critérios de 12 competências; revisar os riscos de set analysis, estados associativos e disponibilidade do oráculo sem editar QVW ou modelagem. Só depois, com decisão aprovada, planejar implementação em **nova cópia TEMP** e reconciliação de \`201901..201912\`. Essa discovery não deve ser confundida com confirmação de causa raiz.
+**Handoff recomendado, a autorizar e versionar separadamente:** `SAD-C2-P12-GUIDED-CHART-DESIGN-01` — discovery **READ-ONLY** para definir o objeto guiado separado do `CH02` histórico, sua condição de exibição, expressão candidata, filtros reais e critérios de 12 competências; revisar os riscos de set analysis, estados associativos e disponibilidade do oráculo sem editar QVW ou modelagem. Só depois, com decisão aprovada, planejar implementação em **nova cópia TEMP** e reconciliação de `201901..201912`. Essa discovery não deve ser confundida com confirmação de causa raiz.
 
-**Invariantes:** \`C2_FULL=NO_GO_NOT_APPROVED\`; \`P5_D2_UI=NOT_TESTED_GLOBAL\`; \`LINK_KEY_CONTRACT=NOT_APPROVED\`; \`MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED\`; \`CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED\`; \`PHASE_IX=NOT_AUTHORIZED\`; \`PRODUCTION_APPROVED=False\`.
+**Invariantes:** `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED_GLOBAL`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
