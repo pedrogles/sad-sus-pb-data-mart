@@ -1,7 +1,7 @@
 # Política de roteamento de agentes, modelos e ambientes — SAD SUS PB
 
 **Versão:** 0.2 · 20/10/2026  
-**Vigência:** aplicável como política canônica somente após integração deste arquivo à `main` mediante autorização do responsável. Histórico da proposta: [PR #126](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/126).  
+**Vigência:** **CANÔNICA NA MAIN** desde a integração confirmada do [PR #126](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/126) em 20/10/2026. Este ajuste corrige apenas o cabeçalho histórico; não altera as permissões, a matriz de roteamento nem a arquitetura.  
 **Autoridade:** complemento operacional de `AGENTS.md`; subordinada aos requisitos acadêmicos, fontes oficiais, contratos físicos e decisões aprovadas.  
 **Responsável pela aprovação:** mantenedor do projeto.
 
@@ -81,10 +81,10 @@ Quando um modelo ou ferramenta não estiver disponível, registrar **fallback re
 
 ## 5. Adoção, revisão e manutenção
 
-1. **G0 (documental):** institucionalização submetida via PR #126, originalmente Draft, contendo esta política, referência mínima em `AGENTS.md` e retrato conciso `main × Draft` em `current-state.md`; a autorização do merge é independente da aprovação dos demais gates.
-2. **Após merge aprovado:** cada bootstrap deverá referenciar esta política em `main` e preencher o bloco. Não transportar resumos de versões antigas como fonte de verdade.
+1. **G0 (histórico, encerrado):** institucionalização ocorreu no PR #126, integrado à `main` em 20/10/2026. A aprovação daquele merge não aprovou outros gates, scripts, QVW/QVD ou produção.
+2. **Vigente:** cada bootstrap deve referenciar esta política em `main` e preencher o bloco, sem transportar resumos de versões antigas como fonte de verdade.
 3. **Semântica e dados:** alterações da política não mudam grãos, fatos, dimensões, regras de indicadores, QVS, runners, QVD, QVW nem autorização das Fases VIII/IX.
 4. **Medição:** observar 3–5 gates comparáveis antes de revisar a matriz: agente/modelo/esforço real, duração, tentativas, causa de bloqueio, consumo qualitativo de recurso e suficiência da evidência. Nenhum ganho financeiro é presumido.
 5. **Governança:** revisão pelo responsável via PR. Se produto/modelos mudarem, alterar **somente** a matriz canônica, preservando o template e a fonte de verdade.
 
-**Efeito da publicação:** uma vez integrado na `main`, o documento passa a orientar os próximos bootstraps; não concede novos acessos, não homologa QlikView, não inicia G1 e não aprova produção.
+**Efeito da publicação:** o documento já orienta os novos bootstraps na `main`; não concede novos acessos, não homologa QlikView, não inicia G1 e não aprova produção.
