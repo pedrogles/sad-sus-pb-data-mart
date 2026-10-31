@@ -1,31 +1,31 @@
 # SAD — Data Mart SUS PB
 
-Projeto acadêmico de **Sistemas de Apoio à Decisão (SAD)** — Sistemas de Informação, semestre 2026.2.
+Projeto acadêmico de **Sistemas de Apoio à Decisão (SAD)** — Sistemas de Informação, 2026.2.
 
-## Objetivo e fontes
+## Objetivo e arquitetura preservados
 
-Construir um Data Mart no **QlikView 12**, para 2017–2019, integrando SIH/SUS RD (internações processadas), CNES LT/ST (leitos e estabelecimentos) e IBGE/SIDRA (população municipal), sem atribuir causalidade ou demanda reprimida aos registros. Fluxo obrigatório: `BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
+Construir no **QlikView 12** um Data Mart para 2017–2019 com SIH/SUS RD, CNES LT/ST e IBGE/SIDRA, incluindo produção de internações, capacidade de leitos observados e população municipal. Fluxo obrigatório: `BASE → EXTRACAO/EXT.qvw → QVD → TRANSFORMACAO/TRANSF.qvw → QVD → PAINEL/PAINEL.qvw`.
 
-Arquitetura acadêmica preservada: **Star Schema por processo e constelação de três fatos com oito dimensões conformadas**. Primeira entrega (Capítulos 1–2) reportada como realizada em **13/10/2026**, com avaliação do professor pendente.
+Modelo acadêmico entregue: **três fatos e oito dimensões** em Star Schema por processo, compondo constelação com dimensões conformadas. Capítulos 1–2 entregues em 13/10/2026 conforme relato; parecer docente pendente. Não alterar o modelo nem a promessa acadêmica sem aprovação.
 
-## Estado operacional — referência de 27/10/2026
+## Situação operacional (snapshot de 31/10/2026)
 
-**Fonte de verdade viva:** [current-state.md](docs/project/current-state.md), que prevalece sobre este resumo. Na revisão documental, a `main` estava em `9f4fc0ea43dfe8b6f20f7b6254bc7f965f6a9c04`. Relatórios de execução local indicam Fases III–V (10 QVDs de extração, oito dimensões e três fatos), `LINK_ANALISE.qvd` candidato e Fase VII com painel **técnico** experimental (não painel acadêmico aprovado). A Fase VIII contém pilotos limitados, sem homologação global; Fase IX segue `NOT_AUTHORIZED`. **22 QVDs e três QVWs canônicos** foram reportados preservados localmente, não auditados diretamente nesta revisão.
+**Fonte viva para próximos trabalhos:** [estado operacional](docs/project/current-state.md), com checagem obrigatória de [AGENTS.md](AGENTS.md), [requisitos](docs/academic/requirements.md) e da `main` antes de qualquer ação. Este resumo é histórico: `main@238d4f70c5cf4576808fdd43af4a3d72b4e0b7cc`, sem antecipar merges de branches Draft.
 
-**Direção aprovada no chat em 27/10/2026:** antes de implementar os três painéis finais, validar resultados reais que podem ser obtidos sem novos datasets. O novo objetivo é verificar **12 perguntas** e uma proposta de **3 painéis** (produção hospitalar, leitos CNES/LT observados e fluxos residência→atendimento). O gate candidato é `EXTRATOS-ANALITICOS-READONLY-01`, de exploração e reconciliação dos dados existentes, inicialmente sem alteração física.
+- **ETL e QVDs:** 108/108 DBC e 22 QVDs (10 extração + 12 transformação) reportados em execuções locais. Três fatos materializados; binários QVW/QVD continuam locais, não versionados e não auditados diretamente nesta revisão.
+- **Consumo analítico:** [14 visuais candidatos](docs/discovery/sad-consumption-14-delta-readonly-closeout-2026-10-29.md) auditados documentalmente; P1–P3 com provas numéricas/observacionais restritas. Isso não é aceite físico/visual global.
+- **C2:** desenho temporal [PR #200](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/200) integrado. O [PR #201](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/201) permanece **Draft** nesta captura; relatou `PASS_VISUAL_RESTRICTED` de um botão que aplicou ano real 2019 e `-Verify` de integridade local. **A série guiada de 12 meses ainda não foi validada**. [PR #199](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/199) segue Draft com bloqueio anterior.
+- **Governança:** [auditoria e higiene de 31/10](docs/project/governance-audit-2026-10-31.md) e [inventário CSV das branches](docs/project/branch-hygiene-snapshot-2026-10-31.csv) são **propostas nesta branch** até merge; sem exclusões.
+- **Sem liberação:** `C2_FULL=NO_GO_NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `T29_HISTORICAL=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
 
-Essa frente **não substitui nem resolve** G1 / [Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157) para T25/T26. Não interpretar o uso analítico isolado das fatos como aprovação de Link Key, contratos físicos, filtros, cobertura hospitalar ou produção.
+**Próximo trabalho físico candidato (não autorizado automaticamente):** depois da revisão do PR #201, delimitar teste da série `201901–201912` no modo `EVOLUCAO/2019`, reutilizando o oráculo histórico, sem repetir a seleção de ano que já passou restritamente. A ordem física C2→C3→C4→IX segue o [Boundary 7](docs/discovery/boundary-7-implementation-plan.md).
 
-**Invariantes:** `C2_FULL=NO_GO_NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `T29_HISTORICAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+## Navegação para agentes e entrega final
 
-## Orientação e documentação principal
+- [AGENTS.md](AGENTS.md) e [roteamento de agentes/modelos](docs/project/agent-model-routing.md): decisões duradouras, ambientes, evidência e STOP.
+- [Current state](docs/project/current-state.md): próximo gate e bloqueios reais, condicionado ao estado da `main` e de PRs Draft.
+- [Requisitos](docs/academic/requirements.md) e [modelagem entregue](docs/academic/chapter-1-2-modeling.md): contrato acadêmico.
+- [Direção analítica](docs/project/analytical-direction-2026-10-27.md), [inventário de questões](docs/discovery/analytical-question-inventory-2026-10-27.md) e [matriz dos 14 visuais](docs/discovery/sad-consumption-14-delta-readonly-closeout-2026-10-29.md): escopo e evidências reutilizáveis.
+- [Caminho crítico](docs/project/final-delivery-critical-path.md), [Boundary 7](docs/discovery/boundary-7-implementation-plan.md), [V2](docs/discovery/phase-6-semantic-v2-approved-2026-10-14.md) e [auditoria de governança](docs/project/governance-audit-2026-10-31.md): ordem dos gates, bloqueios e entrega.
 
-- [AGENTS.md](AGENTS.md) — regras duradouras do projeto.
-- [Current state](docs/project/current-state.md) — roteamento operacional vigente.
-- [Requisitos acadêmicos](docs/academic/requirements.md) e [modelagem entregue](docs/academic/chapter-1-2-modeling.md).
-- [Direcionamento analítico](docs/project/analytical-direction-2026-10-27.md) — revisão de prioridade e invariantes.
-- [Inventário analítico](docs/discovery/analytical-question-inventory-2026-10-27.md) — 12 perguntas e três painéis candidatos.
-- [Plano de suficiência](docs/discovery/analytical-sufficiency-plan-2026-10-27.md) e [bootstrap para novo chat](docs/discovery/bootstrap-extratos-analiticos-readonly-2026-10-27.md).
-- [Caminho crítico físico/acadêmico](docs/project/final-delivery-critical-path.md), [V2 §62](docs/discovery/phase-6-semantic-v2-approved-2026-10-14.md) e [Boundary 7](docs/discovery/boundary-7-implementation-plan.md).
-
-**Proveniência:** o direcionamento e os quatro registros documentais foram submetidos no [PR #159](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/159); considerar o estado de integração indicado pelo GitHub e pela `main` consultada, não presumir que a branch permanece Draft.
+A conclusão exige pelo menos três painéis funcionais no QlikView 12, indicadores defendidos por dados, filtros/UX validados e relatório acadêmico final (Capítulos 3–5, referências e anexos); **não** equivale ao número de PRs ou de testes executados.
