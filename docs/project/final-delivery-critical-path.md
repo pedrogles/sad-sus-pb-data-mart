@@ -5,6 +5,20 @@
 **Primeiro item rastreável da trilha condicionada T25/T26 (não da trilha analítica independente):** [Issue #157 — suficiência CNES/LT T25/T26](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157).  
 **Autoridade:** `AGENTS.md`, `docs/project/current-state.md`, `docs/academic/requirements.md`, `docs/project/agent-model-routing.md`, [Boundary 7](../discovery/boundary-7-implementation-plan.md), [V2 §62](../discovery/phase-6-semantic-v2-approved-2026-10-14.md) e `DescricaoProjetoSAD.pdf` (roteiro oficial do professor, inspecionado na revisão). Estes documentos prevalecem; este plano **não** substitui requisitos, semântica ou a ordem física aprovada.
 
+## Handoff operacional atualizado — 31/10/2026 (prioritário sobre as seções históricas abaixo)
+
+**Fonte:** baseline `main@238d4f70c5cf4576808fdd43af4a3d72b4e0b7cc` mais evidência local do [PR #201](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/201#issuecomment-6549181674), **integrado** via squash `0095318bb0f1b2392cd8e3f085630c3c80b3a3f9` com [estado operacional atualizado](current-state.md). [Auditoria de governança](governance-audit-2026-10-31.md).
+
+**Já encerrado em escopo restrito:** `EXTRATOS-ANALITICOS-READONLY-01`/AE01 (oráculos) e [auditoria documental 14/14](../discovery/sad-consumption-14-delta-readonly-closeout-2026-10-29.md). Não os reiniciar como primeiro gate. No C2, PR #200 integrou somente desenho; o BU15 do PR #201 aplicou `PERIODO_ANO=2019` numa única rota, com `-Verify` local de integridade PASS reportado. **Não** homologou a série de 12 pontos, C2 global, D2/P5 ou o painel.
+
+**Próxima sequência curta:** (1) somente mediante autorização separada, gate físico da evolução guiada de 12 competências de 2019 com o oráculo anterior, sem repetir o despacho já encerrado no PR #201; (2) gates C3 e C4 **necessários aos indicadores aprovados**, mantendo a ordem física do Boundary 7; (3) GO formal antes de IX; (4) três painéis QlikView 12 + relatório e submissão acadêmica. A [Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157) segue decisão científica pendente para indicadores condicionados T25/T26, não bloqueio universal das análises independentes.
+
+**Classificação:** `PR_201=MERGED`; `C2_DISPATCH=PASS_VISUAL_RESTRICTED_LOCAL_REPORTED`; `C2_P12_2019_12_POINTS=NOT_VALIDATED`; `C2_FULL=NO_GO_NOT_APPROVED`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. Nenhuma permissão física, merge ou limpeza de branches decorre desta atualização.
+
+**As seções com datas 22–29/10 abaixo são histórico de decisões e dependências**, não ordens para repetir as tarefas concluídas.
+
+---
+
 ## Atualização estratégica — 27/10/2026 | Dois fluxos, sem alterar contratos
 
 **Nova prioridade escolhida pelo responsável em conversa e registrada no PR #159 (verificar integração na `main`):** validar primeiro se os dados já existentes sustentam **12 perguntas e três painéis candidatos**, por meio do gate independente `EXTRATOS-ANALITICOS-READONLY-01`, descrito em [direcionamento](analytical-direction-2026-10-27.md), [inventário](../discovery/analytical-question-inventory-2026-10-27.md) e [plano](../discovery/analytical-sufficiency-plan-2026-10-27.md). Isso antecede a implementação visual, **não** antecipa G6/Fase IX.
