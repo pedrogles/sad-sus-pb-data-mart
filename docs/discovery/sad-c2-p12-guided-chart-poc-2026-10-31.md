@@ -3,7 +3,7 @@
 **Gate:** `SAD-C2-P12-GUIDED-CHART-POC-01`.  
 **Baseline:** `main@2d205d52ab96eca565e85a9db5cfde14d9d3025c`.  
 **Autorização:** responsável, em 31/10/2026, respondeu **"prossiga"** à proposta de implementar experimentalmente a **alternativa A**, em nova QVW TEMP. A autorização cobre **um** objeto de gráfico na nova TEMP, **não** merge, produção, PAINEL canônico, alteração semântica ou novo gate.
-**Estado:** `RUNNER_VERSIONED_BRANCH_ONLY / WINDOWS_NOT_RUN / GUI_NOT_RUN / PHYSICAL_PASS_NOT_CLAIMED`.
+**Estado de fechamento (31/10/2026):** `GATE_CLOSED_PASS_RESTRICTED_GUIDED_CHART_2019_12_OF_12`; preservação de fonte e 25 canônicos por `Verify` **reportado localmente**. O roteiro de execução abaixo é histórico e **não deve ser reexecutado**.
 **Destino:** operador humano no Windows/QlikView Desktop 12/PowerShell 5.1, ou Codex Local sob a mesma fronteira; ChatGPT/GitHub não executa COM nem GUI Windows.
 
 ## 1. Entrada e fontes obrigatórias
@@ -122,3 +122,64 @@ O runner reporta `PROTECTED_25_UNCHANGED`, `SOURCE_UNCHANGED`, `COPY_CHANGED_FRO
 | `NOT_RUN` | versão documental e script preparados, sem execução física no Windows |
 
 **Não autorizados:** merge #204/novo PR, modificação de CH02/BU15/filtros, regeneração de dados, script QVS, COM, reload, alteração de C3/C4 ou IX. Manter `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED` e `PRODUCTION_APPROVED=False`. A Issue #196 permanece aberta até prova de 12 meses e decisão global própria.
+
+---
+
+## 8. Closeout — uma execução física da PoC concluída em 31/10/2026
+
+**Veredito restrito:** `PASS_RESTRICTED_GUIDED_CHART_2019_12_OF_12`. Refere-se **exclusivamente** à nova QVW TEMP, ao cenário `EVOLUCAO/2019`, aos 12 valores SIH/RD reconciliados com o oráculo histórico e à integridade reportada. **Não equivale** a C2 completo, D2/P5 global, painel final ou aprovação de produção.
+
+### 8.1 Identidade e prova física
+
+- **Commit efetivamente executado no Windows/QlikView:** `test/sad-c2-p12-guided-chart-poc-20261031@dfeb4089bb3bd6c35161e669ddb65013028c5492`. Qualquer edição documental posterior muda o HEAD da branch **sem transferir o PASS para outro executor**.
+- **Runner SHA-256 reportado no Prepare e no Verify:** `9DAD558200B2CC2A0417B151C5D571380D291494E19EFC2477E4F6B6DD27D67D`.
+- **QlikView:** `12.0.20000.0`; `QLIK_COM_CALLS=0 RELOAD_CALLS=0 AUTOMATED_GUI_ACTIONS=0`.
+- **RunId:** `SAD_C2_P12_CHART_4d1f6da0544749b5bb92b4346300c025`.
+- **Origem TEMP protegida:** `SAD_C2_DYNAMIC_DISPATCH_TEMP.qvw`, SHA-256 reportado `D5E427E8DCB040647E9879E97A0926793F18E14B09BF0831562632ED4CF0904B`.
+- **Nova TEMP salva:** `SAD_C2_P12_GUIDED_CHART_TEMP.qvw`, SHA-256 final **reportado no Windows** `C8C3F24DAB56ABEEC0ABD0194A691FD78536BF8F550410E3C609262141A5B917`.
+- **Evidências locais fora do Git:** `C:\Users\pedro\Documents\SAD_C2_P12_CHART_EVIDENCIAS\SAD_C2_P12_CHART_4d1f6da0544749b5bb92b4346300c025` e runtime de mesmo RunId sob `Documents\SAD_C2_P12_CHART_RUNTIME`.
+
+### 8.2 GUI revisada e oráculo independente
+
+**Capturas do operador revisadas na conversa:**
+1. A QVW TEMP abriu com modo `EVOLUCAO`, proposta 2019, `ANO REAL=2019` explicitamente selecionado (Qtd 1), `COMPETENCIA REAL=SEM SELECAO` (Qtd 0), serviço sem seleção; **sem novo clique em BU15**.
+2. No novo objeto de linha, dimensão `PERIODO_COMPETENCIA`, medida `=Sum(QTD_INTERNACAO)`; editor da condição candidata apresentou `Expressão OK`. A captura da folha mostra **dois gráficos distintos**, o `CH02` histórico 2017–2019 acima e o novo gráfico guiado abaixo com 12 competências `201901..201912`. Valores/condição não foram auditados diretamente no binário.
+3. ID físico do objeto novo e propriedades completas depois de salvar: **não verificados independentemente** na inspeção de binário (`OBJECT_ID=UNKNOWN`). O screenshot comprova separação visual, mas hash diferente da TEMP **não prova sozinho** que somente um objeto mudou internamente.
+
+**Arquivos enviados e inspecionados diretamente pelo agente:** `guided_chart_2019_export.tsv`, SHA-256 `CBC9368DB129F0BB19A1A1316EE5AA185CBE85E5D42CCD21DF798080CF9707E5`, **12 linhas**; e `P11P12_VISUAL_POLISH_36_MESES.tsv.txt(1).txt`, SHA-256 `800B73A234C607604A69CD0EF4CBC7C4BB7D744D020CC159EA38C0DC0FC2899F`, **36 linhas**. A sequência de 2019 do oráculo foi confrontada byte a byte com o TSV da PoC: **12/12 linhas idênticas**, 0 faltantes/duplicatas/divergências, `201901..201912`, total `188246`, testemunha `201905=17292`. **Não houve recarga, recomputação dos fatos ou reconstrução do oráculo.**
+
+### 8.3 Verify único — transcript final do operador
+
+O operador executou o `-Verify` com QlikView fechado, no commit/runner originais, após instalar evidências no diretório externo; transcrição reportada:
+
+~~~text
+PREFLIGHT_VERIFY=PASS
+GATE=SAD-C2-P12-GUIDED-CHART-POC-01
+GIT_HEAD=dfeb4089bb3bd6c35161e669ddb65013028c5492
+RUNNER_SHA256=9DAD558200B2CC2A0417B151C5D571380D291494E19EFC2477E4F6B6DD27D67D
+SOURCE_SHA256=D5E427E8DCB040647E9879E97A0926793F18E14B09BF0831562632ED4CF0904B
+QV_PRODUCT_VERSION=12.0.20000.0
+QLIK_COM_CALLS=0 RELOAD_CALLS=0 AUTOMATED_GUI_ACTIONS=0
+PROTECTED_25_UNCHANGED=True
+SOURCE_UNCHANGED=True
+COPY_CHANGED_FROM_SOURCE=True
+COPY_SHA256=C8C3F24DAB56ABEEC0ABD0194A691FD78536BF8F550410E3C609262141A5B917
+GUI_EVIDENCE_MISSING=
+EVIDENCE_DIR=C:\Users\pedro\Documents\SAD_C2_P12_CHART_EVIDENCIAS\SAD_C2_P12_CHART_4d1f6da0544749b5bb92b4346300c025
+VERDICT=PASS_PROTECTED_INTEGRITY_ONLY_NOT_GUI
+VERIFY_EXIT_CODE=0
+~~~
+
+**Nível de garantia:** logs/hash de binários e 25 protegidos **reportados pelo runner no ambiente Windows**; o agente não leu o `guided_chart_verify.json` nem os bytes QVW/QVD diretamente. O runner testa presença de capturas, **não** seu conteúdo. Os TSVs e imagens enviados pelo operador foram analisados na conversa. Nenhum certificado de CI ou aceite visual global foi emitido.
+
+### 8.4 Encerramento e handoff mínimo
+
+- `GUI_2019_12_MONTHS=PASS_SCREENSHOT_RESTRICTED`
+- `TSV_2019_12_OF_12=PASS_INDEPENDENT_FILE_RECONCILIATION`
+- `INTEGRITY_SOURCE_25=PASS_LOCAL_REPORTED`
+- `NEW_TEMP_CHANGED_AND_SAVED=PASS_LOCAL_REPORTED`
+- `OBJECT_ONLY_DIFF=NOT_INDEPENDENTLY_AUDITED`, `OBJECT_ID=UNKNOWN`.
+- `GATE_C2_P12_GUIDED_CHART_POC_01=CLOSED_PASS_RESTRICTED`.
+- `PR_205=DRAFT_NOT_MERGED`; `ISSUE_196=OPEN_PENDING_C2_GLOBAL_DECISION`; `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED_GLOBAL`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
+
+**STOP efetivo:** não repetir Prepare/GUI/Verify, BU15, export/oráculo, não editar CH02, não criar segundo objeto nem rodar automaticamente teste de outros anos/seleções. Preservar binários/evidências locais com seus hashes, manter PR Draft sem merge ou exclusão de branch. Próximo trabalho possível é **revisão de governança e decisão de integração documental**, com atualização do `current-state.md` apenas quando autorizada; contratos globais C2/D2/P5 e sequência C3→C4 são gates próprios e não ficam implicitamente aprovados.
