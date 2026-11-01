@@ -5,6 +5,24 @@
 **Primeiro item rastreável da trilha condicionada T25/T26 (não da trilha analítica independente):** [Issue #157 — suficiência CNES/LT T25/T26](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157).  
 **Autoridade:** `AGENTS.md`, `docs/project/current-state.md`, `docs/academic/requirements.md`, `docs/project/agent-model-routing.md`, [Boundary 7](../discovery/boundary-7-implementation-plan.md), [V2 §62](../discovery/phase-6-semantic-v2-approved-2026-10-14.md) e `DescricaoProjetoSAD.pdf` (roteiro oficial do professor, inspecionado na revisão). Estes documentos prevalecem; este plano **não** substitui requisitos, semântica ou a ordem física aprovada.
 
+## Handoff após C2 P1.2 guiado — 31/10/2026 (vigente após integração documental)
+
+**Fonte:** [current-state](current-state.md), [revisão de governança C2 P1.2](governance-c2-p12-consolidation-2026-10-31.md) e [PR #205 — closeout restrito](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/205), sob baseline `main@2d205d52ab96eca565e85a9db5cfde14d9d3025c`. **Até o merge especificamente autorizado, este handoff está apenas em branch/PR documental.**
+
+**Prova reutilizável, sem reexecução:** PR #201 já demonstrou despacho de ano em uma rota; PR #203 constatou persistência de 2017–2019 em CH02 histórico; PR #204 propôs gráfico novo; PR #205 obteve em QVW TEMP **12 competências 201901–201912, 12/12 valores idênticos ao oráculo, total 188.246**, e integridade de origem + 25 protegidos conforme Verify local de saída 0. **Não** significa controle temporal global nem integração do gráfico ao PAINEL.qvw.
+
+**Sequência física preservada:** fechar a **decisão residual C2** (estados negativos, rotas alternativas relevantes, cobertura pré-despacho D2) com o menor conjunto de provas que ainda falta ou formalizar `BLOCKED` se não for possível; só então deliberar gates C3 (Link Key, papéis RES/SERV necessários) → C4 (medidas/denominadores necessários), respeitando Boundary 7. Não atribuir GO físico a C3/C4 por este texto. A [Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157) restringe indicadores CNES/LT T25/T26 condicionados, **não** as séries independentes de FI ou LT. Indicadores cruzados e população IBGE/SIDRA exigem ainda prova de associação/denominador. Não excluir essa parte da promessa inicial sem decisão expressa.
+
+**Aceleração sem relaxar aceite:** reutilizar matriz 14/14 e oráculos AE01/P1–P3; **matriz de lacunas por indicador** separando dado, associação, visual/seleção e aceite. Não repetir P1.2, 36/36, AE01, nem criar um runner novo para cada investigação sem uma necessidade verificável. Concentrar evidências em um dossiê por gate e usar um PR documental de consolidação em vez de integrar runners de uso único.
+
+**Trabalho paralelo permitido, só documental:** preparar capítulos 3–5, legendas/ressalvas, referências, Anexos I/II e selecionar os três painéis **candidatos** pela matriz, para revisar com o responsável/professor. Implementação definitiva em Fase IX requer **GO formal e autorização específica**. Confirmar data exata da segunda avaliação (a fonte oficial diz apenas "Dia da 2ª Avaliação").
+
+**Estados:** `C2_GUIDED_2019_12_OF_12=PASS_RESTRICTED`, `C2_FULL=NO_GO_NOT_APPROVED`, `P5_D2_UI=NOT_TESTED_GLOBAL`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+**A seção "Handoff operacional atualizado" e o restante abaixo são registros históricos de 22–31/10 anteriores ao PASS de #205; não devem ser usados para iniciar novamente a série de 12 meses.**
+
+---
+
 ## Handoff operacional atualizado — 31/10/2026 (prioritário sobre as seções históricas abaixo)
 
 **Fonte:** baseline `main@238d4f70c5cf4576808fdd43af4a3d72b4e0b7cc` mais evidência local do [PR #201](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/201#issuecomment-6549181674), **integrado** via squash `0095318bb0f1b2392cd8e3f085630c3c80b3a3f9` com [estado operacional atualizado](current-state.md). [Auditoria de governança](governance-audit-2026-10-31.md).
