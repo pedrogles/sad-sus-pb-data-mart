@@ -8,9 +8,9 @@ Construir no **QlikView 12** um Data Mart para 2017–2019 com SIH/SUS RD, CNES 
 
 Modelo acadêmico entregue: **três fatos e oito dimensões** em Star Schema por processo, compondo constelação com dimensões conformadas. Capítulos 1–2 entregues em 13/10/2026 conforme relato; parecer docente pendente. Não alterar o modelo nem a promessa acadêmica sem aprovação.
 
-## Situação operacional proposta — 31/10/2026
+## Situação operacional — 31/10/2026
 
-**Fonte viva:** [current-state](docs/project/current-state.md), sujeito à integração deste PR documental. Auditoria de origem: `main@2d205d52ab96eca565e85a9db5cfde14d9d3025c`. [Consolidação de governança e aceleração](docs/project/governance-c2-p12-consolidation-2026-10-31.md) distingue provas físicas locais, oráculos analisados e integração de PRs.
+**Fonte viva após integração documental:** [current-state](docs/project/current-state.md); em branch Draft, esse snapshot ainda não substitui a versão da `main`. Auditoria de origem: `main@2d205d52ab96eca565e85a9db5cfde14d9d3025c`. [Consolidação de governança e aceleração](docs/project/governance-c2-p12-consolidation-2026-10-31.md) distingue provas físicas locais, oráculos analisados e integração de PRs.
 
 - **Dados/modelo:** 108/108 DBCs convertidos; 22 QVDs (10 extração + 12 transformação) e três QVWs canônicos, conforme evidências locais; três fatos/oito dimensões preservados, sem auditoria independente dos binários neste gate.
 - **Consumo:** auditoria de 14 visuais e oráculos P1–P3 em escopos delimitados; nenhum painel final homologado. A0 padrão e A1 condicional somente P2.3.
