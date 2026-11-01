@@ -1,8 +1,8 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado operacional proposto — 31/10/2026 | P1.2 guiado PASS restrito
+## Estado operacional — 31/10/2026 | P1.2 guiado PASS restrito
 
-**Referência de auditoria:** `main@2d205d52ab96eca565e85a9db5cfde14d9d3025c`. Este snapshot é proposto em [PR documental separado](governance-c2-p12-consolidation-2026-10-31.md); até merge especificamente autorizado, **não é o estado da `main`**. A trilha anterior e seu histórico estão preservados no Git. Revalidar HEAD/PRs antes de qualquer execução.
+**Referência de auditoria:** `main@2d205d52ab96eca565e85a9db5cfde14d9d3025c`. Este snapshot foi preparado em [PR documental separado](governance-c2-p12-consolidation-2026-10-31.md); **somente após merge autorizado integra a `main`**. A trilha anterior e seu histórico estão preservados no Git. Revalidar HEAD/PRs antes de qualquer execução.
 
 ### Situação por camada de prova
 
