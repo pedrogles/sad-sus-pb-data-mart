@@ -133,7 +133,7 @@ O Verify confere hash de origem, inventário de **25 canônicos**, SHA da cópia
 
 ## 7. Closeout físico reportado — 03/11/2026
 
-**Resultado do gate de execução:** `CLOSED_WITH_LIMITS / VERIFY_INTEGRITY_PASS_LOCAL_REPORTED / GUI_BEHAVIOR_PARTIAL`. A prova máxima de `PASS_RESTRICTED_PREDISPATCH_ONE_BUTTON` **NÃO foi atribuída** porque a primeira observação do botão desabilitado, imediatamente após a criação, não teve captura com o objeto já presente; a sequência estrita cronológica `0→1→0` não está inteiramente documentada. A ausência de clique no botão durante a sessão ainda **depende da confirmação explícita do operador**; prints e o runner não conseguem atestar esse fato isoladamente.
+**Resultado do gate de execução:** `CLOSED_WITH_LIMITS / VERIFY_INTEGRITY_PASS_LOCAL_REPORTED / GUI_BEHAVIOR_PARTIAL`. A prova máxima de `PASS_RESTRICTED_PREDISPATCH_ONE_BUTTON` **NÃO foi atribuída** porque a primeira observação do botão desabilitado, imediatamente após a criação, não teve captura com o objeto já presente; a sequência estrita cronológica `0→1→0` não está inteiramente documentada. O operador **confirmou explicitamente em 03/11/2026 que não clicou no botão `BU16`** durante todo o experimento. Trata-se de relato humano, não de log independente; prints e o runner não conseguem atestar isoladamente o despacho.
 
 ### 7.1 Identidade imutável da execução
 
@@ -176,11 +176,16 @@ VERIFY_EXIT_CODE=0
 - Capturas examinadas na conversa registram o botão novo **`BU16`**, uma condição candidata com editor `Expressão OK`, uma ação configurada `Selecionar no Campo` para `PERIODO_COMPETENCIA` e expressão de pesquisa com `Expressão OK`. `Expressão OK` prova sintaxe aceita, não execução da ação.
 - Proposta `MENSAL/2019/01`: botão azul, aparentemente **habilitado**. Ao retornar à proposta `MENSAL/2018/01`: botão cinza, **desabilitado**; captura sem diálogo mostra `ANO REAL=2019` (Qtd 1), `COMPETENCIA REAL` sem seleção explícita (Qtd 0).
 - Proposta inicial `MENSAL/2018/01` foi capturada **antes** da criação do objeto; não existe captura inequívoca do primeiro `0` com `BU16` criado. `GUI_RESTRICTED_1_TO_0=SUPPORTED`; `STRICT_0_1_0=INCONCLUSIVE`.
-- O operador ainda não declarou textualmente que nunca clicou em `BU16`; `BUTTON_NEVER_CLICKED=AWAITING_OPERATOR_ATTESTATION`. Mesmo com declaração, o nível de prova será atestado pelo operador, não observado automaticamente.
+- Em resposta à pergunta explícita se havia clicado em `BU16` mesmo quando habilitado, o operador respondeu **“não”** em 03/11/2026. `BUTTON_NEVER_CLICKED=OPERATOR_ATTESTED`. Esta evidência é **declaração do operador**, não validação técnica independente da ausência de ação; não altera `STRICT_0_1_0=INCONCLUSIVE`.
 - Não há evidência de mensagem UX de incompatibilidade, nem de bloqueio global por menus nativos, busca, bookmarks, listas de outras QVWs e eventuais ações automatizadas. `UX_REASON=NOT_PROVEN`; `D2_GLOBAL=NO_GO_NOT_PROVEN`.
 
 ### 7.4 STOP e handoff
 
-**Encerrar a execução física** sem nova GUI, Prepare, Verify, exportação, alteração de variáveis, segundo botão ou captura retroativa. Preservar o QVW novo e a origem com seus hashes e as evidências locais; PR #208 continua **Draft sem merge**, Issue #196 continua **OPEN**. **Aguardando somente confirmação do operador quanto ao clique no BU16**, para completar o registro de proveniência.
+**Encerrar a execução física** sem nova GUI, Prepare, Verify, exportação, alteração de variáveis, segundo botão ou captura retroativa. Preservar o QVW novo e a origem com seus hashes e as evidências locais; PR #208 continua **Draft sem merge**, Issue #196 continua **OPEN**. **Confirmação de não clique recebida e registrada**. Não há pendência de proveniência do operador neste gate; permanecem apenas limitações probatórias e de escopo, sem reabrir execução física.
 
-**Estados finais:** `WINDOWS_VERIFY_INTEGRITY=PASS_LOCAL_REPORTED`; `GUI_ENABLED_2019_DISABLED_2018=PASS_VISUAL_RESTRICTED`; `GUI_STRICT_0_1_0=INCONCLUSIVE`; `BUTTON_DISPATCH=UNKNOWN_OPERATOR_ATTESTATION_PENDING`; `GATE_EXECUTION=CLOSED_WITH_LIMITS`; `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED_GLOBAL`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
+**Estados finais:** `WINDOWS_VERIFY_INTEGRITY=PASS_LOCAL_REPORTED`; `GUI_ENABLED_2019_DISABLED_2018=PASS_VISUAL_RESTRICTED`; `GUI_STRICT_0_1_0=INCONCLUSIVE`; `BUTTON_NEVER_CLICKED=OPERATOR_ATTESTED_NOT_INDEPENDENTLY_LOGGED`; `GATE_EXECUTION=CLOSED_WITH_LIMITS`; `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED_GLOBAL`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
+
+
+### 7.5 Adendo de proveniência — confirmação do operador
+
+Em 03/11/2026, após o `Verify` (exit 0), o operador respondeu **“não”** à pergunta explícita: “Durante todo o experimento, você chegou a clicar no botão `BU16 — POC Aplicar competência`, mesmo quando ele estava habilitado?”. Registro: `BUTTON_NEVER_CLICKED=OPERATOR_ATTESTED`. Essa confirmação encerra a pendência de declaração do operador, **sem provar ausência de dispatch por log automático**. Mantêm-se `GUI_STRICT_0_1_0=INCONCLUSIVE`, `GATE_EXECUTION=CLOSED_WITH_LIMITS` e `C2_FULL=NO_GO_NOT_APPROVED`. Não repetir nem reexecutar `-Verify`.
