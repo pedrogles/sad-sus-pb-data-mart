@@ -3,9 +3,27 @@
 **Estado:** roteiro de priorização DOCUMENTAL; a publicação na `main` não altera Boundaries, não homologa indicadores nem autoriza a execução física dos gates.  
 **Preparado em:** 22/10/2026 sobre `main@9a4ed359ea8f5337aaecc5fe2487aca9ffb17acd`.  
 **Primeiro item rastreável da trilha condicionada T25/T26 (não da trilha analítica independente):** [Issue #157 — suficiência CNES/LT T25/T26](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157).  
-**Autoridade:** `AGENTS.md`, `docs/project/current-state.md`, `docs/academic/requirements.md`, `docs/project/agent-model-routing.md`, [Boundary 7](../discovery/boundary-7-implementation-plan.md), [V2 §62](../discovery/phase-6-semantic-v2-approved-2026-10-14.md) e `DescricaoProjetoSAD.pdf` (roteiro oficial do professor, inspecionado na revisão). Estes documentos prevalecem; este plano **não** substitui requisitos, semântica ou a ordem física aprovada.
+**Autoridade:** `AGENTS.md`, `docs/project/current-state.md`, `docs/academic/requirements.md`, `docs/project/agent-model-routing.md`, [Boundary 7](../discovery/boundary-7-implementation-plan.md), [V2 §62 — histórica para D2](../discovery/phase-6-semantic-v2-approved-2026-10-14.md), [V3 D2-R2 — vigente](../discovery/phase-6-semantic-v3-d2-r2-addendum-2026-11-03.md) e `DescricaoProjetoSAD.pdf` (roteiro oficial do professor, inspecionado na revisão). Estes documentos prevalecem; este plano **não** substitui requisitos, semântica ou a ordem física aprovada.
 
-## Handoff após C2 P1.2 guiado — 31/10/2026 (vigente após integração documental)
+## Handoff vigente — 03/11/2026 | D2-R2 semântico integrado, C2 físico ainda sem GO
+
+**Roteamento atual:** [estado operacional](current-state.md), [adendo V3 D2-R2](../discovery/phase-6-semantic-v3-d2-r2-addendum-2026-11-03.md) e [blueprint P1/P2/P3 aprovado](three-panels-blueprint-approved-2026-11-03.md). **Baseline confirmada antes da reconciliação:** `main@06300a57042082667000f01969c8e184b8409452` ([PR #213 MERGED](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/213)). A V2 §62 original segue preservada historicamente; a V3 substituiu **somente** a garantia D2. Este handoff novo depende de merge deste PR documental, **não** da aprovação de qualquer QVW.
+
+**Fatos fechados, sem reabrir testes:** BU15 selecionou `PERIODO_ANO=2019` em cenário restrito no [PR #201](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/201); série CH02 de 36 competências e gráfico guiado de 12 competências de 2019 foram reconciliados em provas isoladas ([PR #205](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/205), 12/12 e total 188.246). O [inventário C2 de rotas #210](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/210) comprovou Read Only em duas listas e configuração de botões/triggers limitados, com menus/atalhos, busca e bookmarks sem prevenção global demonstrada. O `Verify` local reportou preservação da fonte e 25 protegidos, **não PASS de UI**. Nenhum teste nem painel definitivo foi criado neste handoff.
+
+**Mudança de aceitação:** a [V3 D2-R2](../discovery/phase-6-semantic-v3-d2-r2-addendum-2026-11-03.md) aprovada exige **prevenção antes do despacho das ações guiadas**; após operações nativas, exige **revalidar a seleção real por indicador e bloquear exibição incompatível com motivo**, sem prometer bloqueio antes da mutação nativa. O `C2_FULL_V2=NO_GO_NOT_APPROVED` continua como veredito **histórico do contrato anterior**; o novo `C2_GUIDED_R2=NOT_TESTED` não foi homologado. [Issue #196](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/196) segue OPEN para aceite físico R2, sem herdar PASS dos experimentos.
+
+**Sequência física obrigatória:** (1) preparar **escopo e matriz de aceite restritos** de `SAD-C2-GUIDED-R2-PHYSICAL-ACCEPTANCE-01` e solicitar autorização específica antes de qualquer QVW/COM/runner; (2) fechar apenas depois de evidência física suficiente ou registrar `BLOCKED/INCONCLUSIVE`; (3) C3 Link Key/roles RES/SERV; (4) C4 medidas/denominadores/P5 conforme indicadores; (5) GO formal IX; (6) três painéis finais e entrega acadêmica. **Não** inferir GO de D2-R2 semântico nem reordenar Boundary 7. [Issue #157](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157) é bloqueio científico **específico de T25/T26**, não de todas as análises de uma fato; T24/POP continua condicionado a contratos de associação/medidas.
+
+**Trilha documental paralela permitida:** preparar capítulos 3–5, anexos e ressalvas CNES/T29; confirmar a data da segunda avaliação com o professor. O [PR #209](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/209) aprovou somente 14 visuais e a composição de três folhas, **não** os painéis físicos. POP/IBGE faz parte do escopo acadêmico, sem prometer T24 aprovado. PRs #208/#210/#211/#212 seguem Draft históricos, **não** são dependências para merge automático.
+
+**Invariantes:** `MAIN_EFFECTIVE_D2_SEMANTICS=D2_R2_V3`; `C2_GUIDED_R2=NOT_TESTED`; `P5_D2_UI=NOT_TESTED_GLOBAL`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. STOP: nenhuma alteração física, nenhum merge automático, nenhuma supressão de documentação histórica.
+
+**As seções datadas de 22–31/10 a seguir são registros históricos de fases anteriores. Em caso de conflito temporal, este handoff e o `current-state.md` integrado prevalecem.**
+
+---
+
+## Handoff após C2 P1.2 guiado — 31/10/2026 (histórico anterior à V3)
 
 **Fonte:** [current-state](current-state.md), [revisão de governança C2 P1.2](governance-c2-p12-consolidation-2026-10-31.md) e [PR #205 — closeout restrito](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/205), sob baseline `main@2d205d52ab96eca565e85a9db5cfde14d9d3025c`. **Até o merge especificamente autorizado, este handoff está apenas em branch/PR documental.**
 
@@ -23,7 +41,7 @@
 
 ---
 
-## Handoff operacional atualizado — 31/10/2026 (prioritário sobre as seções históricas abaixo)
+## Handoff operacional de 31/10/2026 (histórico anterior à V3)
 
 **Fonte:** baseline `main@238d4f70c5cf4576808fdd43af4a3d72b4e0b7cc` mais evidência local do [PR #201](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/201#issuecomment-6549181674), **integrado** via squash `0095318bb0f1b2392cd8e3f085630c3c80b3a3f9` com [estado operacional atualizado](current-state.md). [Auditoria de governança](governance-audit-2026-10-31.md).
 
