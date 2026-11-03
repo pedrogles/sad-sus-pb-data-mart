@@ -128,3 +128,59 @@ O Verify confere hash de origem, inventário de **25 canônicos**, SHA da cópia
 | `NOT_RUN` | runner e protocolo versionados sem execução Windows |
 
 **Sem homologação implícita:** `C2_FULL=NO_GO_NOT_APPROVED`; `D2_GLOBAL=NO_GO_NOT_PROVEN`; `P5_D2_UI=NOT_TESTED_GLOBAL`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`. Não refazer PR #201/#203/#205, não criar segunda PoC/runner automático, não expandir para menu/bookmark ou C3/C4. Depois do veredito restrito, retornar a Issue #196 para decidir a cobertura final de rotas de seleção, **não** encerrar automaticamente C2.
+
+---
+
+## 7. Closeout físico reportado — 03/11/2026
+
+**Resultado do gate de execução:** `CLOSED_WITH_LIMITS / VERIFY_INTEGRITY_PASS_LOCAL_REPORTED / GUI_BEHAVIOR_PARTIAL`. A prova máxima de `PASS_RESTRICTED_PREDISPATCH_ONE_BUTTON` **NÃO foi atribuída** porque a primeira observação do botão desabilitado, imediatamente após a criação, não teve captura com o objeto já presente; a sequência estrita cronológica `0→1→0` não está inteiramente documentada. A ausência de clique no botão durante a sessão ainda **depende da confirmação explícita do operador**; prints e o runner não conseguem atestar esse fato isoladamente.
+
+### 7.1 Identidade imutável da execução
+
+| Elemento | Valor / proveniência |
+| --- | --- |
+| Branch e commit EXECUTADO no Windows | `test/sad-c2-integrated-predispatch-negative-20261103@8e977467676ee998998057316c6fad3112c92016` |
+| SHA-256 do runner executado | `F19991D6D43EF267EC8ADA3364A127F49916F34588EC46394039352CF83E342E` |
+| QlikView ProductVersion | `12.0.20000.0` |
+| RunId | `SAD_C2_PREDISPATCH_d6f8664aac094bbe9e13a85ca79367c4` |
+| QVW de origem | `SAD_C2_P12_GUIDED_CHART_TEMP.qvw`; SHA-256 `C8C3F24DAB56ABEEC0ABD0194A691FD78536BF8F550410E3C609262141A5B917` |
+| QVW nova salva e verificada localmente | `SAD_C2_PREDISPATCH_NEGATIVE_TEMP.qvw`; SHA-256 final `A11D6F44175847A305DE74C2A12FEECF7412B1D45A699BBAE396FCE71BDFE517` |
+| Arquivos de evidência local | `C:\Users\pedro\Documents\SAD_C2_PREDISPATCH_EVIDENCIAS\SAD_C2_PREDISPATCH_d6f8664aac094bbe9e13a85ca79367c4` |
+
+**Nota:** este closeout foi acrescentado **depois** da execução. O SHA/HEAD do PR após esta edição documental não substitui o commit e o hash do runner efetivamente executados; **não reexecutar Prepare/Verify** para "atualizar" o HEAD.
+
+### 7.2 Verificação de integridade — transcrição do operador
+
+~~~text
+PREFLIGHT_VERIFY=PASS
+GATE=SAD-C2-INTEGRATED-PREDISPATCH-NEGATIVE-POC-01
+GIT_HEAD=8e977467676ee998998057316c6fad3112c92016
+RUNNER_SHA256=F19991D6D43EF267EC8ADA3364A127F49916F34588EC46394039352CF83E342E
+SOURCE_SHA256=C8C3F24DAB56ABEEC0ABD0194A691FD78536BF8F550410E3C609262141A5B917
+QV_PRODUCT_VERSION=12.0.20000.0
+QLIK_COM_CALLS=0 RELOAD_CALLS=0 AUTOMATED_GUI_ACTIONS=0
+PROTECTED_25_UNCHANGED=True
+SOURCE_UNCHANGED=True
+COPY_CHANGED_FROM_SOURCE=True
+COPY_SHA256=A11D6F44175847A305DE74C2A12FEECF7412B1D45A699BBAE396FCE71BDFE517
+GUI_EVIDENCE_MISSING=
+EVIDENCE_DIR=C:\Users\pedro\Documents\SAD_C2_PREDISPATCH_EVIDENCIAS\SAD_C2_PREDISPATCH_d6f8664aac094bbe9e13a85ca79367c4
+VERDICT=PASS_PROTECTED_INTEGRITY_ONLY_NOT_GUI
+VERIFY_EXIT_CODE=0
+~~~
+
+**Veredicto de integridade:** `PASS_LOCAL_REPORTED` para fonte e 25 protegidos; `PASS_LOCAL_REPORTED` para presença de evidências e mudança binária da nova TEMP. O agente não abriu os bytes da QVW nem o JSON do Verify. O executor apenas examina **existência** dos arquivos PNG, não seu significado. SHA distinto da TEMP não demonstra sozinho quais objetos internos foram modificados. A primeira tentativa de Verify foi **bloqueada pelo preflight** por `gui_before.png` ausente no diretório correto; posteriormente o operador copiou 6/6 arquivos, conferiu menção a `BU16` e RunId em `gui_notes.txt`, e só então executou **um Verify válido**. Não houve segundo Verify.
+
+### 7.3 GUI observada, fatos e limites
+
+- Capturas examinadas na conversa registram o botão novo **`BU16`**, uma condição candidata com editor `Expressão OK`, uma ação configurada `Selecionar no Campo` para `PERIODO_COMPETENCIA` e expressão de pesquisa com `Expressão OK`. `Expressão OK` prova sintaxe aceita, não execução da ação.
+- Proposta `MENSAL/2019/01`: botão azul, aparentemente **habilitado**. Ao retornar à proposta `MENSAL/2018/01`: botão cinza, **desabilitado**; captura sem diálogo mostra `ANO REAL=2019` (Qtd 1), `COMPETENCIA REAL` sem seleção explícita (Qtd 0).
+- Proposta inicial `MENSAL/2018/01` foi capturada **antes** da criação do objeto; não existe captura inequívoca do primeiro `0` com `BU16` criado. `GUI_RESTRICTED_1_TO_0=SUPPORTED`; `STRICT_0_1_0=INCONCLUSIVE`.
+- O operador ainda não declarou textualmente que nunca clicou em `BU16`; `BUTTON_NEVER_CLICKED=AWAITING_OPERATOR_ATTESTATION`. Mesmo com declaração, o nível de prova será atestado pelo operador, não observado automaticamente.
+- Não há evidência de mensagem UX de incompatibilidade, nem de bloqueio global por menus nativos, busca, bookmarks, listas de outras QVWs e eventuais ações automatizadas. `UX_REASON=NOT_PROVEN`; `D2_GLOBAL=NO_GO_NOT_PROVEN`.
+
+### 7.4 STOP e handoff
+
+**Encerrar a execução física** sem nova GUI, Prepare, Verify, exportação, alteração de variáveis, segundo botão ou captura retroativa. Preservar o QVW novo e a origem com seus hashes e as evidências locais; PR #208 continua **Draft sem merge**, Issue #196 continua **OPEN**. **Aguardando somente confirmação do operador quanto ao clique no BU16**, para completar o registro de proveniência.
+
+**Estados finais:** `WINDOWS_VERIFY_INTEGRITY=PASS_LOCAL_REPORTED`; `GUI_ENABLED_2019_DISABLED_2018=PASS_VISUAL_RESTRICTED`; `GUI_STRICT_0_1_0=INCONCLUSIVE`; `BUTTON_DISPATCH=UNKNOWN_OPERATOR_ATTESTATION_PENDING`; `GATE_EXECUTION=CLOSED_WITH_LIMITS`; `C2_FULL=NO_GO_NOT_APPROVED`; `P5_D2_UI=NOT_TESTED_GLOBAL`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
