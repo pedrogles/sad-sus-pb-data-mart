@@ -169,7 +169,8 @@ Write-Output ('SOURCE_UNCHANGED=' + $sourceOk)
 Write-Output ('COPY_CHANGED_FROM_SOURCE=' + $copyChanged)
 Write-Output ('COPY_SHA256=' + $copyAfterSha)
 Assert-Sad ($protectedOk -and $sourceOk) 'HARD_STOP_PROTECTED_OR_SOURCE_CHANGED'
-$guiEvidence = @('h0_before.png','h1_before.png','h1_after.png','gui_notes.txt')
+$guiEvidence = @('h0_before.png','h1_real_state.png','h1_before.png','gui_notes.txt')
+if ($copyChanged) { $guiEvidence += 'h1_after.png' } # Saved TEMP may reflect an edit; does not prove which object changed.
 $missing = @($guiEvidence | Where-Object {-not (Test-Path -LiteralPath (Join-Path $runEvidence $_) -PathType Leaf)})
 $integrityVerdict = 'PASS_PROTECTED_INTEGRITY_ONLY_NOT_GUI'
 $evidenceVerdict = if ($missing.Count -eq 0) { 'FILES_PRESENT_CONTENT_NOT_REVIEWED' } else { 'INCOMPLETE_OR_EARLY_STOP' }
