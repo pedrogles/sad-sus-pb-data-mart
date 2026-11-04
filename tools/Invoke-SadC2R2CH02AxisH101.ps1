@@ -123,7 +123,7 @@ if ($Prepare.IsPresent) {
             Gate=$gate; RunId=$runId; GitHead=$head; GitBranch=$branch; RunnerSha256=$runnerSha
             SourceQvw=$source; SourceSha256=$sourceSha; QlikExe=$qlik; QlikProductVersion=$qvVersion
             RuntimeRoot=$runtime; EvidenceRoot=$evidence; CopyQvw=$copy; CopyBeforeSha256=$sourceSha
-            ProtectedBefore=$before; PhysicalScenario='NOT_RUN'; PlannedH1NativeSelectionAndOptionalOneCH02Edit=$true; EditOtherObjectsAuthorized=$false; ProductionApproved=$false; ProductionApproved=$false
+            ProtectedBefore=$before; PhysicalScenario='NOT_RUN'; PlannedH1NativeSelectionAndOptionalOneCH02Edit=$true; EditOtherObjectsAuthorized=$false; ProductionApproved=$false
         } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
     }
     finally {
