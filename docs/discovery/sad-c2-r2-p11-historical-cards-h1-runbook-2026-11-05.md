@@ -93,14 +93,14 @@ Somente continuar se PREPARE_EXIT_CODE=0, VERDICT=PASS_COPY_PREPARED_ONLY_NO_GUI
 
 1. H0: abrir exclusivamente a cópia TEMP criada. Confirmar ano e competência sem seleção (Qtd 0) e nenhum filtro não temporal. P1.1: observar os quatro números H0; capturar h0_cards.png. Se divergência, STOP.
 2. H1: criar listboxes temporárias apenas dos campos existentes PERIODO_ANO e PERIODO_COMPETENCIA; selecionar 2019 e 201901. Comprovar Qtd 1/1 e ausência de filtro de serviço; capturar h1_real_state.png. Remover somente as listboxes recém-criadas, sem limpar as seleções. Em P1.1 capturar os quatro valores anteriores, h1_cards_before.png.
-3. Em cada TX13, TX11, TX12, TX10, confirmar o Object ID nas Propriedades e a expressão original. Alterar no máximo uma vez o modificador de conjunto da medida para a hipótese acima; preservar wrapper de formatação. Não alterar nenhum outro objeto. Após a hipótese, os quatro valores H1 devem ser 183.532 / 183.311 / 188.246 / 555.089; capturar h1_cards_after.png. Primeiro número errado => BLOCKED e STOP, sem segunda hipótese.
+3. Em cada TX13, TX11, TX12, TX10, confirmar o Object ID nas Propriedades e a expressão original. Se os quatro valores H1 já coincidirem com H0, NÃO editar; registrar NO_EDIT_REQUIRED. Caso contrário, alterar no máximo uma vez o modificador de conjunto da medida para a hipótese acima, preservando wrapper de formatação; nenhum outro objeto pode ser editado. Após a hipótese, os quatro valores H1 devem ser 183.532 / 183.311 / 188.246 / 555.089; capturar h1_cards_after.png quando houver edição. Primeiro número errado => BLOCKED e STOP, sem segunda hipótese.
 4. H2: manter seleções reais 2019 + 201901; adicionar uma lista temporária SERV_COD_DATASUS_6 e selecionar 250750. Comprovar 1/1/1 de seleção real e ausência de outros filtros, capturar h2_real_state.png. Comparar quatro valores com o arquivo h2_oracle.json gerado antes de abrir QVW. Capturar h2_cards.png. Qualquer diferença => BLOCKED; ausência de confirmação da compatibilidade => INCONCLUSIVE_H2 e STOP.
-5. Registrar gui_notes.txt em EVIDENCE_DIR: RunId, HEAD, hashes, expressões originais/candidatas, estados H0/H1/H2, valores esperados/observados por TX, evidências visuais, outros filtros, status, decisão SAVE.
-6. Salvar uma única vez a QVW TEMP somente se H0/H1/H2 corretos e comprovados. Em BLOCKED/INCONCLUSIVE, fechar sem salvar. Não salvar QVW origem ou QVD.
+5. Após h2_real_state.png e h2_cards.png, remover SOMENTE a listbox SERV criada em H2; comprovar que a seleção real SERV ainda permanece. As listboxes temporárias criadas para ano/competência já devem ter sido removidas. As três listboxes NÃO podem ficar na QVW salva. Registrar gui_notes.txt em EVIDENCE_DIR: RunId, HEAD, hashes, expressões originais/candidatas, estados H0/H1/H2, valores esperados/observados por TX, evidências visuais, outros filtros, remoção das três listboxes, status e decisão SAVE.
+6. Salvar uma única vez a QVW TEMP somente se H0/H1/H2 corretos e comprovados, listboxes transitórias removidas e alterações restritas às expressões dos quatro cartões. Em caso NO_EDIT_REQUIRED, não salvar; apenas Verify. Em BLOCKED/INCONCLUSIVE, fechar sem salvar. Não salvar QVW origem ou QVD.
 
 ## Verify único após fechamento de QlikView
 
-Na mesma sessão PowerShell, somente após os cenários positivos e completos:
+Na mesma sessão PowerShell, com QlikView fechado: executar um único Verify após o cenário positivo OU após interrupção funcional recuperável, sem refazer H0/H1/H2. Uma violação crítica de integridade exige STOP imediato e preservação dos artefatos existentes, sem novas mutações.
 
     $runDir = Read-Host 'Cole EVIDENCE_DIR informado no Prepare'
     if (-not (Test-Path (Join-Path $runDir 'c2_p11_h1_prepare.json'))) { throw 'BLOCKED_WRONG_RUN_DIR' }
@@ -108,11 +108,11 @@ Na mesma sessão PowerShell, somente após os cenários positivos e completos:
     & powershell.exe -NoProfile -File $runner -Root $repo -SourceQvw $source -H2OracleFile $h2file -QlikExe $qvExe -RuntimeRoot $runtime -EvidenceRoot $evidence -Verify -RunDir $runDir
     Write-Host "VERIFY_EXIT_CODE=$LASTEXITCODE"
 
-Esperado: VERIFY_EXIT_CODE=0, PROTECTED_25_UNCHANGED=True, SOURCE_UNCHANGED=True, mesmo SHA do oráculo H2 e GUI_EVIDENCE_MISSING vazio. COPY_CHANGED_FROM_SOURCE=True é permitido apenas após Save experimental. Verify de hash não prova conteúdo GUI nem diff dos quatro IDs. A inspeção das capturas é obrigatória.
+Esperado para PASS: VERIFY_EXIT_CODE=0, PROTECTED_25_UNCHANGED=True, SOURCE_UNCHANGED=True, mesmo SHA do oráculo H2 e GUI_EVIDENCE_MISSING vazio, inclusive os dois PNGs H2 exigidos independentemente de Save. Em STOP antecipado, o Verify pode relatar GUI_EVIDENCE_MISSING sem que isso permita retomar testes ou apresentar PASS. COPY_CHANGED_FROM_SOURCE=True é permitido apenas após Save experimental. Verify de hash não prova conteúdo GUI nem diff dos quatro IDs. A inspeção das capturas é obrigatória.
 
 ## Veredito e STOP
 
-PASS_RESTRICTED_P11_H0_H1_H2 somente com os 12 valores corretos (quatro em cada cenário), H2 previamente ancorado, seleção real comprovada, 25 protegidos e fonte inalterados, TEMP identificada e capturas examinadas.
+PASS_RESTRICTED_P11_H0_H1_H2 somente com os 12 valores corretos (quatro em cada cenário), H2 previamente ancorado, seleção real comprovada, três listboxes transitórias removidas antes de qualquer Save, 25 protegidos e fonte inalterados, TEMP identificada e capturas examinadas.
 
 BLOCKED: número falso apresentado como histórico, hipótese não funciona, filtro não temporal ignorado ou integridade violada. STOP imediato, sem outras expressões e sem nova TEMP.
 
