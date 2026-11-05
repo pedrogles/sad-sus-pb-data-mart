@@ -33,6 +33,25 @@ function Under([string]$child,[string]$parent) {
     $sep = [string][IO.Path]::DirectorySeparatorChar
     return $child.StartsWith($parent+$sep, [StringComparison]::OrdinalIgnoreCase)
 }
+function Get-SadProtected([string]$repoPath) {
+    $extr = Join-Path $repoPath 'EXTRACAO\QVD'
+    $trans = Join-Path $repoPath 'TRANSFORMACAO\QVD'
+    Assert-Sad (Test-Path -LiteralPath $extr -PathType Container) 'BLOCKED_EXTR_QVD_FOLDER'
+    Assert-Sad (Test-Path -LiteralPath $trans -PathType Container) 'BLOCKED_TRANS_QVD_FOLDER'
+    $a=@(Get-ChildItem -LiteralPath $extr -File -Filter '*.qvd')
+    $b=@(Get-ChildItem -LiteralPath $trans -File -Filter '*.qvd')
+    Assert-Sad ($a.Count -eq 10 -and $b.Count -eq 12) 'BLOCKED_PROTECTED_QVD_COUNT'
+    $all=@($a)+@($b)
+    foreach($rel in @('EXTRACAO\EXT.qvw','TRANSFORMACAO\TRANSF.qvw','PAINEL\PAINEL.qvw')) {
+        $p=Join-Path $repoPath $rel
+        Assert-Sad (Test-Path -LiteralPath $p -PathType Leaf) 'BLOCKED_PROTECTED_QVW_MISSING'
+        $all+=@(Get-Item -LiteralPath $p)
+    }
+    Assert-Sad ($all.Count -eq 25) 'BLOCKED_PROTECTED_25_COUNT'
+    return @($all|Sort-Object FullName|ForEach-Object {
+        $_.FullName+'|'+$_.Length+'|'+(Sha256 $_.FullName)
+    })
+}
 function Release-SadCom($obj) {
     if ($null -ne $obj -and [Runtime.InteropServices.Marshal]::IsComObject($obj)) {
         [void][Runtime.InteropServices.Marshal]::ReleaseComObject($obj)
@@ -63,6 +82,7 @@ foreach ($path in @($source,$target)) {
 }
 Assert-Sad ((Sha256 $source) -ceq $sourceShaExpected) 'HARD_STOP_SOURCE_HASH_DRIFT'
 Assert-Sad ((Sha256 $target) -ceq $targetShaExpected) 'HARD_STOP_TARGET_HASH_DRIFT'
+$protectedBefore = @(Get-SadProtected $repo)
 
 # Evidence-only directory. Fail rather than overwrite or reuse an existing output.
 $folder = Join-Path $evidence ('OBJECT_AUDIT_' + [guid]::NewGuid().ToString('N'))
@@ -153,6 +173,10 @@ try {
             ((Sha256 $target) -ceq $targetShaExpected) -and
             ((Sha256 $srcCopy) -ceq $sourceShaExpected) -and
             ((Sha256 $dstCopy) -ceq $targetShaExpected)
+    $protectedAfter = @(Get-SadProtected $repo)
+    $protectedOk = (($protectedBefore -join [Environment]::NewLine) -ceq ($protectedAfter -join [Environment]::NewLine))
+    Write-Output ('PROTECTED_25_UNCHANGED='+$protectedOk)
+    Assert-Sad $protectedOk 'HARD_STOP_PROTECTED_25_CHANGED'
     Write-Output ('ORIGINAL_AND_AUDIT_COPIES_UNCHANGED='+$safe)
     if (-not $safe) { throw 'HARD_STOP_QVW_HASH_CHANGED' }
 }
@@ -189,7 +213,7 @@ $structuralPass = $added.Count -eq 1 -and $added[0].ObjectType -eq 6 -and
                   $textChanged.Count -eq 0 -and $ch03.Count -gt 0
 $verdict = if($structuralPass){'PASS_OBJECT_ID_TYPE_INVENTORY_ONLY_REVIEW_LAYOUT_XML'} else {'INCONCLUSIVE_OR_DRIFT_OBJECT_INVENTORY'}
 $report=[ordered]@{
-    gate=$gate;timestamp_utc=[DateTime]::UtcNow.ToString('o');repoHead=$head
+    gate=$gate;protected25Unchanged=$protectedOk;timestamp_utc=[DateTime]::UtcNow.ToString('o');repoHead=$head
     scriptSha256=Sha256 $actualScript;sourceSha256=$sourceShaExpected;targetSha256=$targetShaExpected
     sourceCount=$src.Count;targetCount=$dst.Count
     added=@($added);removed=@($removed);typeChanged=@($typeChanged)
