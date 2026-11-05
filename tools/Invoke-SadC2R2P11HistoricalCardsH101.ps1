@@ -1,0 +1,201 @@
+# SAD-C2-R2-P11-HISTORICAL-CARDS-H1-01
+# Windows PowerShell 5.1. Prepare/Verify only; no COM/reload/GUI. H0 H1 H2 for TX13 TX11 TX12 TX10; max one candidate per card.
+# Adapted from PR #220 25-protected hash guard; no GUI PASS inherited. CH02/CH03 and canonical files out of scope.
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory=$true)][string]$Root,
+    [Parameter(Mandatory=$true)][string]$SourceQvw,
+    [Parameter(Mandatory=$true)][string]$H2OracleFile,
+    [Parameter(Mandatory=$true)][string]$QlikExe,
+    [Parameter(Mandatory=$true)][string]$RuntimeRoot,
+    [Parameter(Mandatory=$true)][string]$EvidenceRoot,
+    [switch]$Prepare,
+    [switch]$Verify,
+    [string]$RunDir
+)
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+$gate = 'SAD-C2-R2-P11-HISTORICAL-CARDS-H1-01'
+$relativeScript = 'tools/Invoke-SadC2R2P11HistoricalCardsH101.ps1'
+$requiredBranch = 'test/sad-c2-r2-p11-historical-cards-h1-20261105'
+$requiredBase = '0549e1dba71aaa8bbab9d6755aecb8465f8bea83'
+$sourceFileName = 'SAD_C2_GUIDED_R2_TEMP.qvw'
+$expectedSourceSha = '648107FB45E61C6D5AA16EBA0959C58FAD579529DEC93CF42F74A9C9D957F9DD'
+$copyFileName = 'SAD_C2_R2_P11_HISTORICAL_CARDS_H1_TEMP.qvw'
+
+function Assert-Sad([bool]$condition, [string]$failure) {
+    if (-not $condition) { throw $failure }
+}
+function Resolve-SadAbsolute([string]$path) {
+    Assert-Sad ([IO.Path]::IsPathRooted($path)) 'BLOCKED_ABSOLUTE_PATH_REQUIRED'
+    return [IO.Path]::GetFullPath($path).TrimEnd('\','/')
+}
+function Test-SadInside([string]$child,[string]$parent) {
+    $separator = [string][IO.Path]::DirectorySeparatorChar
+    return ($child -ieq $parent -or $child.StartsWith($parent+$separator,[StringComparison]::OrdinalIgnoreCase))
+}
+function Get-SadHash([string]$path) {
+    return (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToUpperInvariant()
+}
+function Get-SadProtected([string]$repoPath) {
+    $extractQvd = Join-Path $repoPath 'EXTRACAO\QVD'
+    $transformQvd = Join-Path $repoPath 'TRANSFORMACAO\QVD'
+    Assert-Sad (Test-Path -LiteralPath $extractQvd -PathType Container) 'BLOCKED_EXTRACTION_QVD_DIR_MISSING'
+    Assert-Sad (Test-Path -LiteralPath $transformQvd -PathType Container) 'BLOCKED_TRANSFORMATION_QVD_DIR_MISSING'
+    $a = @(Get-ChildItem -LiteralPath $extractQvd -File -Filter '*.qvd')
+    $b = @(Get-ChildItem -LiteralPath $transformQvd -File -Filter '*.qvd')
+    Assert-Sad ($a.Count -eq 10 -and $b.Count -eq 12) 'BLOCKED_EXPECTED_10_12_QVDS'
+    $protected = @($a) + @($b)
+    foreach ($rel in @('EXTRACAO\EXT.qvw','TRANSFORMACAO\TRANSF.qvw','PAINEL\PAINEL.qvw')) {
+        $full = Join-Path $repoPath $rel
+        Assert-Sad (Test-Path -LiteralPath $full -PathType Leaf) 'BLOCKED_CANONICAL_QVW_MISSING'
+        $protected += @(Get-Item -LiteralPath $full)
+    }
+    Assert-Sad ($protected.Count -eq 25) 'BLOCKED_PROTECTED_COUNT_NOT_25'
+    return @($protected | Sort-Object FullName | ForEach-Object {
+        '{0}|{1}|{2}' -f $_.FullName,([long]$_.Length),(Get-SadHash $_.FullName)
+    })
+}
+
+Assert-Sad ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) 'BLOCKED_WINDOWS_REQUIRED'
+Assert-Sad ($Prepare.IsPresent -ne $Verify.IsPresent) 'BLOCKED_SELECT_ONE_MODE'
+$repo = Resolve-SadAbsolute $Root
+$source = Resolve-SadAbsolute $SourceQvw
+$h2file = Resolve-SadAbsolute $H2OracleFile
+$qlik = Resolve-SadAbsolute $QlikExe
+$runtime = Resolve-SadAbsolute $RuntimeRoot
+$evidence = Resolve-SadAbsolute $EvidenceRoot
+$self = Resolve-SadAbsolute (Join-Path $repo $relativeScript)
+Assert-Sad ($self -ieq (Resolve-SadAbsolute $PSCommandPath)) 'BLOCKED_USE_VERSIONED_REPO_SCRIPT'
+Assert-Sad (Test-Path -LiteralPath (Join-Path $repo 'AGENTS.md') -PathType Leaf) 'BLOCKED_NOT_REPO_ROOT'
+foreach ($external in @($source,$h2file,$runtime,$evidence)) {
+    Assert-Sad (-not (Test-SadInside $external $repo)) 'BLOCKED_INPUT_OR_OUTPUT_INSIDE_REPO'
+    Assert-Sad (-not (Test-SadInside $repo $external)) 'BLOCKED_REPO_INSIDE_INPUT_OR_OUTPUT'
+}
+Assert-Sad (-not (Test-SadInside $runtime $evidence) -and -not (Test-SadInside $evidence $runtime)) 'BLOCKED_RUNTIME_EVIDENCE_OVERLAP'
+Assert-Sad (-not (Test-SadInside $source $runtime) -and -not (Test-SadInside $source $evidence)) 'BLOCKED_SOURCE_INSIDE_OUTPUT'
+foreach ($folder in @($runtime,$evidence)) {
+    Assert-Sad (Test-Path -LiteralPath $folder -PathType Container) 'BLOCKED_OUTPUT_ROOT_MUST_EXIST'
+}
+Assert-Sad (Test-Path -LiteralPath $source -PathType Leaf) 'BLOCKED_SOURCE_NOT_FOUND'
+Assert-Sad (Test-Path -LiteralPath $h2file -PathType Leaf) 'BLOCKED_H2_ORACLE_NOT_FOUND'
+Assert-Sad (-not (Test-SadInside $h2file $runtime) -and -not (Test-SadInside $h2file $evidence)) 'BLOCKED_H2_ORACLE_IN_OUTPUT'
+$h2 = Get-Content -LiteralPath $h2file -Raw | ConvertFrom-Json
+Assert-Sad ($h2.gate -ceq $gate -and $h2.e1_sha256 -ceq 'F14BC0C5C2A35F584EF15117C88D97B9A54C9CFFCFE0DB0E7194DDA5A391B615' -and
+    $h2.filter_field -ceq 'SERV_COD_DATASUS_6' -and $h2.filter_value -ceq '250750' -and
+    $h2.expected.TX10 -eq 225785) 'BLOCKED_H2_ORACLE_CONTRACT'
+$h2sha = Get-SadHash $h2file
+Assert-Sad ([IO.Path]::GetFileName($source) -ceq $sourceFileName) 'BLOCKED_WRONG_SOURCE_FILENAME'
+Assert-Sad (Test-Path -LiteralPath $qlik -PathType Leaf) 'BLOCKED_QLIK_EXE_MISSING'
+Assert-Sad ([IO.Path]::GetFileName($qlik) -ieq 'Qv.exe') 'BLOCKED_WRONG_EXE_NAME'
+$qvVersion = [string](Get-Item -LiteralPath $qlik).VersionInfo.FileVersion
+Assert-Sad ($qvVersion -ceq '12.0.20000.0') 'BLOCKED_QLIKVIEW_BUILD_DRIFT'
+$running = @(Get-Process -ErrorAction SilentlyContinue | Where-Object {$_.ProcessName -match '^(qv|qlikview)$'})
+Assert-Sad ($running.Count -eq 0) 'BLOCKED_CLOSE_QLIKVIEW_FIRST'
+$head = ([string](& git -C $repo rev-parse --verify HEAD)).Trim()
+Assert-Sad ($LASTEXITCODE -eq 0 -and $head -match '^[0-9a-f]{40}$') 'BLOCKED_GIT_HEAD'
+$branch = ([string](& git -C $repo branch --show-current)).Trim()
+Assert-Sad ($LASTEXITCODE -eq 0 -and $branch -ceq $requiredBranch) 'BLOCKED_WRONG_BRANCH'
+& git -C $repo merge-base --is-ancestor $requiredBase HEAD
+Assert-Sad ($LASTEXITCODE -eq 0) 'BLOCKED_BASE_NOT_ANCESTOR'
+$tracked = @(& git -C $repo ls-files --error-unmatch -- $relativeScript 2>$null)
+Assert-Sad ($LASTEXITCODE -eq 0 -and $tracked.Count -eq 1) 'BLOCKED_SCRIPT_NOT_COMMITTED'
+$dirty = @(& git -C $repo status --porcelain --untracked-files=all)
+Assert-Sad ($LASTEXITCODE -eq 0 -and $dirty.Count -eq 0) 'BLOCKED_WORKTREE_NOT_CLEAN'
+$sourceSha = Get-SadHash $source
+Assert-Sad ($sourceSha -ceq $expectedSourceSha) 'HARD_STOP_SOURCE_HASH_DRIFT'
+$runnerSha = Get-SadHash $self
+Write-Output ('GATE=' + $gate)
+Write-Output ('GIT_HEAD=' + $head)
+Write-Output ('RUNNER_SHA256=' + $runnerSha)
+Write-Output ('SOURCE_SHA256=' + $sourceSha)
+Write-Output ('H2_ORACLE_SHA256=' + $h2sha)
+Write-Output ('QV_PRODUCT_VERSION=' + $qvVersion)
+Write-Output 'QLIK_COM_CALLS=0 RELOAD_CALLS=0 AUTOMATED_GUI_ACTIONS=0'
+
+if ($Prepare.IsPresent) {
+    Assert-Sad ([string]::IsNullOrWhiteSpace($RunDir)) 'BLOCKED_RUNDIR_ONLY_FOR_VERIFY'
+    $before = @(Get-SadProtected $repo)
+    $runId = 'SAD_C2_P11_H1_' + [guid]::NewGuid().ToString('N')
+    $runRuntime = Join-Path $runtime $runId
+    $runEvidence = Join-Path $evidence $runId
+    $copy = Join-Path $runRuntime $copyFileName
+    Assert-Sad (-not (Test-Path -LiteralPath $runRuntime)) 'BLOCKED_RUNTIME_COLLISION'
+    Assert-Sad (-not (Test-Path -LiteralPath $runEvidence)) 'BLOCKED_EVIDENCE_COLLISION'
+    $null = New-Item -ItemType Directory -Path $runRuntime -ErrorAction Stop
+    $null = New-Item -ItemType Directory -Path $runEvidence -ErrorAction Stop
+    try {
+        Copy-Item -LiteralPath $source -Destination $copy -ErrorAction Stop
+        Assert-Sad ((Get-SadHash $copy) -ceq $expectedSourceSha) 'HARD_STOP_TEMP_COPY_HASH'
+        $manifestPath = Join-Path $runEvidence 'c2_p11_h1_prepare.json'
+        [ordered]@{
+            Gate=$gate; RunId=$runId; GitHead=$head; GitBranch=$branch; RunnerSha256=$runnerSha
+            SourceQvw=$source; SourceSha256=$sourceSha
+            H2OracleFile=$h2file; H2OracleSha256=$h2sha
+            QlikExe=$qlik; QlikProductVersion=$qvVersion
+            RuntimeRoot=$runtime; EvidenceRoot=$evidence; CopyQvw=$copy; CopyBeforeSha256=$sourceSha
+            ProtectedBefore=$before; PhysicalScenario='NOT_RUN'; PlannedH0H1H2AndAtMostOneExpressionEditEachP11Card=$true; EditOtherObjectsAuthorized=$false; ProductionApproved=$false
+        } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $manifestPath -Encoding UTF8
+    }
+    finally {
+        $after = @(Get-SadProtected $repo)
+        Assert-Sad (($before -join [Environment]::NewLine) -ceq ($after -join [Environment]::NewLine)) 'HARD_STOP_PROTECTED_FILES_CHANGED_IN_PREPARE'
+        Assert-Sad ((Get-SadHash $source) -ceq $expectedSourceSha) 'HARD_STOP_SOURCE_CHANGED_IN_PREPARE'
+        Assert-Sad ((Get-SadHash $h2file) -ceq $h2sha) 'HARD_STOP_H2_ORACLE_CHANGED_IN_PREPARE'
+    }
+    Write-Output ('RUNTIME_COPY=' + $copy)
+    Write-Output ('EVIDENCE_DIR=' + $runEvidence)
+    Write-Output 'VERDICT=PASS_COPY_PREPARED_ONLY_NO_GUI'
+    return
+}
+
+Assert-Sad (-not [string]::IsNullOrWhiteSpace($RunDir)) 'BLOCKED_RUNDIR_REQUIRED'
+$runEvidence = Resolve-SadAbsolute $RunDir
+Assert-Sad ((Test-SadInside $runEvidence $evidence) -and $runEvidence -ine $evidence) 'BLOCKED_INVALID_EVIDENCE_RUN_DIR'
+Assert-Sad (Test-Path -LiteralPath $runEvidence -PathType Container) 'BLOCKED_EVIDENCE_RUN_DIR_MISSING'
+$manifestPath = Join-Path $runEvidence 'c2_p11_h1_prepare.json'
+Assert-Sad (Test-Path -LiteralPath $manifestPath -PathType Leaf) 'BLOCKED_PREPARE_MANIFEST_MISSING'
+$manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+Assert-Sad ($manifest.Gate -ceq $gate -and $manifest.GitHead -ceq $head -and
+    $manifest.GitBranch -ceq $branch -and $manifest.RunnerSha256 -ceq $runnerSha) 'BLOCKED_MANIFEST_GIT_OR_RUNNER_MISMATCH'
+Assert-Sad ($manifest.SourceQvw -ieq $source -and $manifest.SourceSha256 -ceq $expectedSourceSha -and
+    $manifest.H2OracleFile -ieq $h2file -and $manifest.H2OracleSha256 -ceq $h2sha -and
+    $manifest.QlikExe -ieq $qlik -and $manifest.RuntimeRoot -ieq $runtime -and
+    $manifest.EvidenceRoot -ieq $evidence) 'BLOCKED_MANIFEST_INPUT_MISMATCH'
+Assert-Sad ($manifest.RunId -ceq [IO.Path]::GetFileName($runEvidence)) 'BLOCKED_RUN_ID_MISMATCH'
+$copy = Resolve-SadAbsolute ([string]$manifest.CopyQvw)
+Assert-Sad ((Test-SadInside $copy $runtime) -and
+    ([IO.Path]::GetFileName($copy) -ceq $copyFileName) -and
+    ((Split-Path -Parent $copy) -ieq (Join-Path $runtime ([string]$manifest.RunId))) -and
+    (Test-Path -LiteralPath $copy -PathType Leaf)) 'BLOCKED_TEMP_COPY_INVALID'
+Assert-Sad ($manifest.CopyBeforeSha256 -ceq $expectedSourceSha) 'BLOCKED_COPY_BEFORE_HASH_MISMATCH'
+$verifyEvidencePath = Join-Path $runEvidence 'c2_p11_h1_verify.json'
+Assert-Sad (-not (Test-Path -LiteralPath $verifyEvidencePath)) 'BLOCKED_VERIFY_ALREADY_RECORDED'
+$protectedBefore = @($manifest.ProtectedBefore | ForEach-Object { [string]$_ })
+$protectedAfter = @(Get-SadProtected $repo)
+$protectedOk = (($protectedBefore -join [Environment]::NewLine) -ceq ($protectedAfter -join [Environment]::NewLine))
+$sourceOk = ((Get-SadHash $source) -ceq $expectedSourceSha)
+$copyAfterSha = Get-SadHash $copy
+$copyChanged = ($copyAfterSha -cne $expectedSourceSha) # Changes are permitted ONLY in this NEW TEMP, solely as one candidate per TX10/TX11/TX12/TX13 card. Hash difference NEVER proves which object changed.
+Write-Output ('PROTECTED_25_UNCHANGED=' + $protectedOk)
+Write-Output ('SOURCE_UNCHANGED=' + $sourceOk)
+Write-Output ('COPY_CHANGED_FROM_SOURCE=' + $copyChanged)
+Write-Output ('COPY_SHA256=' + $copyAfterSha)
+Assert-Sad ($protectedOk -and $sourceOk) 'HARD_STOP_PROTECTED_OR_SOURCE_CHANGED'
+Assert-Sad ((Get-SadHash $h2file) -ceq $h2sha) 'HARD_STOP_H2_ORACLE_CHANGED'
+$guiEvidence = @('h0_cards.png','h1_real_state.png','h1_cards_before.png','gui_notes.txt')
+if ($copyChanged) { $guiEvidence += @('h1_cards_after.png','h2_real_state.png','h2_cards.png') } # Saved TEMP may reflect an edit; does not prove which object changed.
+$missing = @($guiEvidence | Where-Object {-not (Test-Path -LiteralPath (Join-Path $runEvidence $_) -PathType Leaf)})
+$integrityVerdict = 'PASS_PROTECTED_INTEGRITY_ONLY_NOT_GUI'
+$evidenceVerdict = if ($missing.Count -eq 0) { 'FILES_PRESENT_CONTENT_NOT_REVIEWED' } else { 'INCOMPLETE_OR_EARLY_STOP' }
+[ordered]@{
+    Gate=$gate; RunId=$manifest.RunId; GitHead=$head; GitBranch=$branch; RunnerSha256=$runnerSha
+    Protected25Unchanged=$protectedOk; SourceUnchanged=$sourceOk; H2OracleSha256=$h2sha
+    CopyBeforeSha256=$expectedSourceSha; CopyAfterSha256=$copyAfterSha; TempCopyChanged=$copyChanged
+    GuiEvidenceMissing=$missing; EvidenceVerdict=$evidenceVerdict; GuiVerdict='NOT_ASSESSED_BY_RUNNER'
+    Verdict=$integrityVerdict; ProductionApproved=$false
+} | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $verifyEvidencePath -Encoding UTF8
+Write-Output ('GUI_EVIDENCE_MISSING=' + ($missing -join ','))
+Write-Output ('EVIDENCE_DIR=' + $runEvidence)
+Write-Output 'VERDICT=PASS_PROTECTED_INTEGRITY_ONLY_NOT_GUI'
