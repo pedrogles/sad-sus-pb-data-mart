@@ -104,7 +104,7 @@ function Read-SadInventory([object]$qv,[string]$qvw,[string]$label,[string]$dir)
     try {
         $doc = $qv.OpenDoc($qvw,'','')
         Assert-Sad ($null -ne $doc) ('BLOCKED_COM_OPEN_DOC_'+$label)
-        $sheets = [int]$doc.NoOfSheets
+        $sheets = [int]$doc.NoOfSheets()
         Assert-Sad ($sheets -gt 0 -and $sheets -le 50) ('BLOCKED_SHEET_COUNT_'+$label)
         for ($i=0; $i -lt $sheets; $i++) {
             $sheet = $null
@@ -113,7 +113,7 @@ function Read-SadInventory([object]$qv,[string]$qvw,[string]$label,[string]$dir)
                 Assert-Sad ($null -ne $sheet) ('BLOCKED_GETSHEET_'+$i)
                 $sheetId = 'INDEX_'+$i
                 try { $sheetId = [string]$sheet.GetObjectID() } catch { }
-                $n = [int]$sheet.NoOfSheetObjects
+                $n = [int]$sheet.NoOfSheetObjects()
                 Assert-Sad ($n -ge 0 -and $n -le 2000) ('BLOCKED_OBJECT_COUNT_'+$label+'_'+$i)
                 for ($j=0; $j -lt $n; $j++) {
                     $obj = $null
