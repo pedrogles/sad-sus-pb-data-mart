@@ -136,3 +136,52 @@ Códigos de saída:
 **Próximo trabalho sob decisão própria:** preparar o **único QVW TEMP de consumo** usando os QVDs existentes, não os canônicos como destinos de Save/Reload. Conferir, por evidência real, (i) os três fatos/carregamento, (ii) associações efetivamente necessárias, (iii) totais/oráculos existentes, (iv) efeito de ano/competência/território nos visuais expostos. Não inferir viabilidade física da Link Table pela existência do QVD. Não executar C2/TX17 nem reconstruir QVDs.
 
 **STOP M1-INVENTORY:** concluído por evidência local reportada; não executar o mesmo inventário repetidamente sem mudança factual. **M1_CONSUMPTION=NOT_RUN; OWNER_MVP_SCOPE_APPROVAL=PENDING; TEMP_QVW_AUTHORIZATION=PENDING; C2/C3/C4/IX=NOT_APPROVED.** Este registro é apenas um acréscimo documental na branch Draft #226, sem alteração dos contratos vigentes.
+
+## 9. M1 Integrated TEMP — execução física autorizada pelo responsável
+
+**Autorização explícita recebida nesta conversa:** “autorizo, prossiga”, após a pergunta específica sobre **criar e testar um QVW temporário no Windows preservando QVD/QVW canônicos**. Esta autorização cobre somente a tentativa física M1, não altera contratos aprovados, não autoriza merge, IX, ou painel final.
+
+**Objetivo e ganho líquido frente à Fase VII de 18/10:** o modelo técnico com 3 fatos + Link e 16 tabelas **já** teve `PASS_LOCAL_REPORTED_AND_VISUAL_ASSOCIATIVE_CANDIDATE_ONLY` e captura de Table Viewer. **Não reabrir essa decisão**. Usar suas verificações apenas como preflight defensivo e acrescentar **10 comparações numéricas independentes por fato** no mesmo modelo associativo. A execução não pretende redemonstrar todas as 146 verificações do A0 nem um sistema global de filtros.
+
+**Ferramenta versionada:** `tools/Invoke-SadM1IntegratedTempQvw.ps1`, adaptada de `tools/Invoke-SadPhaseViiTechnicalPanel.ps1` da main. Script de modelo QlikView reaproveitado **sem edição**: `PAINEL/phase_vii_technical_model.qvs`. O runner exige branch `proposal/sad-mvp-rebaseline-2026-11-07`, HEAD SHA completo e fontes Git rastreadas e limpas.
+
+**Entradas somente leitura:** 10 QVDs da extração, 12 QVDs da transformação (incluindo Link), 3 QVWs canônicos para hash pre/post. **Única escrita QlikView:** novo `SAD_M1_INTEGRATED_TEMP.qvw` e log em diretório novo dentro do `EvidenceRoot` privado fora do Git; saída `m1_fact_oracle_checks.csv` e CSVs de hashes também somente nessa pasta. Nenhum STORE, reload de QVW canônico, mutação de QVD ou sobrescrita de backup.
+
+### Oráculos reutilizados (não foram recalculados)
+
+| Caso | Esperado | Fonte de evidência |
+|---|---:|---|
+| RD_ALL | 555.089 | F5-RD / inventário analítico |
+| RD_2017 | 183.532 | F5-RD |
+| RD_2018 | 183.311 | F5-RD |
+| RD_2019 | 188.246 | F5-RD |
+| LT_SUS_201912 | 7.140 | P2.2 composição, closeout 29/10 |
+| LT_NSUS_201912 | 1.925 | P2.2 composição, closeout 29/10 |
+| LT_EXIST_201912 | 9.065 | P2.2 composição, closeout 29/10 |
+| POP_2017 | 4.025.558 | F5-POP / readback |
+| POP_2018 | 3.996.496 | F5-POP / readback |
+| POP_2019 | 4.018.127 | F5-POP / readback |
+
+**Garantia semântica restrita:** cada expressão é de *uma fato*, com Set Analysis de ano/competência somente para demonstrar acesso ao campo, e não prova navegação do usuário nem tratamento nativo D2/P5. Leitos mensais não são somados entre competências; população anual não é repetida pelos doze meses. Não testar cross-fact T24/T25/T26, ocupação ou cálculo per capita.
+
+### Handoff Windows para execução uma única vez
+
+No clone local, com `git status --short` vazio, atualizar apenas a branch já selecionada com `git pull --ff-only`. Confirmar `git branch --show-current` e `git rev-parse HEAD`.
+
+```powershell
+powershell.exe -NoProfile -File .\tools\Invoke-SadM1IntegratedTempQvw.ps1 `
+  -Root (Get-Location).Path `
+  -ExpectedCommit (git rev-parse HEAD) `
+  -EvidenceRoot "$env:USERPROFILE\SAD_M1_EVIDENCIAS" `
+  -RunQlik
+```
+
+O diretório de evidência já foi criado no inventário anterior. O caminho do QVW TEMP e do log é retornado em `EVIDENCE_DIR`, `TEMP_QVW` e `NATIVE_LOG`. Não abrir nem salvar `PAINEL/PAINEL.qvw`.
+
+**PASS M1 restrito:** exatamente dez `M1_ORACLE ... Pass=True`, `M1_FACT_ORACLES=10_OF_10_PASS_LOCAL_CANDIDATE_ONLY`, `VERDICT=PASS_LOCAL_M1_TEMP_MODEL_ONLY_PENDING_TABLE_VIEWER_AND_INDICATORS`, `ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED=True` e `ORIGINAL_CANONICAL_QVWS_UNCHANGED=True`. Esse resultado **não é** aceite visual de três painéis nem do Link Key/filtros globais.
+
+**BLOCKED:** erro de COM, log nativo, qualquer um dos dez números, falta/deriva de arquivo/coluna/link, erro Qlik ou hash de arquivo protegido alterado. Preservar pasta de evidência e reportar o primeiro erro; **não repetir automaticamente** ou refazer dados. Se os números não baterem, comparar regra/expressão/escopo e solicitar nova decisão específica.
+
+**INCONCLUSIVE:** o runner não completar a verificação, sem evidência suficiente para decidir se o QVW carrega corretamente.
+
+**STOP:** uma tentativa física autorizada; aguardar stdout e CSV para análise independente. `M1_INTEGRATED_TEMP=NOT_RUN` enquanto o operador não executar. `C2/C3/C4`, `LINK_KEY_CONTRACT`, `PHASE_IX` e produção permanecem não aprovados.
