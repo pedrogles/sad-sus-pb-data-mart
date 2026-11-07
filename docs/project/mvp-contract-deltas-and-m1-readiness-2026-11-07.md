@@ -84,3 +84,34 @@ Após a decisão, redigir o texto normativo do adendo e requerer autorização d
 **Próxima operação permitida sem nova decisão:** revisão documental da proposta e dos PRs; **não** M1 físico em Windows nem criação/edição de QVW/QVD/QVS. A instrução genérica “prossiga” neste contexto não autoriza essas ações de forma implícita.
 
 **M0_DELTA_PREPARED=YES; M0_OWNER_CONTRACT_APPROVAL=PENDING; M1_READONLY=NOT_RUN; C2/C3/C4=UNAPPROVED_FOR_MVP; PHASE_IX=NOT_AUTHORIZED; PRODUCTION_APPROVED=False.**
+
+## 7. Ferramenta única de inventário M1 preparada (não executada)
+
+**Justificativa excepcional para um script novo:** as rotinas anteriores de C2 são específicas de QVW TEMP, e os executores `materializar_*` podem criar dados; usá-los apenas para inventariar os 25 arquivos implicaria risco e retrabalho. Foi preparado **um único script genérico reutilizável**, `tools/m1-inventario-artefatos-readonly.ps1`, estritamente sem COM/QlikView, Reload, Save, STORE, cópia/restauração de origem ou exclusão. A ferramenta não expande a sequência de gates C2.
+
+Inventário nominal das 25 entradas conforme `ext_main.qvs`, includes da extração, oito dimensões, três fatos, Link e três QVWs canônicos. O script **lê** nomes/tamanhos/hashes SHA-256 e, opcionalmente, compara contra a pasta `backup` documentada em `docs/project/artifact-recovery-policy.md`. Apenas o relatório CSV/TXT é escrito no `EvidenceRoot` informado, que deve ficar **fora** da árvore do Git e do backup.
+
+### Execução futura opcional, somente no Windows pelo operador e após autorização do inventário físico
+
+```powershell
+# Partindo da raiz do clone local, com a branch/commit aprovado para M1:
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\tools\m1-inventario-artefatos-readonly.ps1 `
+  -RepoRoot (Get-Location).Path `
+  -EvidenceRoot "D:\SAD_EVIDENCIAS" `
+  -BackupRoot "D:\SAD_STABILIZATION_01_20261020\backup"
+```
+
+Os caminhos `D:\...` são exemplos, **não** localizações reais conhecidas. Resolver no Windows a pasta `backup` efetiva e protegida. Se a cópia não estiver disponível, omitir `-BackupRoot`, mas o resultado será **PRESENT_25_NOT_COMPARED_TO_BACKUP**, jamais PASS de integridade.
+
+Códigos de saída:
+- `0`: `MATCHED_25_BACKUP_BYTES_NOT_QVD_SEMANTIC`; as 25 origens correspondem byte a byte às 25 cópias locais **no instante do teste**, sem comprovar integridade histórica da cópia, associação ou funcionamento Qlik;
+- `2`: arquivo ausente, erro de leitura ou hash divergente;
+- `3`: todos presentes mas não comparados ao backup;
+- `4`: comparação incompleta/não concluída;
+- erro PowerShell: pré-condição inválida, nenhuma conclusão de gate.
+
+**Evidência disponível na main:** a política de recuperação de 20/10/2026 registrou 25 cópias e um manifesto local `artifact-manifest-2026-10-20.csv`, com 96.708.026 bytes, mas apenas prova de cópia no mesmo disco, não backup independente. Confrontar com esse manifesto de outubro caso disponível **sem assumir seu schema**; o script compara bytes com a pasta de cópias, e não interpreta o manifesto anterior.
+
+**Teste e aprovação:** fonte versionada no Draft #226, porém sem PowerShell 5.1/Windows nesta sessão. `SCRIPT_STATIC_ONLY`, `PARSER_WINDOWS=NOT_RUN`, `M1_WINDOWS=NOT_RUN`. Antes de sustentar um gate, operador deve conferir commit e SHA-256 efetivo do script, executar uma vez em modo somente leitura e devolver o resumo CSV/TXT, omitindo caminhos pessoais em relatórios públicos. Mesmo código 0 não substitui prova de carga de QVD/seleções/visuais.
+
+**STOP:** nenhum teste C2, nenhum novo QVW, nenhum merge ou regeneração de QVD é autorizado por esta preparação.
