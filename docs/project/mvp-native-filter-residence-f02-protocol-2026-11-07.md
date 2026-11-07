@@ -40,3 +40,23 @@ Preservar `SAD_MVP_THREE_SHEETS_CANDIDATE.qvw`, `SAD_M1_INTEGRATED_TEMP.qvw`, 22
 **Veredito possível:** `MVP_F02=PASS_RESTRICTED_RES_ROLE_GUI`, `BLOCKED` ou `INCONCLUSIVE`. Não atribuir PASS a filtros SERV, leitos, ilha P23, C2/C3/C4/P5 ou produção. O valor 12.176 é de **uma única combinação dirigida no triênio**, **não** total das internações de moradores do município. Se o QVW projetar resultados de oferta sob seleção RES incompatível, assinalar falta de guarda/aviso P5, mas não reinterpretar ausência como capacidade zero.
 
 **Condição de parada:** terminar após um único recorte e captura; nenhuma nova recarga nem iteração de testes automática.
+
+
+## 5. Resultado F02 no QlikView Desktop — screenshot recebido
+
+**Data da evidência:** 07/11/2026. Captura real `image(20261107-163102).png` anexada a esta conversa (não guardar binário no Git). **Hash calculado diretamente dos bytes anexados ao chat:** SHA-256 `FA9ECDEE6991E5C43743FACF13C413225A4F6C61FCE0818D16507038400F0D2C`, tamanho 244.870 bytes, resolução 1907×1068. Janela mostra QlikView x64 Personal Edition e a cópia `SAD_MVP_THREE_SHEETS_CANDIDATE_INSPECAO.qvw` da pasta `SAD_M2_MVP_TEMP_0f6b3b19ce714295ba80e5c27856c08e`. Prova limitada à captura inspecionada: **não** foi executado script/COM/Reload, nem auditado binário QVW/Save pós-captura pelo agente.
+
+| Critério | Observação verificável na imagem | Parecer |
+|---|---|---|
+| Seleção real | `Seleções Atuais` mostra exatamente o campo `RES_COD_DATASUS_6=251370`, marcador verde; nenhuma outra seleção apresentada na caixa | `PASS_GUI_RES_ONLY` |
+| Universo M3-02 | Tabela de pares apresenta somente RES `251370` nas linhas visíveis, múltiplos SERV, total geral de novas internações `24616` | `PASS_GUI_ROLE_DIRECTION_RESTRICTED` |
+| Testemunho P3.3 | Linha `RES=251370, SERV=250750, Sum(QTD_INTERNACAO)=12176`; mesma orientação e valor da referência `main` | `PASS_EXACT_ORACLE_MATCH` |
+| RES=SERV | Linha `251370→251370` mostra `12308` internações; a barra `RES_EQ_SERV` está presente | `PASS_GUI_MATCHED_SAME_ROLE` |
+| RES≠SERV | Total geral `24616` menos a linha `251370→251370 = 12308` resulta em **12308** novas internações para SERV diferentes, admitindo que a tabela de pares agrega o universo inteiro da seleção. Ambas barras aparecem de altura visual idêntica. Esse subtotal é **derivado do total da tabela e da linha de igualdade**, não valor impresso na barra e nem oráculo externo independente | `CONSISTENT_DERIVED_NOT_INDEPENDENT_ORACLE` |
+| POP por RES | Tabela mostra município `251370` com valores por ano distintos: `2017=136851`, `2018=135807`, `2019=136586`; sem total trianual visível | `PASS_GUI_DESCRIPTIVE_YEAR_ROWS` |
+
+**Resultado:** `MVP_F02=PASS_RESTRICTED_RES_ROLE_GUI`, para a seleção nativa única `RES=251370`, direção dos papéis e testemunho numérico já reconciliado `251370→250750=12176`. O valor 24616 é **total apenas do recorte RES=251370** no triênio; não representar como total de PB e não tratar os 12176 como total da residência. Os valores POP do ano são observações visuais candidatas, sem reconciliação independente de cada célula neste gate.
+
+**Lacunas/limites:** a screenshot não mostra a folha 2 sob seleção RES nem comprova política P5 B para indicadores de leitos; também não demonstra o retorno sem seleção após `Limpar`, inexistência de alterações não salvas no QVW de inspeção, nem papéis do SERV sob seleção inversa. **As duas barras não têm valores numéricos impressos.** C2 global, C3 global, C4, P5/UI, T24–T26, Link Key formal, Fase IX e produção continuam não aprovados.
+
+**STOP de F02 atingido:** não repetir a seleção nem adicionar SERV no mesmo gate. Próxima decisão separada: inspecionar em um cenário P5 mínimo o comportamento de **leitos em contexto de seleção RES**, que pela V2 §62.6 é filtro de classe B para LEI/REL; apresentar valor de oferta indevido sem aviso/guarda seria bloqueio de uso. **Não iniciar automaticamente**, não alterar o modelo, não gerar nova QVW nem mexer na `main`.
