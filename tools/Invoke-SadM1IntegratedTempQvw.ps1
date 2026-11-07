@@ -218,6 +218,47 @@ try{
             if($rawLog -match '(?i)circular reference|loosely coupled|synthetic key'){
                 throw 'Possible loop/synthetic association in native QlikView log; inspect before proceeding'
             }
+            # One bounded new M1 check: existing single-fact oracles in ONE integrated
+            # technical model. No Set Analysis of cross-fact ratios, no occupancy.
+            # Sources: F5-RD, F5-POP and 201912 LT composition closeout.
+            function ReadUInt([string]$expression,[string]$label){
+                $raw=[string]$doc.Evaluate($expression)
+                if($raw -notmatch '^(0|[1-9][0-9]*)$'){
+                    throw "Unexpected Qlik numeric result for $label : $raw"
+                }
+                return [long]::Parse($raw,[Globalization.CultureInfo]::InvariantCulture)
+            }
+            $oracleCases=@(
+                [pscustomobject]@{Name='RD_ALL';Expression="Num(Sum(QTD_INTERNACAO),'0','.',',')";Expected=555089},
+                [pscustomobject]@{Name='RD_2017';Expression="Num(Sum({<PERIODO_ANO={2017}>} QTD_INTERNACAO),'0','.',',')";Expected=183532},
+                [pscustomobject]@{Name='RD_2018';Expression="Num(Sum({<PERIODO_ANO={2018}>} QTD_INTERNACAO),'0','.',',')";Expected=183311},
+                [pscustomobject]@{Name='RD_2019';Expression="Num(Sum({<PERIODO_ANO={2019}>} QTD_INTERNACAO),'0','.',',')";Expected=188246},
+                [pscustomobject]@{Name='LT_SUS_201912';Expression="Num(Sum({<PERIODO_COMPETENCIA={'201912'}>} QTD_LEITOS_SUS),'0','.',',')";Expected=7140},
+                [pscustomobject]@{Name='LT_NSUS_201912';Expression="Num(Sum({<PERIODO_COMPETENCIA={'201912'}>} QTD_LEITOS_NAO_SUS),'0','.',',')";Expected=1925},
+                [pscustomobject]@{Name='LT_EXIST_201912';Expression="Num(Sum({<PERIODO_COMPETENCIA={'201912'}>} QTD_LEITOS_EXISTENTES),'0','.',',')";Expected=9065},
+                [pscustomobject]@{Name='POP_2017';Expression="Num(Sum({<PERIODO_ANO={2017}>} POPULACAO_ESTIMADA),'0','.',',')";Expected=4025558},
+                [pscustomobject]@{Name='POP_2018';Expression="Num(Sum({<PERIODO_ANO={2018}>} POPULACAO_ESTIMADA),'0','.',',')";Expected=3996496},
+                [pscustomobject]@{Name='POP_2019';Expression="Num(Sum({<PERIODO_ANO={2019}>} POPULACAO_ESTIMADA),'0','.',',')";Expected=4018127}
+            )
+            $oracleResults=New-Object System.Collections.Generic.List[object]
+            $oracleFailed=$false
+            foreach($case in $oracleCases){
+                $actual=ReadUInt $case.Expression $case.Name
+                $pass=($actual -eq [long]$case.Expected)
+                $oracleResults.Add([pscustomobject]@{
+                    Case=$case.Name
+                    Measure=$case.Expression
+                    Expected=[long]$case.Expected
+                    Actual=$actual
+                    Pass=[bool]$pass
+                })
+                Write-Output ("M1_ORACLE "+$case.Name+" Expected="+$case.Expected+" Actual="+$actual+" Pass="+$pass)
+                if(-not $pass){$oracleFailed=$true;break}
+            }
+            $oracleResults | Export-Csv -LiteralPath (Join-Path $work 'm1_fact_oracle_checks.csv') -NoTypeInformation -Encoding UTF8
+            if($oracleFailed){throw 'M1 single-fact oracle mismatch: STOP and inspect evidence'}
+            if($oracleResults.Count -ne 10){throw 'M1 oracle checks incomplete'}
+            Write-Output 'M1_FACT_ORACLES=10_OF_10_PASS_LOCAL_CANDIDATE_ONLY'
             $null=$doc.Save()
             Write-Output ('TEMP_QVW='+$testQvw)
             Write-Output ('NATIVE_LOG='+$testLog)
