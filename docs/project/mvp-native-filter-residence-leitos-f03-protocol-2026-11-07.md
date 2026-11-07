@@ -36,3 +36,31 @@ Usar **somente a cópia de inspeção** já existente no QlikView Desktop 12:
 **Veredito futuro:** `MVP_F03=PASS_RESTRICTED_PRESENTATION`, `BLOCKED_FOR_USER_USE` ou `INCONCLUSIVE`. **Não transformar** a apresentação em `P5_UI_APPROVED`, `C2_GUIDED_R2`, `LINK_KEY_CONTRACT`, `C3/C4`, `PHASE_IX` ou `PRODUCTION_APPROVED`.
 
 **STOP absoluto:** uma captura e um único cenário. Se houver falha, analisar a imagem e decidir correção separada, **sem nova recarga ou tentativa em série**. Próxima etapa após evidência: registrar conclusão F03; eventual teste de SERV ou outra ilha requer escopo próprio.
+
+
+## 5. Resultado F03 — evidência GUI do filtro RES sob CNES/LT e ilha P23
+
+**Evidência:** screenshot real `image(20261107-165601).png` fornecida nesta conversa pelo operador, QlikView x64 Personal Edition, documento `SAD_M2_MVP_TEMP_0f6b3b19ce714295ba80e5c27856c08e/SAD_MVP_THREE_SHEETS_CANDIDATE_INSPECAO.qvw`. O agente inspecionou visualmente o anexo; SHA-256 **calculado dos bytes montados** `A535066479DD531CA3A033E0FEEBA95E6D521140F25F84123D90933563FB6DC5`, PNG RGBA de **1907×1068 px**, **205.544 bytes**. Não versionar o binário no Git. Não foi inspecionado o arquivo QVW original, o estado após Clear ou eventuais alterações não salvas; nenhuma recarga/COM foi executada pelo agente.
+
+| Critério | Resultado diretamente visível | Qualificação |
+|---|---|---|
+| Seleção real | Janela `Seleções Atuais` exibe campo RES truncado (`RES_COD_DATAS...`), com valor **251370** e marcador verde; nenhuma outra seleção aparece | `PASS_GUI_STATE_RESTRICTED` |
+| M2-01 | Área do gráfico de snapshots de leitos por competência mostra literalmente **“Não há dados para mostrar”**; nenhum ponto/linha de LT | `NO_ASSOCIATED_DISPLAYED_ROWS` — **não** representa leitos quantitativamente iguais a zero |
+| M2-02 | Gráfico municipal SUS fixo `201912` também mostra **“Não há dados para mostrar”** | `NO_ASSOCIATED_DISPLAYED_ROWS` — não prova inexistência de leitos em 251370 |
+| Aviso de indisponibilidade | Nem M2-01 nem M2-02 explicam a incompatibilidade entre RES e localização/serviço CNES; apenas mensagem nativa genérica, sem nota de escopo | `UI_CONTEXT_EXPLANATION_MISSING`; **BLOCKED_FOR_USER_USE** sob seleção RES |
+| M2-03 | Três barras de observabilidade visíveis, com alturas qualitativamente compatíveis com as capturas base (ausentes > positivos >> zeros observados), apesar do filtro RES | `P23_ISLAND_GUI_INDEPENDENCE=PASS_VISUAL_RESTRICTED`; valores exatos/ausência de influência em outros filtros não comprovados |
+| LEI/REL | Nenhuma taxa leitos/habitante nem internações/leito apresentada nesta folha | `NOT_APPLICABLE_TO_NINE_VISUALS`, não promover aceite P5 para razões ausentes |
+
+**Interpretação fundamentada:** a exclusão de LT sob seleção RES coincide com o modelo candidato que distingue papéis territoriais: a fato CNES/LT possui município de **serviço/localização**, e não residência dos pacientes. O resultado visual atual confirma **ausência de dados exibíveis sob a seleção**, mas não prova diretamente a causa técnica em cada associação da Link Table. Não transformar ausência em zero, nem afirmar que `251370` não tem leitos. As duas séries descritivas **não** são os indicadores LEI/REL da matriz P5 V2 (§62.6), embora compartilhem o risco de interpretação sob contexto RES.
+
+**Veredito por superfície:**
+- `MVP_F03_LT_ASSOCIATIVE_DISPLAY=NO_DATA_UNDER_RES`;
+- `MVP_F03_LT_UI_GUARD=BLOCKED_FOR_USER_USE` **por mensagem insuficiente** — a mensagem “Não há dados para mostrar” não constitui explicação de filtro incompatível nem guia para interpretar ausência associativa;
+- `MVP_F03_P23_ISLAND=PASS_VISUAL_RESTRICTED` apenas para permanência de três categorias e alturas compatíveis;
+- `MVP_F03_OVERALL=BLOCKED_FOR_USER_USE_PENDING_UI_CONTEXT`; `C2/C3/C4/P5_UI=NOT_APPROVED`.
+
+### STOP e decisão de correção
+
+F03 **encerrado** com bloqueio localizado. Não executar novos testes em cascata, nem recarregar/reconstruir QVW/QVD. Próxima ação correta é **separar o design de comunicação e supressão por indicador** da aprovação do modelo: propor na próxima decisão do responsável (não implementado aqui) estado explícito **“Indisponível nesta seleção: município de residência não corresponde ao papel territorial dos leitos (serviço/localização)”**, preservando o valor descritivo quando seleção for compatível, e **não** transformar vazio em zero. No QlikView, isso requer mecanismo real de contexto/condição por objeto, com prova GUI específica de estado válido e incompatível e sem prometer guarda global de menus. Verificar também que P23 continua ilhada, com rótulos legíveis, em gate separado se necessário.
+
+**Limites:** o PR #226 é Draft; `main`, 22 QVDs, 3 QVWs canônicos, contrato de Link, 3 fatos/8 dimensões, regras P5 e Fase IX permanecem sem alteração. `MVP_USER_READY=False`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
