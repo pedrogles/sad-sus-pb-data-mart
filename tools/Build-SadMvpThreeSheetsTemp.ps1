@@ -158,7 +158,8 @@ function Chart($sheet,[string]$viewId,[string]$type,[string]$title,[string[]]$di
   if($viewId -ceq 'M3-03'){
     $verify=$o.GetProperties().Expressions.Item(0).Item(0).Data.ExpressionData
     if([bool]$verify.UsePartialSum){throw 'M3-03 total still enabled; refuse misleading POP table'}
-    Write-Output 'M3_03_TOTAL_MODE=NO_TOTALS_PERSISTED_IN_COM_CANDIDATE'
+    # Do not emit status here: PowerShell functions return all Success-stream items,
+    # which would convert the caller's COM chart variable into an object array.
   }
   return $o
 }
@@ -273,6 +274,9 @@ try{
       Expressions=($spec.Expr -join ' | ');Status='BUILT_UNVERIFIED_VISUAL'
     })
     Write-Output "M2_CREATED=$($spec.Id) Type=$($spec.Type)"
+    if($spec.Id -ceq 'M3-03'){
+      Write-Output 'M3_03_TOTAL_MODE=NO_TOTALS_PERSISTED_IN_COM_CANDIDATE'
+    }
   }
   if($created.Count -ne 9){throw 'Nine native objects not created'}
   $stage='SAVE_COMPLETED_TEMP_QVW'
