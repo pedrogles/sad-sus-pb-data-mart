@@ -93,3 +93,31 @@ O executor deve registrar `CHECK_RD_ALL=555089`, `CHECK_LT_201912=7140`, `CHECK_
 **STOP e orçamento de tentativas:** a correção atende falha reproduzida; executar **somente uma tentativa corretiva delimitada** após confirmar commit/Parser. Qualquer erro subsequente exige parar e **revisar a estratégia de automação COM**, em vez de continuar uma cadeia de novas recargas por tentativa. `M2=BLOCKED_PENDING_NATIVE_RETRY`; `C2/C3/C4/IX/PRODUCTION=NOT_APPROVED`.
 
 Referências: [QlikView API 12.40 — métodos COM](https://1c-predpriyatie-qlik.ivan-shamaev.ru/methods-qlikview-api-12-40-application-document/); [Qlik Community — título da janela por `GraphLayout.WindowTitle.v`](https://community.qlik.com/t5/QlikView/How-to-change-chart-quot-window-title-quot-caption-from-macro/m-p/144427).
+
+
+## Resultado final da construção M2 — nove objetos criados, visual pendente
+
+**Data da execução local reportada:** 07/11/2026. **Fonte probatória:** saída completa do operador no Windows PowerShell 5.1/QlikView 12, apresentada na conversa. Logs CSV, capturas e QVW de teste ainda não foram inspecionados independentemente. `GIT_HEAD=5443db3c139d87ad8f834125f2002ec091e98238`, branch `proposal/sad-mvp-rebaseline-2026-11-07`, `Parser.ParseFile` sem erros e `git status --short` limpo antes de `git pull --ff-only`.
+
+### Evidência de construção
+- `SOURCE_M1_SHA256=F55FB113D5E03DB1E7A746F665277E5F84AD5BECBE25D6FD1C85DDED0C2BEC60`.
+- Execução M2 em **nova** pasta privada de evidências com sufixo `SAD_M2_MVP_TEMP_956d51860bf244f5ac2c9ea36b493f20`. QVW produzido: `SAD_MVP_THREE_SHEETS_CANDIDATE.qvw`. As pastas de tentativas bloqueadas anteriores não foram reutilizadas.
+- `CHECK_RD_ALL=555089`; `CHECK_LT_201912=7140`; `CHECK_POP_2019=4018127`.
+- `CHECK_P23_CELLS=8028`; `CHECK_P23_ABSENT=4467`; `CHECK_P23_ZERO_OBS=97`; `CHECK_P23_POSITIVE=3464`.
+- `M2_SOURCE_SHEET_COUNT=1`; o runner criou **três folhas** ao final.
+- Nove eventos `M2_CREATED`: `M1-01 Bar`, `M1-02 Line`, `M1-03 Bar`, `M2-01 Line`, `M2-02 Bar`, `M2-03 Bar`, `M3-01 Bar`, `M3-02 Straight`, `M3-03 Straight`.
+- `M2_NATIVE_CANDIDATE=3_SHEETS_9_OBJECTS_BUILT_PENDING_GUI_AND_FILTER_VALIDATION`.
+- `PROTECTED_25_CANONICAL_AND_M1_SOURCE_SHA256_UNCHANGED=True`.
+- `M2_VERDICT=BUILT_CANDIDATE_ONLY_NOT_HOMOLOGATED`.
+
+**Interpretação:** `M2_NATIVE_BUILD=PASS_LOCAL_OPERATOR_REPORTED_CANDIDATE_ONLY`. Foi demonstrada a criação e a gravação pela API dos objetos no arquivo TEMP, **não** a legibilidade visual, persistência após fechamento/reabertura, adequação das legendas, valores por dimensão sob seleção nem propriedades de cálculo. O resultado não resolve C2/C3/C4, arquitetura B1/P5, POP role-playing, C/R/I/B ou os casos observados de ausência CNES.
+
+### Próximo gate: inspeção visual somente leitura, sem nova recarga
+
+1. **STOP do construtor M2:** não executar o script novamente. Preservar QVW/log/manifestos de evidência e o QVW M1 de origem.
+2. Abrir **somente o QVW TEMP final** no QlikView Desktop 12, sem recarregar, e não salvar sobre ele. Se possível, fazer antes uma segunda cópia para inspeção GUI em outro local de evidência, mantendo o candidato original intacto.
+3. Capturar **uma imagem de cada folha** sem seleções novas e anotar objetos ausentes/vazios/sobrepostos, títulos e a presença da população e das três classes P23.
+4. Confirmar que a terceira folha mostra POP como descrição anual por município. **A renderização não demonstra isolamento de RES/SERV e filtros P5**; suspeitas de POP multiplicada, filtros silenciosos ou confusão de período bloqueiam o uso do objeto, mesmo com `M2_CREATED=True`.
+5. Inspecionar posteriormente três cenários focalizados de seleção temporal, município SERV/RES e P23 independente, **apenas após revisão visual e definição de passos**. Nenhuma nova recarga é necessária para a primeira inspeção.
+
+**Gate visual = PENDING.** Nenhum dos nove objetos está homologado para uso acadêmico como visual definitivo apenas com esse stdout. Não alterar `PAINEL/PAINEL.qvw`, não fazer merge e não promover Fase IX. Caso o QVW temporário não reabra corretamente ou os objetos estejam visualmente inválidos, classificar `BLOCKED_VISUAL` com screenshot, preservar originais e decidir a menor correção antes de qualquer nova execução.
