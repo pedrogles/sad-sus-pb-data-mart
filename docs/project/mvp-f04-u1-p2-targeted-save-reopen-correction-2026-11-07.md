@@ -82,3 +82,31 @@ C:\Users\pedro\SAD_M1_EVIDENCIAS\SAD_F04_TEMPORAL_GUARD_9a792ff10d694d15b50588be
 **Pendência única para concluir o gate:** preservar a QVW temporária e fechar a sessão atual com seleções limpas **sem salvar novamente** se a configuração já foi salva; obter SHA do QVW fechado (comparar com a baseline P1 `6310321DB30C1065843B6BFF1A400D2C29D235D4B7C79372453366454EB1B1BD`), reabrir o **mesmo arquivo**, conferir somente a presença das duas propriedades de CH05 e o cenário **2018** (não repetir o cenário RES nem a bateria completa), fechar sem salvar, verificar que o hash permaneceu igual. Se o hash ainda for igual à baseline antiga, **STOP**: não presumir que o novo Save foi realizado. Caso as propriedades não persistam, **STOP** para diagnóstico de Save. Não alterar `main`, QVD/QVW canônicos, scripts ou builder.
 
 **Estado após esta evidência:** `F04_U1_P2=PARTIAL_GUI_PASS_PENDING_REOPEN_AND_HASH`; `F04_U1_REOPEN_PERSISTENCE=NOT_YET_PROVEN_AFTER_CORRECTION`; `C2_MVP_NATIVE_POST_SELECTION_PHYSICAL=INCOMPLETE`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
+
+
+## 5. Resultado do salvamento e reabertura F04/P2 — SHA íntegro e aviso temporal visível
+
+**Data de recebimento:** 07/11/2026. O operador enviou stdout de dois `Get-FileHash -Algorithm SHA256` executados no Windows na **mesma QVW TEMP F04** e uma screenshot real após reabertura. A captura foi conferida diretamente; os hashes do QVW são **evidência reportada pelo operador**, pois não há acesso do agente ao binário QVW do Windows. Nenhum script executável novo, COM, QlikView reload, QVD ou QVW canônico foi alterado aqui.
+
+**Arquivo:** `C:\Users\pedro\SAD_M1_EVIDENCIAS\SAD_F04_TEMPORAL_GUARD_9a792ff10d694d15b50588bea940bbd1\SAD_MVP_F04_TEMPORAL_GUARD_CANDIDATE.qvw`.
+
+| Checagem | Saída / evidência | Resultado |
+|---|---|---|
+| `F04_P2_SAVED_SHA256` | `4AF2C4BE17336AB729CF0CD70D75B7481B41AC003958EDB543584A1484047F92` | **Diferente** da baseline pré-correção `6310321DB30C1065843B6BFF1A400D2C29D235D4B7C79372453366454EB1B1BD`; o binário TEMP foi alterado no processo de salvamento |
+| `F04_P2_AFTER_REOPEN_SHA256` | `4AF2C4BE17336AB729CF0CD70D75B7481B41AC003958EDB543584A1484047F92` | **Igual** ao SHA do arquivo salvo; nenhuma mudança de bytes entre as duas leituras do operador |
+| Screenshot `image(20261107-200949).png` | PNG 1907 × 1068, 235329 bytes; SHA-256 **`024B63E6A1C742C5ECCB1B928AA1185B2D107FBAAAADE2BD79FA672543D8AE5C`** calculado sobre anexo efetivamente montado | `Seleções Atuais` mostra ano **2018**; CH04 mostra `201801..201812`; CH05 mostra a mensagem específica de incompatibilidade com **201912**, sem barras 201912 publicadas; P23 três barras |
+
+**FATO VERIFICADO (evidência mista):** o QVW temporário salvo tem SHA distinto da versão P1, voltou a apresentar o aviso temporal 201912 sob o filtro nativo 2018 após sua reabertura, e seu SHA não mudou durante a inspeção reportada. Isto sustenta `F04_U1_P2_TEMPORAL_GUARD_REOPEN_FUNCTIONAL=PASS_GUI_RESTRICTED_WITH_LOCAL_SHA` e `F04_U1_P2_BINARY_INTEGRITY=PASS_LOCAL_REPORTED`.
+
+**LIMITE DO GATE:** o protocolo P2 exige **duas capturas das propriedades de CH05 após reabrir** — condição de cálculo incluindo RES/ano/competência e mensagem de erro calculada `If(...)`. Elas **ainda não foram recebidas** nesta etapa; não é válido converter a demonstração funcional em leitura independente de cada propriedade, nem dizer que o QVW está homologado ou que os hashes provam semanticamente o conteúdo do CH05. A screenshot 2018 prova o texto exibido, não a expressão interna exata que o gera. O fato de o SHA permanecer igual após uma sessão é indício de não gravação, não um restore test de todos os objetos.
+
+**Veredito formal atual:**
+- `F04_U1_P2_TEMPORAL_GUARD_REOPEN_FUNCTIONAL=PASS_GUI_RESTRICTED_WITH_LOCAL_SHA`;
+- `F04_U1_P2_SAVED_SHA_CHANGED=PASS_LOCAL_REPORTED`;
+- `F04_U1_P2_SHA_AFTER_REOPEN_UNCHANGED=PASS_LOCAL_REPORTED`;
+- `F04_U1_P2_CH05_POST_REOPEN_PROPERTY_READBACK=PENDING`;
+- `F04_U1_P2_OVERALL=PARTIAL_PASS_PENDING_PROPERTY_READBACK`;
+- `C2_MVP_NATIVE_POST_SELECTION_PHYSICAL=INCOMPLETE`;
+- `C2_GUIDED_R2/C3/C4/LINK_KEY_CONTRACT/P5_GLOBAL/PHASE_IX/PRODUCTION=NOT_APPROVED`.
+
+**Última evidência solicitável neste gate:** se o responsável ainda mantém a QVW fechada, basta abrir **somente** o mesmo QVW F04 TEMP, ir a `CH05 → Propriedades → Geral` e capturar a condição de cálculo completa, depois `Mensagens de erro → Condição de cálculo não satisfeita` e capturar a expressão `If(...)`. **Não editar, não aplicar, não executar filtros novamente, não recarregar, não salvar.** Se a configuração estiver íntegra, encerrar P2 sem repetir ano 2018. Se houver divergência, STOP e registrar. Nenhum merge, alteração de `main`, novo QVW ou expansão automática do escopo.
