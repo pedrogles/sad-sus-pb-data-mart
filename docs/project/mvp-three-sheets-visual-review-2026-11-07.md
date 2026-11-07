@@ -83,3 +83,25 @@ O total de 12.040.181 é soma de 2017+2018+2019 e não população de um ano. A 
 **Diagnóstico estático do controle:** o `if` de `tools/Build-SadMvpThreeSheetsTemp.ps1` (linhas 208–214) interrompe se qualquer um ocorrer: ausência de PASS emitido da fase VII; ausência de PASS P23; ausência de PASS MVP_FLOW; presença de BLOCKED P23/MVP_FLOW; ou expressão de aviso `circular reference|loosely coupled|synthetic key` no log nativo. A mensagem agregada **não identifica qual condição foi atendida**. A ausência de um PASS também pode ser efeito de execução QVS interrompida antes de chegar ao marcador. Não atribuir causa ao novo JOIN, à ilha P23 ou à Link Table sem o log.
 
 **Próxima operação apenas leitura, sem alterar scripts ou disparar Qlik:** inspecionar `SAD_MVP_THREE_SHEETS_CANDIDATE.qvw.log` na pasta M3 acima; extrair marcadores realmente emitidos (excluir instruções contendo `TRACE`), erros/avisos com contexto e últimas 35 linhas. Preservar arquivo, diretório de evidências e cópia de inspeção do M2 anterior. **Não reexecutar `Build-SadMvpThreeSheetsTemp.ps1` agora**. Após confirmar a causa pelo log, determinar se é correção de script, regra de modelo ou falso positivo do guarda; um novo ensaio físico dependerá dessa decisão. PR Draft; sem merge, C2/C3/C4, IX ou produção.
+
+
+## 6. Diagnóstico confirmado pelo log nativo e correção QVS — 07/11/2026
+
+**Evidência primária:** linhas finais do log QlikView Desktop local coladas na conversa pelo operador, com horário do log `2026-11-07 11:52:20–11:52:44`. A análise aqui baseia-se no **texto do log compartilhado**, não na inspeção independente dos bytes do arquivo Windows.
+
+### Resultados verificados no log
+
+- `[VII] VERDICT=PASS_SCRIPT_ASSOCIATIVE_CANDIDATE_ONLY`: 16 tabelas, 0 `$Syn`, 566.672 registros FI, 35.518 LT, 669 POP, Link 85.705.
+- `[P23A1] VERDICT=PASS_SCRIPT_CANDIDATE_ONLY`: 17 tabelas, 0 `$Syn`, 8.028 células (4.467 ausências, 97 zeros SUS observados, 3.464 positivas).
+- `[MVP_FLOW] ROWS=566672 UNIQUE=566672 EQ=294635 NE=260454 UNMATCHED=0 BAD=0 ALL=555089`. Esses valores correspondem **exatamente ao oráculo P3.2** já validado; o `LEFT JOIN` não elevou a contagem física observada de FI. **Não é um PASS final da rotina**, pois o `IF` e seu veredito terminal não concluíram.
+- O log termina com `Erro: Erro na linha do script` na cláusula `IF ScriptErrorCount>0` seguida de `OR ...` em linhas distintas; aparece `Erro: Comando desconhecido` em `TRACE [MVP_FLOW] VERDICT=BLOCKED_FACT_GRAIN_OR_CLASSIFICATION`. Não há evidência de que o oráculo em si tenha falhado.
+
+### Causa raiz e remediação pontual
+
+**FATO verificado por log + código versionado:** o `IF` de `PAINEL/sad_mvp_m3_flow_classification.qvs` foi escrito com `IF` na primeira linha, `OR` nas seguintes e `THEN` somente ao final, em desconformidade com a gramática da instrução de controle QlikView. A [documentação oficial QlikView September 2026 — If..then..end if](https://help.qlik.com/en-US/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Scripting/ScriptControlStatements/If.htm) declara que a cláusula `if ... then` é encerrada por fim de linha ou `;` e não pode atravessar uma quebra de linha.
+
+**Correção versionada no mesmo PR Draft:** consolidar toda a condição de cardinalidade/oráculos em **uma única linha `IF ... THEN`**; separar a verificação de `NoOfTables()=17` em um `IF ... THEN` independente e igualmente em linha única, com `TRACE` distinto `BLOCKED_ASSOCIATIVE_TABLE_COUNT`. Acrescentar `TRACE [MVP_FLOW] TABLES=...` para evidenciação. **Não modificar** mapa RES/SERV, `JOIN`, medidas, constantes do oráculo, QVD, QVW M1, runner COM de visualização, `LINK_ANALISE` ou regras acadêmicas.
+
+**CLASSIFICAÇÃO:** `M3_P3_2_NUMERIC=PASS_LOCAL_REPORTED_PRE_IF`; `M3_QVS_CONTROL_FLOW_PRE_FIX=BLOCKED_PARSER`; `M3_QVS_PARSER_FIX=STATIC_VERSIONED_NOT_RUN`; `M3_OBJECTS_AND_POP_NO_TOTALS=NOT_TESTED`. Embora os números estejam corretos no log, o novo QVW não chegou a ser construído; o próximo PASS de build requer **nova execução em cópia TEMP**, não reutilização da pasta abortada.
+
+**Limites e STOP:** uma tentativa corretiva **específica para essa falha demonstrada** pode ser realizada em Windows após `git pull --ff-only`, `git status --short` limpo, conferência do SHA e parser do PowerShell. Se houver falha posterior em `No Totals` ou nas propriedades COM, **interromper e inspecionar**, sem nova sequência automática. Proteger 22 QVDs, 3 QVWs canônicos e QVW M1 como na execução anterior. O PR #226 permanece Draft; `C2/C3/C4/P5/IX/PRODUCTION=NOT_APPROVED`.
