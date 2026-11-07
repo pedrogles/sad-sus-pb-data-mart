@@ -105,3 +105,25 @@ O total de 12.040.181 é soma de 2017+2018+2019 e não população de um ano. A 
 **CLASSIFICAÇÃO:** `M3_P3_2_NUMERIC=PASS_LOCAL_REPORTED_PRE_IF`; `M3_QVS_CONTROL_FLOW_PRE_FIX=BLOCKED_PARSER`; `M3_QVS_PARSER_FIX=STATIC_VERSIONED_NOT_RUN`; `M3_OBJECTS_AND_POP_NO_TOTALS=NOT_TESTED`. Embora os números estejam corretos no log, o novo QVW não chegou a ser construído; o próximo PASS de build requer **nova execução em cópia TEMP**, não reutilização da pasta abortada.
 
 **Limites e STOP:** uma tentativa corretiva **específica para essa falha demonstrada** pode ser realizada em Windows após `git pull --ff-only`, `git status --short` limpo, conferência do SHA e parser do PowerShell. Se houver falha posterior em `No Totals` ou nas propriedades COM, **interromper e inspecionar**, sem nova sequência automática. Proteger 22 QVDs, 3 QVWs canônicos e QVW M1 como na execução anterior. O PR #226 permanece Draft; `C2/C3/C4/P5/IX/PRODUCTION=NOT_APPROVED`.
+
+
+## 7. Terceira tentativa: fluxo PASS, objeto M3-03 bloqueado em índice COM
+
+**Execução física reportada pelo operador (07/11/2026):** `git status --short` vazio, `git pull --ff-only`, `HEAD=b9afb7252d73fefb2eac8f0114e036e8b9381c42`; runner criou QVW TEMP isolado `SAD_M2_MVP_TEMP_0b97b2f14b7d4060bd9b7f38044f1ea1\SAD_MVP_THREE_SHEETS_CANDIDATE.qvw` a partir do QVW M1 com SHA `F55FB113D5E03DB1E7A746F665277E5F84AD5BECBE25D6FD1C85DDED0C2BEC60`. O stdout foi fornecido diretamente; os bytes do log/QVW desta execução **não** foram lidos pelo agente.
+
+**Resultados observados antes da falha:**
+- `CHECK_RD_ALL=555089`.
+- `CHECK_M3_01_RES_EQ_SERV=294635`, `CHECK_M3_01_RES_NE_SERV=260454`, `CHECK_M3_01_UNMATCHED_FI_RECORDS=0`, `CHECK_M3_01_CATEGORIES=2`. Resultado consistente com P3.2, sem prova visual das barras no QVW salvo.
+- `CHECK_LT_201912=7140`, `CHECK_POP_2019=4018127`, `CHECK_P23_CELLS=8028`, `CHECK_P23_ABSENT=4467`, `CHECK_P23_ZERO_OBS=97`, `CHECK_P23_POSITIVE=3464`.
+- `M2_CREATED` para **oito** objetos: M1-01..03, M2-01..03, M3-01, M3-02.
+- `M2_FAILED_STAGE=CREATE_OBJECT_M3-03`, `M2_FAILED_LINE=153`, `M2_VERDICT=BLOCKED_OR_INCONCLUSIVE O valor não recai no intervalo esperado.`
+- `PROTECTED_25_CANONICAL_AND_M1_SOURCE_SHA256_UNCHANGED=True`.
+
+**Diagnóstico:** no script do runner desse commit, a linha 153 usa `$cp.Expressions.Item(1).Item(0).Data.ExpressionData` para a primeira e única expressão da tabela M3-03. A implementação de referência de `CreateStraightTable/Expressions` no `APIGuide.qvw` documentada pela [Qlik Community](https://community.qlik.com/t5/QlikView/Qlikview-show-totals-for-dimensions-in-straight-table-activate/td-p/492133) usa `Item(0).Item(0)` para primeira expressão. **Hipótese técnica forte**: `Item(1)` acessa grupo inexistente e produz erro COM de índice fora do intervalo. A mensagem não identifica subexpressão exata dentro da cadeia, portanto a confirmação exige inspeção COM controlada.
+
+**Correção e mitigação já versionadas:**
+- `tools/Build-SadMvpThreeSheetsTemp.ps1`: as duas cadeias de acesso ao primeiro `ExpressionData` passam de `Expressions.Item(1).Item(0)` para `Expressions.Item(0).Item(0)`; nenhuma mudança em QVS/classificação/medidas, nem em QVW/QVD canônicos.
+- `tools/Test-SadM3NoTotalsComProbe.ps1`: teste **isolado em QVW de uma linha sintética** criado em pasta externa de evidências, usando COM QlikView Desktop. Adiciona uma `StraightTable`, testa o acesso ao índice 0, configura `UsePartialSum=$false`, confere propriedade de volta e grava somente QVW sintético isolado. **Nenhum dataset SUS lido; nenhuma recarga do Data Mart**. O teste depende de execução física Windows; revisão estática não é PASS.
+- Somente se `M3_COM_PROBE=PASS_SYNTHETIC_LOCAL_ONLY`, considerar novo build M3 em QVW TEMP, preservando as evidências das tentativas anteriores. Caso contrário, STOP e investigar COM; não iniciar outra cadeia de reload.
+
+**Classificação de evidência:** `M3_FLOW_NUMERIC=PASS_LOCAL_REPORTED`, `M3_EIGHT_OBJECTS=CREATED_BUT_NOT_SAVED_AS_COMPLETED_MODEL`, `M3_POP_TOTAL=BLOCKED_COM_INDEX`; `NO_TOTALS_ZERO_BASE_FIX=STATIC_VERSIONED_ONLY`; `M3_COM_PROBE_WINDOWS=NOT_RUN`, `M3_FULL_BUILD=NOT_REPEATED`. `C2/C3/C4/IX/PRODUCTION=NOT_APPROVED`; PR #226 Draft; `main` intacta.
