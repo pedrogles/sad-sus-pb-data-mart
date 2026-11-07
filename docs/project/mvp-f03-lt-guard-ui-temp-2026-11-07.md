@@ -76,3 +76,27 @@ Script: `tools/New-SadMvpF03UiGuardCopy.ps1`, obrigatório `-Prepare`, `-Expecte
 **Próximo ato mínimo, sem script/COM/reload:** fechar as janelas de propriedades; limpar as seleções, conferir retorno M2-01/M2-02 e salvar **apenas** `SAD_MVP_F03_UI_GUARD_CANDIDATE.qvw` na pasta `SAD_F03_UI_GUARD_TEMP_<GUID>` após confirmar estado neutro. Capturar `S_OK` com janela `Seleções Atuais` legível. Selecionar exclusivamente `RES_COD_DATASUS_6=251370` pela tabela POP, navegar à folha 2, capturar `S_BAD` com o valor visível na caixa `Seleções Atuais`, confirmar os dois avisos e P23; limpar a seleção novamente, sem mais gravações/edições. Parar no primeiro erro de UI. Se o operador já possui `S_OK`/`S_BAD` com estado legível, reutilizar e não repetir.
 
 **STOP:** não mexer em `main`, QVDs, QVW base de nove objetos, QVW M1 ou canônicos; não concluir que função validou toda P5, não declarar `C2_GUIDED_R2` aprovado.
+
+
+## 6. Capturas S_OK — reversibilidade após limpar RES
+
+**Data:** 07/11/2026. Duas capturas reais da folha `Leitos Cadastrais Observados` da QVW TEMP `SAD_F03_UI_GUARD_TEMP_a3bedd3bf2444d2ab46d890776d3e2b8/SAD_MVP_F03_UI_GUARD_CANDIDATE.qvw`, recebidas nesta conversa e inspecionadas visualmente. **Não** inclui nova execução de script/COM ou alteração da QVW canônica.
+
+| Captura | Dimensão | Bytes | SHA-256 do PNG recebido | Observação |
+|---|---|---:|---|---|
+| `image(20261107-172143).png` | 1907 × 1068 | 261636 | `EE93F73D54DB8AE26B4A2E3EC4B6E6798EE27B9AA76AE78525D7CF6087C55927` | M2-01 e M2-02 com séries/barras novamente desenhadas; título QVW ainda com `*` (pendências de salvamento) |
+| `image(20261107-172212).png` | 1907 × 1068 | 268023 | `34BDF7E45816A9A8AFF65FDE586269BE4C3CA2E8FC9D4C4AA36236F48E72870C` | **Seleções Atuais vazia**, M2-01 e M2-02 renderizados, M2-03 com três barras; título QVW **sem `*`** |
+
+**Verificação visual direta:** a guarda `GetSelectedCount(RES_COD_DATASUS_6, True())=0` não ficou presa em estado indisponível. Ao retirar o filtro, **M2-01 apresenta duas séries de snapshots** e **M2-02 apresenta barras de leitos SUS por município/competência fixa**. A ilha P23 (M2-03) permanece visível com suas três categorias. A segunda screenshot mostra a janela `Seleções Atuais` sem linhas, condição suficiente para demonstrar estado inicial neutro na GUI.
+
+**Persistência:** o QVW com `*` na primeira captura e **sem** `*` na segunda sugere que a versão em memória deixou de ter alterações pendentes, compatível com `Save` realizado pelo operador. Todavia **não foi feito re-open do QVW salvo nem verificação de hash posterior**; portanto `F03_TEMP_SAVE_VISUAL=NO_UNSAVED_MARKER`, **não** `F03_TEMP_QVW_REOPEN_PERSISTENCE=PASS`.
+
+**Vereditos parciais atualizados:**
+- `F03_S_OK_CLEARED=PASS_GUI_NO_SELECTION`
+- `F03_CH04_CH05_RECOVERY=PASS_GUI_RESTRICTED`
+- `F03_P23_3_CATEGORIES=PASS_GUI_VISUAL_RESTRICTED`
+- `F03_TEMP_QVW_NO_UNSAVED_MARKER=CONFIRMED_GUI`
+- `F03_S_BAD_RES_251370_EXACT=PENDING`, pois as cinco primeiras capturas da sessão anterior demonstraram o aviso, mas **não** a seleção explicitamente exibida na mesma imagem.
+- `MVP_F03_UI_GUARD=PARTIAL_GUI_PASS_PENDING_S_BAD_WITH_SELECTION_STATE`. C2/C3/C4/P5/IX e produção permanecem não aprovados.
+
+**Única ação restante no gate:** sem alterar objetos ou salvar novo QVW, selecionar **somente `RES_COD_DATASUS_6=251370`** na folha 3, voltar à folha 2 e capturar **uma única screenshot** `S_BAD` com **Seleções Atuais visível, o valor 251370, dois avisos e três barras P23**. Depois limpar a seleção e STOP. Não repetir S_OK, não recarregar e não rodar scripts.
