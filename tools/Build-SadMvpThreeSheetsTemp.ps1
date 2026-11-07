@@ -146,17 +146,17 @@ function Chart($sheet,[string]$viewId,[string]$type,[string]$title,[string[]]$di
   foreach($e in $expressions){$null=$o.AddExpression($e)}
   $cp=$o.GetProperties()
   $cp.GraphLayout.WindowTitle.v=$title
-  # QlikView Classic COM (Qlik Community, accepted property path):
+  # QlikView Classic COM, first expression group is 0-based (APIGuide examples):
   # UsePartialSum=false sets "No Totals" on the expression of a straight table.
   # This is essential for POP (annual, semi-additive). No other chart is changed.
   if($viewId -ceq 'M3-03'){
-    $exprData=$cp.Expressions.Item(1).Item(0).Data.ExpressionData
+    $exprData=$cp.Expressions.Item(0).Item(0).Data.ExpressionData
     if($null -eq $exprData){throw 'No M3-03 ExpressionData found in Qlik COM properties'}
     $exprData.UsePartialSum=$false
   }
   $null=$o.SetProperties($cp)
   if($viewId -ceq 'M3-03'){
-    $verify=$o.GetProperties().Expressions.Item(1).Item(0).Data.ExpressionData
+    $verify=$o.GetProperties().Expressions.Item(0).Item(0).Data.ExpressionData
     if([bool]$verify.UsePartialSum){throw 'M3-03 total still enabled; refuse misleading POP table'}
     Write-Output 'M3_03_TOTAL_MODE=NO_TOTALS_PERSISTED_IN_COM_CANDIDATE'
   }
