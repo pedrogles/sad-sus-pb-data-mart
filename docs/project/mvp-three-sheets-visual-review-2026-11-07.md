@@ -201,3 +201,20 @@ O total de 12.040.181 é soma de 2017+2018+2019 e não população de um ano. A 
 5. Classificar `GUI_PASS_RESTRICTED` somente após screenshots da versão **corrigida**; se faltar barra, houver total trianual ou população afetada inadequadamente, `BLOCKED_VISUAL_OR_SEMANTIC`, STOP e análise sem reconstrução indiscriminada.
 
 **Estado final após este registro:** `M3_GUI_VISUAL_REVIEW=PENDING`; `FILTERS_NATIVE_AND_ROLE_PLAYING=PENDING`; `MVP_USER_READY=NO`; `C2/C3/C4/P5/IX/PRODUCTION=NOT_APPROVED`. O PR #226 continua Draft, sem merge e sem modificação de `main` ou dados canônicos.
+
+
+## 11. Evidência visual da folha 3 corrigida — reabertura no QlikView 12
+
+**Evidência inspecionada diretamente:** imagem da janela QlikView x64 Personal Edition no arquivo `SAD_MVP_THREE_SHEETS_CANDIDATE_INSPECAO.qvw`, pasta externa `SAD_M2_MVP_TEMP_0f6b3b19ce714295ba80e5c27856c08e`, fornecida em 07/11/2026 pelo operador. Anexo da conversa `image(20261107-155818).png`, PNG de **1907 × 1068 px**, SHA-256 calculado diretamente dos bytes recebidos: `330A75F58FF17FA61A1DDE7A9EC5E8F711D580935F58618CAF95EED99B979CA7`. Não incluir a imagem/binário no Git; a referência é o anexo desta conversa. **Nível:** inspeção visual direta da captura, sem abrir o QVW por COM nem executar Qlik no agente.
+
+| Objeto | Inspeção direta da imagem | Classificação limitada |
+|---|---|---|
+| **M3-01** classificação RES/SERV | Duas barras separadas, nomeadas `RES_EQ_SERV` e `RES_NE_SERV`, e alturas qualitativamente compatíveis com 294.635 e 260.454. A imagem **não imprime valores exatos nas barras**; os números precisos vêm da execução prévia reportada. | `GUI_RENDER_PASS_RESTRICTED` |
+| **M3-02** pares RES→SERV | Tabela nativa de códigos municipais RES, SERV e `Sum(QTD_INTERNACAO)`, com total geral visível de 555.089, compatível com a métrica aditiva de internações. Muitas linhas e cabeçalhos truncados; fluxos externos aparecem na lista, sem validação de associação/seleção. | `GUI_RENDER_PASS_RESTRICTED; READABILITY_PENDING` |
+| **M3-03** população anual municipal | Tabela nativa mostra colunas município `RES_COD...`, `PERIODO_ANO` e população `Sum(POPULA...)`, linhas por ano (ex.: 250010 em 2017, 2018, 2019). **Não aparece a linha de total agregado 12.040.181 que havia sido exibida na versão anterior.** A tela cobre só o início da tabela: ausência do total no rodapé completo não é provada isoladamente pela imagem; a verificação COM `UsePartialSum=False` foi reportada antes. | `GUI_NO_VISIBLE_TRIYEAR_TOTAL_PASS_RESTRICTED; POP_CELL_VALUES_UNVERIFIED` |
+
+**Achados de usabilidade:** os objetos deixam muito espaço sem uso à direita; M3-02 e M3-03 estão estreitos e truncam nomes de colunas/títulos; M3-01 usa rótulos técnicos, com a expressão `Sum(QTD_INTERNACAO)` em vez de rótulo claro. São ajustes de apresentação, não motivo para reabrir/reexecutar o builder imediatamente.
+
+**Gate limitado encerrado:** `M3_GUI_RENDER=PASS_RESTRICTED_SCREENSHOT`, incluindo persistência visual da classificação em duas barras e **ausência de total populacional no trecho visível**. `M3_VISUAL_ACADEMIC_FINAL=NOT_APPROVED`: layout e rótulos pendentes. Não inferir `MVP_USER_READY`, `LINK_KEY_CONTRACT`, `MEASURES_AND_DENOMINATOR_CONTRACT`, `C2/C3/C4/P5`, controle de seleções nativas ou Fase IX a partir da screenshot. `M3_POP_FULL_TABLE_TOTAL=COM_READBACK_REPORTED_NOT_FULL_SCROLL_INSPECTED`.
+
+**Próximo gate sugerido, separado do encerrado:** planejar teste **read-only, sem Reload/Save**, para seleções mínimas e reversíveis no QVW de inspeção, com oráculos por ano, papéis RES/SERV, POP e isolamento P23. Antes de aprovar tal teste, conferir a matriz de políticas P5 e definir cenários que não introduzam validação semântica de cross-fact por implicação. Alternativamente, finalizar ajustes de texto/layout apenas quando os contratos de associação estiverem seguros. **STOP:** não repetir COM probe nem gerar outro QVW automaticamente. PR #226 permanece Draft, `main` não alterada.
