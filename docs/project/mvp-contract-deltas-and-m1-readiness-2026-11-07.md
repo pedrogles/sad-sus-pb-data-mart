@@ -1,5 +1,6 @@
 # SAD SUS PB — M0 complementar: deltas contratuais e readiness M1
 
+> **Atualização de estado — 07/11/2026:** a aprovação M0 B1 do responsável está registrada em [adendo explícito](mvp-scope-owner-approved-2026-11-07.md). As seções iniciais com `OWNER_MVP_SCOPE_APPROVAL=PENDING` são o histórico anterior à aprovação; os resultados M1 25/25 hashes e dez oráculos foram reportados PASS local restrito. A implementação experimental de três folhas/nove objetos está preparada no [gate M2](mvp-three-sheets-implementation-2026-11-07.md), ainda **não executado no Windows**. Contratos da `main` permanecem sem alteração.\n\n
 **Data:** 07/11/2026  
 **Estado:** CANDIDATE_CHANGE_CONTROL_NOT_APPROVED / M1_NOT_EXECUTED  
 **Baseline de referência:** `main@0549e1dba71aaa8bbab9d6755aecb8465f8bea83`  
