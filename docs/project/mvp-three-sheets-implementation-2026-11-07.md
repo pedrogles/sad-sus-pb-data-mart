@@ -61,3 +61,18 @@ O executor deve registrar `CHECK_RD_ALL=555089`, `CHECK_LT_201912=7140`, `CHECK_
 - `USER_READY=NO` até aceites de filtros, role-playing RES/SERV, POP e indisponibilidades; `C2/C3/C4=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
 
 **Próxima revisão após a execução:** ler somente o stdout e manifestos/logs necessários; abrir o QVW TEMP e inspecionar três folhas com capturas reais, labels/legendas e três cenários representativos de filtro. Após qualquer falha, **não reexecutar** sem investigar a causa. Nenhum merge segue desta execução.
+
+
+## Resultado da tentativa M2 e correção direcionada — 07/11/2026
+
+**Evidência primária:** stdout integral de execução pelo operador no Windows PowerShell 5.1/QlikView 12 (relatado no chat; os binários e log não foram reinspecionados independentemente). Na branch e commit `8c9426b0dabeb6a1e134d36d79444533e1096bfb`, o parser PowerShell não apontou erros; o QVW M1 prévio existia. O runner criou **apenas** uma nova cópia `SAD_MVP_THREE_SHEETS_CANDIDATE.qvw` sob a pasta `SAD_M2_MVP_TEMP_cab310edba234c85bceedcecb81f9f33` no EvidenceRoot privado.
+
+**Controles físicos reportados como positivos antes da falha:** `CHECK_RD_ALL=555089`, `CHECK_LT_201912=7140`, `CHECK_POP_2019=4018127`, `CHECK_P23_CELLS=8028`, `CHECK_P23_ABSENT=4467`, `CHECK_P23_ZERO_OBS=97`, `CHECK_P23_POSITIVE=3464`; `PROTECTED_25_CANONICAL_AND_M1_SOURCE_SHA256_UNCHANGED=True`.
+
+**Bloqueio observado:** `M2_VERDICT=BLOCKED_OR_INCONCLUSIVE A propriedade 'Count' não foi encontrada neste objeto`, antes de qualquer `M2_CREATED` ou `CANDIDATE_QVW` final. Inspeção do script pinado localizou `$doc.Sheets.Count` no gate da contagem de folhas (duas ocorrências, antes e depois de criá-las). Referências da API clássica de automação QlikView usam `ActiveDocument.NoOfSheets` e `GetSheet(i)`; evidências: [Qlik Community: GetSheet(j)](https://community.qlik.com/t5/QlikView/How-to-see-newly-created-sheets-with-GetSheet-j/m-p/300780/highlight/true), [exemplo legado de automação](https://github.com/inqlik/inqlik.github.io/blob/master/_posts/2014-07-19-qlikview-automation-by-scripts.md). **Causa imediata identificada por análise estática**, ainda sem verificação da correção no QlikView 12 desta instalação.
+
+**Correção única no mesmo runner:** substituição das duas leituras `$doc.Sheets.Count` por `$doc.NoOfSheets`; rastreamento `M2_SOURCE_SHEET_COUNT`, `M2_FAILED_STAGE` e `M2_FAILED_LINE` para diagnóstico preciso sem novas rodadas exploratórias. Demais oráculos/expressões, proteção de originais, fontes QVS e modelo permanecem idênticos. **Não** reaproveitar nem abrir/salvar sobre o QVW parcial; nova tentativa usa pasta GUID nova, copiando o M1 original preservado.
+
+**Autorização e STOP:** o responsável autorizou a implementação TEMP do MVP, e esta correção responde exclusivamente à falha real. Uma tentativa corretiva deliberada após `git pull --ff-only` e validação de parser é permitida no escopo já autorizado; **não repetir automaticamente** diante de outro erro. Se `M2_FAILED_STAGE` identificar novo método/propriedade COM incompatível, preservar pasta e reportar erro para revisão específica, sem adivinhar outra API ou aprovar painéis.
+
+**Veredictos:** `M2_P23_AND_THREE_FACT_ORACLES=PASS_LOCAL_REPORTED_RESTRICTED`; `M2_THREE_SHEETS=BLOCKED_BEFORE_CREATION`; `M2_CORRECTED_SCRIPT=STATIC_ONLY_NOT_RUN`; `C2/C3/C4/IX=NOT_APPROVED`. `main` e QVD/QVW canônicos não foram alterados.
