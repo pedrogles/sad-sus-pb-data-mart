@@ -48,3 +48,31 @@ Script: `tools/New-SadMvpF03UiGuardCopy.ps1`, obrigatório `-Prepare`, `-Expecte
 **Veredito futuro possível:** `MVP_F03_UI_GUARD=PASS_GUI_RESTRICTED`, `BLOCKED` ou `INCONCLUSIVE`, somente após duas capturas reais. **Nesta preparação:** `COPY_RUNNER=STATIC_VERSIONED_NOT_EXECUTED`, `TEMP_QVW=NOT_CREATED_BY_OPERATOR`, `UI_GUARD=NOT_CONFIGURED`, `GUI_ACCEPTANCE=NOT_TESTED`. A decisão de incluir guardas em outro filtro, automação COM das propriedades, B2 ou indicador cross-fact está fora deste gate.
 
 **STOP e autoridades:** sem merge, sem alteração de `main`, sem autorização da Fase IX; `C2_GUIDED_R2/P5_D2_UI/LINK_KEY_CONTRACT/MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `PRODUCTION_APPROVED=False`.
+
+
+## 5. Evidência GUI recebida — configuração CH04/CH05 e aviso exibido
+
+**Data:** 07/11/2026. **Origem:** cinco imagens reais da janela QlikView x64 Personal Edition, fornecidas pelo operador nesta conversa e inspecionadas visualmente. Todas mostram o **novo QVW TEMP isolado** `SAD_F03_UI_GUARD_TEMP_a3bedd3bf2444d2ab46d890776d3e2b8/SAD_MVP_F03_UI_GUARD_CANDIDATE.qvw`. O título possui **asterisco `*`** nas capturas, indicando alterações ainda **não comprovadas como salvas** na versão fotografada. Não confundir com o QVW `_INSPECAO` anterior ou canônicos.
+
+| Anexo da conversa | Resolução | SHA-256 dos bytes PNG | Conteúdo comprovado |
+|---|---|---|---|
+| `image(20261107-171735).png` | 1904×1068 | `EA3A7A7337F218F09B3CD64DB5C7FBA7A1007B7F062D6EB8968D3DBFA2745A75` | Propriedades CH04 / M2-01: `=GetSelectedCount(RES_COD_DATASUS_6, True())=0` |
+| `image(20261107-171745).png` | 1907×1068 | `A6BE2693531C3E9373D66164E02ED564EBDF0572DE3F0A59F188E14E2C1713BC` | Mensagens de erro CH04: `Condição de cálculo não satisfeita` com texto contextual personalizado |
+| `image(20261107-171802).png` | 1906×1068 | `24953D5B07465AB059DDC1E7C4B7C5409BCDD50A3AF2949C649712366CFB69FB` | Propriedades CH05 / M2-02: mesma condição de cálculo |
+| `image(20261107-171815).png` | 1907×1068 | `E295C74901A42D95951D8FCD7F14CC88F20092D77356396BDD431EB9834A84E2` | Mensagens CH05: mesma mensagem configurada na categoria específica |
+| `image(20261107-171825).png` | 1907×1068 | `25D1834AABFF7329BAF5883802ACDFDFDC18E756DE8B83CFB4196D7EA9959C4B` | Com a janela de propriedades fechada, **M2-01 e M2-02 exibem o aviso textual**; M2-03 ainda mostra suas três barras observacionais |
+
+**Texto exibido nas duas superfícies:** “Indisponível nesta seleção: o filtro de residência não define a localização dos leitos. Ausência de dados associados não significa zero leitos.”
+
+**Classificação precisa:**
+- `F03_CH04_CH05_CALC_CONDITION=CONFIGURED_GUI_CONFIRMED`.
+- `F03_CH04_CH05_CUSTOM_MESSAGE=CONFIGURED_AND_RENDERED_GUI_CONFIRMED`.
+- `F03_P23_ISLAND=THREE_BARS_RENDERED_VISUAL_RESTRICTED`.
+- `F03_S_BAD_RES_251370_EXACT=INCONCLUSIVE`: **não há janela `Seleções Atuais` na última captura**; a renderização do aviso indica condição não atendida, mas não certifica qual valor de RES estava selecionado. Não inventar seleção 251370 a partir de mensagem.
+- `F03_S_OK_CLEARED=NOT_RECEIVED`: falta captura **sem** seleção RES com os gráficos novamente exibindo dados, necessária para afirmar reversibilidade.
+- `F03_TEMP_QVW_PERSISTENCE=NOT_EVIDENCED`: asterisco no título não demonstra que a configuração foi salva.
+- `MVP_F03_UI_GUARD=PARTIAL_GUI_PASS_PENDING_STATE_AND_REVERSIBILITY`; `P5_UI/C2/C3/C4/IX/PRODUCTION=NOT_APPROVED`.
+
+**Próximo ato mínimo, sem script/COM/reload:** fechar as janelas de propriedades; limpar as seleções, conferir retorno M2-01/M2-02 e salvar **apenas** `SAD_MVP_F03_UI_GUARD_CANDIDATE.qvw` na pasta `SAD_F03_UI_GUARD_TEMP_<GUID>` após confirmar estado neutro. Capturar `S_OK` com janela `Seleções Atuais` legível. Selecionar exclusivamente `RES_COD_DATASUS_6=251370` pela tabela POP, navegar à folha 2, capturar `S_BAD` com o valor visível na caixa `Seleções Atuais`, confirmar os dois avisos e P23; limpar a seleção novamente, sem mais gravações/edições. Parar no primeiro erro de UI. Se o operador já possui `S_OK`/`S_BAD` com estado legível, reutilizar e não repetir.
+
+**STOP:** não mexer em `main`, QVDs, QVW base de nove objetos, QVW M1 ou canônicos; não concluir que função validou toda P5, não declarar `C2_GUIDED_R2` aprovado.
