@@ -160,3 +160,44 @@ O total de 12.040.181 é soma de 2017+2018+2019 e não população de um ano. A 
 **Patch mínimo em `tools/Build-SadMvpThreeSheetsTemp.ps1`, apenas no PR Draft:** remover `Write-Output` de dentro de `Chart`; manter `return $o` como **única saída normal** da função; emitir o mesmo marcador `M3_03_TOTAL_MODE=NO_TOTALS_PERSISTED_IN_COM_CANDIDATE` **no loop chamador**, depois de criar/posicionar o objeto e de `M2_CREATED=M3-03`. Nenhum QVS, dado, oráculo, relação ou propriedade COM alterada. Revisão estática confirmou `Chart` sem `Write-Output` e exatamente um marcador no chamador; o patch ainda **não foi executado no Windows**.
 
 **STOP e próximo gate:** não reutilizar o QVW incompleto dessa tentativa nem repetir probes sintéticos. Uma tentativa de build em **nova cópia TEMP de M1** é o máximo permitido por esta correção pontual; exigir os **nove** `M2_CREATED`, `M3_03_TOTAL_MODE`, `M2_VERDICT=BUILT_CANDIDATE_ONLY_NOT_HOMOLOGATED` e hash dos 25 canônicos + origem M1 preservados. No primeiro novo erro, interromper e inspecionar; não iniciar mais ciclos de reload por tentativa. Após sucesso, inspecionar somente a folha 3 no QVW de inspeção, sem Reload/Save, antes de qualquer promoção de C2/C3/C4/P5/IX/produção.
+
+
+## 10. M3 corrigido: três folhas e nove objetos construídos — PASS restrito local
+
+**Data:** 07/11/2026. **Fonte:** stdout completo fornecido pelo operador de uma execução Windows PowerShell/QlikView 12; **não** houve conferência independente de binário QVW, screenshots desta versão ou log nativo pelo agente. O operador confirmou `git status --short` sem alterações, `git pull --ff-only` e `HEAD=049663d19c87fc629e81ee6127868ccf1c9643e3`. O script versionado `tools/Build-SadMvpThreeSheetsTemp.ps1` foi executado uma vez em QVW TEMP externo, a partir do QVW M1 com SHA-256 `F55FB113D5E03DB1E7A746F665277E5F84AD5BECBE25D6FD1C85DDED0C2BEC60`, sem recarregar os canônicos.
+
+**QVW TEMP final do ensaio:** diretório externo `SAD_M2_MVP_TEMP_0f6b3b19ce714295ba80e5c27856c08e`, arquivo `SAD_MVP_THREE_SHEETS_CANDIDATE.qvw`. Script de classificação M3 com `FLOW_QVS_SHA256=284CE442A0F5C4D28D976F4B89375DC930AD34B5CC1D73602083E820A81A3203`. Não versionar o QVW/log/CSV.
+
+| Verificação do stdout | Resultado |
+|---|---|
+| `CHECK_RD_ALL` | 555089 |
+| `CHECK_M3_01_RES_EQ_SERV` | 294635 |
+| `CHECK_M3_01_RES_NE_SERV` | 260454 |
+| `CHECK_M3_01_UNMATCHED_FI_RECORDS` | 0 |
+| `CHECK_M3_01_CATEGORIES` | 2 |
+| `CHECK_LT_201912` | 7140 |
+| `CHECK_POP_2019` | 4018127 |
+| `CHECK_P23_CELLS` | 8028 |
+| `CHECK_P23_ABSENT` | 4467 |
+| `CHECK_P23_ZERO_OBS` | 97 |
+| `CHECK_P23_POSITIVE` | 3464 |
+| `M2_SOURCE_SHEET_COUNT` | 1 |
+| `M2_CREATED` | M1-01, M1-02, M1-03, M2-01, M2-02, M2-03, M3-01, M3-02, M3-03 (nove eventos) |
+| `M3_03_TOTAL_MODE` | `NO_TOTALS_PERSISTED_IN_COM_CANDIDATE` |
+| `M2_NATIVE_CANDIDATE` | `3_SHEETS_9_OBJECTS_BUILT_PENDING_GUI_AND_FILTER_VALIDATION` |
+| `PROTECTED_25_CANONICAL_AND_M1_SOURCE_SHA256_UNCHANGED` | `True` |
+| `M2_VERDICT` | `BUILT_CANDIDATE_ONLY_NOT_HOMOLOGATED` |
+
+**Gate concluído restritamente:** `M3_TEMP_BUILD=PASS_LOCAL_OPERATOR_REPORTED`; `M3_FLOW_ORACLES=PASS_LOCAL_OPERATOR_REPORTED`; `M3_POP_NO_TOTALS_COM_READBACK=PASS_LOCAL_OPERATOR_REPORTED`; `M2_THREE_SHEETS_NINE_NATIVE_OBJECTS=PASS_LOCAL_OPERATOR_REPORTED`; `PROTECTED_FILES=UNCHANGED_REPORTED`. A revisão estática da versão anterior já verificara que `Chart` não emite texto no pipeline de retorno COM; a execução confirmou que o nono objeto agora é criado e o QVW de teste recebe o veredito final.
+
+**Limite epistêmico:** essa saída demonstra que o runner completou a montagem e `Save()` sem lançar erro e registrou verificação COM da propriedade de No Totals. **Não prova** que a cópia reabre com duas barras RES/SERV visualmente legíveis, que o rodapé de total POP está ausente, que a tabela municipal contém as células certas, nem que filtros nativos não produzam resultados sem contexto. Também não comprova C2/C3/C4/P5/IX, Link Key global ou produção.
+
+### Próximo gate único — inspeção GUI read-only da folha 3
+
+1. Encerrar o construtor M2/M3: **nenhuma nova recarga ou teste COM**.
+2. Em `EvidenceRoot`, copiar `SAD_MVP_THREE_SHEETS_CANDIDATE.qvw` para `SAD_MVP_THREE_SHEETS_CANDIDATE_INSPECAO.qvw` dentro da mesma pasta, usando `Copy-Item` com guard `Test-Path` para não sobrescrever inspeção anterior. Preservar hash da fonte opcionalmente para controle read-only.
+3. Abrir **somente a cópia de inspeção** no QlikView Desktop 12; não executar `Reload`, não salvar alterações e não abrir `PAINEL/PAINEL.qvw`.
+4. Capturar **somente folha 3** (`Fluxos e Contexto Territorial`), com M3-01 exibindo duas barras `RES_EQ_SERV` e `RES_NE_SERV` e tabela M3-03 sem linha de total agregado, preservando municípios e anos. Eventuais totais legíveis devem corresponder apenas a contexto por ano/município.
+5. Classificar `GUI_PASS_RESTRICTED` somente após screenshots da versão **corrigida**; se faltar barra, houver total trianual ou população afetada inadequadamente, `BLOCKED_VISUAL_OR_SEMANTIC`, STOP e análise sem reconstrução indiscriminada.
+
+**Estado final após este registro:** `M3_GUI_VISUAL_REVIEW=PENDING`; `FILTERS_NATIVE_AND_ROLE_PLAYING=PENDING`; `MVP_USER_READY=NO`; `C2/C3/C4/P5/IX/PRODUCTION=NOT_APPROVED`. O PR #226 continua Draft, sem merge e sem modificação de `main` ou dados canônicos.
