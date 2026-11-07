@@ -76,3 +76,20 @@ O executor deve registrar `CHECK_RD_ALL=555089`, `CHECK_LT_201912=7140`, `CHECK_
 **Autorização e STOP:** o responsável autorizou a implementação TEMP do MVP, e esta correção responde exclusivamente à falha real. Uma tentativa corretiva deliberada após `git pull --ff-only` e validação de parser é permitida no escopo já autorizado; **não repetir automaticamente** diante de outro erro. Se `M2_FAILED_STAGE` identificar novo método/propriedade COM incompatível, preservar pasta e reportar erro para revisão específica, sem adivinhar outra API ou aprovar painéis.
 
 **Veredictos:** `M2_P23_AND_THREE_FACT_ORACLES=PASS_LOCAL_REPORTED_RESTRICTED`; `M2_THREE_SHEETS=BLOCKED_BEFORE_CREATION`; `M2_CORRECTED_SCRIPT=STATIC_ONLY_NOT_RUN`; `C2/C3/C4/IX=NOT_APPROVED`. `main` e QVD/QVW canônicos não foram alterados.
+
+
+## Resultado da segunda tentativa M2 — NoOfSheets como método COM (07/11/2026)
+
+**Evidência de execução Windows reportada pelo operador:** script `tools/Build-SadMvpThreeSheetsTemp.ps1` em `HEAD=72483a84f4d59f6486767764a6a2d00f425bda0d`, branch Draft do PR #226. `git status --short` limpo; `git pull --ff-only` sem conflitos; `Parser.ParseFile(...)` sem erros; `M1SourceQvw` preservado com SHA-256 `F55FB113D5E03DB1E7A746F665277E5F84AD5BECBE25D6FD1C85DDED0C2BEC60`.
+
+**Mesmos sete checks físicos positivos:** `RD_ALL=555089`, `LT_201912=7140`, `POP_2019=4018127`, `P23_CELLS=8028`, `P23_ABSENT=4467`, `P23_ZERO_OBS=97`, `P23_POSITIVE=3464`.
+
+**Falha nova e precisa:** `M2_FAILED_STAGE=SHEET_COUNT_AND_CREATION`, `M2_FAILED_LINE=198`. PowerShell: `Não é possível converter o valor "int NoOfSheets ()" do tipo "System.Management.Automation.PSMethod" no tipo "System.Int32"`. O método existia; faltaram os parênteses nas duas ocorrências `[int]$doc.NoOfSheets`. A consulta externa à tabela de métodos da API QlikView 12.40 reforça que `NoOfSheets` é **Method: int NoOfSheets()**. O erro é de chamada COM/PowerShell, não de schema/dados.
+
+**Correção estática subsequente:** ambas as ocorrências passaram a `[int]$doc.NoOfSheets()`; foi removido `$cp.ChartProperties.Title.Title.v` (caminho interno de propriedades de título não fundamentado pela API inspeccionada), retendo o campo de legenda `$cp.GraphLayout.WindowTitle.v`, documentado em exemplo da Qlik Community. A criação `CreateSheet()`, `CreateBarChart()`, `CreateLineChart()`, `CreateStraightTable()`, `AddDimension()`, `AddExpression()` e `GetRect()/SetRect()` foi confrontada com exemplos da automação QlikView; comportamento exato do QlikView instalado segue **não testado após o commit**.
+
+**Proteção reportada:** `PROTECTED_25_CANONICAL_AND_M1_SOURCE_SHA256_UNCHANGED=True`. Pasta parcial desta segunda tentativa tem sufixo `SAD_M2_MVP_TEMP_4ec933ea1e3443f0beefb61f508508d3`; não alterar e não usar como fonte de próximo ensaio. A única fonte permanece o QVW M1 validado, em nova cópia GUID. Não houve `M2_CREATED`, logo nenhum painel foi construído/homologado.
+
+**STOP e orçamento de tentativas:** a correção atende falha reproduzida; executar **somente uma tentativa corretiva delimitada** após confirmar commit/Parser. Qualquer erro subsequente exige parar e **revisar a estratégia de automação COM**, em vez de continuar uma cadeia de novas recargas por tentativa. `M2=BLOCKED_PENDING_NATIVE_RETRY`; `C2/C3/C4/IX/PRODUCTION=NOT_APPROVED`.
+
+Referências: [QlikView API 12.40 — métodos COM](https://1c-predpriyatie-qlik.ivan-shamaev.ru/methods-qlikview-api-12-40-application-document/); [Qlik Community — título da janela por `GraphLayout.WindowTitle.v`](https://community.qlik.com/t5/QlikView/How-to-change-chart-quot-window-title-quot-caption-from-macro/m-p/144427).
