@@ -43,7 +43,8 @@ if($LASTEXITCODE -ne 0 -or $branch -cne 'proposal/sad-mvp-rebaseline-2026-11-07'
 $rel=@(
   'tools/Build-SadMvpThreeSheetsTemp.ps1',
   'PAINEL/phase_vii_technical_model.qvs',
-  'PAINEL/sad_p23_a1_island_physical_gate.qvs'
+  'PAINEL/sad_p23_a1_island_physical_gate.qvs',
+  'PAINEL/sad_mvp_m3_flow_classification.qvs'
 )
 foreach($r in $rel){
   $f=Join-Path $repo $r
@@ -105,6 +106,19 @@ foreach($kv in $placeholders.GetEnumerator()){
   $island=$island.Replace($kv.Key,$kv.Value)
 }
 if($island -match '__P23_[A-Z_]+__'){throw 'Unresolved P23 placeholders'}
+$flowSource=Join-Path $repo $rel[3]
+$flow=[IO.File]::ReadAllText($flowSource,[Text.Encoding]::UTF8)
+if($flow -match '(?im)^\s*(STORE|EXECUTE|BINARY|SQL|DIRECT\s+QUERY|DROP\s+FILE)\b' -or
+   $flow -match '(?i)\$\(\s*Must_Include' -or
+   $flow -notmatch '\[MVP_FLOW\] VERDICT=PASS_SCRIPT_RESTRICTED_CANDIDATE_ONLY'){
+  throw 'MVP flow source violates read-only or success-marker contract'
+}
+$mvpFIQvd=Join-Path $trans 'FATO_INTERNACAO.qvd'
+if($mvpFIQvd -match '[\]\r\n]'){throw 'Unsupported FI QVD path'}
+if(-not $flow.Contains('__MVP_FI_QVD__')){throw 'Flow QVS missing explicit FI QVD placeholder'}
+$flow=$flow.Replace('__MVP_FI_QVD__',$mvpFIQvd)
+if($flow -match '__MVP_[A-Z_]+__'){throw 'Unresolved MVP flow source placeholder'}
+Write-Output ('FLOW_QVS_SHA256='+(Get-FileHash -LiteralPath $flowSource -Algorithm SHA256).Hash)
 function ReadInt($doc,[string]$exp,[string]$label){
   $raw=[string]$doc.Evaluate($exp)
   if($raw -notmatch '^(0|[1-9][0-9]*)$'){throw "Bad Qlik value for $label : $raw"}
@@ -115,7 +129,7 @@ function AssertValue($doc,[string]$exp,[long]$expected,[string]$label){
   if($got -ne $expected){throw "BLOCKED_$label expected=$expected actual=$got"}
   Write-Output "CHECK_$label=$got"
 }
-function Chart($sheet,[string]$type,[string]$title,[string[]]$dims,[string[]]$expressions){
+function Chart($sheet,[string]$viewId,[string]$type,[string]$title,[string[]]$dims,[string[]]$expressions){
   $o=$null
   switch($type){
     'Bar' {$o=$sheet.CreateBarChart();break}
@@ -128,8 +142,20 @@ function Chart($sheet,[string]$type,[string]$title,[string[]]$dims,[string[]]$ex
   foreach($e in $expressions){$null=$o.AddExpression($e)}
   $cp=$o.GetProperties()
   $cp.GraphLayout.WindowTitle.v=$title
-  # Use the independently documented caption property; do not assume internal chart-title tree.
+  # QlikView Classic COM (Qlik Community, accepted property path):
+  # UsePartialSum=false sets "No Totals" on the expression of a straight table.
+  # This is essential for POP (annual, semi-additive). No other chart is changed.
+  if($viewId -ceq 'M3-03'){
+    $exprData=$cp.Expressions.Item(1).Item(0).Data.ExpressionData
+    if($null -eq $exprData){throw 'No M3-03 ExpressionData found in Qlik COM properties'}
+    $exprData.UsePartialSum=$false
+  }
   $null=$o.SetProperties($cp)
+  if($viewId -ceq 'M3-03'){
+    $verify=$o.GetProperties().Expressions.Item(1).Item(0).Data.ExpressionData
+    if([bool]$verify.UsePartialSum){throw 'M3-03 total still enabled; refuse misleading POP table'}
+    Write-Output 'M3_03_TOTAL_MODE=NO_TOTALS_PERSISTED_IN_COM_CANDIDATE'
+  }
   return $o
 }
 $objects=@(
@@ -139,7 +165,7 @@ $objects=@(
   [pscustomobject]@{Sheet=2;Id='M2-01';Type='Line';Title='Leitos cadastrados por competência — snapshots';Dims=@('PERIODO_COMPETENCIA');Expr=@('Sum(QTD_LEITOS_SUS)','Sum(QTD_LEITOS_EXISTENTES)')},
   [pscustomobject]@{Sheet=2;Id='M2-02';Type='Bar';Title='Leitos SUS observados — município, 201912';Dims=@('SERV_COD_DATASUS_6');Expr=@("Sum({<PERIODO_COMPETENCIA={'201912'}>} QTD_LEITOS_SUS)")},
   [pscustomobject]@{Sheet=2;Id='M2-03';Type='Bar';Title='Observabilidade LT — células município × competência';Dims=@('P23_ESTADO_OBSERVADO');Expr=@('Count(P23_MUNICIPIO_6)')},
-  [pscustomobject]@{Sheet=3;Id='M3-01';Type='Bar';Title='RES=SERV versus RES diferente de SERV';Dims=@("=If(IsNull(RES_COD_DATASUS_6) Or IsNull(SERV_COD_DATASUS_6),'INDETERMINADO',If(RES_COD_DATASUS_6=SERV_COD_DATASUS_6,'R=S','R<>S'))");Expr=@('Sum(QTD_INTERNACAO)')},
+  [pscustomobject]@{Sheet=3;Id='M3-01';Type='Bar';Title='RES=SERV versus RES diferente de SERV';Dims=@('MVP_FI_RES_SERV_CLASS');Expr=@('Sum(QTD_INTERNACAO)')},
   [pscustomobject]@{Sheet=3;Id='M3-02';Type='Straight';Title='Pares residência → atendimento (novas internações)';Dims=@('RES_COD_DATASUS_6','SERV_COD_DATASUS_6');Expr=@('Sum(QTD_INTERNACAO)')},
   [pscustomobject]@{Sheet=3;Id='M3-03';Type='Straight';Title='População municipal por ano — IBGE (candidato)';Dims=@('RES_COD_DATASUS_6','PERIODO_ANO');Expr=@('Sum(POPULACAO_ESTIMADA)')}
 )
@@ -165,7 +191,7 @@ try{
   if($script -match '(?im)^\s*(STORE|EXECUTE|BINARY|SQL|DIRECT\s+QUERY|DROP\s+FILE)\b'){
     throw 'Source M1 QVW contains forbidden script command'
   }
-  $props.Script=$script+[Environment]::NewLine+$island
+  $props.Script=$script+[Environment]::NewLine+$island+[Environment]::NewLine+$flow
   $props.GenerateLogfile=$true
   $null=$doc.SetProperties($props)
   $null=$doc.Save()
@@ -177,12 +203,18 @@ try{
   $emitted=@($log -split '\r?\n' | Where-Object {$_ -notmatch '\bTRACE\b'})
   if(@($emitted|Where-Object{$_.Contains('[VII] VERDICT=PASS_SCRIPT_ASSOCIATIVE_CANDIDATE_ONLY')}).Count -ne 1 -or
      @($emitted|Where-Object{$_.Contains('[P23A1] VERDICT=PASS_SCRIPT_CANDIDATE_ONLY')}).Count -ne 1 -or
+     @($emitted|Where-Object{$_.Contains('[MVP_FLOW] VERDICT=PASS_SCRIPT_RESTRICTED_CANDIDATE_ONLY')}).Count -ne 1 -or
      @($emitted|Where-Object{$_.Contains('[P23A1] VERDICT=BLOCKED')}).Count -gt 0 -or
+     @($emitted|Where-Object{$_.Contains('[MVP_FLOW] VERDICT=BLOCKED')}).Count -gt 0 -or
      $log -match '(?i)circular reference|loosely coupled|synthetic key'){
     throw 'P23 native reload PASS absent, BLOCKED emitted or association warning'
   }
   $stage='ORACLES_3_FACTS_AND_P23'
   AssertValue $doc "Num(Sum(QTD_INTERNACAO),'0','.',',')" 555089 'RD_ALL'
+  AssertValue $doc "Num(Sum({<MVP_FI_RES_SERV_CLASS={'RES_EQ_SERV'}>} QTD_INTERNACAO),'0','.',',')" 294635 'M3_01_RES_EQ_SERV'
+  AssertValue $doc "Num(Sum({<MVP_FI_RES_SERV_CLASS={'RES_NE_SERV'}>} QTD_INTERNACAO),'0','.',',')" 260454 'M3_01_RES_NE_SERV'
+  AssertValue $doc "Num(Count({<MVP_FI_RES_SERV_CLASS={'MVP_UNMATCHED'}>} SK_REGISTRO_INTERNACAO),'0','.',',')" 0 'M3_01_UNMATCHED_FI_RECORDS'
+  AssertValue $doc "Num(Count(DISTINCT MVP_FI_RES_SERV_CLASS),'0','.',',')" 2 'M3_01_CATEGORIES'
   AssertValue $doc "Num(Sum({<PERIODO_COMPETENCIA={'201912'}>} QTD_LEITOS_SUS),'0','.',',')" 7140 'LT_201912'
   AssertValue $doc "Num(Sum({<PERIODO_ANO={2019}>} POPULACAO_ESTIMADA),'0','.',',')" 4018127 'POP_2019'
   AssertValue $doc 'Count(P23_MUNICIPIO_6)' 8028 'P23_CELLS'
@@ -214,7 +246,7 @@ try{
     $stage='CREATE_OBJECT_'+$spec.Id
     $sheet=$sheets[$spec.Sheet-1]
     $null=$sheet.Activate()
-    $chart=Chart $sheet $spec.Type $spec.Title $spec.Dims $spec.Expr
+    $chart=Chart $sheet $spec.Id $spec.Type $spec.Title $spec.Dims $spec.Expr
     if($null -eq $chart.GetProperties()){throw "Object lacks properties: $($spec.Id)"}
     # Desktop-layout candidate, visible and non-overlapping at 1280+ px.
     # These rectangles are provisional until a real QlikView GUI screenshot.
