@@ -128,7 +128,7 @@ function Chart($sheet,[string]$type,[string]$title,[string[]]$dims,[string[]]$ex
   foreach($e in $expressions){$null=$o.AddExpression($e)}
   $cp=$o.GetProperties()
   $cp.GraphLayout.WindowTitle.v=$title
-  $cp.ChartProperties.Title.Title.v=$title
+  # Use the independently documented caption property; do not assume internal chart-title tree.
   $null=$o.SetProperties($cp)
   return $o
 }
@@ -195,7 +195,7 @@ try{
     AssertValue $doc $exp $k.Expected $k.Label
   }
   $stage='SHEET_COUNT_AND_CREATION'
-  $nSheets=[int]$doc.NoOfSheets
+  $nSheets=[int]$doc.NoOfSheets()
   Write-Output "M2_SOURCE_SHEET_COUNT=$nSheets"
   if($nSheets -gt 1){throw "Source M1 QVW contains $nSheets sheets; expected 0 or 1"}
   $titles=@('Produção Hospitalar','Leitos Cadastrais Observados','Fluxos e Contexto Territorial')
@@ -209,7 +209,7 @@ try{
     $null=$sheet.SetProperties($sp)
     $sheets+=,$sheet
   }
-  if([int]$doc.NoOfSheets -ne 3){throw 'Not exactly three QlikView sheets'}
+  if([int]$doc.NoOfSheets() -ne 3){throw 'Not exactly three QlikView sheets'}
   foreach($spec in $objects){
     $stage='CREATE_OBJECT_'+$spec.Id
     $sheet=$sheets[$spec.Sheet-1]
