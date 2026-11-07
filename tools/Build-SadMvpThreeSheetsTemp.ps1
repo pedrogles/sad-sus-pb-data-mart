@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
 SAD M2 experimental nine-view UI build. New QVW outside Git only.
 Source: locally validated M1 QVW; model is reloaded in a COPIED QVW
@@ -28,7 +28,7 @@ $repo=Full $Root
 $evidence=Full $EvidenceRoot
 $source=Full $M1SourceQvw
 if((Under $evidence $repo) -or (Under $repo $evidence) -or
-   (Under $evidence (Full [IO.Path]::GetTempPath()))){
+   (Under $evidence (Full ([IO.Path]::GetTempPath())))){
   throw 'EvidenceRoot must be separate from repository and Windows TEMP'
 }
 if(-not(Test-Path -LiteralPath $evidence -PathType Container)){throw 'EvidenceRoot missing'}
@@ -172,7 +172,8 @@ try{
   if(-not(Test-Path -LiteralPath $nativeLog -PathType Leaf)){throw 'Native reload log missing'}
   $log=Get-Content -LiteralPath $nativeLog -Raw
   $emitted=@($log -split '\r?\n' | Where-Object {$_ -notmatch '\bTRACE\b'})
-  if(@($emitted|Where-Object{$_.Contains('[P23A1] VERDICT=PASS_SCRIPT_CANDIDATE_ONLY')}).Count -ne 1 -or
+  if(@($emitted|Where-Object{$_.Contains('[VII] VERDICT=PASS_SCRIPT_ASSOCIATIVE_CANDIDATE_ONLY')}).Count -ne 1 -or
+     @($emitted|Where-Object{$_.Contains('[P23A1] VERDICT=PASS_SCRIPT_CANDIDATE_ONLY')}).Count -ne 1 -or
      @($emitted|Where-Object{$_.Contains('[P23A1] VERDICT=BLOCKED')}).Count -gt 0 -or
      $log -match '(?i)circular reference|loosely coupled|synthetic key'){
     throw 'P23 native reload PASS absent, BLOCKED emitted or association warning'
@@ -208,6 +209,21 @@ try{
     $null=$sheet.Activate()
     $chart=Chart $sheet $spec.Type $spec.Title $spec.Dims $spec.Expr
     if($null -eq $chart.GetProperties()){throw "Object lacks properties: $($spec.Id)"}
+    # Desktop-layout candidate, visible and non-overlapping at 1280+ px.
+    # These rectangles are provisional until a real QlikView GUI screenshot.
+    $rects=@{
+      'M1-01'=@(24,90,360,270); 'M1-02'=@(24,380,1096,355)
+      'M1-03'=@(406,90,714,270)
+      'M2-01'=@(24,90,1096,280); 'M2-02'=@(24,393,520,340)
+      'M2-03'=@(566,393,554,340)
+      'M3-01'=@(24,90,450,300); 'M3-02'=@(24,412,1096,340)
+      'M3-03'=@(496,90,624,300)
+    }
+    $pos=$chart.GetRect()
+    $dims=$rects[$spec.Id]
+    $pos.Left=$dims[0];$pos.Top=$dims[1]
+    $pos.Width=$dims[2];$pos.Height=$dims[3]
+    $null=$chart.SetRect($pos)
     $created.Add([pscustomobject]@{
       ViewId=$spec.Id;Sheet=$titles[$spec.Sheet-1];Type=$spec.Type
       Title=$spec.Title;Dimensions=($spec.Dims -join ' | ')
