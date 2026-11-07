@@ -63,3 +63,22 @@ C:\Users\pedro\SAD_M1_EVIDENCIAS\SAD_F04_TEMPORAL_GUARD_9a792ff10d694d15b50588be
 **PASS restrito obrigatório:** `savedSha != baseline`, `afterSha == savedSha`, as duas propriedades CH05 preservadas **após reabrir** e `PERIODO_ANO=2018` renderizando aviso temporal explícito. Se faltar qualquer elemento, `BLOCKED` ou `INCONCLUSIVE`, não aprovar persistência.
 
 **Encerramento:** `F04_U1_P2=PREPARED_NOT_EXECUTED`; `F04_U1_REOPEN_PERSISTENCE=BLOCKED` até validação nova; `C2_MVP_NATIVE_POST_SELECTION_PHYSICAL=INCOMPLETE`; `C2_GUIDED_R2/C3/C4/P5_GLOBAL/LINK_KEY_CONTRACT/IX/PRODUCTION=NOT_APPROVED`. PR #226 Draft, sem merge. O processo de reprodutibilidade no builder é um próximo objetivo diferente deste gate.
+
+
+## 4. Evidência recebida após reaplicação CH05 — pré-reabertura
+
+**Recebimento:** 07/11/2026. Cinco capturas reais do QlikView x64 Personal Edition, apresentadas pelo responsável na conversa depois de reaplicar as duas propriedades no arquivo F04 TEMP (`SAD_F04_TEMPORAL_GUARD_9a792ff10d694d15b50588bea940bbd1/SAD_MVP_F04_TEMPORAL_GUARD_CANDIDATE`). Os hashes abaixo foram calculados dos **PNGs montados**, não de binário QVW. **NÃO há evidência de fechamento e reabertura posterior ao novo salvamento nestas capturas.**
+
+| PNG | Resolução | Bytes | SHA-256 | Fato diretamente visível |
+|---|---|---:|---|---|
+| `image(20261107-195910).png` | 1907×1068 | 270250 | `3CA273431B8BEF87F88C2184C3D9E87C08CB7210A353F4F58559F4A1C5F6FA60` | Editor CH05 apresenta **`Expressão OK`** e condição de cálculo combinada, testando RES, `PERIODO_ANO` e `PERIODO_COMPETENCIA` |
+| `image(20261107-200015).png` | 1904×1068 | 262557 | `1B779E68FE1F81D33BA34EF0066C20AAB8817ED54B8BF57F07780BD8289FCA48` | Editor CH05 apresenta **`Expressão OK`** para `If(GetSelectedCount(RES...), texto de RES, texto de incompatibilidade temporal 201912)` |
+| `image(20261107-200040).png` | 1907×1068 | 268287 | `7F917155B27BACF7C1D02688B87A801693982ABB7880F91B231FEDB5BCE77212` | `Seleções Atuais` vazia; CH04 exibe duas séries, CH05 barras, P23 três barras |
+| `image(20261107-200053).png` | 1907×1068 | 235180 | `DC5CF66B395ADD2A3FBE15C60DFA8BBF1E301CD7B4A88FDBE9B448E77140CB2C` | `Seleções Atuais` mostra ano **2018**; CH04 meses 201801–201812; CH05 exibe **aviso temporal com 201912**, sem publicar barras 2019 |
+| `image(20261107-200120).png` | 1907×1067 | 215857 | `C474C34E46EA5809C2794BC395614680819620ABB794BBCE5BCBFFCD6BD7A80B` | `Seleções Atuais` mostra RES **251370**; CH04 e CH05 preservam aviso de residência; P23 mantém três barras |
+
+**Resultado parcial do P2:** `F04_U1_P2_CH05_PROPERTIES=CONFIGURED_GUI_CONFIRMED`, `F04_U1_P2_S_OK=PASS_GUI`, `F04_U1_P2_S_TIME_2018=PASS_GUI`, `F04_U1_P2_S_RES_251370=PASS_GUI` **apenas na sessão apresentada**. O título da QVW **sem `*`** nas telas de gráficos é compatível com ausência de alterações pendentes, mas **não confirma reabertura após salvar**. O usuário ainda **não informou** novo hash SHA-256 da QVW após o salvamento nem hash após fechar e reabrir. Não inferir `savedSha != baseline` nem `afterSha == savedSha` sem stdout.
+
+**Pendência única para concluir o gate:** preservar a QVW temporária e fechar a sessão atual com seleções limpas **sem salvar novamente** se a configuração já foi salva; obter SHA do QVW fechado (comparar com a baseline P1 `6310321DB30C1065843B6BFF1A400D2C29D235D4B7C79372453366454EB1B1BD`), reabrir o **mesmo arquivo**, conferir somente a presença das duas propriedades de CH05 e o cenário **2018** (não repetir o cenário RES nem a bateria completa), fechar sem salvar, verificar que o hash permaneceu igual. Se o hash ainda for igual à baseline antiga, **STOP**: não presumir que o novo Save foi realizado. Caso as propriedades não persistam, **STOP** para diagnóstico de Save. Não alterar `main`, QVD/QVW canônicos, scripts ou builder.
+
+**Estado após esta evidência:** `F04_U1_P2=PARTIAL_GUI_PASS_PENDING_REOPEN_AND_HASH`; `F04_U1_REOPEN_PERSISTENCE=NOT_YET_PROVEN_AFTER_CORRECTION`; `C2_MVP_NATIVE_POST_SELECTION_PHYSICAL=INCOMPLETE`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
