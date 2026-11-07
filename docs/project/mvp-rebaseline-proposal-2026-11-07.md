@@ -1,5 +1,6 @@
 # SAD SUS PB — M0: proposta de rebaseline para MVP acadêmico
 
+> **Atualização de decisão — 07/11/2026:** a opção B, três folhas/nove visuais e simplificação controlada de filtros foi **aprovada pelo responsável**. O texto de proposta e as perguntas de aceite abaixo são históricos. Vigência para o trabalho em branch: [adendo M0 aprovado](mvp-scope-owner-approved-2026-11-07.md) e [contrato de implementação TEMP](mvp-three-sheets-implementation-2026-11-07.md). Não ocorreu merge na `main` nem aprovação de C2/C3/C4/IX.\n\n
 **Data:** 07/11/2026  
 **Status:** PROPOSTA DOCUMENTAL PARA DECISÃO — NÃO APROVADA NEM VIGENTE NA MAIN  
 **Baseline consultada:** main@0549e1dba71aaa8bbab9d6755aecb8465f8bea83 (último commit encontrado em 07/11/2026)  
