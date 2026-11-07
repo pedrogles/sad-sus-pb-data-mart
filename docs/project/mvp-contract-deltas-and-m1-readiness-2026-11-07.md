@@ -185,3 +185,29 @@ O diretório de evidência já foi criado no inventário anterior. O caminho do 
 **INCONCLUSIVE:** o runner não completar a verificação, sem evidência suficiente para decidir se o QVW carrega corretamente.
 
 **STOP:** uma tentativa física autorizada; aguardar stdout e CSV para análise independente. `M1_INTEGRATED_TEMP=NOT_RUN` enquanto o operador não executar. `C2/C3/C4`, `LINK_KEY_CONTRACT`, `PHASE_IX` e produção permanecem não aprovados.
+
+## 10. Resultado M1 Integrated TEMP — execução local reportada em 07/11/2026
+
+**Fonte da evidência:** stdout completo do PowerShell 5.1/QlikView 12, fornecido diretamente pelo responsável na conversa em 07/11/2026. **Nível de prova:** `LOCAL_OPERATOR_REPORTED`; log nativo, CSV de oráculos, capturas e QVW TEMP ainda não foram lidos independentemente pelo agente. Não versionar caminhos pessoais, CSV de evidência, log nem QVW.
+
+| Controle | Resultado reportado |
+|---|---|
+| `VERSIONED_GIT_HEAD` | `903e2330f0e74fffd8ea4f8dd5517c79a30b3070` |
+| `SCRIPT_SHA256` QVS VII | `20DD0F551478D567489434A360723427125F7C1850DBC4093A4C8E1CADA7D8E8` |
+| `RUNNER_SHA256` | `93039F0B197CA330BD28B74398A7689FFF4CDA5B6BD1C2CCE22D5361392C7351` |
+| `INVENTORY_22_QVD` | `PASS_READ_ONLY` |
+| SIH/RD | 555.089 geral; 183.532 (2017); 183.311 (2018); 188.246 (2019): **4/4** |
+| CNES/LT `201912` | 7.140 SUS; 1.925 não SUS; 9.065 existentes: **3/3** |
+| IBGE/POP | 4.025.558 (2017); 3.996.496 (2018); 4.018.127 (2019): **3/3** |
+| `M1_FACT_ORACLES` | `10_OF_10_PASS_LOCAL_CANDIDATE_ONLY` |
+| `VERDICT` | `PASS_LOCAL_M1_TEMP_MODEL_ONLY_PENDING_TABLE_VIEWER_AND_INDICATORS` |
+| `T17_T18_T19_T20_T22_T23` | `SCRIPT_CHECKED` |
+| `T21` | `NO_LOG_WARNING_TABLE_VIEWER_PENDING` |
+| `ORIGINAL_22_QVD_SHA256_AND_HEADERS_UNCHANGED` | `True` |
+| `ORIGINAL_CANONICAL_QVWS_UNCHANGED` | `True` |
+
+**Artefatos privados gerados:** uma pasta de execução identificada pelo sufixo `SAD_M1_INTEGRATED_bd4a10730a57403787c3d4ac13a7b240`, contendo `SAD_M1_INTEGRATED_TEMP.qvw`, log nativo e os relatórios CSV. Manter intactos para eventual revisão; sem rerun automático.
+
+**Interpretação:** o uso do mesmo QVS técnico e os dez resultados numéricos atestam **viabilidade operacional local e restrita de leitura dos três processos factuais em um único QVW**. Não demonstram validade global da Link Key, dos filtros nativos, da semântica entre fatos, seleção sob ausência/cobertura, da população por competência, das razões T24–T26 ou da interface final. O Table Viewer já teve uma captura revisada no gate VII de 18/10/2026 sobre esse QVS; **não repetir a prova antiga por rotina**. Para a execução M1 específica, `TABLE_VIEWER_REVIEW=PENDING` permanece literalmente reportado e não é promovido a PASS novo.
+
+**Encerramento M1_NUMERIC_SMOKE:** `PASS_LOCAL_REPORTED_RESTRICTED`; objetivo do teste de 10 oráculos alcançado. STOP da tentativa autorizada. A próxima atividade de escopo material exige decisão **M0 rebaseline** (redução de 14 para 9 visuais e regras de interação) e, depois, validação física específica das associações e filtros efetivamente expostos. A ordem vigente do Boundary 7 e `C2_GUIDED_R2=NOT_APPROVED`, `LINK_KEY_CONTRACT=NOT_APPROVED`, `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False` não mudam por esse resultado.
