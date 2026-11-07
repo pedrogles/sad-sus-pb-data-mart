@@ -17,14 +17,14 @@ $ErrorActionPreference='Stop'
 if(-not $Prepare){throw 'Explicit -Prepare required'}
 if($ExpectedCommit -notmatch '^[a-fA-F0-9]{40}$'){throw 'ExpectedCommit must be a full 40-character SHA'}
 if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){throw 'Windows required'}
-$repo=[IO.Path]::GetFullPath($Root).TrimEnd('\','/')
-$evidence=[IO.Path]::GetFullPath($EvidenceRoot).TrimEnd('\','/')
+$repo=[IO.Path]::GetFullPath($Root).TrimEnd([char[]]@('\','/'))
+$evidence=[IO.Path]::GetFullPath($EvidenceRoot).TrimEnd([char[]]@('\','/'))
 function IsUnder([string]$p,[string]$parent) {
   return $p.Equals($parent,[StringComparison]::OrdinalIgnoreCase) -or
     $p.StartsWith($parent+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)
 }
 if((IsUnder $evidence $repo) -or (IsUnder $repo $evidence) -or
-   (IsUnder $evidence ([IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd('\','/')))) {
+   (IsUnder $evidence ([IO.Path]::GetFullPath([IO.Path]::GetTempPath()).TrimEnd([char[]]@('\','/'))))) {
   throw 'EvidenceRoot must be outside repo and Windows TEMP'
 }
 if(-not (Test-Path -LiteralPath $evidence -PathType Container)){throw 'EvidenceRoot not found'}
