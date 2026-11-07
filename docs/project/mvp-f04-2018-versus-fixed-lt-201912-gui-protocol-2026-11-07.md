@@ -42,3 +42,32 @@ A seleção deve ocorrer em QlikView Desktop 12 **sem Reload, Save, Save As, COM
 Após S1 e S2, encerrar F04. Se `BLOCKED`, a correção posterior deverá ficar em **uma nova cópia TEMP** e em escopo exclusivo de aviso temporal do M2-02, preservando expressão, título/201912, guardas RES e todos os nove objetos até decisão semântica. Não tentar uma série de recargas ou mudanças COM “até passar”. Se `PASS_RESTRICTED`, avançar na matriz C2-MVP somente por gate próprio, nunca para C3/C4/IX automaticamente.
 
 **Estado atual:** `F04_PROTOCOL=VERSIONED`; `F04_PHYSICAL=NOT_EXECUTED`; `OWNER_C2_MVP_ACCEPTANCE_SCOPE=APPROVED_BRANCH_ONLY`; `C2_MVP_NATIVE_POST_SELECTION_PHYSICAL=INCOMPLETE`; `C2_GUIDED_R2=NOT_TESTED`; `PRODUCTION_APPROVED=False`. Documento **não** altera `main`, F03-U1 TEMP, builder, QVD/QVW canônicos ou contratos acadêmicos.
+
+
+## 6. Resultado físico F04 — capturas reais do QlikView 12
+
+**Data e origem:** 07/11/2026; duas capturas PNG reais do QlikView x64 Personal Edition fornecidas pelo responsável nesta conversa, inspecionadas visualmente pelo agente. Janela da **cópia TEMP com guarda F03-U1** `SAD_F03_UI_GUARD_TEMP_a3bedd3bf2444d2ab46d890776d3e2b8/SAD_MVP_F03_UI_GUARD_CANDIDATE.qvw`; título contém `*`, **não** prova gravação nem alteração efetiva do binário. Não houve análise dos bytes QVW, execução de COM/Reload, nem conferência de propriedade nativa além do que as capturas apresentam.
+
+| Captura | Arquivo PNG no chat | Dimensão real | SHA-256 dos bytes recebidos |
+|---|---|---|---|
+| **S1 — Produção Hospitalar** | `image(20261107-173948).png` | 1902×1068 | `8AFEBE98060C89B37CB1431ECF10FB46DC8947C30DC8368A776AD12064A58F2E` |
+| **S2 — Leitos Cadastrais Observados** | `image(20261107-174020).png` | 1907×1028 | `67F0F626DAE5714109F4EF40B84A4614461161F651F98C1EB374C438DC09C77B` |
+
+### Matriz de evidências do único cenário F04
+
+| Critério | Evidência observada diretamente na imagem | Veredito estrito |
+|---|---|---|
+| Seleção nativa | Janela `Seleções Atuais` em S1 e S2 exibe somente `PERIODO_ANO=2018` (rótulo do campo truncado, valor 2018 e marcador verde) | `PASS_GUI_EFFECTIVE_SELECTION_2018` |
+| M1-01 | Gráfico anual mostra barra única 2018. **Não imprime a soma 183311**; oráculo vem de validações FI anteriores, não da altura de pixels | `PASS_GUI_2018_SCOPE; EXACT_VALUE_NOT_VISIBLE` |
+| M1-02 | Eixo X completo legível em S1 contém **`201801` até `201812` (12 competências)** e nenhuma competência de 2017/2019 visível como ativa | `PASS_GUI_2018_MONTH_LABELS`; não substitui prova das 12 competências de **2019** ainda não visíveis no F01 |
+| M2-01 | Em S2, duas linhas (SUS/existentes) e eixo X restrito a **`201801..201812`**; nenhuma soma anual de snapshots exibida | `PASS_GUI_2018_SNAPSHOT_SERIES_RESTRICTED`; sem oráculo numérico mensal independente nesta captura |
+| **M2-02** | Título explícito `Leitos SUS observados — município, 201912`, **mas no corpo apenas `Não há dados para mostrar`** sob `PERIODO_ANO=2018`; não há barras de dezembro/2019 publicadas | **`F04=BLOCKED_UI_CONTEXT`**: não explica a incompatibilidade `2018 ≠ competência fixa 201912`; não provar zero ou ausência real de capacidade |
+| M2-03 | Ilha com as três barras observacionais visíveis em S2, qualitativamente semelhantes à baseline sem seleção. Rótulos densos e sem números impressos | `P23_PASS_VISUAL_RESTRICTED`; não comprova contagens exatas/invariância global |
+
+### Conclusão e classificação
+
+**FATO verificado pela captura:** há estado real selecionado `PERIODO_ANO=2018`, e o M2-02 mostra mensagem genérica de ausência de dados, apesar da expressão fixa `PERIODO_COMPETENCIA={'201912'}` documentada no builder. **NÃO** há evidência de publicação silenciosa de leitos de dezembro/2019 como 2018; **NÃO** há prova de cobertura zero ou ausência de registros CNES de 2018. **Hipótese compatível**: o filtro `PERIODO_ANO=2018` exclui o snapshot fixo de 201912 na associação, produzindo vazio; **a causa física exata não foi demonstrada por log associativo/COM**. O bloqueio é precisamente a falta de explicação da incompatibilidade temporal ao usuário.
+
+`MVP_F04=BLOCKED_UI_CONTEXT`; `F04_TEMPORAL_STALE_VALUE_SHOWN=NO_IN_SCREENSHOT`; `F04_M2_01_2018_SERIES=PASS_GUI_RESTRICTED`; `F04_M1_02_2018_12_MONTHS=PASS_GUI_RESTRICTED`; `F04_P23_ISLAND=PASS_GUI_RESTRICTED`; `C2_MVP_NATIVE_POST_SELECTION_PHYSICAL=INCOMPLETE`; `C2_GUIDED_R2=NOT_TESTED`; `C3/C4/LINK_KEY/P5_GLOBAL/IX/PRODUCTION=NOT_APPROVED`.
+
+**STOP F04 atingido:** o teste está **encerrado com bloqueio localizado**, sem repetir ano 2017/2019 nem reconstruir QVW. **Próximo escopo proposto — não implementado nem autorizado como alteração física por esta evidência:** corrigir aviso temporal de **M2-02 apenas**, quando o estado temporal explícito for incompatível com 201912, mantendo `Sum({<PERIODO_COMPETENCIA={'201912'}>} QTD_LEITOS_SUS)`, título, guarda RES já configurada, o comportamento de M2-01 e ilha M2-03. Testar em **nova cópia TEMP** com captura do cenário conflitante 2018 e cenário compatível sem filtros. A estratégia de coexistência de motivos RES e temporal deve ser definida antes de mexer em `Calculation Condition`/mensagens (não substituir silenciosamente o texto F03-U1). Se a UI não suportar avisos distintos preservando os contratos, STOP e decisão formal de apresentação. Não alterar `main`, fazer merge ou promover C2 físico por esse gate.
