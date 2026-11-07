@@ -42,3 +42,33 @@
 - **Sequência após correção aprovada:** (1) conferir as **duas** classes M3-01 com o P3.2 (294.635 + 260.454), (2) conferir que tabela POP não exibe somatório de três anos e que município×ano está íntegro, (3) revisar legibilidade M1-03/M2-02/M2-03, (4) executar casos limitados de seleção C2/P5/RES/SERV/POP, (5) reavaliar telas. Nenhum PASS automático por desenho ou medição global anterior.
 
 **Decisão pendente:** aprovar contrato técnico específico de correção da classificação sem criar associação inesperada entre fatos, antes de qualquer novo build/teste QVW. **Nenhum script/arquivo QVW foi alterado nesta revisão.**
+
+
+## 4. Correção candidata M3-01/M3-03 — autorizada e versionada, não executada
+
+**Autorização:** “certo, prossiga” (07/11), em resposta à recomendação explícita de corrigir M3-01 e eliminar total populacional, antes de novos testes de filtros. **Limite:** somente scripts de teste na branch Draft e próximo QVW TEMP em nova pasta privada, com proteção de QVD/QVW e sem merge/produção.
+
+### M3-01 — decisão de implementação B1 delimitada
+
+**Causa provável observada:** dimensão calculada `=If(RES_COD_DATASUS_6=SERV_COD_DATASUS_6,...)` sobre duas dimensões associativas de role-playing, com resultados avaliados no contexto de gráfico, não garantindo classificação pelo grão do SIH/RD. A única barra da captura é o bloqueio **verificado**; a causa exata ainda não é prova experimental independente.
+
+**Remediação versionada:** `PAINEL/sad_mvp_m3_flow_classification.qvs`, em memória **e somente na QVW TEMP**. Este script:
+
+1. Mapeia cada `%LINK_KEY` SIH elegível de `LINK_ANALISE` para `RES_EQ_SERV` ou `RES_NE_SERV`, comparando `%SK_MUNICIPIO_RESIDENCIA` com `%SK_MUNICIPIO_SERVICO` (não compara nomes/descritivos nem confunde RES e SERV).
+2. Faz `LEFT JOIN (FATO_INTERNACAO)` por `SK_REGISTRO_INTERNACAO` exclusivo, lendo `FATO_INTERNACAO.qvd` **sem gravá-lo**. Adiciona exclusivamente `MVP_FI_RES_SERV_CLASS` à fato in-memory, preservando `%LINK_KEY` e as 16+1 tabelas aprovadas no modelo de TEMP. A projeção não altera contrato acadêmico ou materialização persistida.
+3. Exige `NoOfRows(FI)=566672`, SK únicos `566672`, total elegível `555089`, `RES_EQ_SERV=294635`, `RES_NE_SERV=260454`, unmatched=0, sem rótulos adicionais e 17 tabelas no modelo temporário. Se divergência, `[MVP_FLOW] VERDICT=BLOCKED_FACT_GRAIN_OR_CLASSIFICATION` e STOP.
+4. Troca somente a dimensão do objeto `M3-01` para `MVP_FI_RES_SERV_CLASS`, sem alterar sua expressão `Sum(QTD_INTERNACAO)`. O runner ainda confere via Qlik `Evaluate()` as duas somas, categorias=2 e unmatched=0, usando o [oráculo P3.2](../discovery/sad-p32-res-serv-equality-annual-closeout-2026-10-29.md) **sem reprocessar E1**.
+
+### M3-03 — eliminar total indevido sem perder município×ano
+
+O total de 12.040.181 é soma de 2017+2018+2019 e não população de um ano. A opção oficial do QlikView para tabelas simples é **No Totals**, configurada nas propriedades da expressão. O executor `tools/Build-SadMvpThreeSheetsTemp.ps1` agora usa a propriedade COM `Expressions.Item(1).Item(0).Data.ExpressionData.UsePartialSum=$false` **somente em M3-03**, após criar o objeto, seguida de readback com bloqueio se ainda estiver ativada. Não altera `Sum(POPULACAO_ESTIMADA)` no grão município×ano e preserva o total do objeto M3-02 (internações) que é legítimo.
+
+**Referências:** [QlikView September 2026 — Straight Table, No Totals](https://help.qlik.com/en-US/qlikview/September2026/Subsystems/Client/Content/QV_QlikView/Straight_Table.htm); [Qlik Community — UsePartialSum na API COM](https://community.qlik.com/t5/QlikView/Change-the-Total-Mode-default-settng-by-SetProperties/td-p/153410).
+
+### Teste físico único da correção (a executar no Windows)
+
+- **Origem imutável:** QVW M1 `SAD_M1_INTEGRATED_TEMP.qvw` já validado, não cópia M2 ou inspeção. Produzir somente um novo QVW TEMP sob `EvidenceRoot` com GUID; preservar as pastas anteriores, incluindo a inspeção visual.
+- **Preflight:** branch correta, `git status --short` limpo, parser PowerShell sem erro, commit `-ExpectedCommit` completo, três QVS/runner rastreados e sem alterações.
+- **PASS candidato:** execução de `M3_01_RES_EQ_SERV=294635`, `M3_01_RES_NE_SERV=260454`, `M3_01_UNMATCHED_FI_RECORDS=0`, `M3_01_CATEGORIES=2`; `M3_03_TOTAL_MODE=NO_TOTALS_PERSISTED_IN_COM_CANDIDATE`; outras sete verificações antigas idênticas; nove objetos; integridade SHA dos 25 canônicos e origem M1; reabertura/renderização das duas correções **depois do build**, ainda não homologada.
+- **BLOCKED:** divergência numérica, Qlik syntax/COM, alteração de fonte, quadro/população vazio, residual de soma populacional, classificação errada ou `$Syn`. STOP imediato sem iterar; preservar log.
+- **Limites:** `M3_FIX_STATIC_VERSIONED=YES`; `M3_FIX_WINDOWS=NOT_RUN`; `B1_CROSS_FACT_FILTERS=NOT_APPROVED`; `MVP_USER_READY=False`; `C2/C3/C4/IX/PROD=NOT_APPROVED`. A estabilidade do chart sob seleção nativa é um gate posterior, não inferível dos checks básicos.
