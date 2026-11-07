@@ -32,3 +32,31 @@
 **Veredito futuro possível:** `MVP_F01=PASS_RESTRICTED_NATIVE_2019`, `BLOCKED` ou `INCONCLUSIVE`, **somente após captura e revisão reais**. Sem promoção automática a `C2_GUIDED_R2`, `LINK_KEY_CONTRACT`, `MEASURES_AND_DENOMINATOR_CONTRACT`, `P5_D2_UI`, `PHASE_IX` ou `PRODUCTION_APPROVED`.
 
 **Condição STOP:** encerrar ao enviar S1/S2 ou no primeiro erro crítico. Testes de município RES/SERV e isolamento P23 são **gates separados** (não iniciar automaticamente). Após sucesso, não repetir F01; prosseguir para menor cenário de papel territorial com oráculo específico.
+
+
+## Evidência GUI F01 — capturas reais após seleção nativa de 2019
+
+**Data:** 07/11/2026, QlikView x64 Personal Edition no QVW de inspeção `SAD_M2_MVP_TEMP_0f6b3b19ce714295ba80e5c27856c08e/SAD_MVP_THREE_SHEETS_CANDIDATE_INSPECAO.qvw`. **Fonte:** duas capturas de tela recebidas e inspecionadas diretamente pelo agente nesta conversa; a execução GUI foi realizada pelo responsável. As imagens não são versionadas no Git; os hashes abaixo foram calculados dos bytes PNG recebidos.
+
+| Captura | Arquivo fornecido no chat | Tamanho | SHA-256 |
+|---|---|---|---|
+| **S1 — Produção Hospitalar** | `image(20261107-160729).png` | 1907×1068 | `739D5E768A498222A8CEB2F659236F1596A93B17426BF56724EA734D63AE91D8` |
+| **S2 — Fluxos e Contexto Territorial** | `image(20261107-160745).png` | 1907×1068 | `9F612EB42BD72E92F319DA9EA5EF86ED9C93B6D8941328AF7C0045AD772E1D1A` |
+
+### Matriz de verificação pelo que está visível
+
+| Critério F01 | Observação direta | Veredito |
+|---|---|---|
+| Estado aplicado | Janela `Seleções Atuais` mostra campo temporal `PERIODO_ANO` visualmente truncado e valor **2019**, marcador verde nas duas folhas | `PASS_GUI_2019_SELECTED` |
+| M1-01 | Gráfico anual exibe somente categoria `2019`; barra perto de 188 mil, **sem rótulo numérico exato** | `PASS_GUI_FILTERED_ANNUAL; VALUE_INFERRED_FROM_M3_NOT_PIXELS` |
+| M1-02 | Linha mensal reconfigurada para uma série anual aparente; **eixo X/valores das competências não aparecem na captura porque a parte inferior do gráfico está fora da janela visível**. Não é possível comprovar 12 competências `201901..201912` individualmente pela imagem | `INCONCLUSIVE_MONTH_LABELS` |
+| M1-03 | Ranking SERV recalculado, mas eixo X muito denso e legibilidade pendente; não foi fornecido ranking esperado deste recorte | `RENDERED_ONLY` |
+| M3-01 | As duas categorias `RES_EQ_SERV` e `RES_NE_SERV` persistem sob o estado selecionado, com barras reduzidas; sem números impressos nos retângulos, **não** é possível verificar as duas partes em 2019 | `PASS_GUI_CLASSES; ANNUAL_PARTITION_NUMBERS_UNVERIFIED` |
+| M3-02 | Cabeçalho da tabela de pares RES→SERV exibe total **188246** exatamente, coerente com o oráculo FI para 2019 | `PASS_NUMERIC_2019_FLOW_TOTAL` |
+| M3-03 | Linhas visíveis exibem exclusivamente `2019`; sentinela município `250010` / ano `2019` / população `10234`; o total trianual 12040181 **não aparece no trecho visível** | `PASS_GUI_2019_POP_ROWS_RESTRICTED` |
+
+**Interpretação:** as duas capturas demonstram com confiança a propagação da seleção de 2019 ao menos entre o gráfico anual M1-01, a tabela de fluxo M3-02 e as linhas POP da M3-03. Não há prova da soma das partições de M3-01 por ano, 12 rótulos de competência ou inspeção da tabela POP até o rodapé. Também não há imagem posterior à ação de limpar; não presumir o retorno do estado inicial como validado.
+
+**Veredito estrito:** `MVP_F01_SELECTION_PROPAGATION=PASS_RESTRICTED_NATIVE_2019_SCREENSHOTS`; `MVP_F01_MONTH_AXIS=INCONCLUSIVE_NOT_VISIBLE`; `MVP_F01_FULL_ACCEPTANCE=INCONCLUSIVE`; `MVP_F01_RESTORE_AFTER_CLEAR=NOT_EVIDENCED`; `MVP_P5_FI_POP_ASSOCIATION=NOT_APPROVED`.
+
+**STOP deste gate:** encerrar F01 como **prova parcial suficiente de um estado válido**, sem repetir o teste integral por padrão. A ausência de eixo temporal visível e a impossibilidade de conferir os dois subtotais por captura são lacunas de visualização/prova, não autorização para alterar o modelo ou afirmar um erro quantitativo. Se for exigido PASS integral deste roteiro, adicionar prova pontual de competências (sem reconstruir QVW e sem reproduzir todas as etapas). Para o próximo gate, avaliar separadamente **um cenário municipal RES/SERV** com oráculo previamente estabelecido e critério de parada; não confundir com autorização para C3 global ou uso final. Sem COM, Reload, Save, merge, dados canônicos, produção, C2/C3/C4/P5/IX.
