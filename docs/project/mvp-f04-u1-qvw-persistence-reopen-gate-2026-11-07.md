@@ -44,3 +44,38 @@ O verificador acessa **somente o hash SHA-256 do QVW F04 TEMP exato**. Ele não 
 ## 5. STOP / handoff
 
 Finalizar após uma única sequência de `Before → reabrir → S_OK/S_TIME/S_RES → fechar → After`, sem novos testes, clones, COM ou reconstruções. Se passar, a próxima decisão separada será escolher uma **estratégia reprodutível/versionável de aplicar as guardas de CH04/CH05** em builds futuros; persistência do binário TEMP e reprodutibilidade do builder são gates distintos. A `main` e os contratos V2/V3/Boundary 7 permanecem intactos. PR #226 continua Draft e sem merge.
+
+
+## 6. Resultado local de reabertura — hash íntegro, guarda temporal não confirmada
+
+**Recebido em 07/11/2026:** stdout integral dos estágios `Before` e `After` do script versionado `tools/Test-SadMvpF04TempPersistence.ps1` executado pelo operador no Windows, pinado em `GIT_HEAD=6fb978909798617bd2a4412d8c9cbdd9649e41e4`, e três capturas diretas da janela QlikView x64 Personal Edition do documento F04 TEMP. As imagens foram inspecionadas diretamente pelo agente; a execução do QlikView/PowerShell no Windows continua evidência **reportada pelo operador**. Nenhum COM/Reload/Save foi executado pelo agente.
+
+**Hash de integridade (reportado):**
+- `STAGE=Before`, `PERSISTENCE_VERDICT=BASELINE_CAPTURED_REOPEN_PENDING`.
+- `STAGE=After`, `PERSISTENCE_VERDICT=HASH_UNCHANGED_GUI_REVIEW_PENDING`.
+- Mesmo `F04_TEMP_QVW`: `C:\Users\pedro\SAD_M1_EVIDENCIAS\SAD_F04_TEMPORAL_GUARD_9a792ff10d694d15b50588bea940bbd1\SAD_MVP_F04_TEMPORAL_GUARD_CANDIDATE.qvw`.
+- Mesmo SHA-256 dos bytes QVW nos dois estágios: `6310321DB30C1065843B6BFF1A400D2C29D235D4B7C79372453366454EB1B1BD`.
+- O `-Stage After` não constatou alteração de bytes **entre os dois testes**, mas **não** valida que a mensagem temporal já estivesse gravada **antes** do Before; o teste de GUI é necessário separadamente.
+
+| Captura GUI no chat | Dimensão e bytes | SHA-256 real do PNG | Verificação |
+|---|---|---|---|
+| `image(20261107-194133).png` — `S_TIME_REOPEN` | 1907×1068, 220420 | `F97A72B301CCCB0EF10DA44F20A8A4D90E3062451BBB27FCED7CF4DBF7BCC887` | `Seleções Atuais` valor **2018** para campo temporal; CH04 duas séries `201801..201812`; CH05 exibe **“Não há dados para mostrar”**, **NÃO** o aviso de incompatibilidade `201912`; P23 com três barras |
+| `image(20261107-194216).png` — `S_RES_REOPEN` | 1907×1068, 216714 | `87EBCAF9D5529CA4D03541C33FD5D68D4B5A64A711E768B078ED4DA219A5F597` | `Seleções Atuais` RES **251370**; CH04 e CH05 exibem o aviso original de residência; P23 mantém três barras |
+| `image(20261107-194231).png` — `S_OK_REOPEN` | 1907×1068, 268799 | `656F7FB851F9D1947E2F517AB781BEEAF6C65263DF2AD71C5782726A257F440B` | `Seleções Atuais` vazia; CH04 séries e CH05 barras normais; P23 três barras |
+
+**FATOS VISUAIS:** a mensagem temporal que havia sido renderizada no F04-U1 antes do fechamento **não apareceu nesta reabertura**. O aviso de residência **permaneceu**, e o estado neutro recuperou os gráficos. O título do QVW reaberto aparece sem `*` nas capturas — isso não comprova a persistência histórica das últimas propriedades CH05.
+
+**HIPÓTESE A INVESTIGAR:** a edição temporal CH05 feita no F04-U1 pode não ter sido salva efetivamente antes do `Before` (o operador levantou essa possibilidade). Outras causas localizadas não estão eliminadas: condição combinada não persistida, mensagem dinâmica não persistida ou avaliação diferente após reabrir. **Não afirmar a causa sem ler as propriedades atuais de CH05**, e não repetir automaticamente toda a bateria de testes.
+
+**Classificação:**
+- `F04_U1_QVW_SHA_BEFORE_AFTER=PASS_LOCAL_REPORTED_INTEGRITY_ONLY`;
+- `F04_U1_REOPEN_S_OK=PASS_GUI_RESTRICTED`;
+- `F04_U1_REOPEN_S_RES=PASS_GUI_RESTRICTED`;
+- `F04_U1_REOPEN_S_TIME=BLOCKED_GENERIC_NO_DATA`;
+- `F04_U1_REOPEN_PERSISTENCE=BLOCKED_TEMPORAL_GUARD`;
+- `F04_U1_TEMPORAL_GUARD_ROOT_CAUSE=UNDETERMINED`;
+- `F04_U1_FIRST_SESSION=PASS_GUI_RESTRICTED_NOT_REVOKED` (mas não transferível à versão persistida);
+- `C2_MVP_NATIVE_POST_SELECTION_PHYSICAL=INCOMPLETE`;
+- `C2_GUIDED_R2/C3/C4/P5_GLOBAL/LINK_KEY_CONTRACT/PHASE_IX/PRODUCTION=NOT_APPROVED`.
+
+**STOP do gate P1:** encerrado com `BLOCKED` específico, não repetir `Before → reabrir → 3 capturas → After` sem correção causal identificada. **Próximo diagnóstico mínimo, em leitura GUI somente:** abrir o QVW F04 TEMP já identificado, ir à folha 2 → **CH05** → `Propriedades → Geral`, fotografar o conteúdo atual da **Condição de cálculo** e, em `Mensagens de erro`, o campo da categoria **Condição de cálculo não satisfeita**; **não editar nada, não aplicar nem salvar**. Se condição antiga RES e mensagem estática estiverem presentes, favorece causa **edição temporal não persistida**; se condição combinada e mensagem dinâmica estiverem presentes, investigar estado de seleção/evaluação antes de qualquer correção. Registrar só essas duas propriedades, sem executar outra bateria. Nova edição/salvamento exige gate separado com baseline SHA e confirmação pós-fechamento. Não tocar QVD/QVW canônicos ou `main`; PR #226 permanece Draft.
