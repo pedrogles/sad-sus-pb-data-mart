@@ -1,0 +1,64 @@
+// SAD-MVP M3-01 — temporary, fact-grain RES/SERV classification ONLY.
+// Loads and joins ONE field to in-memory FATO_INTERNACAO by its approved unique SK.
+// Does not mutate QVD/Link Table or introduce new fact/dimension tables.
+// The map uses approved role-playing municipality SKs from LINK_ANALISE.
+// Execution allowed ONLY through a versioned TEMP-QVW runner.
+SET ErrorMode=1;
+LET vMVPFlowStartErrors=ScriptErrorCount;
+TRACE [MVP_FLOW] START=TEMP_FACT_ROLE_CLASSIFICATION;
+
+// Mapping source: one Link row per %LINK_KEY. Only SIH/RD eligible links
+// have non-null residence and competence; exclude LT and annual POP links.
+MVP_FLOW_LINK_CLASS_MAP:
+MAPPING LOAD
+ [%LINK_KEY],
+ If([%SK_MUNICIPIO_RESIDENCIA]=[%SK_MUNICIPIO_SERVICO],
+    'RES_EQ_SERV','RES_NE_SERV')
+RESIDENT LINK_ANALISE
+WHERE NOT IsNull([%SK_TEMPO_COMPETENCIA])
+  AND NOT IsNull([%SK_MUNICIPIO_RESIDENCIA])
+  AND NOT IsNull([%SK_MUNICIPIO_SERVICO]);
+
+// Read QVD only, one row per SK_REGISTRO_INTERNACAO; the join has EXACTLY
+// one common field and adds a unique MVP_* label on the FI table, not Link.
+LEFT JOIN (FATO_INTERNACAO)
+LOAD
+ SK_REGISTRO_INTERNACAO,
+ ApplyMap('MVP_FLOW_LINK_CLASS_MAP', [%LINK_KEY], 'MVP_UNMATCHED') AS MVP_FI_RES_SERV_CLASS
+FROM [__MVP_FI_QVD__] (qvd);
+
+// Restrict checks to the already approved administrative observation grain.
+// IDENT=5 records remain in FI with QTD_INTERNACAO=0, never counted as new.
+MVP_FLOW_AUDIT:
+NOCONCATENATE LOAD
+ Count(*) AS MVP_ROWS,
+ Count(DISTINCT SK_REGISTRO_INTERNACAO) AS MVP_UNIQUE,
+ Sum(If(MVP_FI_RES_SERV_CLASS='RES_EQ_SERV',QTD_INTERNACAO,0)) AS MVP_EQ,
+ Sum(If(MVP_FI_RES_SERV_CLASS='RES_NE_SERV',QTD_INTERNACAO,0)) AS MVP_NE,
+ Sum(If(MVP_FI_RES_SERV_CLASS='MVP_UNMATCHED',1,0)) AS MVP_UNMATCHED,
+ Sum(If(Match(MVP_FI_RES_SERV_CLASS,'RES_EQ_SERV','RES_NE_SERV')=0,1,0)) AS MVP_BAD,
+ Sum(QTD_INTERNACAO) AS MVP_ALL
+RESIDENT FATO_INTERNACAO;
+LET vMVPFlowRows=Peek('MVP_ROWS',0,'MVP_FLOW_AUDIT');
+LET vMVPFlowUnique=Peek('MVP_UNIQUE',0,'MVP_FLOW_AUDIT');
+LET vMVPFlowEQ=Peek('MVP_EQ',0,'MVP_FLOW_AUDIT');
+LET vMVPFlowNE=Peek('MVP_NE',0,'MVP_FLOW_AUDIT');
+LET vMVPFlowUnmatched=Peek('MVP_UNMATCHED',0,'MVP_FLOW_AUDIT');
+LET vMVPFlowBad=Peek('MVP_BAD',0,'MVP_FLOW_AUDIT');
+LET vMVPFlowAll=Peek('MVP_ALL',0,'MVP_FLOW_AUDIT');
+DROP TABLE MVP_FLOW_AUDIT;
+TRACE [MVP_FLOW] ROWS=$(vMVPFlowRows) UNIQUE=$(vMVPFlowUnique) EQ=$(vMVPFlowEQ) NE=$(vMVPFlowNE) UNMATCHED=$(vMVPFlowUnmatched) BAD=$(vMVPFlowBad) ALL=$(vMVPFlowAll);
+IF ScriptErrorCount>$(vMVPFlowStartErrors)
+ OR $(vMVPFlowRows)<>566672
+ OR $(vMVPFlowUnique)<>566672
+ OR $(vMVPFlowEQ)<>294635
+ OR $(vMVPFlowNE)<>260454
+ OR $(vMVPFlowUnmatched)<>0
+ OR $(vMVPFlowBad)<>0
+ OR $(vMVPFlowAll)<>555089
+ OR NoOfTables()<>17 THEN
+ TRACE [MVP_FLOW] VERDICT=BLOCKED_FACT_GRAIN_OR_CLASSIFICATION;
+ EXIT SCRIPT;
+ENDIF
+TRACE [MVP_FLOW] VERDICT=PASS_SCRIPT_RESTRICTED_CANDIDATE_ONLY;
+TRACE [MVP_FLOW] LINK_KEY_CONTRACT=NOT_APPROVED P5_D2_UI=NOT_APPROVED PHASE_IX=NOT_AUTHORIZED;
