@@ -48,16 +48,17 @@ LET vMVPFlowBad=Peek('MVP_BAD',0,'MVP_FLOW_AUDIT');
 LET vMVPFlowAll=Peek('MVP_ALL',0,'MVP_FLOW_AUDIT');
 DROP TABLE MVP_FLOW_AUDIT;
 TRACE [MVP_FLOW] ROWS=$(vMVPFlowRows) UNIQUE=$(vMVPFlowUnique) EQ=$(vMVPFlowEQ) NE=$(vMVPFlowNE) UNMATCHED=$(vMVPFlowUnmatched) BAD=$(vMVPFlowBad) ALL=$(vMVPFlowAll);
-IF ScriptErrorCount>$(vMVPFlowStartErrors)
- OR $(vMVPFlowRows)<>566672
- OR $(vMVPFlowUnique)<>566672
- OR $(vMVPFlowEQ)<>294635
- OR $(vMVPFlowNE)<>260454
- OR $(vMVPFlowUnmatched)<>0
- OR $(vMVPFlowBad)<>0
- OR $(vMVPFlowAll)<>555089
- OR NoOfTables()<>17 THEN
+LET vMVPFlowTables=NoOfTables();
+TRACE [MVP_FLOW] TABLES=$(vMVPFlowTables);
+// QlikView control clauses must contain IF <condition> THEN on one line.
+// The original multiline IF was rejected by QlikView even though the
+// numeric oracle values were correct (local native log 07/11/2026).
+IF ScriptErrorCount>$(vMVPFlowStartErrors) OR $(vMVPFlowRows)<>566672 OR $(vMVPFlowUnique)<>566672 OR $(vMVPFlowEQ)<>294635 OR $(vMVPFlowNE)<>260454 OR $(vMVPFlowUnmatched)<>0 OR $(vMVPFlowBad)<>0 OR $(vMVPFlowAll)<>555089 THEN
  TRACE [MVP_FLOW] VERDICT=BLOCKED_FACT_GRAIN_OR_CLASSIFICATION;
+ EXIT SCRIPT;
+ENDIF
+IF $(vMVPFlowTables)<>17 THEN
+ TRACE [MVP_FLOW] VERDICT=BLOCKED_ASSOCIATIVE_TABLE_COUNT;
  EXIT SCRIPT;
 ENDIF
 TRACE [MVP_FLOW] VERDICT=PASS_SCRIPT_RESTRICTED_CANDIDATE_ONLY;
