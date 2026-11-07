@@ -150,10 +150,12 @@ $created=New-Object System.Collections.Generic.List[object]
 $app=$null
 $doc=$null
 $errorMessage=$null
+$stage='OPEN_TEMP_COPY'
 try{
   $app=New-Object -ComObject 'QlikTech.QlikView'
   $doc=$app.OpenDoc($target)
   if($null -eq $doc){throw 'OpenDoc of disposable copy failed'}
+  $stage='READ_MODEL_SCRIPT'
   $props=$doc.GetProperties()
   $script=[string]$props.Script
   if($script -notmatch '\[VII\] VERDICT=PASS_SCRIPT_ASSOCIATIVE_CANDIDATE_ONLY' -or
@@ -167,6 +169,7 @@ try{
   $props.GenerateLogfile=$true
   $null=$doc.SetProperties($props)
   $null=$doc.Save()
+  $stage='RELOAD_P23_IN_TEMP'
   $null=$doc.Reload()
   $nativeLog=$target+'.log'
   if(-not(Test-Path -LiteralPath $nativeLog -PathType Leaf)){throw 'Native reload log missing'}
@@ -178,6 +181,7 @@ try{
      $log -match '(?i)circular reference|loosely coupled|synthetic key'){
     throw 'P23 native reload PASS absent, BLOCKED emitted or association warning'
   }
+  $stage='ORACLES_3_FACTS_AND_P23'
   AssertValue $doc "Num(Sum(QTD_INTERNACAO),'0','.',',')" 555089 'RD_ALL'
   AssertValue $doc "Num(Sum({<PERIODO_COMPETENCIA={'201912'}>} QTD_LEITOS_SUS),'0','.',',')" 7140 'LT_201912'
   AssertValue $doc "Num(Sum({<PERIODO_ANO={2019}>} POPULACAO_ESTIMADA),'0','.',',')" 4018127 'POP_2019'
@@ -190,7 +194,9 @@ try{
     $exp="Num(Count({<P23_ESTADO_OBSERVADO={'$($k.Code)'}>} P23_MUNICIPIO_6),'0','.',',')"
     AssertValue $doc $exp $k.Expected $k.Label
   }
-  $nSheets=[int]$doc.Sheets.Count
+  $stage='SHEET_COUNT_AND_CREATION'
+  $nSheets=[int]$doc.NoOfSheets
+  Write-Output "M2_SOURCE_SHEET_COUNT=$nSheets"
   if($nSheets -gt 1){throw "Source M1 QVW contains $nSheets sheets; expected 0 or 1"}
   $titles=@('Produção Hospitalar','Leitos Cadastrais Observados','Fluxos e Contexto Territorial')
   $sheets=@()
@@ -203,8 +209,9 @@ try{
     $null=$sheet.SetProperties($sp)
     $sheets+=,$sheet
   }
-  if([int]$doc.Sheets.Count -ne 3){throw 'Not exactly three QlikView sheets'}
+  if([int]$doc.NoOfSheets -ne 3){throw 'Not exactly three QlikView sheets'}
   foreach($spec in $objects){
+    $stage='CREATE_OBJECT_'+$spec.Id
     $sheet=$sheets[$spec.Sheet-1]
     $null=$sheet.Activate()
     $chart=Chart $sheet $spec.Type $spec.Title $spec.Dims $spec.Expr
@@ -232,12 +239,16 @@ try{
     Write-Output "M2_CREATED=$($spec.Id) Type=$($spec.Type)"
   }
   if($created.Count -ne 9){throw 'Nine native objects not created'}
+  $stage='SAVE_COMPLETED_TEMP_QVW'
   $null=$doc.Save()
   $created | Export-Csv -LiteralPath (Join-Path $run 'm2_objects_manifest.csv') -NoTypeInformation -Encoding UTF8
   Write-Output 'M2_NATIVE_CANDIDATE=3_SHEETS_9_OBJECTS_BUILT_PENDING_GUI_AND_FILTER_VALIDATION'
   Write-Output 'P5_D2_UI=NOT_APPROVED LINK_KEY_CONTRACT=NOT_APPROVED'
 }catch{
   $errorMessage=$_.Exception.Message
+  $line=$_.InvocationInfo.ScriptLineNumber
+  Write-Output "M2_FAILED_STAGE=$stage"
+  Write-Output "M2_FAILED_LINE=$line"
   Write-Output "M2_VERDICT=BLOCKED_OR_INCONCLUSIVE $errorMessage"
 }finally{
   if($null -ne $doc){
