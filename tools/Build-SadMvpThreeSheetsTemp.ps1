@@ -36,6 +36,10 @@ if(-not(Test-Path -LiteralPath (Join-Path $repo 'AGENTS.md') -PathType Leaf)){th
 if(-not (Under $source $evidence)){throw 'M1SourceQvw must be inside the existing external EvidenceRoot'}
 if((Split-Path $source -Leaf) -cne 'SAD_M1_INTEGRATED_TEMP.qvw'){throw 'Use exactly the previously validated M1 TEMP QVW'}
 if(-not(Test-Path -LiteralPath $source -PathType Leaf)){throw 'M1SourceQvw not found'}
+$expectedM1Sha='F55FB113D5E03DB1E7A746F665277E5F84AD5BECBE25D6FD1C85DDED0C2BEC60'
+if((Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash -cne $expectedM1Sha){
+  throw 'Pinned M1 source SHA-256 mismatch; stop without constructing QVW'
+}
 $branch=(& git -C $repo branch --show-current 2>$null).Trim()
 $head=(& git -C $repo rev-parse HEAD 2>$null).Trim()
 if($LASTEXITCODE -ne 0 -or $branch -cne 'proposal/sad-mvp-rebaseline-2026-11-07' -or
