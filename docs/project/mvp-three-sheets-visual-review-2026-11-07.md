@@ -127,3 +127,21 @@ O total de 12.040.181 é soma de 2017+2018+2019 e não população de um ano. A 
 - Somente se `M3_COM_PROBE=PASS_SYNTHETIC_LOCAL_ONLY`, considerar novo build M3 em QVW TEMP, preservando as evidências das tentativas anteriores. Caso contrário, STOP e investigar COM; não iniciar outra cadeia de reload.
 
 **Classificação de evidência:** `M3_FLOW_NUMERIC=PASS_LOCAL_REPORTED`, `M3_EIGHT_OBJECTS=CREATED_BUT_NOT_SAVED_AS_COMPLETED_MODEL`, `M3_POP_TOTAL=BLOCKED_COM_INDEX`; `NO_TOTALS_ZERO_BASE_FIX=STATIC_VERSIONED_ONLY`; `M3_COM_PROBE_WINDOWS=NOT_RUN`, `M3_FULL_BUILD=NOT_REPEATED`. `C2/C3/C4/IX/PRODUCTION=NOT_APPROVED`; PR #226 Draft; `main` intacta.
+
+
+## 8. Gate COM No Totals isolado — PASS local reportado em 07/11/2026
+
+**Evidência primária:** stdout integral do PowerShell/QlikView Desktop apresentado pelo responsável nesta conversa, após `git status --short` vazio, `git pull --ff-only` e parser PowerShell sem erros. Executado o `tools/Test-SadM3NoTotalsComProbe.ps1` versionado em `HEAD=e2b2a5647dffac558e2eec8d0139510356356d9b`.
+
+| Sinal | Valor reportado |
+|---|---|
+| `SCRIPT_SHA256` | `96DA669D916562DB16603A82724F4510D4D319505D73A6A975A335B542E4FC07` |
+| `DATASET` | `SYNTHETIC_ONE_ROW_NO_SUS_QVDS` |
+| `M3_COM_EXPRESSION_INDEX` | `0` |
+| `M3_COM_NO_TOTALS_PROPERTY_READBACK` | `False` |
+| `M3_COM_PROBE` | `PASS_SYNTHETIC_LOCAL_ONLY` |
+| Evidência local privada | `SAD_M3_TOTAL_COM_PROBE_73d410d12aa54f1492f68f52d9c7a736/M3_TOTAL_ONLY_SYNTHETIC.qvw` |
+
+**Conclusão restrita:** o índice `Expressions.Item(0).Item(0)` e a atribuição/leitura `ExpressionData.UsePartialSum=$false` funcionaram **em uma tabela sintética com uma expressão**, no QlikView Desktop instalado. Nenhum QVD SUS e nenhum QVW canônico foram carregados ou gravados por esse probe. Não confundir `UsePartialSum=False` com a validação visual efetiva de `M3-03` no Data Mart completo, nem com isolamento de filtros POP.
+
+**Decisão operacional:** `M3_COM_PROBE=PASS_LOCAL_OPERATOR_REPORTED_SYNTHETIC_ONLY`; encerrar o probe — **não repetir**. A correção do builder já está versionada, usando os mesmos acessos e sem alteração das fontes. Autorizar **uma** execução controlada do builder no QlikView 12, novamente a partir do QVW M1 imutável, para tentar produzir três folhas e nove objetos em novo diretório de evidência, exigindo especificamente `M3_03_TOTAL_MODE=NO_TOTALS_PERSISTED_IN_COM_CANDIDATE`, os dois oráculos de fluxo, nove `M2_CREATED`, e hashes protegidos intactos. Se falhar, STOP e usar o log da nova tentativa; se passar, STOP de recarga e inspeção GUI da terceira folha. `C2/C3/C4/P5/IX/PRODUCTION=NOT_APPROVED`, PR #226 permanece Draft; nenhuma alteração em `main`.
