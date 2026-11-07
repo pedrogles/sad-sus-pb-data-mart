@@ -115,3 +115,24 @@ Códigos de saída:
 **Teste e aprovação:** fonte versionada no Draft #226, porém sem PowerShell 5.1/Windows nesta sessão. `SCRIPT_STATIC_ONLY`, `PARSER_WINDOWS=NOT_RUN`, `M1_WINDOWS=NOT_RUN`. Antes de sustentar um gate, operador deve conferir commit e SHA-256 efetivo do script, executar uma vez em modo somente leitura e devolver o resumo CSV/TXT, omitindo caminhos pessoais em relatórios públicos. Mesmo código 0 não substitui prova de carga de QVD/seleções/visuais.
 
 **STOP:** nenhum teste C2, nenhum novo QVW, nenhum merge ou regeneração de QVD é autorizado por esta preparação.
+
+## 8. Evidência operacional M1 — retorno do operador em 07/11/2026
+
+**Fonte:** saída do PowerShell 5.1 reproduzida pelo responsável na conversa. **Classe de evidência:** `LOCAL_OPERATOR_REPORTED`; o CSV, os QVDs e os QVWs binários **não foram anexados nem conferidos independentemente** neste registro. Nenhum caminho pessoal foi versionado.
+
+| Campo | Valor reportado |
+|---|---|
+| `VERDICT` | `MATCHED_25_BACKUP_BYTES_NOT_QVD_SEMANTIC` |
+| `EXPECTED` / `PRESENT` | `25 / 25` |
+| `MATCHING_BACKUP_BYTES` | `25` |
+| `ISSUES` | `0` |
+| `BACKUP_COMPARISON` | `True` |
+| `GIT_HEAD` | `148c0a3fd44bd3d4c79f0db400531be432c25a37` |
+| `SCRIPT_SHA256` | `54AEEB12A2E0EA5EA4CBBC112687A451380CC0B35AC89E9907B5D151AC3E2B18` |
+| `LIMITATION` | `FILE_PRESENCE_AND_HASHES_ONLY_NOT_QVD_RELOAD_ASSOCIATIONS_OR_UI` |
+
+**Interpretação limitada:** 10 QVDs de extração, 12 QVDs de transformação e 3 QVWs canônicos estavam presentes e coincidiram byte a byte com a pasta de cópias no momento da execução reportada. O backup de 20/10/2026 é `LOCAL_COPY_ONLY`, no mesmo disco de origem conforme a política: **comparação positiva não prova recuperação de desastre nem funcionamento semântico no QlikView**. Não usar `M1_INVENTORY=PASS` como sinônimo de `M1_DATA_MART_FUNCTIONAL=PASS`.
+
+**Próximo trabalho sob decisão própria:** preparar o **único QVW TEMP de consumo** usando os QVDs existentes, não os canônicos como destinos de Save/Reload. Conferir, por evidência real, (i) os três fatos/carregamento, (ii) associações efetivamente necessárias, (iii) totais/oráculos existentes, (iv) efeito de ano/competência/território nos visuais expostos. Não inferir viabilidade física da Link Table pela existência do QVD. Não executar C2/TX17 nem reconstruir QVDs.
+
+**STOP M1-INVENTORY:** concluído por evidência local reportada; não executar o mesmo inventário repetidamente sem mudança factual. **M1_CONSUMPTION=NOT_RUN; OWNER_MVP_SCOPE_APPROVAL=PENDING; TEMP_QVW_AUTHORIZATION=PENDING; C2/C3/C4/IX=NOT_APPROVED.** Este registro é apenas um acréscimo documental na branch Draft #226, sem alteração dos contratos vigentes.
