@@ -79,3 +79,19 @@ Finalizar após uma única sequência de `Before → reabrir → S_OK/S_TIME/S_R
 - `C2_GUIDED_R2/C3/C4/P5_GLOBAL/LINK_KEY_CONTRACT/PHASE_IX/PRODUCTION=NOT_APPROVED`.
 
 **STOP do gate P1:** encerrado com `BLOCKED` específico, não repetir `Before → reabrir → 3 capturas → After` sem correção causal identificada. **Próximo diagnóstico mínimo, em leitura GUI somente:** abrir o QVW F04 TEMP já identificado, ir à folha 2 → **CH05** → `Propriedades → Geral`, fotografar o conteúdo atual da **Condição de cálculo** e, em `Mensagens de erro`, o campo da categoria **Condição de cálculo não satisfeita**; **não editar nada, não aplicar nem salvar**. Se condição antiga RES e mensagem estática estiverem presentes, favorece causa **edição temporal não persistida**; se condição combinada e mensagem dinâmica estiverem presentes, investigar estado de seleção/evaluação antes de qualquer correção. Registrar só essas duas propriedades, sem executar outra bateria. Nova edição/salvamento exige gate separado com baseline SHA e confirmação pós-fechamento. Não tocar QVD/QVW canônicos ou `main`; PR #226 permanece Draft.
+
+
+## 7. Causa do bloqueio P1 esclarecida — estado CH05 salvo sem regra temporal
+
+**Data:** 07/11/2026. Recebidas duas capturas de **inspeção somente leitura** das propriedades do mesmo `CH05` na QVW TEMP F04 reaberta, após o bloqueio temporal. O usuário não reportou nova edição/aplicação/salvamento. Hashes dos PNGs calculados a partir dos bytes montados localmente pelo agente.
+
+| Captura | Dimensão | Bytes | SHA-256 | Evidência |
+|---|---|---:|---|---|
+| `image(20261107-194930).png` | 1901×1068 | 351340 | `0FCAD875968DA5643A6E66B57370C7B614DB5E074EE33B501A4264DE8DFE4C33` | Propriedades → Geral `CH05`: **Condição de cálculo** igual somente a `=GetSelectedCount(RES_COD_DATASUS_6,True())=0`; não há checagem `PERIODO_ANO` nem `PERIODO_COMPETENCIA` |
+| `image(20261107-194946).png` | 1904×1068 | 330939 | `8FE27790B251D01949786BF69CD3A311C2A30F344114AB7E22C64DA0421C6CAC` | Mensagens de erro → `Condição de cálculo não satisfeita` `CH05`: aviso **estático** apenas de residência; não há expressão dinâmica `=If(...)` nem aviso temporal |
+
+**FATO VERIFICADO pela GUI pós-reabertura:** o `CH05` salvo/aberto **mantém o F03-U1** (guarda de RES e mensagem estática), mas **não contém** nem a condição temporal combinada nem a mensagem dinâmica da sessão F04-U1. Isso explica diretamente `S_TIME_REOPEN` mostrar `Não há dados para mostrar` sob 2018. **Não** há necessidade de atribuir a falha a Qlik `GetSelectedCount`, Set Analysis 201912 ou Link Table. A versão em disco pode não ter recebido o salvamento da edição F04-U1, como o operador suspeitou; o ato específico que impediu persistência (Save omitido, Cancel no diálogo, etc.) **não foi observado**.
+
+**Atualização causal:** `F04_U1_TEMPORAL_GUARD_ROOT_CAUSE=TEMP_QVW_SAVED_STATE_MISSING_CH05_TEMPORAL_PROPERTIES_CONFIRMED`; `F04_U1_SAVE_MECHANISM=NOT_OBSERVED`; `F04_U1_REOPEN_PERSISTENCE=BLOCKED_TEMPORAL_GUARD` mantém-se até correção com nova evidência. `F03_RES_GUARD=PHYSICALLY_PRESENT_GUI` na versão anterior e `F04_U1_FIRST_SESSION=PASS_GUI_RESTRICTED` permanecem fatos distintos.
+
+**STOP do diagnóstico cumprido:** **não repetir** os três estados F04-U1, não alterar QVW nesta análise, não recarregar e não abrir novas frentes. Próximo gate separado `F04-U1/P2`: **reaplicar exclusivamente as duas propriedades de CH05 na mesma QVW TEMP F04**, salvar explicitamente com seleção neutra, confirmar hash pós-salvamento **diferente** da baseline P1, fechar e reabrir; conferir as duas propriedades persistidas e **um único** cenário temporal `PERIODO_ANO=2018`. Sem reconstruir, sem novos scripts COM e sem reexecutar cenário RES ou neutro como bateria completa. Critérios e STOP serão versionados separadamente, antes de executar. Nenhuma alteração na `main`, QVDs, QVWs canônicos ou builder; PR #226 continua Draft.
