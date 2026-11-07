@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "status": "DRAFT_COM_MAPPING_UNVERIFIED",
+  "scope": "Only MVP candidate CH04 and CH05, native QlikView 12 desktop",
+  "sourceEvidence": "docs/project/mvp-f04-u1-p2-targeted-save-reopen-correction-2026-11-07.md",
+  "objects": [
+    {
+      "viewId": "M2-01",
+      "objectId": "CH04",
+      "title": "Leitos cadastrados por competência — snapshots",
+      "calcCondition": "=GetSelectedCount(RES_COD_DATASUS_6,True())=0",
+      "calcConditionUnfulfilledMessage": "Indisponível nesta seleção: o filtro de residência não define a localização dos leitos. Ausência de dados associados não significa zero leitos."
+    },
+    {
+      "viewId": "M2-02",
+      "objectId": "CH05",
+      "title": "Leitos SUS observados — município, 201912",
+      "calcCondition": "=GetSelectedCount(RES_COD_DATASUS_6,True())=0 And (GetSelectedCount(PERIODO_ANO,True())=0 Or (GetSelectedCount(PERIODO_ANO,True())=1 And Only(PERIODO_ANO)=2019)) And (GetSelectedCount(PERIODO_COMPETENCIA,True())=0 Or (GetSelectedCount(PERIODO_COMPETENCIA,True())=1 And Only(PERIODO_COMPETENCIA)=201912))",
+      "calcConditionUnfulfilledMessage": "=If(GetSelectedCount(RES_COD_DATASUS_6,True())>0,'Indisponível nesta seleção: o filtro de residência não define a localização dos leitos. Ausência de dados associados não significa zero leitos.','Indisponível nesta seleção: este gráfico mostra somente dezembro de 2019 (201912). O período selecionado é incompatível. A ausência de dados não significa zero leitos.')",
+      "measureMustRemain": "Sum({<PERIODO_COMPETENCIA={'201912'}>} QTD_LEITOS_SUS)"
+    }
+  ]
+}
