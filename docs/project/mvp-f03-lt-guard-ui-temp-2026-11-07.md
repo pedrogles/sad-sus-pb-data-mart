@@ -100,3 +100,29 @@ Script: `tools/New-SadMvpF03UiGuardCopy.ps1`, obrigatório `-Prepare`, `-Expecte
 - `MVP_F03_UI_GUARD=PARTIAL_GUI_PASS_PENDING_S_BAD_WITH_SELECTION_STATE`. C2/C3/C4/P5/IX e produção permanecem não aprovados.
 
 **Única ação restante no gate:** sem alterar objetos ou salvar novo QVW, selecionar **somente `RES_COD_DATASUS_6=251370`** na folha 3, voltar à folha 2 e capturar **uma única screenshot** `S_BAD` com **Seleções Atuais visível, o valor 251370, dois avisos e três barras P23**. Depois limpar a seleção e STOP. Não repetir S_OK, não recarregar e não rodar scripts.
+
+
+## 7. S_BAD com seleção real comprovada — encerramento do F03-U1
+
+**Data:** 07/11/2026. Última captura real `image(20261107-172512).png` fornecida pelo responsável nesta conversa e inspecionada diretamente. **1907×1068 px**, **215871 bytes**; SHA-256 dos bytes PNG montados `1BE20A8E027B915EEB2BE4AFB7030B4D203EBA71AEC861D340ED3427E5094D6C`. Janela QlikView x64 Personal Edition exibe exclusivamente a QVW TEMP de correção `SAD_F03_UI_GUARD_TEMP_a3bedd3bf2444d2ab46d890776d3e2b8/SAD_MVP_F03_UI_GUARD_CANDIDATE.qvw`, não a QVW de inspeção anterior nem a canônica; screenshot **não prova** reabertura de arquivo persistido.
+
+**Evidência GUI S_BAD:**
+- Caixa **Seleções Atuais** exibe uma única linha com campo municipal RES visualmente truncado (`RES_COD_DATAS...`, coerente com `RES_COD_DATASUS_6` documentado nas capturas anteriores), marcador verde e **valor 251370**; nenhum ano ou SERV explicitamente selecionado na lista.
+- **M2-01/CH04** apresenta texto completo de indisponibilidade: “Indisponível nesta seleção: o filtro de residência não define a localização dos leitos. Ausência de dados associados não significa zero leitos.” **Sem publicar números de capacidade nem confundir ausência com zero**.
+- **M2-02/CH05** apresenta **o mesmo texto** no lugar de barras/valores sob RES selecionado.
+- **M2-03/P23** mantém três barras observacionais qualitativamente compatíveis com as capturas anteriores; não apresenta as mesmas mensagens dos dois objetos LT, mas seus rótulos continuam truncados. **Não** é comprovação quantitativa de 4.467/97/3.464 na tela.
+- Título da QVW TEMP **sem `*`**. Isso somente demonstra ausência de alteração pendente no estado visual daquela captura; **não** equivale a inspeção independente do QVW salvo/reaberto ou auditoria de SHA do arquivo Windows.
+
+**Evidência GUI S_OK reutilizada (sem repetir testes):** `image(20261107-172212).png` na seção 6 mostra Seleções Atuais **vazia**, M2-01 com as duas séries LT e M2-02 com barras SUS por SERV/201912 novamente exibidas; M2-03 preservada. É prova de reversibilidade visual do aviso na mesma sessão/cópia de trabalho.
+
+**Conclusão restrita do gate:**
+- `MVP_F03_UI_GUARD=PASS_GUI_RESTRICTED`.
+- `F03_S_BAD_RES_251370_EXACT=PASS_SCREENSHOT`.
+- `F03_S_OK_CLEARED=PASS_SCREENSHOT`.
+- `F03_CH04_CH05_CUSTOM_CONDITION_AND_MESSAGE=PASS_GUI_RESTRICTED`.
+- `F03_P23_ISLAND=PASS_VISUAL_RESTRICTED_THREE_CATEGORIES`.
+- `F03_TEMP_QVW_PERSISTENCE=NO_ASTERISK_VISIBLE_REOPEN_NOT_VERIFIED`.
+- `MVP_F03_USER_USE_FOR_THIS_SELECTION=NO_FALSE_ZERO_MESSAGE`; não declarar que toda seleção P5 recebeu guarda.
+- `C2_GUIDED_R2/C3/C4/P5_D2_UI/LINK_KEY_CONTRACT/PHASE_IX/PRODUCTION_APPROVED=NOT_APPROVED`.
+
+**STOP F03-U1 atingido:** não solicitar novas capturas/repetições deste cenário, nem reconstruir/alterar os QVDs, QVWs canônicos, `main` ou o QVW candidato base de nove visuais. A configuração manual **reside apenas na cópia TEMP externa**, não está incorporada ao construtor versionado e **não foi provada após reabrir o QVW salvo**; documentar esse fato como limite de entrega/automação, não como erro de GUI. Qualquer nova frente (reabertura persistida, layout/legibilidade, filtros SERV ou contratos C2–C4) exige objetivo e gate próprios; PR #226 permanece Draft sem merge.
