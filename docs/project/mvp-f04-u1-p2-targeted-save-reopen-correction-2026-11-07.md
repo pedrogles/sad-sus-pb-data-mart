@@ -110,3 +110,31 @@ C:\Users\pedro\SAD_M1_EVIDENCIAS\SAD_F04_TEMPORAL_GUARD_9a792ff10d694d15b50588be
 - `C2_GUIDED_R2/C3/C4/LINK_KEY_CONTRACT/P5_GLOBAL/PHASE_IX/PRODUCTION=NOT_APPROVED`.
 
 **Última evidência solicitável neste gate:** se o responsável ainda mantém a QVW fechada, basta abrir **somente** o mesmo QVW F04 TEMP, ir a `CH05 → Propriedades → Geral` e capturar a condição de cálculo completa, depois `Mensagens de erro → Condição de cálculo não satisfeita` e capturar a expressão `If(...)`. **Não editar, não aplicar, não executar filtros novamente, não recarregar, não salvar.** Se a configuração estiver íntegra, encerrar P2 sem repetir ano 2018. Se houver divergência, STOP e registrar. Nenhum merge, alteração de `main`, novo QVW ou expansão automática do escopo.
+
+
+## 6. Encerramento do P2 — propriedades CH05 persistidas após reabertura
+
+**Data:** 07/11/2026. Recebidas duas capturas **posteriores à reabertura da QVW TEMP F04**, inspecionadas visualmente de modo independente pelo agente. Os hashes dos PNGs foram calculados a partir dos arquivos efetivamente montados no ambiente desta conversa. O QVW original permanece somente no Windows do responsável; seu SHA-256 foi reportado no estágio anterior, **não recalculado remotamente**.
+
+| Captura | Dimensões | Bytes | SHA-256 dos bytes PNG | Conteúdo verificado |
+|---|---|---:|---|---|
+| `image(20261107-201510).png` | 1907×1064 | 261797 | `AB294E1DC469144F2772712762C8A477AE0B621F3CDC241B5A6B0F063306E1E4` | Propriedades de `CH05`, editor da **Condição de cálculo**, mostra `Expressão OK` e **todas** as verificações: `GetSelectedCount(RES_COD_DATASUS_6,True())=0`; ano não selecionado ou um único `PERIODO_ANO=2019`; competência não selecionada ou uma única `PERIODO_COMPETENCIA=201912` |
+| `image(20261107-201535).png` | 1901×1068 | 247398 | `931A4BE31FB9E0678800D95F5E4526A65E34124A17CC157B8AD64D9D9A7119C7` | Propriedades de `CH05`, editor da mensagem `Condição de cálculo não satisfeita`, mostra `Expressão OK` e `If(GetSelectedCount(RES_COD_DATASUS_6,True())>0, ...)`, com texto original de RES e alternativa sobre incompatibilidade com dezembro de 2019 |
+
+**Conciliação com as evidências anteriores (não repetir):**
+- O operador reportou `F04_P2_SAVED_SHA256=4AF2C4BE17336AB729CF0CD70D75B7481B41AC003958EDB543584A1484047F92` e `F04_P2_AFTER_REOPEN_SHA256` **igual**, ambos referentes ao mesmo QVW TEMP F04.
+- A baseline anterior era `6310321DB30C1065843B6BFF1A400D2C29D235D4B7C79372453366454EB1B1BD`, diferente da versão corrigida.
+- A imagem `image(20261107-200949).png`, já registrada na seção 5, mostrou **`PERIODO_ANO=2018` ativo após reabrir**, `CH05` exibindo o aviso temporal específico de `201912`, `CH04` com `201801..201812` e a ilha P23 visível.
+- Os cenários `S_OK` e `S_RES=251370` foram validados visualmente na sessão de correção anterior, sem regressão; não foram repetidos neste gate de persistência restrito.
+
+**Veredito de gate final, restrito e rastreável:**
+- `F04_U1_P2_OVERALL=PASS_GUI_RESTRICTED_WITH_LOCAL_SHA`;
+- `F04_U1_P2_CH05_POST_REOPEN_PROPERTY_READBACK=PASS_SCREENSHOTS`;
+- `F04_U1_P2_TEMPORAL_GUARD_REOPEN_FUNCTIONAL=PASS_GUI_RESTRICTED`;
+- `F04_U1_P2_SAVED_SHA_CHANGED=PASS_LOCAL_REPORTED`;
+- `F04_U1_P2_SHA_AFTER_REOPEN_UNCHANGED=PASS_LOCAL_REPORTED`;
+- `F04_U1_REOPEN_PERSISTENCE=PASS_RESTRICTED` **somente** para as duas propriedades CH05 e cenário temporal 2018 da QVW TEMP especificada;
+- `F04_U1_BUILDER_REPRODUCIBLE=NOT_IMPLEMENTED`;
+- `C2_MVP_NATIVE_POST_SELECTION_PHYSICAL=INCOMPLETE`; `C2_GUIDED_R2/C3/C4/LINK_KEY_CONTRACT/P5_GLOBAL/PHASE_IX/PRODUCTION=NOT_APPROVED`.
+
+**STOP atingido:** encerrado F04-U1/P2, sem executar novos testes, sem capturas adicionais necessárias. A correção **foi manual, preservada no QVW TEMP e não está integrada ao builder versionado**; construir outra QVW com `Build-SadMvpThreeSheetsTemp.ps1` não herda automaticamente estas propriedades. Se houver próxima frente, recomendação **separada** é especificar/revisar como tornar as guardas CH04/CH05 reproduzíveis, sem reabrir F04-U1/P2. Nenhum merge, `main`, QVD/QVW canônico, alteração estrutural, GO IX ou aprovação de produção decorre deste resultado.
