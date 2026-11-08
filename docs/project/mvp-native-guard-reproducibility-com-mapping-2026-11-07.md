@@ -54,3 +54,64 @@ Só após um `PASS_DISCOVERY_ONLY` conclusivo:
 `F05_R1_GUARD_CONTRACT=VERSIONED_STATIC_CHECKED`; `F05_R1_COM_PROBE=VERSIONED_NOT_EXECUTED`; `F05_R2_BUILDER_APPLICATION=NOT_IMPLEMENTED`; `F04_U1_P2_REOPEN=PASS_GUI_RESTRICTED_WITH_LOCAL_SHA`; `C2_MVP_NATIVE_POST_SELECTION_PHYSICAL=INCOMPLETE`; `C2_GUIDED_R2/C3/C4/LINK_KEY_CONTRACT/P5_GLOBAL/PHASE_IX/PRODUCTION=NOT_APPROVED`.
 
 **STOP desta execução:** documentos + manifesto + probe de leitura versionados e PR atualizado. Nenhuma chamada COM executada aqui. A continuidade depende exclusivamente do stdout do **único probe** no Windows; não tentar aplicar/descobrir valores por adivinhação. Sem merge, sem mudança da `main` e sem nova recarga/QVD/QVW canônico.
+
+
+## 6. Resultado R1 no Windows e delimitação R1B — inspeção focada
+
+**Evidência local reportada em 08/11/2026:** o responsável executou o script versionado do commit `711e1ac555f7c8d205c62ada976666ea5f675ffb`, depois de `git status --short` limpo, `git pull --ff-only`, verificação de HEAD e parser PowerShell sem erros. O stdout veio do QlikView/COM instalado no Windows e foi **fornecido diretamente pelo operador**; não foi executado independentemente pelo agente.
+
+```text
+GIT_HEAD=711e1ac555f7c8d205c62ada976666ea5f675ffb
+CONTRACT_SHA256=79E6CAC1F5AB34BE128BC53DB50C9431078091EBA6CA6B9E670FE54FD044D6E1
+SOURCE_QVW_SHA256=4AF2C4BE17336AB729CF0CD70D75B7481B41AC003958EDB543584A1484047F92
+NO_QVD_ACCESS=True NO_RELOAD=True NO_SETPROPERTIES=True NO_SAVE=True
+CHART=CH04 VIEW=M2-01 TITLE_MATCH=True
+MEMBERS_CH04_PROPERTIES_COUNT=19
+MEMBERS_CH04_PROPERTIES_RELEVANT=Default|EvaluationCondition|Expressions|GraphLayout|ShowNumbersOnBarsZeroValues
+MEMBERS_CH04_GRAPHLAYOUT_COUNT=9
+MEMBERS_CH04_GRAPHLAYOUT_RELEVANT=Default|ErrorMessageOverrides|Frame|GraphMode|WindowTitle
+CHART=CH05 VIEW=M2-02 TITLE_MATCH=True
+MEMBERS_CH05_PROPERTIES_COUNT=19
+MEMBERS_CH05_PROPERTIES_RELEVANT=Default|EvaluationCondition|Expressions|GraphLayout|ShowNumbersOnBarsZeroValues
+MEMBERS_CH05_GRAPHLAYOUT_COUNT=9
+MEMBERS_CH05_GRAPHLAYOUT_RELEVANT=Default|ErrorMessageOverrides|Frame|GraphMode|WindowTitle
+COM_MAPPING_PROBE=INSPECTED_READ_ONLY_NOT_IMPLEMENTED
+SOURCE_TEMP_QVW_SHA256_UNCHANGED=True
+```
+
+**FATO observado no readback COM:** ambos os IDs e títulos coincidem com o manifesto; a fonte QVW TEMP teve SHA-256 idêntico antes/depois. Foram encontrados os dois membros estruturais concretos **`EvaluationCondition`** (diretamente nas propriedades do gráfico) e **`GraphLayout.ErrorMessageOverrides`** (aninhado). As tentativas iniciais de acessar `CalcCondition` ou `GraphLayout.CalcCondition` não trouxeram texto. **Ainda não se sabe** tipo, estrutura, conteúdo nem editabilidade das duas propriedades. Não atribuir `PASS` de persistência COM ou builder. A evidência de persistência manual GUI F04-U1/P2 continua válida e separada.
+
+**Veredito:** `F05_R1_CHART_IDENTITY=PASS_LOCAL_REPORTED`, `F05_R1_PROPERTY_MEMBER_DISCOVERY=PASS_LOCAL_REPORTED`, `F05_R1_SOURCE_HASH=PASS_LOCAL_REPORTED`, `F05_R1_EXACT_FIELD_MAPPING=INCONCLUSIVE`. O gate geral de identificação ficou encerrado: não repetir o R1 amplo.
+
+### F05/R1B — única inspeção de valores internos sem escrita
+
+O commit subsequente atualizou **o mesmo** `tools/Inspect-SadMvpGuardComReadOnly.ps1`, sem alterar o manifesto, para chamar `ShowTargetValue` **somente** em:
+- `GetSheetObject('CH04'/'CH05').GetProperties().EvaluationCondition`;
+- `GetSheetObject('CH04'/'CH05').GetProperties().GraphLayout.ErrorMessageOverrides`.
+
+O escopo adicional enumera propriedades/metadados de tipos de retorno e tenta ler apenas campos conhecidos nominalmente (`v`, `text`, `Value`, `Expression`, `Message`, etc.) até profundidade 2; só itera `Item(0..n-1)` **se** houver propriedade `Count` e método `Item`, com teto **24**. É uma tentativa controlada de **readback**, não um contrato de escrita. Continua sem `Save`, `Reload`, `SetProperties`, exportação, novas seleções ou QVD. Mesma QVW TEMP com hash fixo `4AF2C4BE...4047F92`; se diferir, STOP.
+
+**Comando após atualização e fecho do QlikView Desktop:**
+
+```powershell
+git status --short
+git pull --ff-only
+git rev-parse HEAD
+
+$tokens=$null; $errors=$null
+[System.Management.Automation.Language.Parser]::ParseFile(
+  (Resolve-Path .\tools\Inspect-SadMvpGuardComReadOnly.ps1).Path,
+  [ref]$tokens, [ref]$errors
+) | Out-Null
+$errors
+
+powershell.exe -NoProfile -File .\tools\Inspect-SadMvpGuardComReadOnly.ps1 `
+  -Root (Get-Location).Path `
+  -ExpectedCommit 'REPLACE_WITH_PR_HEAD_40_CHAR_SHA' `
+  -EvidenceRoot "$env:USERPROFILE\SAD_M1_EVIDENCIAS" `
+  -Probe
+```
+
+**Critérios e STOP R1B:** ao fim do único probe, parar. `PASS_MAPPING_READ_ONLY` **somente** se stdout apresentar valores de condição e mensagens para os dois gráficos reconciliáveis com o manifesto e SHA protegido; `PARTIAL/INCONCLUSIVE` se apenas membros/estruturas, sem textos; `BLOCKED` se falha COM, hash ou ID. Não repetir R1B automaticamente ou tentar escrita no builder por suposição. Se o stdout mostrar elementos com índices desconhecidos, registrar a lacuna e decidir separadamente entre documentação oficial Automation API ou workaround manual reproduzível, antes de outro experimento.
+
+**Estado após a publicação deste protocolo:** `F05_R1=PASS_MEMBER_DISCOVERY_LOCAL_REPORTED`; `F05_R1B=VERSIONED_NOT_EXECUTED`; `F05_BUILDER_AUTO_APPLY=NOT_IMPLEMENTED`; `F04_U1_P2=PASS_GUI_RESTRICTED_WITH_LOCAL_SHA`. `C2_GUIDED_R2/C3/C4/P5_GLOBAL/LINK_KEY_CONTRACT/PHASE_IX/PRODUCTION=NOT_APPROVED`; PR #226 Draft, `main` e QVD/QVW canônicos intocados.
