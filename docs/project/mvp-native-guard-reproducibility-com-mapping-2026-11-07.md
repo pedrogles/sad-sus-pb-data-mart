@@ -115,3 +115,23 @@ powershell.exe -NoProfile -File .\tools\Inspect-SadMvpGuardComReadOnly.ps1 `
 **Critérios e STOP R1B:** ao fim do único probe, parar. `PASS_MAPPING_READ_ONLY` **somente** se stdout apresentar valores de condição e mensagens para os dois gráficos reconciliáveis com o manifesto e SHA protegido; `PARTIAL/INCONCLUSIVE` se apenas membros/estruturas, sem textos; `BLOCKED` se falha COM, hash ou ID. Não repetir R1B automaticamente ou tentar escrita no builder por suposição. Se o stdout mostrar elementos com índices desconhecidos, registrar a lacuna e decidir separadamente entre documentação oficial Automation API ou workaround manual reproduzível, antes de outro experimento.
 
 **Estado após a publicação deste protocolo:** `F05_R1=PASS_MEMBER_DISCOVERY_LOCAL_REPORTED`; `F05_R1B=VERSIONED_NOT_EXECUTED`; `F05_BUILDER_AUTO_APPLY=NOT_IMPLEMENTED`; `F04_U1_P2=PASS_GUI_RESTRICTED_WITH_LOCAL_SHA`. `C2_GUIDED_R2/C3/C4/P5_GLOBAL/LINK_KEY_CONTRACT/PHASE_IX/PRODUCTION=NOT_APPROVED`; PR #226 Draft, `main` e QVD/QVW canônicos intocados.
+
+
+## 7. R1B bloqueado no parser — causa localizada e correção única
+
+**Execução reportada pelo operador em 08/11/2026 no Windows:** `git status --short` vazio; `git pull --ff-only`; `HEAD=7061da3b46fd9ec3581780072f6648560acdb61a`. A chamada explícita de `System.Management.Automation.Language.Parser.ParseFile` retornou **5 erros**; a tentativa seguinte de execução do mesmo script abortou **no parser**, com `UnexpectedToken`, `TerminatorExpectedAtEndOfString`, `ExpressionsMustBeFirstInPipeline`, `MissingEndCurlyBrace`, `MissingEndParenthesisInSubexpression`. Não houve qualquer saída `GIT_HEAD=`/`SOURCE_QVW_SHA256=` do runner, portanto **nenhuma abertura COM nem leitura da QVW por este script aconteceu nesta execução**.
+
+**Causa diretamente comprovada pelo arquivo versionado:** o script no commit `7061da3` estava fisicamente corrompido: a linha do `Write-Output` dos métodos COM `TARGET_*_METHODS` foi truncada após o regex `'^(Item|GetItem|Count|GetCount)`, seguida indevidamente por um bloco `}catch{ ... }finally{ ... }` de término do script; a linha de interpolação `}) -join '|')"` foi deslocada para depois desse bloco e outro finalizador ficou duplicado. É **defeito na edição/versionamento do script**, não falha de sintaxe introduzida pelo operador nem prova de bug da API COM.
+
+**Correção versionada em `aac9021bbf753a445ef06359b9ffc8f05eca1acb`:** removeu o bloco finalizador duplicado e substituiu a linha quebrada por duas instruções simples:
+
+```powershell
+$interestingMethods=@($methodNames | Where-Object { $_ -match '^(Item|GetItem|Count|GetCount)$' })
+Write-Output ("TARGET_{0}_METHODS={1}" -f $label, ($interestingMethods -join '|'))
+```
+
+**Inspeção estática independente da correção:** o GitHub devolveu a versão corrigida com **um único** finalizador de hash, um único `TARGETED_MAPPING_VERDICT` e delimitadores `{[()]}`/aspas balanceados em verificador estático simples; **isso NÃO equivale a `Parser.ParseFile` do Windows nem a PASS COM**.
+
+**Veredito:** `F05_R1B_ATTEMPT_7061da3=BLOCKED_POWERSHELL_PARSER`; `F05_R1B_COM_EXECUTED=False`; `F05_R1B_PARSER_ROOT_CAUSE=VERSIONED_SCRIPT_TRUNCATION_AND_DUPLICATE_FINALIZER`; `F05_R1B_FIX=aac9021bbf753a445ef06359b9ffc8f05eca1acb`; `F05_R1B_FIXED_PARSER=NOT_YET_EXECUTED_ON_WINDOWS`. R1 anterior, com identificação de membros COM, permanece `PASS_MEMBER_DISCOVERY_LOCAL_REPORTED` e não deve ser repetido. O QVW F04 TEMP validado permanece como fonte protegida SHA `4AF2C4BE17336AB729CF0CD70D75B7481B41AC003958EDB543584A1484047F92`, mas essa execução bloqueada **não trouxe nova medição do hash**.
+
+**STOP obrigatório:** antes de tentar o probe corrigido, executar `git pull --ff-only`, verificar worktree limpa e o commit mais recente; rodar `Parser.ParseFile` sobre o script atualizado. Se retornar **qualquer** erro, **não executar o probe** e reportar a mensagem. Se estiver vazio, executar **uma única tentativa** `-Probe` com `-ExpectedCommit` igual ao HEAD atualizado. Sem Qlik aberto, sem COM `SetProperties`/`Save`/`Reload`, sem builder ou merge. Se o R1B continuar inconclusivo após uma execução sintaticamente válida, encerrar a sondagem e decidir a estratégia de implementação por outra frente.
