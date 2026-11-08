@@ -150,25 +150,8 @@ try{
       return
     }
     Write-Output "TARGET_$($label)_PROPERTIES=$($propertyNames -join '|')"
-    Write-Output "TARGET_$($label)_METHODS=$(@($methodNames | Where-Object {$_ -match '^(Item|GetItem|Count|GetCount)
-}catch{
-  $failure=$_.Exception.Message
-  Write-Output "COM_MAPPING_PROBE=BLOCKED_OR_INCONCLUSIVE $failure"
-}finally{
-  if($null -ne $doc){
-    try{$null=$doc.CloseDoc()}catch{}
-    try{[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($doc)}catch{}
-  }
-  if($null -ne $app){
-    try{$null=$app.Quit()}catch{}
-    try{[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($app)}catch{}
-  }
-  $after=(Get-FileHash -LiteralPath $qvw -Algorithm SHA256).Hash
-  if($before -cne $after){throw 'CRITICAL_SOURCE_QVW_SHA_CHANGED: STOP'}
-  Write-Output 'SOURCE_TEMP_QVW_SHA256_UNCHANGED=True'
-}
-if($null -ne $failure){throw "COM_MAPPING_STOP: $failure"}
-}) -join '|')"
+    $interestingMethods=@($methodNames | Where-Object { $_ -match '^(Item|GetItem|Count|GetCount)$' })
+    Write-Output ("TARGET_{0}_METHODS={1}" -f $label, ($interestingMethods -join '|'))
     if($depth -ge 2){return}
     $allowed=@('v','text','Text','Value','Expression','ExpressionData','Enabled',
                'Count','Condition','ErrorCode','ErrorId','ErrorMessage','Message','Default')
