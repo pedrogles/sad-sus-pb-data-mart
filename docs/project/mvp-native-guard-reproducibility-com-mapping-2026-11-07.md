@@ -135,3 +135,33 @@ Write-Output ("TARGET_{0}_METHODS={1}" -f $label, ($interestingMethods -join '|'
 **Veredito:** `F05_R1B_ATTEMPT_7061da3=BLOCKED_POWERSHELL_PARSER`; `F05_R1B_COM_EXECUTED=False`; `F05_R1B_PARSER_ROOT_CAUSE=VERSIONED_SCRIPT_TRUNCATION_AND_DUPLICATE_FINALIZER`; `F05_R1B_FIX=aac9021bbf753a445ef06359b9ffc8f05eca1acb`; `F05_R1B_FIXED_PARSER=NOT_YET_EXECUTED_ON_WINDOWS`. R1 anterior, com identificação de membros COM, permanece `PASS_MEMBER_DISCOVERY_LOCAL_REPORTED` e não deve ser repetido. O QVW F04 TEMP validado permanece como fonte protegida SHA `4AF2C4BE17336AB729CF0CD70D75B7481B41AC003958EDB543584A1484047F92`, mas essa execução bloqueada **não trouxe nova medição do hash**.
 
 **STOP obrigatório:** antes de tentar o probe corrigido, executar `git pull --ff-only`, verificar worktree limpa e o commit mais recente; rodar `Parser.ParseFile` sobre o script atualizado. Se retornar **qualquer** erro, **não executar o probe** e reportar a mensagem. Se estiver vazio, executar **uma única tentativa** `-Probe` com `-ExpectedCommit` igual ao HEAD atualizado. Sem Qlik aberto, sem COM `SetProperties`/`Save`/`Reload`, sem builder ou merge. Se o R1B continuar inconclusivo após uma execução sintaticamente válida, encerrar a sondagem e decidir a estratégia de implementação por outra frente.
+
+
+## 8. Resultado F05/R1B — condição COM comprovada, override sem readback
+
+**Fonte:** stdout do operador em Windows/PowerShell com QlikView 12, `HEAD=403929dbb979d88e348204126a8d0dcc234c6ac3`, worktree limpa e `PARSER_VERDICT=PASS`. Após correção do parser, houve execução local de `tools/Inspect-SadMvpGuardComReadOnly.ps1 -Probe`. É **evidência de execução reportada**, não inspeção COM independente pelo agente.
+
+**PASS somente leitura:**
+- Contrato JSON pinado: `CONTRACT_SHA256=79E6CAC1F5AB34BE128BC53DB50C9431078091EBA6CA6B9E670FE54FD044D6E1`.
+- QVW TEMP fonte pinada antes/depois: `4AF2C4BE17336AB729CF0CD70D75B7481B41AC003958EDB543584A1484047F92`, `SOURCE_TEMP_QVW_SHA256_UNCHANGED=True`, `NO_RELOAD=True`, `NO_SETPROPERTIES=True`, `NO_SAVE=True`.
+- CH04/M2-01 e CH05/M2-02: título/ID coerentes com contrato; os dois oferecem `GetProperties().EvaluationCondition` (`System.__ComObject`) com propriedade escalar **`v`**.
+- `CH04.EvaluationCondition.v = =GetSelectedCount(RES_COD_DATASUS_6, True())=0` (espaçamento semântico desprezível).
+- `CH05.EvaluationCondition.v` inclui a regra completa RES sem seleção, ano não selecionado ou `Only(PERIODO_ANO)=2019`, competência não selecionada ou `Only(PERIODO_COMPETENCIA)=201912`. `EvaluationCondition.Default.v` devolveu igualmente a expressão.
+- `CH04` e `CH05` expõem `GetProperties().GraphLayout.ErrorMessageOverrides` como `System.__ComObject`, com uma propriedade `Count=14`. A enumeração `Get-Member -MemberType Method` **não apresentou** `Item`, `GetItem`, `Count` ou `GetCount`; o probe propositalmente **não tentou invocação não documentada**.
+
+**Distinção de evidência:** `Count=14` sinaliza número de elementos do objeto retornado, **não** confirma 14 overrides customizados ou qual código é `Condição de cálculo não satisfeita`. O texto fixo CH04 e o `If(...)` CH05 estão comprovados por screenshots GUI anteriores (F03/F04-P2), mas **não** pelo readback COM. Nenhum campo COM de escrita para `ErrorMessageOverrides` foi identificado ou testado.
+
+**Veredito F05/R1B:**
+- `F05_R1B_PARSER=PASS_LOCAL_REPORTED`;
+- `F05_R1B_SOURCE_ID_AND_HASH=PASS_LOCAL_REPORTED`;
+- `F05_R1B_EVALUATIONCONDITION_READBACK=PASS_LOCAL_REPORTED`;
+- `F05_R1B_ERRORMESSAGEOVERRIDES_STRUCTURE=PARTIAL_COUNT_ONLY`;
+- `F05_R1B_ERROR_MESSAGE_READBACK=INCONCLUSIVE`;
+- `F05_R1B_COM_WRITER_MAPPING=NOT_APPROVED`;
+- `F05_R1B=PARTIAL_PASS_WITH_STOP`;
+- `F05_BUILDER_AUTO_APPLY=NOT_IMPLEMENTED`;
+- `F04_U1_P2=PASS_GUI_RESTRICTED_WITH_LOCAL_SHA`.
+
+**STOP cumprido:** não executar R1B novamente, não criar R1C de tentativa especulativa, não modificar `Build-SadMvpThreeSheetsTemp.ps1` com adivinhações de índice ou `SetProperties`. **Recomendação técnica separada:** tornar a configuração das guardas **reprodutível manualmente e versionada** (contrato JSON + roteiro guiado de aplicar, salvar, reabrir e verificar). Se a automação COM for indispensável no futuro, abrir gate de pesquisa documental/ambiente específico, com comprovação da interface/identificadores antes de escrever qualquer QVW; não criar loop automático de sondagens. O roteiro de fallback não equivale a aplicação automática nem a `C2` global.
+
+A documentação oficial QlikView [Custom Error Messages](https://help.qlik.com/en-US/qlikview/May2024/Subsystems/Client/Content/QV_QlikView/Custom_Error_Messages.htm) permite mensagem calculada pela GUI e não forneceu, nesta revisão, um caminho `ErrorMessageOverrides.Item` da Automation API homologado. `main`, canônicos, C2/C3/C4, P5, IX e produção permanecem sem alteração/autorização.
