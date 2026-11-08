@@ -122,6 +122,94 @@ try{
       }
     }
   }
+  # Targeted F05/R1B readback. R1 surfaced EvaluationCondition and
+  # GraphLayout.ErrorMessageOverrides, so inspect only those two members.
+  # This reads no chart data and never invokes a setter.
+  function ShowTargetValue([object]$value,[string]$label,[int]$depth){
+    if($null -eq $value){
+      Write-Output "TARGET_$($label)=NULL"
+      return
+    }
+    if($value -is [string] -or $value -is [ValueType]){
+      $v=[string]$value
+      $v=$v.Replace([char]13,' ').Replace([char]10,' ')
+      if($v.Length -gt 2400){$v=$v.Substring(0,2400)+'[TRUNCATED]'}
+      Write-Output "TARGET_$($label)_VALUE=$v"
+      return
+    }
+    Write-Output "TARGET_$($label)_TYPE=$($value.GetType().FullName)"
+    $propertyNames=@()
+    $methodNames=@()
+    try{
+      $propertyNames=@(Get-Member -InputObject $value -MemberType Property -ErrorAction Stop |
+        Select-Object -ExpandProperty Name | Sort-Object -Unique)
+      $methodNames=@(Get-Member -InputObject $value -MemberType Method -ErrorAction Stop |
+        Select-Object -ExpandProperty Name | Sort-Object -Unique)
+    }catch{
+      Write-Output "TARGET_$($label)_MEMBERS_UNAVAILABLE=True"
+      return
+    }
+    Write-Output "TARGET_$($label)_PROPERTIES=$($propertyNames -join '|')"
+    Write-Output "TARGET_$($label)_METHODS=$(@($methodNames | Where-Object {$_ -match '^(Item|GetItem|Count|GetCount)
+}catch{
+  $failure=$_.Exception.Message
+  Write-Output "COM_MAPPING_PROBE=BLOCKED_OR_INCONCLUSIVE $failure"
+}finally{
+  if($null -ne $doc){
+    try{$null=$doc.CloseDoc()}catch{}
+    try{[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($doc)}catch{}
+  }
+  if($null -ne $app){
+    try{$null=$app.Quit()}catch{}
+    try{[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($app)}catch{}
+  }
+  $after=(Get-FileHash -LiteralPath $qvw -Algorithm SHA256).Hash
+  if($before -cne $after){throw 'CRITICAL_SOURCE_QVW_SHA_CHANGED: STOP'}
+  Write-Output 'SOURCE_TEMP_QVW_SHA256_UNCHANGED=True'
+}
+if($null -ne $failure){throw "COM_MAPPING_STOP: $failure"}
+}) -join '|')"
+    if($depth -ge 2){return}
+    $allowed=@('v','text','Text','Value','Expression','ExpressionData','Enabled',
+               'Count','Condition','ErrorCode','ErrorId','ErrorMessage','Message','Default')
+    foreach($name in $allowed){
+      if(-not ($propertyNames -ccontains $name)){continue}
+      try{
+        $child=$value.$name
+        ShowTargetValue $child "$($label)_$name" ($depth+1)
+      }catch{
+        Write-Output "TARGET_$($label)_$($name)_READ=UNAVAILABLE"
+      }
+    }
+    # Collections are accessed only when an exposed Count and Item exist.
+    if(($propertyNames -contains 'Count') -and ($methodNames -contains 'Item')){
+      $n=0
+      try{$n=[int]$value.Count}catch{}
+      if($n -ge 0 -and $n -le 24){
+        Write-Output "TARGET_$($label)_ITEM_COUNT=$n"
+        for($j=0;$j -lt $n;$j++){
+          try{
+            $child=$value.Item($j)
+            ShowTargetValue $child "$($label)_ITEM_$j" ($depth+1)
+          }catch{
+            Write-Output "TARGET_$($label)_ITEM_$($j)_READ=UNAVAILABLE"
+          }
+        }
+      }else{
+        Write-Output "TARGET_$($label)_ITEM_COUNT_OUTSIDE_LIMIT=$n"
+      }
+    }
+  }
+  foreach($spec in @($contract.objects)){
+    $id=[string]$spec.objectId
+    $chart=$doc.GetSheetObject($id)
+    if($null -eq $chart){throw "Target chart missing for $id"}
+    $properties=$chart.GetProperties()
+    if($null -eq $properties){throw "Target GetProperties failed for $id"}
+    ShowTargetValue $properties.EvaluationCondition "$($id)_EVALUATIONCONDITION" 0
+    ShowTargetValue $properties.GraphLayout.ErrorMessageOverrides "$($id)_ERRORMESSAGEOVERRIDES" 0
+  }
+  Write-Output 'TARGETED_MAPPING_VERDICT=READ_ONLY_EXAMINED_AWAITING_MANUAL_RECONCILIATION'
   Write-Output 'COM_MAPPING_PROBE=INSPECTED_READ_ONLY_NOT_IMPLEMENTED'
 }catch{
   $failure=$_.Exception.Message
