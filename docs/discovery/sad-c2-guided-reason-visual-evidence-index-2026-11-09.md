@@ -40,3 +40,10 @@ Esses artefatos foram entregues **nesta conversa**, e não anexados ao GitHub ne
 ## Proteções e STOP
 
 A QVW atual é `SAD_C2_GUIDED_REASON_TEMP.qvw` gerada pelo runner do PR #229 a partir do SHA pinado do PR #225. Não houve neste registro Save/Reload/COM, alteração de QVW/QVD, merge, modificação da main ou liberação de Fase IX. **A próxima observação relevante é somente a persistência após único Save e reabertura da TX18**, mantendo o gate restrito e sem repetir F1/F2, 0→1→0 e os testes anteriores.
+
+
+## Atualização pós-Verify — 09/11/2026
+
+**A seção histórica anterior documenta o estado no instante anterior ao Save.** O operador **posteriormente** entregou a captura de reabertura `image(20261109-184210).png`, contendo `TX18` e `Expression OK`, e a saída do Verify confirmando `GUI_EVIDENCE_MISSING=`, `EVIDENCE_INVENTORY_COMPLETE=True`, `PROTECTED_25_UNCHANGED=True`, `SOURCE_UNCHANGED=True` e `COPY_CHANGED_FROM_SOURCE=True`. Confirmou também um único Save, reabertura e BU16 não acionado; essas ações não são verificadas isoladamente pelo script. Os dois itens `reason_after_reopen.png` e `gui_notes.txt` foram criados no Windows, conforme relato/Verify do operador.
+
+**Closeout vigente deste gate:** [`sad-c2-guided-reason-closeout-2026-11-09.md`](sad-c2-guided-reason-closeout-2026-11-09.md). **Veredito:** `PASS_RESTRICTED_GUIDED_REASON_UI` + `PASS_PROTECTED_AND_PERSISTED_BYTES_ONLY_NOT_GUIDED_BEHAVIOR` (saída local reportada), sem liberação global de C2, Fase IX, merge ou produção. **STOP:** não repetir runner ou rodada. O registro anterior não deve ser usado como status mais recente.
