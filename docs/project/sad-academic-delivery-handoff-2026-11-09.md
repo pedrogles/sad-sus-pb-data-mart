@@ -26,6 +26,20 @@
 
 **Prioridade padrão:** A1 → A2 → A3 → A4. A3 pode ser adiantado se o operador estiver com QlikView aberto, **sem transformar a captura em reteste**. D1 não deve bloquear a redação acadêmica; a documentação deve declarar pendências honestamente.
 
+## Continuidade da base de conhecimento QlikView/PowerShell
+
+O novo chat **não recebe uma reprodução integral do histórico e de cada ação local anterior**. A continuidade confiável é construída lendo **fontes versionadas**, além das instruções do Project e eventual contexto resumido/memória (auxiliares, não fonte de verdade). Para tarefas de automação, consultar depois dos três arquivos obrigatórios:
+
+1. `main:docs/project/qlikview-powershell-automation.md` — inventário **histórico** dos executores e padrão operacional; seu estado de 15–20/10 não incorpora automaticamente os gates posteriores. Não confundir inventário com framework end-to-end homologado.
+2. `main:docs/project/artifact-recovery-policy.md` e `main:docs/discovery/boundary-7-implementation-plan.md` — proteção de artefatos e sequência/gates.
+3. `branch #226:docs/project/mvp-evidence-and-contract-gates-consolidation-2026-11-07.md` e arquivos `tools/Build-SadMvpThreeSheetsTemp.ps1`, `tools/Inspect-SadMvpC4CustomMessageCom.ps1` — execução e descoberta C4 em QVW TEMP. `branch #229:docs/discovery/sad-c2-guided-reason-closeout-2026-11-09.md` — gate restrito C2 com runner/evidências, **sem C2 global**.
+
+**Padrões já aprendidos e registrados que devem orientar o agente:** Windows PowerShell 5.1 e QlikView Desktop 12 (COM `QlikTech.QlikView`); runners/contratos em branch/commit pinados antes de executar; `Prepare → inspeção GUI do operador → Verify` apenas quando o gate prevê; SHA-256 da origem, cópia TEMP, artefatos canônicos e logs; isolamento de QVW/QVD/capturas fora do Git; nunca presumir compatibilidade de propriedades COM por simples presença; enumeração de objetos pode devolver `Document\\CH09` em vez de `CH09`; `GraphLayout.ErrorMessageOverrides` teve `Count` identificado, **não API de escrita comprovada**; `EvaluationCondition.v` do CH09 foi lida com sucesso; mensagens personalizadas permanecem configuradas manualmente na C4. Separar `PARSER_PASS`, `COM_READBACK_PASS`, `GUI_PASS_RESTRICTED`, `HASH_PRESERVED`, `GATE_ACCEPTED`, `MERGED` e `PROD_APPROVED`. Não repetir testes concluídos por hábito.
+
+**Limites de acesso entre chats:** o código/docs/PRs no GitHub são recuperáveis na branch apropriada; a cópia `C:\...` do Windows não é transferida ao chat; logs/imagens/relatórios não versionados e downloads locais não ficam automaticamente disponíveis nem em todas as superfícies. Se for necessário operar sobre eles, consultar Files/arquivos anexados ou pedir o artefato exato, sem inventar acesso. A `main` permanece a fonte operacional superior aos resumos de chat. O Projeto não passa a tratar a branch Draft como integrada.
+
+**Não transformar o chat acadêmico A1–A4 em novo laboratório de automação.** Se surgir lacuna técnica verdadeira, abrir outro chat do mesmo Project com escopo próprio, ler estas fontes, registrar a decisão e preservar os gates encerrados.
+
 ## Primeiro passo no novo chat
 
 Ler os três arquivos obrigatórios da `main`, depois este handoff na branch #226 e `docs/project/mvp-evidence-and-contract-gates-consolidation-2026-11-07.md`. **Começar apenas por A1: confirmar que o operador consegue acessar o Word do relatório e revisar o conteúdo existente contra os requisitos**, sem abrir ainda C2, novos códigos COM, reconstrução de QVW ou discussão de merge. Caso os documentos gerados no chat anterior não estejam acessíveis automaticamente, recuperar com Files/Library ou solicitar upload, sem inventar caminho sandbox.
