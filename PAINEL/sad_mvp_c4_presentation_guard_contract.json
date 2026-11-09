@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "status": "C4_GUI_PATCH_CANDIDATE_NOT_EXECUTED",
+  "status": "PASS_GUI_RESTRICTED_WITH_OPERATOR_REPORTED_SHA_PERSISTENCE",
   "id": "C4_MVP_POP_MONTH_AND_P23_SCOPE_GUI_2026_11_09",
   "goal": "Fix CH09 empty POP under native monthly selection and disclose CH06 isolated PB-wide scope",
   "evidence": "Two QlikView x64 Personal Edition screenshots dated 2026-11-09, showing PERIODO_COMPETENCIA=201801 with CH09 empty header only and P23 island unchanged",
@@ -24,7 +24,7 @@
     },
     {
       "viewId": "M2-03",
-      "objectId": "CH06_VERIFY_IN_GUI",
+      "objectId": "CH06",
       "titleBefore": "Observabilidade LT — células município × competência",
       "titleAfter": "Observabilidade LT | PB 2017–19 | sem filtros globais",
       "changesRestrictedTo": "GraphLayout.WindowTitle only",
@@ -48,11 +48,34 @@
     "Unintended changes to charts or source QVW",
     "Any contradictory semantic effect"
   ],
-  "approvalBoundary": "MVP_C4_LOCAL_GUI_RESTRICTED_NOT_APPROVED_UNTIL_PHYSICAL_TEST; GLOBAL_C4/P5/LINK_KEY/PHASE_IX/PRODUCTION_NOT_APPROVED",
+  "approvalBoundary": "MVP_C4_LOCAL_GUI_PASS_RESTRICTED_WITH_OPERATOR_SHA; GLOBAL_C4/P5/LINK_KEY/PHASE_IX/PRODUCTION_NOT_APPROVED",
   "notes": [
     "Do not overwrite existing C3 evidence; apply both modifications only to new disposable TEMP copy.",
     "Annual population may be a valid denominator for certain partial-period indicators under an approved separate metric, but CH09 is a descriptive annual table and is conservatively unavailable under native month selections; no change to semantic V2 or link structure.",
     "Historical CH06 island remains independent by intentional design; do not add associations or alter data.",
     "Do not claim this patch is automatically reproduced by the original COM builder."
-  ]
+  ],
+  "executionEvidence": {
+    "date": "2026-11-09",
+    "sourceQvwPreservedOperatorReported": true,
+    "workingCopyQvwName": "SAD_MVP_C4_PRESENTATION_TEMP.qvw",
+    "workingCopySha256": "27ADABC3CB5DBC3598F2FDB3CD6FDC82E7193B18E92D253D1186B94075BB5A13",
+    "afterReopenHashUnchangedOperatorReported": true,
+    "testedGuiStates": [
+      "NO_SELECTION_CH09_POP_PRESENT",
+      "MONTH_201801_CH09_MONTH_WARNING",
+      "SERV_250750_CH09_SERV_WARNING",
+      "CH06_SCOPE_TITLE_WITH_MONTH_AND_SERV_SELECTION",
+      "POST_REOPEN_MONTH_201801_CH09_WARNING_AND_CH06_TITLE"
+    ],
+    "remainingLimits": [
+      "NO_POST_REOPEN_EDITOR_PROPERTY_READBACK",
+      "NO_INDEPENDENT_QVW_BYTE_AUDIT",
+      "NO_AUTOMATED_BUILDER_APPLY",
+      "C2_GUIDED_R2_NOT_TESTED",
+      "C3_C4_GLOBAL_NOT_APPROVED",
+      "PHASE_IX_NOT_AUTHORIZED"
+    ],
+    "evidenceFile": "docs/project/mvp-evidence-and-contract-gates-consolidation-2026-11-07.md"
+  }
 }
