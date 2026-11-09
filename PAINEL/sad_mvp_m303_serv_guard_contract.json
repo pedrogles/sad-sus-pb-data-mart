@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "status": "TEMP_GUI_CANDIDATE_NOT_EXECUTED",
+  "scope": "Only MVP M3-03 under explicit SERV selection; no Link/POP model changes",
+  "sourceEvidence": "docs/project/mvp-evidence-and-contract-gates-consolidation-2026-11-07.md#evidência-posterior--c3-mvp--seleção-nativa-serv250750-09112026",
+  "sourceQvwName": "SAD_MVP_THREE_SHEETS_CANDIDATE_INSPECAO.qvw",
+  "sourceQvwSha256": "F70839792AE5B954989FF39CDC1932C8514806AA4E211187457A56301B9F1EE5",
+  "workingCopyName": "SAD_MVP_M303_SERV_GUARD_TEMP.qvw",
+  "viewId": "M3-03",
+  "title": "População municipal por ano — IBGE (candidato)",
+  "chartType": "Straight",
+  "chartObjectId": "CONFIRM_IN_QLIKVIEW_GUI",
+  "calcCondition": "=GetSelectedCount(SERV_COD_DATASUS_6,True())=0",
+  "calcConditionUnfulfilledMessage": "Indisponível nesta seleção: o município de atendimento (SERV) não representa a população dos municípios de residência de todos os pacientes atendidos. Limpe o filtro SERV para consultar a população municipal por ano.",
+  "dimensionsMustRemain": [
+    "RES_COD_DATASUS_6",
+    "PERIODO_ANO"
+  ],
+  "measureMustRemain": "Sum(POPULACAO_ESTIMADA)",
+  "totalModeMustRemain": "NO_TOTALS",
+  "targetBehavior": {
+    "noSelections": "M3-03 presents municipality × year population without total across years",
+    "year2019Only": "M3-03 presents population for 2019, with SERV unselected",
+    "serv250750Only": "M3-03 suppressed with contextual incompatibility message; M3-02 flow chart remains operative"
+  },
+  "stopConditions": [
+    "Source QVW SHA256 mismatch",
+    "Wrong chart title/ID or type",
+    "Expression syntax error",
+    "Any mutation outside working TEMP copy or M3-03 properties",
+    "Unexpected missing message or incorrect population presentation"
+  ],
+  "acceptanceScope": "SINGLE_SERV_ROUTE_ONLY; NO_GLOBAL_C3_C4_P5_OR_PRODUCTION_APPROVAL"
+}
