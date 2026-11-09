@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "status": "TEMP_GUI_CANDIDATE_NOT_EXECUTED",
+  "status": "PASS_GUI_RESTRICTED_WITH_OPERATOR_REPORTED_SHA_PERSISTENCE",
   "scope": "Only MVP M3-03 under explicit SERV selection; no Link/POP model changes",
   "sourceEvidence": "docs/project/mvp-evidence-and-contract-gates-consolidation-2026-11-07.md#evidência-posterior--c3-mvp--seleção-nativa-serv250750-09112026",
   "sourceQvwName": "SAD_MVP_THREE_SHEETS_CANDIDATE_INSPECAO.qvw",
@@ -9,7 +9,7 @@
   "viewId": "M3-03",
   "title": "População municipal por ano — IBGE (candidato)",
   "chartType": "Straight",
-  "chartObjectId": "CONFIRM_IN_QLIKVIEW_GUI",
+  "chartObjectId": "CH09",
   "calcCondition": "=GetSelectedCount(SERV_COD_DATASUS_6,True())=0",
   "calcConditionUnfulfilledMessage": "Indisponível nesta seleção: o município de atendimento (SERV) não representa a população dos municípios de residência de todos os pacientes atendidos. Limpe o filtro SERV para consultar a população municipal por ano.",
   "dimensionsMustRemain": [
@@ -30,5 +30,24 @@
     "Any mutation outside working TEMP copy or M3-03 properties",
     "Unexpected missing message or incorrect population presentation"
   ],
-  "acceptanceScope": "SINGLE_SERV_ROUTE_ONLY; NO_GLOBAL_C3_C4_P5_OR_PRODUCTION_APPROVAL"
+  "acceptanceScope": "SINGLE_SERV_ROUTE_ONLY; NO_GLOBAL_C3_C4_P5_OR_PRODUCTION_APPROVAL",
+  "executionEvidence": {
+    "date": "2026-11-09",
+    "artifact": "SAD_MVP_M303_SERV_GUARD_TEMP.qvw",
+    "workingCopySha256": "87679B0B3B7E51B1CC366445B8953876924D95325340F6438A68B26E93187A7F",
+    "sourcePreservedOperatorReported": true,
+    "reopenHashUnchangedOperatorReported": true,
+    "guiStatesObserved": [
+      "NO_SELECTION_POPULATION_VISIBLE",
+      "SERV_250750_M303_UNAVAILABLE_MESSAGE_M302_STILL_RENDERED"
+    ],
+    "evidenceDocument": "docs/project/mvp-evidence-and-contract-gates-consolidation-2026-11-07.md",
+    "limits": [
+      "RESTRICTED_GUI_ONLY",
+      "NO_POST_REOPEN_EDITOR_PROPERTY_READBACK",
+      "NO_AUTOMATIC_APPLY_IN_BUILDER",
+      "C3_GLOBAL_NOT_APPROVED",
+      "NO_PRODUCTION_APPROVAL"
+    ]
+  }
 }
