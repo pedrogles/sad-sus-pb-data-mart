@@ -71,7 +71,54 @@ try{
       if($null -eq $obj){continue}
       $objId=[string]$obj.GetObjectID()
       [void]$ids.Add($objId)
-      if($objId -ceq 'CH09'){[void]$hits.Add($obj)}
+      # Classic COM exposes namespaced IDs (e.g. Document\CH09).
+      # Match only CH09, optionally with its known Document prefix.
+      if($objId -cmatch '^(?:Document\\)?CH09
+    }
+  }
+  Write-Output "C4_SHEET_COUNT=$sheetCount"
+  Write-Output ('C4_DISCOVERED_OBJECT_IDS='+($ids -join ','))
+  if($hits.Count -ne 1){
+    throw "STOP: CH09 enumeration count $($hits.Count); expected exactly one; no properties inspected"
+  }
+  $chart=$hits[0]
+  $p=$chart.GetProperties()
+  if($null -eq $p){throw 'CH09 GetProperties failed'}
+  Write-Output 'GATE=C4_MVP_CH09_CUSTOM_MESSAGE_COM_METADATA_ONLY'
+  Write-Output "SOURCE_SHA256=$before"
+  Write-Output "GIT_HEAD=$((git -C $repo rev-parse HEAD).Trim())"
+  Write-Output ('CH09_EVALUATION_CONDITION='+[string]$p.EvaluationCondition.v)
+  $names=@(MemberNames $p | Sort-Object -Unique)
+  Write-Output ('CH09_PROPERTY_NAMES='+($names -join ','))
+  $roots=@($names | Where-Object {$_ -match '(?i)error|message|evalu|condition|chart|graph|layout|custom'})
+  foreach($name in $roots){
+    $node=Child $p $name
+    if($null -eq $node){continue}
+    $nested=@(MemberNames $node | Sort-Object -Unique)
+    Write-Output ("PROPERTY_BRANCH=$name CHILD_MEMBERS="+($nested -join ','))
+    foreach($childName in @($nested | Where-Object {$_ -match '(?i)error|message|condition|custom'})){
+      $grandChild=Child $node $childName
+      if($null -ne $grandChild){
+        Write-Output ("PROPERTY_BRANCH=$name.$childName GRANDCHILD_MEMBERS="+((MemberNames $grandChild) -join ','))
+      }
+    }
+  }
+  Write-Output 'VERDICT=COM_METADATA_ONLY_NO_CUSTOM_MESSAGE_WRITE'
+}
+finally{
+  if($null -ne $doc){
+    try{$null=$doc.CloseDoc()}catch{}
+    try{[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($doc)}catch{}
+  }
+  if($null -ne $app){
+    try{$app.Quit()}catch{}
+    try{[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($app)}catch{}
+  }
+  $after=(Get-FileHash -LiteralPath $qvw -Algorithm SHA256).Hash
+  Write-Output "SOURCE_UNCHANGED=$($after -ceq $before)"
+  if($after -cne $before){throw 'STOP: QVW integrity changed; preserve and investigate'}
+}
+){[void]$hits.Add($obj)}
     }
   }
   Write-Output "C4_SHEET_COUNT=$sheetCount"
