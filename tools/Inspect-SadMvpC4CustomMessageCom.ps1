@@ -55,10 +55,31 @@ try{
   $app=New-Object -ComObject 'QlikTech.QlikView'
   $doc=$app.OpenDoc($qvw)
   if($null -eq $doc){throw 'COM OpenDoc failed'}
-  $chart=$doc.GetSheetObject('CH09')
-  if($null -eq $chart -or [string]$chart.GetObjectID() -cne 'CH09'){
-    throw 'CH09 not found'
+  # GetSheetObject('CH09') can return null for a valid chart. Enumerate sheet
+  # objects directly instead (QlikView classic COM: GetSheet/ GetSheetObjects).
+  # No Activate, no changes to selections, no Save/Reload.
+  $chart=$null
+  $hits=New-Object System.Collections.Generic.List[object]
+  $ids=New-Object System.Collections.Generic.List[string]
+  $sheetCount=[int]$doc.NoOfSheets()
+  if($sheetCount -ne 3){throw "STOP: expected 3 MVP sheets; found $sheetCount"}
+  for($sheetIndex=0;$sheetIndex -lt $sheetCount;$sheetIndex++){
+    $sheet=$doc.GetSheet($sheetIndex)
+    if($null -eq $sheet){throw "STOP: GetSheet($sheetIndex) returned null"}
+    $sheetObjects=@($sheet.GetSheetObjects())
+    foreach($obj in $sheetObjects){
+      if($null -eq $obj){continue}
+      $objId=[string]$obj.GetObjectID()
+      [void]$ids.Add($objId)
+      if($objId -ceq 'CH09'){[void]$hits.Add($obj)}
+    }
   }
+  Write-Output "C4_SHEET_COUNT=$sheetCount"
+  Write-Output ('C4_DISCOVERED_OBJECT_IDS='+($ids -join ','))
+  if($hits.Count -ne 1){
+    throw "STOP: CH09 enumeration count $($hits.Count); expected exactly one; no properties inspected"
+  }
+  $chart=$hits[0]
   $p=$chart.GetProperties()
   if($null -eq $p){throw 'CH09 GetProperties failed'}
   Write-Output 'GATE=C4_MVP_CH09_CUSTOM_MESSAGE_COM_METADATA_ONLY'
