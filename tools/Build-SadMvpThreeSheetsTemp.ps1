@@ -169,11 +169,11 @@ function Chart($sheet,[string]$viewId,[string]$type,[string]$title,[string[]]$di
   foreach($e in $expressions){$null=$o.AddExpression($e)}
   $cp=$o.GetProperties()
   $cp.GraphLayout.WindowTitle.v=$title
-  if($viewId -ceq 'M2-03' -and [string]$o.GetObjectID() -cne 'CH06'){
+  if($viewId -ceq 'M2-03' -and [string]$o.GetObjectID() -cnotmatch '^(?:Document\\)?CH06$'){
     throw 'CH06 object ID drift; abort'
   }
   if($viewId -ceq 'M3-03'){
-    if([string]$o.GetObjectID() -cne 'CH09'){throw 'CH09 object ID drift; abort'}
+    if([string]$o.GetObjectID() -cnotmatch '^(?:Document\\)?CH09$'){throw 'CH09 object ID drift; abort'}
     if($null -eq $cp.EvaluationCondition){throw 'CH09 COM EvaluationCondition unavailable'}
     $cp.EvaluationCondition.v=[string]$script:ch09C4.calcCondition
   }
