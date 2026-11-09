@@ -94,7 +94,7 @@ Write-Output "GIT_HEAD=$head"
 Write-Output "BUILD_TARGET=$target"
 Write-Output 'CANONICAL_QVD_QVW_WRITES=False PHASE_IX=NOT_AUTHORIZED PRODUCTION_APPROVED=False'
 
-$island=[IO.File]::ReadAllText((Join-Path $repo $rel[2]),[Text.Encoding]::UTF8)
+$island=[IO.File]::ReadAllText((Join-Path $repo 'PAINEL/sad_p23_a1_island_physical_gate.qvs'),[Text.Encoding]::UTF8)
 if($island -match '(?im)^\s*(STORE|EXECUTE|BINARY|SQL|DIRECT\s+QUERY|DROP\s+FILE)\b' -or
    $island -match '(?i)\$\(\s*Must_Include' -or
    $island -notmatch '\[P23A1\] VERDICT=PASS_SCRIPT_CANDIDATE_ONLY'){
@@ -111,7 +111,7 @@ foreach($kv in $placeholders.GetEnumerator()){
   $island=$island.Replace($kv.Key,$kv.Value)
 }
 if($island -match '__P23_[A-Z_]+__'){throw 'Unresolved P23 placeholders'}
-$flowSource=Join-Path $repo $rel[3]
+$flowSource=Join-Path $repo 'PAINEL/sad_mvp_m3_flow_classification.qvs'
 $flow=[IO.File]::ReadAllText($flowSource,[Text.Encoding]::UTF8)
 if($flow -match '(?im)^\s*(STORE|EXECUTE|BINARY|SQL|DIRECT\s+QUERY|DROP\s+FILE)\b' -or
    $flow -match '(?i)\$\(\s*Must_Include' -or
