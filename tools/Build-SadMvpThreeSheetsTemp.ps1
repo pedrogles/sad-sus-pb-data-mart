@@ -46,6 +46,7 @@ if($LASTEXITCODE -ne 0 -or $branch -cne 'proposal/sad-mvp-rebaseline-2026-11-07'
    $head -cne $ExpectedCommit.ToLowerInvariant()){throw 'Branch/commit mismatch: refuse build'}
 $rel=@(
   'tools/Build-SadMvpThreeSheetsTemp.ps1',
+  'PAINEL/sad_mvp_c4_presentation_guard_contract.json',
   'PAINEL/phase_vii_technical_model.qvs',
   'PAINEL/sad_p23_a1_island_physical_gate.qvs',
   'PAINEL/sad_mvp_m3_flow_classification.qvs'
@@ -123,6 +124,28 @@ if(-not $flow.Contains('__MVP_FI_QVD__')){throw 'Flow QVS missing explicit FI QV
 $flow=$flow.Replace('__MVP_FI_QVD__',$mvpFIQvd)
 if($flow -match '__MVP_[A-Z_]+__'){throw 'Unresolved MVP flow source placeholder'}
 Write-Output ('FLOW_QVS_SHA256='+(Get-FileHash -LiteralPath $flowSource -Algorithm SHA256).Hash)
+# C4 patch reuses approved TEMP values from the versioned contract.
+# The QlikView 12.0 classic COM API path for the custom error message is NOT verified.
+# Do not claim automated recreation of that GUI setting.
+$c4ContractPath=Join-Path $repo 'PAINEL/sad_mvp_c4_presentation_guard_contract.json'
+$c4=Get-Content -LiteralPath $c4ContractPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if([string]$c4.id -cne 'C4_MVP_POP_MONTH_AND_P23_SCOPE_GUI_2026_11_09'){
+  throw 'Unexpected C4 contract: refuse unreviewed presentation patch'
+}
+$ch06Matches=@($c4.changeSet|Where-Object{$_.viewId -ceq 'M2-03' -and $_.objectId -ceq 'CH06'})
+$ch09Matches=@($c4.changeSet|Where-Object{$_.viewId -ceq 'M3-03' -and $_.objectId -ceq 'CH09'})
+if($ch06Matches.Count -ne 1 -or $ch09Matches.Count -ne 1){
+  throw 'C4 contract must identify exactly CH06 and CH09'
+}
+$script:ch06C4=$ch06Matches[0]
+$script:ch09C4=$ch09Matches[0]
+if([string]$script:ch06C4.titleAfter -cne 'Observabilidade LT | PB 2017–19 | sem filtros globais' -or
+   [string]$script:ch09C4.calcCondition -cne '=GetSelectedCount(SERV_COD_DATASUS_6,True())=0 And GetSelectedCount(PERIODO_COMPETENCIA,True())=0' -or
+   [string]$script:ch09C4.calcConditionUnfulfilledMessage -notmatch '^=If\('){
+  throw 'C4 contract drift: stop before QlikView build'
+}
+Write-Output ('C4_PRESENTATION_CONTRACT_SHA256='+(Get-FileHash -LiteralPath $c4ContractPath -Algorithm SHA256).Hash)
+
 function ReadInt($doc,[string]$exp,[string]$label){
   $raw=[string]$doc.Evaluate($exp)
   if($raw -notmatch '^(0|[1-9][0-9]*)$'){throw "Bad Qlik value for $label : $raw"}
@@ -146,6 +169,14 @@ function Chart($sheet,[string]$viewId,[string]$type,[string]$title,[string[]]$di
   foreach($e in $expressions){$null=$o.AddExpression($e)}
   $cp=$o.GetProperties()
   $cp.GraphLayout.WindowTitle.v=$title
+  if($viewId -ceq 'M2-03' -and [string]$o.GetObjectID() -cne 'CH06'){
+    throw 'CH06 object ID drift; abort'
+  }
+  if($viewId -ceq 'M3-03'){
+    if([string]$o.GetObjectID() -cne 'CH09'){throw 'CH09 object ID drift; abort'}
+    if($null -eq $cp.EvaluationCondition){throw 'CH09 COM EvaluationCondition unavailable'}
+    $cp.EvaluationCondition.v=[string]$script:ch09C4.calcCondition
+  }
   # QlikView Classic COM, first expression group is 0-based (APIGuide examples):
   # UsePartialSum=false sets "No Totals" on the expression of a straight table.
   # This is essential for POP (annual, semi-additive). No other chart is changed.
@@ -155,7 +186,14 @@ function Chart($sheet,[string]$viewId,[string]$type,[string]$title,[string[]]$di
     $exprData.UsePartialSum=$false
   }
   $null=$o.SetProperties($cp)
+  if($viewId -ceq 'M2-03' -and
+     [string]$o.GetProperties().GraphLayout.WindowTitle.v -cne [string]$script:ch06C4.titleAfter){
+    throw 'CH06 title failed COM readback'
+  }
   if($viewId -ceq 'M3-03'){
+    if([string]$o.GetProperties().EvaluationCondition.v -cne [string]$script:ch09C4.calcCondition){
+      throw 'CH09 calculation condition failed COM readback'
+    }
     $verify=$o.GetProperties().Expressions.Item(0).Item(0).Data.ExpressionData
     if([bool]$verify.UsePartialSum){throw 'M3-03 total still enabled; refuse misleading POP table'}
     # Do not emit status here: PowerShell functions return all Success-stream items,
@@ -174,6 +212,9 @@ $objects=@(
   [pscustomobject]@{Sheet=3;Id='M3-02';Type='Straight';Title='Pares residência → atendimento (novas internações)';Dims=@('RES_COD_DATASUS_6','SERV_COD_DATASUS_6');Expr=@('Sum(QTD_INTERNACAO)')},
   [pscustomobject]@{Sheet=3;Id='M3-03';Type='Straight';Title='População municipal por ano — IBGE (candidato)';Dims=@('RES_COD_DATASUS_6','PERIODO_ANO');Expr=@('Sum(POPULACAO_ESTIMADA)')}
 )
+foreach($spec in $objects){
+  if($spec.Id -ceq 'M2-03'){$spec.Title=[string]$script:ch06C4.titleAfter}
+}
 if($objects.Count -ne 9 -or @($objects|Select-Object -ExpandProperty Id -Unique).Count -ne 9){
   throw 'Manifest has not exactly nine unique view IDs'
 }
@@ -282,7 +323,10 @@ try{
   $stage='SAVE_COMPLETED_TEMP_QVW'
   $null=$doc.Save()
   $created | Export-Csv -LiteralPath (Join-Path $run 'm2_objects_manifest.csv') -NoTypeInformation -Encoding UTF8
-  Write-Output 'M2_NATIVE_CANDIDATE=3_SHEETS_9_OBJECTS_BUILT_PENDING_GUI_AND_FILTER_VALIDATION'
+  Write-Output 'C4_CH06_TITLE_COM_READBACK=PASS_RESTRICTED'
+  Write-Output 'C4_CH09_CALC_CONDITION_COM_READBACK=PASS_RESTRICTED'
+  Write-Output 'C4_CH09_CUSTOM_ERROR_MESSAGE=GUI_FINISH_REQUIRED_NOT_AUTOMATED'
+  Write-Output 'M2_NATIVE_CANDIDATE=3_SHEETS_9_OBJECTS_BUILT_PENDING_GUI_MESSAGE_AND_FILTER_VALIDATION'
   Write-Output 'P5_D2_UI=NOT_APPROVED LINK_KEY_CONTRACT=NOT_APPROVED'
 }catch{
   $errorMessage=$_.Exception.Message
