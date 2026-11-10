@@ -67,3 +67,23 @@ Páginas físicas do PDF R2, contando capa como página 1. As páginas impressas
 - `C2_C3_C4_GLOBAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`
 
 **STOP:** após revisar o caderno de substituição, encerrar este gate documental sem reabrir QVW, pipelines ou testes. Para compor o **PDF final de 98 páginas**, será necessário receber o PDF R2 original acessível em bytes e realizar cópia/edição no contêiner, substituir apenas páginas 21–28 e conferir páginas/figuras/scripts antes de aprovação. Sem merge automático ou alteração do R2 original.
+
+
+## 6. Prévia editorial gerada e QA (10/11/2026)
+
+**Caderno produzido neste chat, fora do Git:** `SAD_DOC_R3_Paginas_21_a_28_PREVIA.pdf`, **8 páginas A4** (não 98), SHA-256 `711A95561CC7110E756317ABD25C155985D2B3BAA95305B4B47EF1E74952B6BF`. Arquivo manifesto de QA local `SAD_DOC_R3_Paginas_21_a_28_PREVIA.manifest.json`. Renderização `pdftoppm` concluída para todas as páginas, contato visual das oito páginas inspecionado; a Figura 10 foi corrigida na prévia para mostrar **CH05** (e não o antigo CH06) antes da verificação final de renderização. Não registrar este PDF na `main` nem no Git como documento canônico.
+
+**Qualificação importante:** a prévia foi produzida por um script local de composição `EXPERIMENTAL_NOT_GATE_EVIDENCE`, pois não foi possível transferir a versão commitada via rede para o ambiente de execução. O gerador reprodutível proposto está versionado em `tools/build_sad_doc_r3_replacement_pages.py` (commits `eea1eb73cc05b310f88cf2c751a28a4eb390c6c2` e correção de recorte `aca394cd7f11d823bccdf625f1cfcb4799b35924`) mas **não recebeu teste funcional executado a partir do commit**. Portanto: `DOC_R3_PREVIEW_RENDER_QA=PASS_EXPERIMENTAL_EDITORIAL_ONLY` e `DOC_R3_VERSIONED_GENERATOR_WINDOWS_OR_CONTAINER_GATE=NOT_EXECUTED`. Não converter a revisão visual da prévia em homologação de publicação.
+
+**Diferencial em relação ao R2:** na prévia as páginas 21–28 foram recompostas editorialmente com textos equivalentes e figuras atualizadas; isso **não é edição byte-preserving** das páginas 1–20 e 29–98, porque o PDF R2 original não foi materializado. Ao montar a versão final, revisar pontualmente as formulações reescritas para evitar drift e preferir a troca mínima das figuras/legendas sobre mudanças textuais adicionais.
+
+### Critérios faltantes para R3 completo
+
+1. Receber cópia do `SAD_A4_Relatorio_Consolidado_R2_Editorial.pdf` que possa ser realmente aberta em bytes no contêiner (upload explícito ou exportação autorizada). Não reconstruir páginas 1–20 ou anexos de 70 páginas a partir de texto extraído.
+2. Compor PDF final de 98 páginas mantendo as páginas **1–20 e 29–98 exatamente do R2**, substituindo as páginas **21–28** conforme revisão aprovada.
+3. Conferir numeração das Figuras 7–11, paginação impressa 19–26, sumário, legibilidade da Figura 8 em A4, bibliografia, scripts integrais dos Anexos I/II e total de 98 páginas; comparar renderizações das páginas preservadas. Registro da SHA-256 final e cópia de segurança, sem sobrescrever R2 original.
+4. Somente após esses controles: `DOC_R3_FINAL_PDF=READY_FOR_SUBMISSION_REVIEW`. A atividade do Classroom permanece não verificada.
+
+`DOC_R3_SCOPE=8_PAGE_REPLACEMENT_ONLY`; `DOC_R3_PDF_PATCH=PREVIEW_EXPERIMENTAL_GENERATED`; `DOC_R3_FINAL_98_PAGE_PDF=NOT_CREATED`; `CHAPTERS_1_2_AND_APPENDICES_ORIGINAL=NOT_TOUCHED`; `C2_C3_C4_GLOBAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
+
+**STOP editorial desta execução:** prévia e documento de revisão preparados, sem editar QVW, QVD, QVS, PDF R2 original, sem merge. A próxima etapa física do PDF depende **somente** do R2 original em bytes, não de novos testes QlikView.
