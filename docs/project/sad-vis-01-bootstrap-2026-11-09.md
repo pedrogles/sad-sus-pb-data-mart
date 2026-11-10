@@ -25,6 +25,20 @@ O conteúdo oficial da disciplina prevalece quando divergir da documentação op
 - A1–A4 ocorreram; A2/A4 geradores locais ainda requerem regularização prospectiva se utilizados como evidência formal.
 - Data comunicada da avaliação: **08/12/2026**; online no **Google Classroom**; envio do documento em **PDF**; três folhas satisfazem o requisito de três painéis conforme confirmação do operador.
 
+## Índice mínimo de automação e segurança (para VIS-02, não para executar em VIS-01)
+
+**Ambiente real:** Windows, PowerShell 5.1 e QlikView Desktop 12; automação de objetos por COM `QlikTech.QlikView`, scripts `.ps1`, `.py` e `.qvs` versionáveis. O novo chat **não controla automaticamente o Windows**: comandos locais precisam ser executados pelo operador ou por ferramenta explicitamente conectada. Capturas do QlikView requerem **sessão gráfica interativa**; não presumir execução headless.
+
+**Onde encontrar o que já existe, sem duplicar código neste bootstrap:**
+- `main:docs/project/qlikview-powershell-automation.md`: inventário **histórico**, padrões de preflight → cópia TEMP → COM → verificações → SHA/log/PNG → STOP; **não há runner end-to-end homologado**. Não executar os runners desse inventário por inércia.
+- `main:docs/project/artifact-recovery-policy.md`: classificação de QVW/QVD canônicos, cópias TEMP, pasta privada de evidências, hash antes/depois e restauração **somente para pasta nova**, nunca sobre o original.
+- Draft [#226](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/226): `tools/Build-SadMvpThreeSheetsTemp.ps1` (construtor de **protótipo TEMP**, não entrypoint aprovado para redesign) e `tools/Inspect-SadMvpC4CustomMessageCom.ps1` (diagnóstico **read-only** de CH09). Consultar documentação do MVP e esses fontes **apenas quando VIS-02 exigir**; não executar builder ou repetir inspeção CH09 em VIS-01.
+- `main:docs/discovery/boundary-7-implementation-plan.md`: sequência física formal; não confundir com o acabamento acadêmico.
+
+**Contrato para futuras mudanças GUI:** primeiro escolher o mecanismo visual menos invasivo comprovadamente disponível no QlikView 12; especificar objeto/propriedade, efeito esperado e rollback. O fato de uma propriedade aparecer por COM **não prova capacidade de escrita** ou persistência; ver `GraphLayout.ErrorMessageOverrides` de CH09. Diferenciar `SCRIPT_COMMITTED`, `COM_READBACK_PASS`, `GUI_VISUAL_PASS_RESTRICTED`, `HASH_PRESERVED` e `PROD_APPROVED`.
+
+**Se VIS-02 for autorizado:** usar **nova cópia controlada** da QVW C4 após conferir SHA-256 do original; não fazer Reload, não gravar QVD nem salvar sobre a QVW-fonte. Scripts executáveis que sustentem gates devem estar **commitados em branch antes da execução** (`AGENTS.md`); experimentos não versionados ficam `EXPERIMENTAL_NOT_GATE_EVIDENCE`. Evidências locais: caminho da cópia, commits/SHA-256, logs, screenshots e resultado, fora do Git. Sem aprovação VIS-01, **STOP antes de Save/COM**.
+
 ## Escopo autorizado hoje: planejamento de design, sem execução física
 
 **Folha 1 — Produção Hospitalar:** 3 objetos `M1-01..M1-03` (internações por ano, evolução mensal, ranking de município de atendimento).
