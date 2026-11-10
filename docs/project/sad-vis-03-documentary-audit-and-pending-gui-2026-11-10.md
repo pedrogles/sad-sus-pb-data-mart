@@ -138,3 +138,26 @@ Se não for possível apresentar evidência de viewport/resolução e do comport
 \`PRODUCTION_APPROVED=False\`
 
 **STOP VIS-03:** não repetir os cenários de rolagem ou 201801. Não executar ajustes de GUI dentro da VIS-03. Propor escopo independente **VIS-02-P1-LABEL-FIX**: somente apresentação legível das três categorias CH06/M2-03, preservando classificação/códigos, contagens, ilha A1, título de panorama fixo, paleta, nove objetos e todas as expressões/guardas de outros objetos. Avaliar primeiro se há solução puramente visual (tamanho, eixo, legenda, tooltip, texto de apoio sem novo KPI) no QlikView 12; alteração de \`Dimensions\`/\`Expressions\`, \`Dual()\` ou renomeação de dados é mudança semântica/técnica e requer aprovação separada. Qualquer edição física deve ocorrer apenas em nova cópia controlada, autorizada, com hash original preservado; **sem Reload/Save da fonte**. Depois, apenas reavaliar legibilidade de CH06 em captura e, se pertinente, transmissão real. Não iniciar DOC-R3 nem merge automaticamente por este achado.
+
+
+## 7. Handoff e fechamento visual restrito após correção P1 em cópia controlada (10/11/2026)
+
+**Documento de origem:** [PR #233 Draft](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/233), `docs/project/sad-vis-02-p1-ch06-label-fix-runbook-2026-11-10.md` §13. Esta seção **atualiza o veredito histórico** `BLOCKED_FOR_PRESENTATION_P1_CH06_LABELS` da seção 6, sem apagar as evidências originais e sem reexecutar os ensaios já aprovados.
+
+A falha de legibilidade CH06/M2-03 foi corrigida **em nova cópia QVW TEMP** `SAD_MVP_CH06_LABEL_FIX_TEMP.qvw`, fora do repositório e das origens. Operador reportou dois hashes de fonte estáveis (`SOURCE_UNCHANGED=True`, `PROTECTED_C4_UNCHANGED=True`) e o SHA-256 pós-save da cópia `6ED9CC1FAA5AFD592D1D4CECC8D6FC5DE2AB84D4DCE2D4E6D3E6A25E59D7BE37`. Screenshot após Save/close/reopen **relatado** exibiu barra de título sem `*`, folha 2 com três objetos e CH06 com três legendas correspondentes às três barras, sem os códigos truncados. Cores → textos: âmbar = Sem linha LT (não significa zero); verde-azulada = SUS positivo observado; cinza = SUS zero observado. Captura de origem local relatada `ch06_post_reopen_20261110_170554_ddc7074c.png`, SHA-256 local `4EAD80B8C9DAD4A884F8AE0032803933F2A53D2FC5051013F0BA97A01C40BE0E`; upload observado nesta conversa `image(20261110-200952).png`, 1907×1068, hash dos bytes montados `4F6C97711EAE18492CCF8281FD9F27A3291D45EDAFA8282847A61B02FBED35F4`. São provas de proveniências distintas, não duplicatas byte-a-byte.
+
+O script `Verify -Capture` gerou relatório e PNG, mas terminou com `VERDICT=BLOCKED` por erro de pipeline `$screen.Path` **depois** do `VERDICT=PASS_HASH_PROVENANCE_ONLY`; o PNG foi recuperado pelo JSON já existente. O defeito foi corrigido no código da PR #233, porém **não reexecutado no Windows** — não tratar o script como homologado end-to-end.
+
+| Critério VIS-03 | Estado atualizado |
+|---|---|
+| Três folhas × nove objetos, ranking scroll, avisos 201801 | Evidências restritas reutilizadas da seção 6 |
+| P1 CH06: rótulos, cores, ausência de overlap | `PASS_GUI_VISUAL_RESTRICTED` na nova cópia |
+| P1 CH06: persistência visual | `PASS_VISUAL_PERSISTENCE_RESTRICTED_WITH_OPERATOR_EVIDENCE` |
+| Original C4 e VIS-02 preservados | `PASS_HASH_LOCAL_OPERATOR_REPORTED` |
+| Transmissão de tela real na apresentação online | `INCONCLUSIVE_NOT_CAPTURED` — lacuna de ensaio de apresentação, **não** retrocesso da correção P1 |
+| Expressões, associações, guardas internas em todas as rotas | `NOT_AUDITED_GLOBALLY` — escopo fora da VIS-03 |
+| Homologação C2/C3/C4, Fase IX e produção | `NOT_APPROVED` |
+
+**Decisão delimitada:** `VIS03_LOCAL_GUI_PRESENTATION_GATE=PASS_RESTRICTED_CLOSED` na evidência existente e na cópia CH06 corrigida; `VIS03_ONLINE_STREAMING_LEGIBILITY=INCONCLUSIVE` até ensaio de transmissão, sem exigir reabrir/reconstruir objetos. O bloqueio P1 deixou de ser impedimento local para **iniciar a revisão documental acadêmica DOC-R3**. Esta decisão não autoriza implantação, não converte protótipo Draft em modelo final, não resolve C2/C3/C4 nem aprova o blueprint 14→9 na main. Revisão de material acadêmico deve declarar as limitações científicas e a natureza candidata das três folhas.
+
+**STOP:** VIS-03 encerrada no escopo local; não repetir 201801/rolagem, não reexecutar script ou gerar novas QVWs só para comprovar captura. Preservar PNGs, manifestos e hashes fora do Git, PRs #232/#233 Draft, sem merge automático. Handoff para DOC-R3 **apenas como nova frente acadêmica separada**.
