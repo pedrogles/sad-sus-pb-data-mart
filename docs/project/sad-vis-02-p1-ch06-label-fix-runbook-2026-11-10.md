@@ -129,3 +129,43 @@ Com screenshot e dois hashes de retorno, registrar **somente o fechamento locali
 `VIS03_CH06_LABELS=BLOCKED_PENDING_P1`  
 `C2_C3_C4_GLOBAL=NOT_APPROVED`  
 `PRODUCTION_APPROVED=False`
+
+
+## 10. Automação PowerShell versionada (solicitação do responsável em 10/11/2026)
+
+O responsável solicitou automatizar por Shell as operações de proteção, preparação e coleta de evidências. **Esta seção substitui o procedimento manual de criação de pasta/cópia dos §§4–5, mas NÃO a edição visual de CH06.** Executor commitado no repositório antes de qualquer execução:
+
+- [`tools/Invoke-SadVis02P1Ch06.ps1`](../../tools/Invoke-SadVis02P1Ch06.ps1), script introduzido no commit `8ac816ec2bb65871de05b00b6c7e784d5ecdc5e5` desta branch.
+- PowerShell 5.1+ em Windows, QVW `BA0A7DDC...` de VIS-02, C4 `27ADABC3...` e associação `.qvw` com QlikView 12 local.
+- **Prepare:** bloqueia se processo `Qv` está aberto, confere ambos os SHA-256, cria subdiretório único fora das origens, copia QVW **sem sobrescrever** e verifica hashes da cópia/fonte/original. Gera manifesto JSON com hash do script, abre **somente a cópia** por `Invoke-Item`. Zero COM/Reload/Save automático.
+- **Verify:** recebe caminho exato do manifesto para evitar trocar artefatos, verifica ambos arquivos originais, compara hash da QVW editada com o inicial, gera JSON separado; opção `-Capture` espera 6 s para focar no QlikView, confirma que a janela ativa tem o nome da **cópia** e não contém `*.qvw*`, captura a janela em PNG e calcula seu SHA-256. **Não** inspeciona propriedades nem aprova layout por algoritmo; encaminhar PNG para análise visual humana/agente.
+- **Proteção adicional:** se não houver fonte/hash esperado, se C4/Vis02 tiver drift, se o executável ou manifesto divergirem, se o diretório já existir ou janela ativa for diferente, retorna `VERDICT=BLOCKED` / código 2. A pasta incompleta de uma falha deve ser preservada para diagnóstico, sem reusar/sobrescrever.
+- **Limite comprovado:** revisão estática de presença dos controles em código versionado; **não executado/testado no Windows/QlikView** nesta sessão. `AUTOMATION_WINDOWS_SMOKE=NOT_TESTED`. A chamada a `GetForegroundWindow`/captura depende de desktop interativo e foco correto. Não equivaler `PASS_COPY_HASHES_ONLY` ou `PASS_HASH_PROVENANCE_ONLY` a `PASS_GUI_VISUAL_RESTRICTED`.
+
+### Invocação sem alterar a branch atual
+
+Primeiro **fechar QlikView sem salvar**. Em PowerShell, baixar o **commit pinado** para arquivo fora do repo (este comando somente obtém um script UTF-8 previamente commitado):
+
+```powershell
+$commit = '8ac816ec2bb65871de05b00b6c7e784d5ecdc5e5'
+$folder = Join-Path $env:USERPROFILE 'SAD_VIS02_P1_EVIDENCIAS'
+New-Item -ItemType Directory -Path $folder -Force | Out-Null
+$script = Join-Path $folder 'Invoke-SadVis02P1Ch06.ps1'
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/pedrogles/sad-sus-pb-data-mart/$commit/tools/Invoke-SadVis02P1Ch06.ps1" -OutFile $script
+Get-FileHash -LiteralPath $script -Algorithm SHA256
+& $script -Mode Prepare
+```
+
+Registrar `SCRIPT_SHA256` e `MANIFEST` impressos. A primeira execução gera `WORK_QVW` e abre a cópia. O operador **edita apenas a apresentação do CH06/M2-03, salva e reabre a cópia** para prova de persistência. Não usar PowerShell para simular teclado/cliques sem garantia.
+
+Após reabrir a cópia e posicionar a folha 2, em nova linha PowerShell:
+
+```powershell
+& $script -Mode Verify -ManifestPath '<CAMINHO_MANIFEST_IMPRESSO_NO_PREPARE>' -Capture
+```
+
+Quando aparecer `FOCUS_QLIKVIEW_NOW`, colocar a janela QlikView com a **cópia** em primeiro plano antes do término da contagem. Se `ExecutionPolicy` local impedir execução, tratar como bloqueio de ambiente e autorizar explicitamente a liberação do arquivo de origem verificada; não mudar política de máquina silenciosamente.
+
+O script produz `SCREENSHOT`, `REPORT` e `WORK_SHA256`; preservar fora do Git e fornecer para fechamento. `PASS_HASH_PROVENANCE_ONLY` significa **apenas** que os hashes das fontes permanecem e a cópia mudou — não comprova a alteração correta dos rótulos, nem reabertura. A confirmação visual exige inspeção da captura.
+
+**Status atualizado:** `CH06_P1_SHELL_SCRIPT=VERSIONED`, `CH06_P1_SHELL_STATIC_CHECK=PASS_RESTRICTED`, `CH06_P1_WINDOWS_EXECUTION=NOT_RUN`, `CH06_P1_GUI_FIX=NOT_RUN`, `VIS03_GATE=BLOCKED_FOR_PRESENTATION_P1_CH06_LABELS`; sem merge, sem edição QVW/QVD/QVS pela automação, sem aprovação C2/C3/C4/IX/produção.
