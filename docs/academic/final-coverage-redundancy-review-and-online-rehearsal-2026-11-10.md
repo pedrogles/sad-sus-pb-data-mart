@@ -54,7 +54,7 @@ Blueprint na `main`: P1.1–P1.5 (5), P2.1–P2.5 (5), P3.1–P3.4 (4). O MVP ap
 - `FATO_CAPACIDADE_LEITO`: `QTD_LEITOS_NAO_SUS`; os outros dois estoques aparecem em M2-01/M2-02.
 - Não foi obtido inventário de todas as medidas do QVD físico nem do consumo por outros documentos/cenários. **Não classificar medidas como mortas/inúteis** só porque não aparecem nesse MVP.
 
-**Dimensões aprovadas que não aparecem diretamente como eixo/tabela nos nove objetos:** Estabelecimento, Procedimento, Diagnóstico, Caráter de Atendimento, Motivo de Saída e Tipo de Leito. Podem atuar como estruturas físicas, chaves ou futuras análises. `DIM_TEMPO` e `DIM_MUNICIPIO` aparecem no consumo por suas projeções de papel/período. Não contar aliases de tempo ou município como dimensões acadêmicas novas; não excluir tabelas ou chaves para reduzir a tela.
+**Dimensões aprovadas que não aparecem diretamente como eixo/tabela nos nove objetos:** Estabelecimento, Procedimento, Diagnóstico, Caráter de Atendimento, Motivo de Saída e Tipo de Leito. Podem atuar como estruturas físicas e chaves, embora não sejam eixos dos nove objetos apresentados. `DIM_TEMPO` e `DIM_MUNICIPIO` aparecem no consumo por suas projeções de papel/período. Não contar aliases de tempo ou município como dimensões acadêmicas novas; não excluir tabelas ou chaves para reduzir a tela.
 
 **`P23_A1_ISLAND`: não é fato redundante, nem quarta fato formal.** A ilha intencional desacoplada fornece o gráfico M2-03 sem interferência dos filtros globais. Ela é usada; não remover nem conectá-la à `%LINK_KEY` sem mudança semântica aprovada.
 
@@ -65,7 +65,7 @@ Blueprint na `main`: P1.1–P1.5 (5), P2.1–P2.5 (5), P3.1–P3.4 (4). O MVP ap
 | A1 / alta acadêmica | O roteiro oficial exige `>= 3 painéis`; o MVP apresenta 3 folhas de uma QVW; equivalência foi reportada pelo operador e **não verificada com o professor** | **Decisão pendente**; não presumir reprovação | confirmar critério docente antes de submission; fallback relatório/3 folhas claramente separadas |
 | A2 / alta de comunicação | Três indicadores derivados do Cap. 2 são propostos, mas não estão no MVP; não autorizar cálculo cruzado sem contratos | **Diferença entre proposta e demonstrado**, não resultado incorreto | explicitar no texto oral e, se necessário, nota editorial sem alterar modelo |
 | A3 / média de visualização | R3 figuras 7–9 são capturas integrais compactadas em A4; rótulos/códigos e figuras 10–11 têm tipografia muito pequena em leitura a 100%; Figura 11 ocupa espaço mas aviso ocupa área pequena | **Risco de legibilidade** na apresentação do PDF (visual observado em páginas físicas 22–25) | priorizar QVW em tela compartilhada; usar zoom 150–200% para explicar figuras; eventual novo PDF só se autorizado |
-| A4 / média semântica | M2-02 fixa 201912; seleção nativa de `PERIODO_ANO=2018` está explicitamente fora da prova restrita anterior; sob `201801` CH05 foi demonstrado | **Risco contextual residual conhecido**, não afirmar bug comprovado em 2018 anual | não usar filtro conflitante no ensaio; registrar para gate C2 específico futuro, sem refazer testes |
+| A4 / média semântica | M2-02 fixa 201912; seleção nativa de `PERIODO_ANO=2018` está explicitamente fora da prova restrita anterior; sob `201801` CH05 foi demonstrado | **Risco contextual residual conhecido**, não afirmar bug comprovado em 2018 anual | não usar filtro conflitante no ensaio; registrar como limitação da entrega acadêmica; não iniciar nova implementação nem refazer testes |
 | A5 / média UX | M1-03/M2-02/M3-02/M3-03 exibem códigos de municípios em vez de nomes; tabela de pares é extensa, e M3-01 não imprime valores sobre as barras | **Limitação de comunicação**; nomes históricos não podem ser inventados | explicar RES/SERV e ler totais do roteiro; não alterar dimensões por cosmética |
 | A6 / baixa | `QTD_INTERNACAO` e `QTD_LEITOS_SUS` reaparecem em objetos de grão diferente | **Não-problema:** comparação temporal/territorial complementar | manter |
 | A7 / baixa | `P23_A1_ISLAND` desconectada do modelo principal | **Não-problema intencional** | manter justificativa da seção 3.3 |
@@ -111,3 +111,16 @@ Blueprint na `main`: P1.1–P1.5 (5), P2.1–P2.5 (5), P3.1–P3.4 (4). O MVP ap
 `PRODUCTION_APPROVED=False`
 
 **STOP:** encerrar auditoria estática e entregar roteiro de ensaio; não fazer merges, eliminar dados/objetos ou reabrir C2/C3/C4. Novo trabalho somente para um achado material com autorização delimitada e evidência.
+
+
+## 9. Adendo de decisão — segunda entrega encerra o projeto acadêmico (10/11/2026)
+
+O responsável esclareceu que **não haverá implementação posterior** à segunda entrega da disciplina. Portanto:
+- As seis visualizações do blueprint formal sem equivalente no MVP não constituem um backlog previsto para execução após a submissão; a lista de 14 visuais era uma proposta técnica mais ampla, enquanto a **entrega efetiva é de três folhas/nove objetos**.
+- Os indicadores derivados da Seção 2.9 do Capítulo 2 foram tratados na revisão final do PDF: os itens 2.9.1–2.9.3 não foram exibidos por ausência de evidência global suficiente de compatibilidade dos fatos, período, município, denominador e, no CNES, abrangência hospitalar histórica; o item 2.9.4 (fluxo RES→SERV) foi demonstrado descritivamente.
+- As medidas ainda não utilizadas diretamente em gráficos permanecem no modelo, sem constituir trabalho pendente obrigatório nem promessa de novos gráficos.
+- Os gates científicos/operacionais C2/C3/C4 e Fase IX que não foram homologados devem ser **ressalvas de alcance** da entrega concluída, não um cronograma assumido de produção.
+
+**Artefato atualizado e auditado:** `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_2026.pdf` (98 páginas, SHA-256 `D5FC55797DA939C2E2815B66309A05953B4E5D9C1927DC1E7D74A9879658D44D`). Na PR #234 estão o executor versionado e o documento de governança da revisão. O ensaio online permanece **não executado**; a próxima ação é apenas apresentação/submissão, não extensão da implementação.
+
+**Status:** `ACADEMIC_SCOPE=FINAL_AT_SECOND_DELIVERY`, `FUTURE_IMPLEMENTATIONS_PLANNED=False`, `DOC_R3_SCOPE_RATIONALE=INCORPORATED`, `PRODUCTION_APPROVED=False`. Nenhum merge, QVW/QVD/QVS ou script ETL foi alterado neste adendo.
