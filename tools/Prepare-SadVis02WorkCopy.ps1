@@ -33,7 +33,7 @@ try {
   $rootFull=[IO.Path]::GetFullPath($EvidenceRoot)
   $sourceParent=[IO.Path]::GetDirectoryName($sourceFull).TrimEnd('\')+'\'
   $repoParent=$repo.TrimEnd('\')+'\'
-  if($rootFull.StartsWith($sourceParent,[StringComparison]::OrdinalIgnoreCase) -or $rootFull.StartsWith($repoParent,[StringComparison]::OrdinalIgnoreCase)){
+  if($rootFull.TrimEnd('\') -ieq $sourceParent.TrimEnd('\') -or $rootFull.TrimEnd('\') -ieq $repo.TrimEnd('\') -or $rootFull.StartsWith($sourceParent,[StringComparison]::OrdinalIgnoreCase) -or $rootFull.StartsWith($repoParent,[StringComparison]::OrdinalIgnoreCase)){
     throw 'EVIDENCE_ROOT_INSIDE_SOURCE_OR_REPOSITORY'
   }
   $head=([string](& git -C $repo rev-parse HEAD)).Trim()
