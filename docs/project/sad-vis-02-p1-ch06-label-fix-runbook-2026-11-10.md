@@ -216,3 +216,25 @@ Invoke-Item -LiteralPath $imagem.Path
 **Imutabilidade operacional:** o manifesto `vis02_p1_manifest.json` guarda SHA-256 da **versão original** do script; a versão corrigida tem outro hash. O verificador rejeita a mistura de versões (`SCRIPT_HASH_CHANGED`) intencionalmente. Portanto, **não substituir o script antigo usado por esse manifesto para repetir a sessão**; recuperar diretamente pelo JSON. O script corrigido é destinado a **novas preparações**, se realmente necessárias, e deve ser distribuído somente por commit versionado.
 
 `P1_HASH_PROVENANCE=PASS_LOCAL_OPERATOR_REPORTED`; `P1_CAPTURE_METADATA_REPORT=CREATED_REPORTED`; `P1_CAPTURE_PNG=RECOVERY_PENDING_INSPECTION`; `P1_GUI_PERSISTENCE=INCONCLUSIVE_PENDING_PNG`; `P1_SCRIPT_CAPTURE_BUG=FIX_COMMITTED_NOT_WINDOWS_RETESTED`; `VIS03_GATE=INCONCLUSIVE_PENDING_PERSISTENCE_VISUAL_P1`; `PRODUCTION_APPROVED=False`.
+
+
+## 13. Closeout VIS-02-P1 — persistência visual pós-save e screenshot recuperada (10/11/2026)
+
+**Proveniência:** saída PowerShell do operador para `-Mode Verify -Capture`; `REPORT` criado com hash e objeto de captura, seguida de erro conhecido de pipeline (seção 12); operador recuperou o PNG sem executar novamente `Prepare`, `Verify`, Reload ou Save. Captura recebida neste chat: `image(20261110-200952).png`, resolução **1907×1068** e SHA-256 **deste upload** `4F6C97711EAE18492CCF8281FD9F27A3291D45EDAFA8282847A61B02FBED35F4`. Arquivo local recuperado e hash **reportado pelo operador**, distinto porque o upload pode ser reprocessado: `C:\Users\pedro\SAD_VIS02_P1_EVIDENCIAS\CH06_20261110_163018_870df719340c\ch06_post_reopen_20261110_170554_ddc7074c.png` com SHA-256 `4EAD80B8C9DAD4A884F8AE0032803933F2A53D2FC5051013F0BA97A01C40BE0E`. Não equiparar os dois hashes a bytes idênticos.
+
+**Evidência de integridade local reportada:** `SOURCE_UNCHANGED=True`; `PROTECTED_C4_UNCHANGED=True`; `WORK_SHA256=6ED9CC1FAA5AFD592D1D4CECC8D6FC5DE2AB84D4DCE2D4E6D3E6A25E59D7BE37`. O script registrou `VERDICT=PASS_HASH_PROVENANCE_ONLY` antes de falhar no último print; esse rótulo **não é PASS de GUI**. O relatório de auditoria está em `...\vis02_p1_verify_20261110_170554_3809a412.json` no Windows do operador. Nada foi enviado ao Git como arquivo binário.
+
+**Avaliação direta da imagem posterior à reabertura relatada:** QlikView Desktop 12 x64 Personal Edition, janela com `SAD_MVP_CH06_LABEL_FIX_TEMP.qvw` **sem `*`**, folha 2 com M2-01/M2-02/M2-03 visíveis. CH06 permanece com título `Observabilidade LT | PB 2017–19 | sem filtros globais`; são visíveis três barras e três textos legíveis, sem sobreposição crítica: âmbar = `Sem linha LT / Não significa zero`; verde-azulada = `SUS positivo / Observado`; cinza = `SUS zero / Observado`. Códigos técnicos longos não poluem o eixo. Portanto há evidência visual de **persistência da apresentação corrigida** na cópia, em conjunto com relato de Save/close/reopen e hash pós-save. Ausência de `*` sozinha não certifica propriedades internas nem histórico de edição.
+
+| Critério | Estado |
+|---|---|
+| Proteção C4/VIS-02 | `PASS_HASH_LOCAL_OPERATOR_REPORTED` |
+| Proveniência de cópia alterada | `PASS_HASH_PROVENANCE_ONLY` |
+| Mapeamento cor/categoria e legibilidade CH06 | `PASS_GUI_VISUAL_RESTRICTED` |
+| Persistência após Save/close/reopen informado | `PASS_VISUAL_PERSISTENCE_RESTRICTED_WITH_OPERATOR_EVIDENCE` |
+| Novo ensaio do script corrigido de captura | `NOT_TESTED_WINDOWS` (desnecessário para o gate; recuperar PNG bastou) |
+| Auditoria interna das expressões e associações | `NOT_AUDITED` |
+| Compartilhamento real online | `INCONCLUSIVE_NOT_CAPTURED` |
+| Produção / C2-C3-C4 / Fase IX | `NOT_APPROVED` |
+
+**Veredito local:** `VIS02_P1_CH06_GATE=PASS_LOCAL_VISUAL_RESTRICTED_CLOSED`. A falha de automação é registrada e a correção está versionada, mas nenhuma nova rodada de teste é necessária para aprovar o layout observado. STOP: não repetir seleções 201801, rankings, reconstruções, COM ou Reload; não editar mais a cópia. Passar o fechamento para a VIS-03/#232 sem merge, preservando arquivo, captura e manifesto locais. A ressalva de cobertura hospitalar não verificada permanece necessária no relatório/apresentação.
