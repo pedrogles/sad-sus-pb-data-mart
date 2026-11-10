@@ -111,3 +111,21 @@ Com screenshot e dois hashes de retorno, registrar **somente o fechamento locali
 **Status desta atualização:** `C4_ORIGINAL_HASH=PASS_LOCAL_OPERATOR_REPORTED`; `VIS02_WORK_HASH_CHANGED_AFTER_OPERATOR_REPORTED_SAVE`; `VIS02_WORK_NEW_BASELINE=CONDITIONAL_PENDING_VISUAL_REVIEW`; `P1_COPY_AND_GUI=NOT_EXECUTED`; `VIS03_LABEL_FIX=BLOCKED_PENDING_P1`; `PRODUCTION_APPROVED=False`.
 
 **STOP:** não sobrescrever a C4 original nem descartar a VIS-02 atual; não reexecutar rolamentos, F01–F05 ou seleção 201801 sem novo desvio concreto. Nenhum merge, alteração de main ou script físico decorre deste retorno.
+
+## 9. Evidência GUI adicional da correção de overflow CH09/M3-03 (10/11/2026)
+
+**Origem:** screenshot enviado pelo operador neste chat, `image(20261110-175604).png`, 1670×1030 pixels, SHA-256 do **PNG recebido** `D1434CC24AB6A845E7565612D64394E09311B15C3B81C1E17F3F143462A5E129`. A janela informa a QVW VIS-02 de trabalho `SAD_MVP_C4_VIS02_WORK.qvw` (não a C4 protegida). O operador informa que corrigiu o overflow que ocorria ao selecionar ano 2018 e competência 2018.1/201801, e salvou a QVW em 10/11/2026 12:11:06. A screenshot não exibe painel de seleções atuais, então o exato estado dos filtros não foi confirmado independentemente.
+
+**Inspeção visual direta do PNG:** aba `Fluxos e Contexto Territorial`, três objetos presentes; o card de população por ano (CH09/M3-03) exibe mensagem de indisponibilidade da consulta anual sob filtro mensal, **inteiramente dentro da área do objeto**. Nenhum overflow textual para fora do CH09 aparece na captura. O `*` na barra do documento indica sessão com estado não salvo e **não** prova alteração persistente posterior ao hash BA0A. Os dois outros objetos são visíveis, mas não foram revalidados numericamente neste gate.
+
+**Decisão restrita:** há evidência suficiente para tratar o hash atual **BA0A7DDCF3F064D3EDC38AD5B0F4D7A79A00CEA0841234D21C0EA4D127C8C704** como **baseline candidata da QVW VIS-02 exclusivamente para preparar uma nova cópia P1**, porque a divergência tem Save explicado pelo operador e o overflow relatado está visualmente contido na cópia aberta. Não é comparação byte-a-byte de propriedades, nem homologação integral de todos os nove objetos. Nenhuma necessidade de repetir seleção 201801, rankings ou C2/C3/C4.
+
+**Próxima execução mínima:** fechar a VIS-02 atual sem salvar o estado de seleção; conferir que o hash BA0A permanece; criar uma **cópia nova em pasta única**, verificar hash idêntico BA0A antes de abrir; aplicar exclusivamente a solução de legibilidade CH06/M2-03 na nova cópia, conforme §5, fotografar após Save/close/reopen e registrar hashes. **Não sobrescrever** a VIS-02 atual.
+
+`VIS02_CH09_OVERFLOW_SCREENSHOT=PASS_GUI_CONTAINMENT_RESTRICTED`  
+`VIS02_WORK_BA0A_CANDIDATE_ACCEPTED_FOR_P1_SOURCE=VISUAL_RESTRICTED`  
+`VIS02_WORK_BYTES_SEMANTIC_REVALIDATION=NOT_TESTED`  
+`CH06_LABEL_FIX_GUI=NOT_RUN`  
+`VIS03_CH06_LABELS=BLOCKED_PENDING_P1`  
+`C2_C3_C4_GLOBAL=NOT_APPROVED`  
+`PRODUCTION_APPROVED=False`
