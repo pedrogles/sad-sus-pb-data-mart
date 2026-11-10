@@ -63,3 +63,22 @@ O executor foi inspecionado estaticamente nesta preparação, **não testado no 
 **Não repetir** os testes 201801, oráculos de contagens, scroll e F01–F05, C2/C3/C4; não modificar a \`main\` nem fazer merge. O projeto acadêmico encerra-se com a segunda entrega: estas são **últimas correções cosméticas**, não início de nova implementação de indicadores.
 
 **Status na elaboração:** \`VIS04_RUNBOOK=READY_DOCUMENTAL\`; \`VIS04_GUI_APPLICATION=NOT_RUN\`; \`VIS04_SHELL_WINDOWS=NOT_RUN\`; \`VIS04_LOCAL_VISUAL=NOT_TESTED\`; \`VIS04_PDF_R3=UNCHANGED\`; \`PRODUCTION_APPROVED=False\`.
+
+
+## Capturas do operador — revisão pré-save (10/11/2026, 20:17–20:30)
+
+**Origem e escopo:** três PNGs reais enviados em chat após `Prepare` do PowerShell. Sessão mostra a QVW nova `C:\Users\pedro\SAD_VIS04_EVIDENCIAS\VIS04_20261110_201240_0d9818e4ab0c\SAD_MVP_VIS04_FINAL_POLISH_TEMP.qvw*`, com asterisco, portanto **ainda não há prova de persistência pós-save**. Saída do operador: `VERDICT=PASS_COPY_HASHES_ONLY`, origem SHA `6ED9CC1FAA5AFD592D1D4CECC8D6FC5DE2AB84D4DCE2D4E6D3E6A25E59D7BE37`, `SCRIPT_SHA256=BD169B58F36B43A97794D6E2CFC2DF4CD9AA72C0567B1754064E48C8EB9C3C1A` e manifesto local `...\VIS04_20261110_201240_0d9818e4ab0c\vis04_manifest.json`.
+
+| Captura | Observação da folha | Resultado limitado |
+| --- | --- | --- |
+| `image(20261110-231756).png` | M1-02: um rótulo de competência a cada dois meses aproximadamente, série de linha intacta visualmente; M1-03 cabeçalho `Município de atendimento (cód. DATASUS)` em duas linhas | `PASS_GUI_PRE_SAVE_RESTRICTED` |
+| `image(20261110-232156).png` | M2-01: duas linhas de leitos, competências despoluídas; M2-02 novo rótulo descritivo; M2-03 mantém as três classificações e cores legíveis | `PASS_GUI_PRE_SAVE_RESTRICTED` |
+| `image(20261110-233103).png` | M3-01: título acadêmico legível; texto `Mesmo município` e `Município diferente` acima das barras, sem códigos técnicos no eixo; demais objetos presentes | `PASS_GUI_NEUTRAL_PRE_SAVE_WITH_STATIC_LABEL_CAUTION` |
+
+**Inspeção comparativa das cores da faixa esquerda:** nas imagens (1907×1068) a faixa possui aproximadamente **11 pixels** (`x=0..10`) para as três folhas, com amostra em `y=150`: folha 1 RGB `(8,127,135)` (`#087F87`), folha 2 RGB `(22,166,164)` (`#16A6A4`), folha 3 RGB `(16,61,75)` (`#103D4B`). Fundo adjacente `(10,50,63)`, similar na terceira folha. **Não falta a faixa: o problema é o baixo contraste da imagem de fundo 3.** Não copiar cabeçalho/objeto de outra folha; apenas ajustar a cor da faixa no fundo 3 após preservar cópia do PNG e conferir área original e modo de escala.
+
+**Risco específico M3-01:** os novos nomes parecem ser textos livres posicionados manualmente sobre as barras. A captura neutra está correta para apresentação, mas **não demonstra que os textos acompanham categorias e ordenação sob filtros**. Não assumir vínculo dos textos aos valores da dimensão; se não há associação nativa, exibir a equivalência em uma legenda única independente da posição (`RES_EQ_SERV = Mesmo município | RES_NE_SERV = Município diferente`) e/ou manter códigos do eixo visíveis, sem dimensão calculada. Aceite de apresentação neutra não autoriza alegar fidelidade em todas as seleções.
+
+**Próximo passo único:** verificar a cópia local de `VIS01_fundo_3_fluxos_1920x1080.png` e o estilo de fundo da terceira folha (não foi recuperado em bytes nesta sessão); corrigir somente a faixa de contraste no PNG **copiado**, reimportar na nova QVW, e conferir o mapeamento M3-01. Após capturas neutras coerentes, salvar só a nova cópia, fechar/reabrir e executar `Verify` usando o manifesto já criado. Não repetir preflight ou testes antigos.
+
+**Estado:** `VIS04_PREPARE=PASS_HASH_COPY_LOCAL_REPORTED`; `VIS04_GUI_PRE_SAVE=PASS_WITH_2_LOCALIZED_CAUTIONS`; `VIS04_HEADER_STRIPE_3=LOW_CONTRAST_PENDING`; `VIS04_M3_STATIC_TEXT_BINDING=UNVERIFIED`; `VIS04_PERSISTENCE=NOT_TESTED`; `VIS04_ORIGINAL_SOURCES=PREPARE_HASH_PASS_ONLY`; `PRODUCTION_APPROVED=False`.
