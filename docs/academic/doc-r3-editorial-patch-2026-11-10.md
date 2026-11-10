@@ -87,3 +87,14 @@ Páginas físicas do PDF R2, contando capa como página 1. As páginas impressas
 `DOC_R3_SCOPE=8_PAGE_REPLACEMENT_ONLY`; `DOC_R3_PDF_PATCH=PREVIEW_EXPERIMENTAL_GENERATED`; `DOC_R3_FINAL_98_PAGE_PDF=NOT_CREATED`; `CHAPTERS_1_2_AND_APPENDICES_ORIGINAL=NOT_TOUCHED`; `C2_C3_C4_GLOBAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
 
 **STOP editorial desta execução:** prévia e documento de revisão preparados, sem editar QVW, QVD, QVS, PDF R2 original, sem merge. A próxima etapa física do PDF depende **somente** do R2 original em bytes, não de novos testes QlikView.
+
+
+## 7. Justificativa explícita da ilha analítica P23_A1_ISLAND — inclusão editorial solicitada (10/11/2026)
+
+**Dúvida documentada pelo operador:** a tabela `P23_A1_ISLAND` aparece visualmente isolada no visualizador de dados do QlikView 12. A tabela auxilia exclusivamente o **M2-03 (Observabilidade LT)**, não substitui `FATO_CAPACIDADE_LEITO` nem representa uma quarta tabela fato aprovada.
+
+**Verificação estática:** a proposta `PAINEL/sad_p23_a1_island_physical_gate.qvs` na PR #226 cria `P23_A1_ISLAND`, com campos persistidos prefixados `P23_`, sem chave `%LINK_KEY` ou nome associativo compartilhado. O construtor do MVP `tools/Build-SadMvpThreeSheetsTemp.ps1` define dimensão `P23_ESTADO_OBSERVADO` e expressão `Count(P23_MUNICIPIO_6)` para CH06/M2-03. A desconexão é proposital para que seleções globais não alterem a contagem de células município × competência. Contrato experimental em branch Draft, não mudança física na `main`.
+
+**Texto DOC-R3 incorporado ao §3.3:** “A tabela auxiliar `P23_A1_ISLAND` foi criada intencionalmente sem chaves compartilhadas com o modelo associativo principal, como `%LINK_KEY`. Por isso, M2-03 apresenta o panorama fixo da PB em 2017–2019 e não acompanha filtros globais. A ilha não constitui uma quarta tabela fato da constelação acadêmica. Mesmo quando existe linha LT observada, seu campo não comprova o recorte estritamente hospitalar histórico. As legendas passaram por validação visual local restrita, não por certificação científica de CNES.”
+
+**Estado:** `DOC_R3_P23_ISLAND_EXPLICIT_JUSTIFICATION=VERSIONED_IN_GENERATOR`; `DOC_R3_PDF_REGENERATION=NOT_YET_EXECUTED`; `DOC_R3_FINAL_98_PAGE_PDF=NOT_CREATED`. O arquivo R2 foi localizado na Biblioteca de arquivos do ChatGPT pelo nome `SAD_A4_Relatorio_Consolidado_R2_Editorial.pdf`, porém a transferência dos bytes originais para o contêiner retornou indisponibilidade de materialização. A busca PowerShell realizada pelo operador em `$env:USERPROFILE` não encontrou esse nome no Windows. O PDF R2 **não foi apagado** com base nessas buscas; sua presença na Biblioteca permite recuperar via interface, se disponível. Não inventar caminho Windows ou link de download.
