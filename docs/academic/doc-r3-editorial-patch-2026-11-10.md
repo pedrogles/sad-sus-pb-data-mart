@@ -106,3 +106,29 @@ Páginas físicas do PDF R2, contando capa como página 1. As páginas impressas
 **QA observacional:** documento aberto por PyMuPDF, 8 páginas contadas; texto extraído da página física 3 da prévia contém `P23_A1_ISLAND`, a ausência de ligação com `%LINK_KEY` e a ressalva de que não se trata de quarta fato. O texto normalizado das demais 7 páginas é idêntico ao da prévia anterior `SAD_DOC_R3_Paginas_21_a_28_PREVIA.pdf`. A página 3 foi renderizada e inspecionada visualmente: justificativa legível, imagem da folha 2 presente, sem transbordamento do quadro nem extrapolação de página. Essas verificações **não** provam preservação das páginas 1–20 ou 29–98 do R2 — a composição do PDF final está bloqueada pela ausência de bytes originais.
 
 **Status final deste subgate:** `DOC_R3_P23_DESCRIPTION=PASS_PREVIEW_EDITORIAL_RESTRICTED`; `DOC_R3_PREVIEW_8_PAGES=RENDERED_INSPECTED`; `DOC_R3_UNCHANGED_PREVIEW_PAGES=7_OF_8_TEXT_IDENTICAL`; `DOC_R3_FINAL_98_PAGE_PDF=NOT_CREATED`; `R2_ORIGINAL_BYTES=UNAVAILABLE`. STOP sem novas alterações QlikView e sem merge.
+
+
+## 9. DOC-R3 integral consolidado — fonte R2 recebida e preservação auditada (10/11/2026)
+
+**Atualização superveniente aos §§1–8:** o responsável anexou neste chat o **arquivo PDF binário original** `SAD_A4_Relatorio_Consolidado_R2_Editorial(1).pdf` (98 páginas) em `/mnt/data/`, SHA-256 `E64A09F34C636A3FFDE2A4D377FCEE9ABA9E08171063178BD87A56518EC9694D`. Assim, **o bloqueio anterior de ausência dos bytes do R2 foi removido** nesta execução. O R2 recebido foi lido e mantido sem escrita.
+
+**Composição física realizada em cópia nova:** substituir as páginas físicas **21–28** (Capítulos 3–5) pelo caderno editorial final de oito páginas; importar intactas as páginas **1–20** (capa, sumário, Capítulos 1–2) e **29–98** (Anexos I/II com scripts). O caderno de substituição foi gerado no contêiner por compositor local adaptado da prévia, com a justificação `P23_A1_ISLAND` no §3.3, títulos, numeração impressa 19–26 e rodapé editorial de QVW TEMP, **sem** a marca `PRÉVIA SUBSTITUTIVA`. Nenhum PDF original foi substituído.
+
+| Artefato PDF | Páginas | SHA-256 |
+| --- | ---: | --- |
+| R2 original recebido | 98 | `E64A09F34C636A3FFDE2A4D377FCEE9ABA9E08171063178BD87A56518EC9694D` |
+| Caderno DOC-R3 final de substituição | 8 | `7E8D035DD5CEAEE0D3734CBDDE343148E138F033A82A8ED88D889B4CE0CDEE4E` |
+| **DOC-R3 integral consolidado (candidato acadêmico)** | **98** | **`DA04BB440DC57DDD9DFB20331AFB548EDC3142143E82A0C92605EC8B7904CB01`** |
+
+**Caminho do artefato nesta sessão:** `/mnt/data/SAD_Data_Mart_SUS_PB_Relatorio_DOC_R3_Consolidado_2026.pdf`. Manifesto local de auditoria: `/mnt/data/SAD_DOC_R3_Consolidado_Auditoria.json`. Estes são arquivos da sessão, **não são links permanentes/versionados no GitHub**; o responsável recebeu link de download do ChatGPT. Não adicionar PDFs binários nem dados pessoais ao Git por padrão.
+
+**QA efetivamente realizado, não suposto:**
+- Contagem PyMuPDF: exatamente **98 páginas** após montagem; 8 substitutivas A4, com títulos das seções 3, 3.2–3.6, 4 e 5, referências e Figura 7–11.
+- Para **todas as 90 páginas preservadas**: comparação página a página de texto extraído, geometria/rotação, quantidade de imagens, quantidade de anotações e renderização RGB a 0,65×; **90/90 idênticas nos cinco controles**, incluindo anexos paisagem. Essa é igualdade visual/estrutural observada no documento resultante, **não identidade byte-a-byte dos objetos PDF** (a composição altera sua estrutura interna).
+- Para as **8 páginas substitutivas**: texto extraído e pixels renderizados a 0,65× comparados com o caderno DOC-R3 final: **8/8 idênticas**, com mesmo número de imagens.
+- Imagens do capítulo 3 renderizadas do PDF consolidado a **125 dpi** e contato visual das oito páginas inspecionado; nenhuma sobreposição crítica ou corte estrutural identificado. A figura de CH05 usa recorte apenas do aviso, sem incluir o CH06 antigo; a figura da folha 2 inclui CH06 com legendas corrigidas.
+- Sumário preservado: capítulos 3–5 seguem nas páginas impressas 19–26; anexos começam nas páginas impressas 27 e 78. O conteúdo do Capítulo 3 inclui justificativa explícita da ilha e a natureza não homologada da QVW TEMP.
+
+**Qualificação e limitações:** `DOC_R3_PDF_ASSEMBLY=PASS_98_PAGES`, `DOC_R3_UNCHANGED_PAGES=PASS_90_OF_90_TEXT_GEOMETRY_IMAGES_ANNOTATIONS_PIXELS`, `DOC_R3_NEW_PAGES=PASS_8_OF_8_TEXT_PIXELS`, `DOC_R3_VISUAL_QA=PASS_EDITORIAL_RESTRICTED`, `DOC_R3_SUBMISSION_STATUS=READY_FOR_ACADEMIC_REVIEW_NOT_SUBMITTED`. As cifras e a semântica QVW dependem de evidências VIS-03/P1 restritas; transmissão online não ensaiada; C2/C3/C4 global, Fase IX e produção permanecem `NOT_APPROVED`.
+
+**Nota de reprodutibilidade:** o PDF final foi materializado por um script compositor **local**, adaptado da prévia experimental e executado nesta sessão. O gerador de páginas commitado nesta branch ainda não teve ensaio de equivalência de saída; **não declarar** que executar apenas `tools/build_sad_doc_r3_replacement_pages.py` recria o mesmo SHA-256. Os SHA acima auditam **estes arquivos efetivamente gerados**. Nenhum merge e nenhuma submissão Classroom foram realizados. Encerra-se este gate editorial com documento integral candidato para leitura e submissão após aceite do responsável.
