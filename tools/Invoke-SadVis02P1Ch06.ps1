@@ -80,7 +80,7 @@ public class SadVisP1Foreground {
 }
 '@ -ErrorAction Stop
   }
-  Write-Output ("FOCUS_QLIKVIEW_NOW seconds="+$DelaySeconds)
+  Write-Host ("FOCUS_QLIKVIEW_NOW seconds="+$DelaySeconds)
   Start-Sleep -Seconds $DelaySeconds
   $title='';$x=0;$y=0;$w=0;$h=0
   $valid=[SadVisP1Foreground]::Describe([ref]$title,[ref]$x,[ref]$y,[ref]$w,[ref]$h)
