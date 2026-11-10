@@ -190,7 +190,7 @@ def main():
 
     d.new("3.5 Tratamento de seleções incompatíveis")
     d.p("O mecanismo associativo não garante compatibilidade semântica entre toda seleção e todo indicador. Nas cópias TEMP, algumas situações são deliberadamente sinalizadas como indisponíveis para impedir que valores de períodos diferentes sejam interpretados como equivalentes.")
-    d.figure("fig10","Figura 10 — Aviso de M2-02: competência 201801 não representa o indicador de leitos fixado em 201912. Recorte do gráfico correspondente, anterior ao acabamento de legendas de M2-03.",region=(830,505,1900,862),height=155,after=12)
+    d.figure("fig10","Figura 10 — Aviso de M2-02: competência 201801 não representa o indicador de leitos fixado em 201912. Recorte do gráfico correspondente, anterior ao acabamento de legendas de M2-03.",region=(12,507,830,862),height=155,after=12)
     d.p("Para o cenário mensal reportado, o gráfico M2-02 mostra mensagem de indisponibilidade quando a competência nativa diverge de 201912. A ilha de observabilidade mantém o panorama global, independentemente do filtro. A figura recorta apenas o aviso de M2-02 e não deve ser usada como evidência da versão final de CH06.")
     d.figure("fig11","Figura 11 — Aviso M3-03: consulta de população anual indisponível em filtro de competência mensal. Fonte: screenshot após correção de overflow informada pelo operador.",region=(13,188,480,746),height=247,after=10)
     d.p("O aviso no objeto M3-03 torna explícita a incompatibilidade temporal. Os cenários fotografados sustentam validação <b>restrita</b>, não homologação da matriz completa de seleções nativas nem do contrato global C2/P5.",d.small,after=4)
