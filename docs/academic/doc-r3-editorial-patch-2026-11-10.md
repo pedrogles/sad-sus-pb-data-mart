@@ -132,3 +132,26 @@ Páginas físicas do PDF R2, contando capa como página 1. As páginas impressas
 **Qualificação e limitações:** `DOC_R3_PDF_ASSEMBLY=PASS_98_PAGES`, `DOC_R3_UNCHANGED_PAGES=PASS_90_OF_90_TEXT_GEOMETRY_IMAGES_ANNOTATIONS_PIXELS`, `DOC_R3_NEW_PAGES=PASS_8_OF_8_TEXT_PIXELS`, `DOC_R3_VISUAL_QA=PASS_EDITORIAL_RESTRICTED`, `DOC_R3_SUBMISSION_STATUS=READY_FOR_ACADEMIC_REVIEW_NOT_SUBMITTED`. As cifras e a semântica QVW dependem de evidências VIS-03/P1 restritas; transmissão online não ensaiada; C2/C3/C4 global, Fase IX e produção permanecem `NOT_APPROVED`.
 
 **Nota de reprodutibilidade:** o PDF final foi materializado por um script compositor **local**, adaptado da prévia experimental e executado nesta sessão. O gerador de páginas commitado nesta branch ainda não teve ensaio de equivalência de saída; **não declarar** que executar apenas `tools/build_sad_doc_r3_replacement_pages.py` recria o mesmo SHA-256. Os SHA acima auditam **estes arquivos efetivamente gerados**. Nenhum merge e nenhuma submissão Classroom foram realizados. Encerra-se este gate editorial com documento integral candidato para leitura e submissão após aceite do responsável.
+
+
+## 10. Segunda entrega como encerramento — justificativa de indicadores não exibidos (10/11/2026)
+
+**Decisão expressa do responsável:** a segunda entrega acadêmica **encerra o escopo de implementação** do SAD para a disciplina. Não há etapa subsequente planejada para adicionar indicadores, reimplementar nove→14 visuais ou homologar o modelo para produção. Os contratos C2/C3/C4 e limites de CNES, quando não aprovados, devem constar como **limites do estudo concluído**, não como promessas de entrega futura. Essa decisão de escopo acadêmico **não altera** a modelagem aprovada dos Capítulos 1–2 nem aprova uma implantação SUS.
+
+**Motivação para revisão:** o Capítulo 2, §2.9, apresenta quatro grupos de indicadores, mas o MVP QlikView 12 demonstra somente o fluxo RES→SERV (M3-01/M3-02) entre esses grupos. É indispensável deixar explícito no relatório o que foi concebido e o que foi materializado nas três folhas.
+
+### Revisão aplicada fisicamente ao DOC-R3 (sem nova versão R4)
+
+- **Página física 26, §3.7:** explica por que não foram apresentados **internações por 1.000 habitantes** (papel RES + ano + POP sem validação de associações e filtros inter-fatos), **leitos SUS por 1.000 habitantes** (média de snapshots, ano/município e cobertura hospitalar histórica CNES não verificadas integralmente) e **relação internações/leitos** (estoque versus fluxo, janela temporal, município e denominador, não equivale a taxa de ocupação).
+- **Página física 27, §4.1:** afirma que o fluxo RES→SERV de §2.9.4 foi efetivamente mostrado; identifica medidas da fato não exibidas nos nove gráficos (registros AIH, permanência, valor, óbitos, leitos não SUS), bem como rankings de procedimento/diagnóstico e detalhamentos de leito que ficaram fora do recorte. A ausência de consumo direto não prova inutilidade/remoção do campo.
+- **Fechamento:** o blueprint formal de 14 visuais é mais amplo que o conjunto acadêmico demonstrado de **nove objetos em três folhas**. O texto não promete implementações posteriores.
+
+**Artefato final corrigido nesta conversa, fora do Git:** `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_2026.pdf`, **98 páginas**, SHA-256 **`D5FC55797DA939C2E2815B66309A05953B4E5D9C1927DC1E7D74A9879658D44D`**. Fonte DOC-R3 anterior `SAD_Data_Mart_SUS_PB_Relatorio_DOC_R3_Consolidado_2026.pdf`, SHA `DA04BB440DC57DDD9DFB20331AFB548EDC3142143E82A0C92605EC8B7904CB01`, mantida intacta.
+
+**Executor reprodutível:** `tools/patch_sad_doc_r3_final_scope.py` versionado no commit `fd494b5e92cdeb6b3af4bd6b3c29e1c9195be8c3` **antes da execução que fundamentou o gate**. O Git blob SHA do script versionado é `a03e3958d7404d554f4b6d7f9b6690c1f7265b61`, conferido igual ao `git hash-object` do script local. Este script faz apenas inserções de texto em espaço já disponível, nunca altera ou sobrescreve o PDF de origem.
+
+**QA efetivamente executado pelo script:** fonte pinada por SHA, 98/98 páginas; somente páginas 26 e 27 alteradas, **96/96 páginas restantes com texto, geometria e pixels renderizados idênticos** ao DOC-R3 anterior (0,85×); subseções 3.7/4.1 confirmadas por texto normalizado; áreas renderizadas e conferidas em 1,5×, sem truncamento ou invasão do rodapé. O PDF R2 original, as páginas 1–20 e anexos do R3, todas as QVW/QVD/QVS, scripts ETL e a `main` não foram modificados. Manifesto local `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_2026.audit.json` permanece fora do repositório.
+
+**Status atualizado:** `DOC_R3_FINAL_ACADEMIC_SCOPE=EXPLICIT`, `DOC_R3_98_PAGE_PDF=GENERATED_QA_PASS`, `DOC_R3_UNCHANGED_PAGES=96_96_RENDER_MATCH`, `DOC_R3_SUBMISSION=NOT_SUBMITTED`, `ONLINE_REHEARSAL=NOT_RUN`, `CHAPTERS_1_2=UNCHANGED`, `C2_C3_C4_GLOBAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+**STOP:** concluir a revisão editorial de escopo, não iniciar novas implementações; próxima ação acadêmica é leitura final, ensaio online e envio pelo responsável. Nenhum merge foi realizado.
