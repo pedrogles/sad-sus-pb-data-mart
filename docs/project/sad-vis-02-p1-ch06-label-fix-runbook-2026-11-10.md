@@ -58,9 +58,9 @@ Os rótulos de cor devem corresponder às três barras exibidas em **estado neut
    `C:\Users\pedro\SAD_VIS02_EVIDENCIAS\VIS02_20261109_230246_40a7da274f784973ab11175e4387a736\SAD_MVP_C4_VIS02_WORK.qvw`
 3. Confirmar no PowerShell, somente leitura:
    `Get-FileHash -LiteralPath 'C:\Users\pedro\SAD_VIS02_EVIDENCIAS\VIS02_20261109_230246_40a7da274f784973ab11175e4387a736\SAD_MVP_C4_VIS02_WORK.qvw' -Algorithm SHA256`
-   SHA-256 **esperado (reportado na VIS-02)**: `C564C7020D4F7377A541427B197E38726C47370385C14FE6446E7BA098158619`. Se diferente, **STOP** e investigar a origem; não sobrescrever.
+   SHA-256 **histórico no closeout VIS-02**: `C564C7020D4F7377A541427B197E38726C47370385C14FE6446E7BA098158619`. **Atualização operacional de 10/11:** o operador reportou um Save de ajuste de layout; hash atual `BA0A7DDCF3F064D3EDC38AD5B0F4D7A79A00CEA0841234D21C0EA4D127C8C704`. O antigo hash não é mais o valor esperado para esse arquivo; registrar ambos. **Só aceitar BA0A… como baseline candidata de trabalho após conferência visual restrita da QVW reaberta, sem presumir que apenas o card mudou.** Se aparecer outro hash, STOP.
 4. Via Explorador, **copiar** (não mover) a QVW VIS-02 para uma pasta privada **nova**, fora do repositório e das cópias protegidas, por exemplo `%USERPROFILE%\SAD_VIS02_P1_EVIDENCIAS\CH06_LABELS_20261110`. Renomear **somente a cópia** para `SAD_MVP_CH06_LABEL_FIX_TEMP.qvw`. Em caso de nome existente, criar diretório único, nunca substituir.
-5. Recalcular por `Get-FileHash -LiteralPath '<CAMINHO_DA_NOVA_COPIA>' -Algorithm SHA256` e confirmar igualdade exata com a fonte antes de abrir no QlikView. Registrar os dois hashes e caminho local em evidência privada. Não colocar QVW no Git.
+5. Recalcular por `Get-FileHash -LiteralPath '<CAMINHO_DA_NOVA_COPIA>' -Algorithm SHA256` e confirmar igualdade exata com a **fonte efetivamente escolhida e documentada (BA0A… apenas se verificação visual da QVW reaberta não trouxer regressão)** antes de abrir no QlikView. Registrar os dois hashes e caminho local em evidência privada. Não colocar QVW no Git.
 
 ## 5. Aplicação GUI única
 
@@ -93,3 +93,21 @@ No QlikView Desktop, abrir **somente** `SAD_MVP_CH06_LABEL_FIX_TEMP.qvw`, limpar
 Com screenshot e dois hashes de retorno, registrar **somente o fechamento localizado do M2-03** no escopo deste gate e atualizar a VIS-03/#232 por referência, com `VIS03_CH06_LABELS=PASS_GUI_RESTRICTED` se sustentado. O teste de apresentação compartilhada real continua `INCONCLUSIVE` até captura da transmissão; não confundir com screenshot local. O passo DOC-R3 pode começar somente após encerrar ou aceitar formalmente esse resíduo visual e preservar como fallback o relatório R2. **Nenhum merge automático.**
 
 **Controle desta preparação:** `CH06_LABEL_FIX_RUNBOOK=READY_DOCUMENTAL`, `CH06_LABEL_FIX_GUI=NOT_RUN`, `VIS03_GATE=BLOCKED_FOR_PRESENTATION_P1_CH06_LABELS`, `MAIN=UNCHANGED`, `C2_C3_C4_GLOBAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+
+## 8. Retorno do operador — salvamento intencional da VIS-02 e rebaseline condicionada (10/11/2026)
+
+**Evidência recebida:** saída do PowerShell reproduzida pelo operador no chat, não inspeção independente de bytes QVW. O operador informou que salvou a QVW VIS-02 após corrigir um card/aviso que extrapolava a tela, causa **plausível**, não comprovada exclusivamente pelo hash.
+
+| Artefato | SHA-256 reportado | LastWriteTime local | Tamanho |
+|---|---|---|---:|
+| C4 original `SAD_MVP_C4_PRESENTATION_TEMP.qvw` | `27ADABC3CB5DBC3598F2FDB3CD6FDC82E7193B18E92D253D1186B94075BB5A13` | 09/11/2026 13:37:26 | 32.598.016 bytes |
+| VIS-02 de trabalho atual `SAD_MVP_C4_VIS02_WORK.qvw` | `BA0A7DDCF3F064D3EDC38AD5B0F4D7A79A00CEA0841234D21C0EA4D127C8C704` | 10/11/2026 12:11:06 | 32.649.728 bytes |
+
+**Comparação:** C4 original corresponde exatamente ao valor canônico anteriormente reportado e permanece preservada no instante da verificação. A VIS-02 difere do hash anterior `C564C7020D4F7377A541427B197E38726C47370385C14FE6446E7BA098158619`; essa diferença é compatível com Save informado. **Não prova** que a única alteração foi visual, nem que os avisos/expressões continuam iguais. A divergência deixa de ser suspeita inexplicada, mas não constitui PASS de conteúdo.
+
+**Ação mínima, sem repetir testes encerrados:** manter intacta a VIS-02 atual; abrir/reabrir esse arquivo sem Reload, capturar apenas a folha/cartão cujo overflow foi corrigido em estado neutro e fechar sem salvar. Se legível, com as nove visualizações e sem nova regressão evidente, registrar `VIS02_WORK_BA0A_CANDIDATE_ACCEPTED_FOR_P1_SOURCE=VISUAL_RESTRICTED`, documentando que é rebaseline de uma **QVW TEMP acadêmica** e não rehomologação C2/C3/C4. Só então produzir **nova cópia** com hash inicial BA0A…, para realizar a alteração gráfica CH06. Preservar a VIS-02 atual como fallback.
+
+**Status desta atualização:** `C4_ORIGINAL_HASH=PASS_LOCAL_OPERATOR_REPORTED`; `VIS02_WORK_HASH_CHANGED_AFTER_OPERATOR_REPORTED_SAVE`; `VIS02_WORK_NEW_BASELINE=CONDITIONAL_PENDING_VISUAL_REVIEW`; `P1_COPY_AND_GUI=NOT_EXECUTED`; `VIS03_LABEL_FIX=BLOCKED_PENDING_P1`; `PRODUCTION_APPROVED=False`.
+
+**STOP:** não sobrescrever a C4 original nem descartar a VIS-02 atual; não reexecutar rolamentos, F01–F05 ou seleção 201801 sem novo desvio concreto. Nenhum merge, alteração de main ou script físico decorre deste retorno.
