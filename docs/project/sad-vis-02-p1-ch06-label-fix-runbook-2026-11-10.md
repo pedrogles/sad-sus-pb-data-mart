@@ -169,3 +169,13 @@ Quando aparecer `FOCUS_QLIKVIEW_NOW`, colocar a janela QlikView com a **cópia**
 O script produz `SCREENSHOT`, `REPORT` e `WORK_SHA256`; preservar fora do Git e fornecer para fechamento. `PASS_HASH_PROVENANCE_ONLY` significa **apenas** que os hashes das fontes permanecem e a cópia mudou — não comprova a alteração correta dos rótulos, nem reabertura. A confirmação visual exige inspeção da captura.
 
 **Status atualizado:** `CH06_P1_SHELL_SCRIPT=VERSIONED`, `CH06_P1_SHELL_STATIC_CHECK=PASS_RESTRICTED`, `CH06_P1_WINDOWS_EXECUTION=NOT_RUN`, `CH06_P1_GUI_FIX=NOT_RUN`, `VIS03_GATE=BLOCKED_FOR_PRESENTATION_P1_CH06_LABELS`; sem merge, sem edição QVW/QVD/QVS pela automação, sem aprovação C2/C3/C4/IX/produção.
+
+## 11. Pré-save — legibilidade e mapeamento corrigidos na cópia CH06 (10/11/2026)
+
+**Fonte visual:** screenshot `image(20261110-194919).png` enviado pelo operador, janela `SAD_MVP_CH06_LABEL_FIX_TEMP.qvw*`, pasta privada local `CH06_20261110_163018_870df719340c`. Inspeção direta de screenshot; **sem acesso ao arquivo QVW, aos bytes da cópia, a propriedades COM ou a estados internos**.
+
+**Resultado observacional localizado:** o gráfico M2-03 na folha 2 apresenta três barras com os textos alinhados à categoria correta: âmbar = "Sem linha LT / Não significa zero"; verde-azulada = "SUS positivo / Observado"; cinza = "SUS zero / Observado". Códigos técnicos longos do eixo não aparecem; os textos não se sobrepõem nem cobrem as barras na captura. Título do gráfico continua indicando PB 2017–19 e independência de filtros globais. A ressalva metodológica sobre escopo hospitalar não verificado continua sendo necessária na documentação/apresentação, mas não se presume inserida no gráfico.
+
+**Proveniência e limite:** `CH06_LABEL_MAPPING_PRE_SAVE=PASS_GUI_VISUAL_RESTRICTED`; `CH06_LABELS_VISUAL_OVERLAP=NO_CRITICAL_OVERLAP_IN_CAPTURE`. A janela contém `*`, então o Save, o fechamento/reabertura, o SHA pós-save e a estabilidade das fontes **ainda não foram conferidos**. **Não atribuir PASS de persistência ou integridade ao screenshot.** Não repetir seleção 201801, rankings, C2/C3/C4 ou alterar novas propriedades.
+
+**Próxima ação única:** salvar **somente a cópia**; fechar; reabrir **a cópia**; posicionar folha 2; executar o modo `Verify -ManifestPath ... -Capture` do script commitado; fornecer os campos `VERDICT`, `SOURCE_UNCHANGED`, `PROTECTED_C4_UNCHANGED`, `WORK_SHA256` e a captura. `VIS03_GATE=BLOCKED_PENDING_PERSISTENCE_EVIDENCE` até essa verificação.
