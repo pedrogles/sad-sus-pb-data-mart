@@ -179,3 +179,40 @@ O script produz `SCREENSHOT`, `REPORT` e `WORK_SHA256`; preservar fora do Git e 
 **Proveniência e limite:** `CH06_LABEL_MAPPING_PRE_SAVE=PASS_GUI_VISUAL_RESTRICTED`; `CH06_LABELS_VISUAL_OVERLAP=NO_CRITICAL_OVERLAP_IN_CAPTURE`. A janela contém `*`, então o Save, o fechamento/reabertura, o SHA pós-save e a estabilidade das fontes **ainda não foram conferidos**. **Não atribuir PASS de persistência ou integridade ao screenshot.** Não repetir seleção 201801, rankings, C2/C3/C4 ou alterar novas propriedades.
 
 **Próxima ação única:** salvar **somente a cópia**; fechar; reabrir **a cópia**; posicionar folha 2; executar o modo `Verify -ManifestPath ... -Capture` do script commitado; fornecer os campos `VERDICT`, `SOURCE_UNCHANGED`, `PROTECTED_C4_UNCHANGED`, `WORK_SHA256` e a captura. `VIS03_GATE=BLOCKED_PENDING_PERSISTENCE_EVIDENCE` até essa verificação.
+
+
+## 12. Incidente no Verify -Capture: resultado agregado no pipeline (10/11/2026)
+
+**Saída real fornecida pelo operador** na pasta privada `CH06_20261110_163018_870df719340c`:
+
+```text
+VERDICT=PASS_HASH_PROVENANCE_ONLY
+SOURCE_UNCHANGED=True
+PROTECTED_C4_UNCHANGED=True
+WORK_SHA256=6ED9CC1FAA5AFD592D1D4CECC8D6FC5DE2AB84D4DCE2D4E6D3E6A25E59D7BE37
+REPORT=...\vis02_p1_verify_20261110_170554_3809a412.json
+VERDICT=BLOCKED
+DETAIL=A propriedade 'Path' não foi encontrada neste objeto. Verifique se a propriedade existe.
+```
+
+**Diagnóstico no script versionado:** `CaptureForeground` emitia a linha `FOCUS_QLIKVIEW_NOW seconds=6` com `Write-Output`, que entra no **pipeline de retorno** da função, seguida da hashtable de metadados do PNG. Assim, `$screen` se torna um array contendo o aviso e os dados da captura. O relatório JSON foi escrito e seu caminho impresso antes da tentativa de `$screen.Path`, que falhou. **O erro é do relatório de saída da automação, não demonstra corrupção de QVW.** Pode existir PNG já salvo; seu conteúdo não foi visto neste gate.
+
+**Correção mínima versionada:** no commit `f4ea7beb9addda53006f15acc2cb3aabbebd5161`, somente a mensagem de foco dentro de `CaptureForeground` passou de `Write-Output` para `Write-Host`. A função passa a entregar apenas a hashtable no pipeline de resultado. **Correção inspecionada estaticamente; reexecução no Windows ainda não feita.**
+
+**Recuperação não destrutiva da sessão já concluída:** ler o relatório JSON existente, extrair o elemento de `Screenshot` que contém `Path` e conferir hash do PNG. Não executar `Prepare` nem outro `Verify`; não regravar QVW:
+
+```powershell
+$reportPath = 'C:\Users\pedro\SAD_VIS02_P1_EVIDENCIAS\CH06_20261110_163018_870df719340c\vis02_p1_verify_20261110_170554_3809a412.json'
+$report = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
+$imagem = @($report.Screenshot) |
+    Where-Object { $_.PSObject.Properties.Name -contains 'Path' } |
+    Select-Object -Last 1
+if ($null -eq $imagem) { throw 'SCREENSHOT_NOT_FOUND_IN_REPORT' }
+$imagem.Path
+Get-FileHash -LiteralPath $imagem.Path -Algorithm SHA256
+Invoke-Item -LiteralPath $imagem.Path
+```
+
+**Imutabilidade operacional:** o manifesto `vis02_p1_manifest.json` guarda SHA-256 da **versão original** do script; a versão corrigida tem outro hash. O verificador rejeita a mistura de versões (`SCRIPT_HASH_CHANGED`) intencionalmente. Portanto, **não substituir o script antigo usado por esse manifesto para repetir a sessão**; recuperar diretamente pelo JSON. O script corrigido é destinado a **novas preparações**, se realmente necessárias, e deve ser distribuído somente por commit versionado.
+
+`P1_HASH_PROVENANCE=PASS_LOCAL_OPERATOR_REPORTED`; `P1_CAPTURE_METADATA_REPORT=CREATED_REPORTED`; `P1_CAPTURE_PNG=RECOVERY_PENDING_INSPECTION`; `P1_GUI_PERSISTENCE=INCONCLUSIVE_PENDING_PNG`; `P1_SCRIPT_CAPTURE_BUG=FIX_COMMITTED_NOT_WINDOWS_RETESTED`; `VIS03_GATE=INCONCLUSIVE_PENDING_PERSISTENCE_VISUAL_P1`; `PRODUCTION_APPROVED=False`.
