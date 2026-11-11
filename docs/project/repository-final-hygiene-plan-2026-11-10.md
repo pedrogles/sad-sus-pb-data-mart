@@ -36,7 +36,7 @@
 
 | Agrupamento | PRs | Decisão proposta após a consolidação |
 | --- | --- | --- |
-| Histórico C2/CI/guardas, não adotado como entrega final | **#167, #199, #203–#205, #207–#208, #210–#212, #215–#225, #227–#229** (21) | Fechar como **SUPERSEDED_BY_FINAL_ACADEMIC_SCOPE** ou **NOT_MERGED_NO_C2_PASS**; preservar links, registros de falha e histórico. Não dar PASS retroativo nem integrar scripts experimentais indiscriminadamente |
+| Histórico C2/CI/guardas, não adotado como entrega final | **#167, #199, #203–#205, #207–#208, #210–#212, #215–#225, #227–#229** (24) | Fechar como **SUPERSEDED_BY_FINAL_ACADEMIC_SCOPE** ou **NOT_MERGED_NO_C2_PASS**; preservar links, registros de falha e histórico. Não dar PASS retroativo nem integrar scripts experimentais indiscriminadamente |
 | Base experimental do MVP | **#226** | Integrar somente decisão de escopo, evidência restrita, contrato de guarda de apresentação, QVS de fluxo e builder TEMP versionado para rastreabilidade; **não** aprovar a arquitetura física como produção |
 | Planejamento da entrega | **#230** | Incorporar o estado final, prazo comunicado pelo operador e referência ao roteiro no closeout, sem necessidade de preservar drafts de bootstrap repetidos |
 | Evidências de GUI e correção | **#231–#233, #236** | Integrar os closeouts decisivos e executores pinados usados; manter a prova de persistência e hashes |
