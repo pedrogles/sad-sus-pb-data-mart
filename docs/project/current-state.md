@@ -1,8 +1,8 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado proposto em 10/11/2026 — entrega acadêmica final, revisão e higiene do GitHub
+## Estado operacional — 11/11/2026 | entrega final delimitada, higiene GitHub em lotes
 
-**Proveniência:** este documento foi preparado sobre `main@0549e1dba71aaa8bbab9d6755aecb8465f8bea83` (HEAD da auditoria anterior à consolidação). Torna-se fonte operacional da `main` **somente depois de merge expressamente autorizado**. Reconcilia evidências locais reportadas e documentos antes mantidos em Drafts, **sem conceder novos aceites físicos ou docentes**.
+**Proveniência:** a [PR #237](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/237) foi integrada à `main@6a5ab443cb3ed89e51ed2f8d955d47c5272e4411` em 11/11/2026. Os registros de implementação acadêmica continuam restritos às evidências locais reportadas, **sem conceder novos aceites físicos ou docentes**. O inventário de 159 branches é um snapshot anterior à higiene, não uma contagem ao vivo.
 
 **Fontes obrigatórias:** `AGENTS.md` → este documento → [requisitos acadêmicos](../academic/requirements.md) → [registro final](../academic/final-delivery-record-2026-11-10.md) → [inventário de higiene](repository-final-hygiene-inventory-2026-11-10.json) e [plano de limpeza](repository-final-hygiene-plan-2026-11-10.md).
 
@@ -17,7 +17,7 @@
 | Aceite visual | O QVW VIS-04 corrigido foi salvo e reaberto, três capturas apresentaram 9 objetos e cabeçalhos uniformes sem cortes críticos: **`VIS04_LOCAL_GUI_PRESENTATION=PASS_RESTRICTED`** e **`VIS04_POST_REOPEN_PERSISTENCE=PASS_RESTRICTED_WITH_OPERATOR_EVIDENCE`**. SHA pós-save local reportado `BE8CB39B59F92F2F173DB309A60EA5FF373CDF87CBFCBC333F5583A21FF539C6`. Três origens protegidas com hashes preservados conforme PowerShell local. Não é aprovação visual sob transmissão online nem certificação de expressões/associações globais. |
 | Relatório final | `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_VIS04_2026.pdf` de **98 páginas**, SHA `BB7A6A6D7C2ADC3BE80831F4F8E98642D7CE9D07A25B7F03000A9DF2E8071302`, **gerado e auditado na conversa**. Figuras 7–9 substituídas nas páginas 22–24; outras **95/95** páginas iguais em texto/renderização ao PDF imediatamente anterior. Capítulos 1–2, anexos e justificativa dos indicadores não apresentados preservados. PDF binário **fora do Git**; exigir backup persistente após download. |
 | Entrega ao professor | Ensaio de compartilhamento online **não realizado**; PDF **não submetido**; equivalência 3 folhas = 3 painéis não confirmada formalmente pelo professor. Segunda avaliação em **08/12/2026** informada pelo operador, sem confirmação independente no Classroom. |
-| GitHub | No snapshot remoto anterior à branch de higiene: **159 branches** (100 associadas a PRs merged, 32 Draft, 21 de PRs fechados sem merge, 5 sem PR e `main`), **32 PRs Draft abertos**, **2 issues** (#157, #196). Há trabalho acadêmico final disperso em #226, #230–#236 e scripts de evidência em branches. O inventário e a convergência estão nesta PR Draft, **nenhuma exclusão/fechamento/merge foi feito**. |
+| GitHub | **PR #237 MERGED** e 24 Drafts históricos C2 **CLOSED_NOT_MERGED** (comentários individuais). Após esse lote, sobraram **8 PRs acadêmicos Draft** (#226 e #230–#236) e **2 issues abertas** (#157/#196). Nenhuma branch foi excluída; havia 160 refs remotas antes da nova branch de auditoria. A cobertura de arquivos por SHA está em [auditoria dos oito PRs](academic-pr-coverage-audit-2026-11-11.md): 47 arquivos, 16 idênticos à main, 7 selecionados para nova proposta de consolidação, 24 exclusivamente históricos. A auditoria proposta **não está integrada** até merge próprio. |
 
 ### Limites, decisões e bloqueios
 
@@ -29,7 +29,7 @@
 
 ### Próximas ações com condição de parada
 
-1. **GitHub:** revisar esta consolidação e selecionar o lote para **aprovar merge específico**, preservando provas. Depois, com **nova autorização explícita**, fechar PRs Draft antigos e issues por motivo verdadeiro `not planned / encerramento do escopo acadêmico`. Em seguida validar SHAs/backup antes de excluir branches; a conexão usada não oferece exclusão de refs remotas.
+1. **GitHub:** revisar a [auditoria de cobertura dos oito Drafts acadêmicos](academic-pr-coverage-audit-2026-11-11.md) e a PR de preservação dos sete arquivos faltantes; **não fechar esses oito PRs antes da decisão sobre o merge da preservação**. Encerramento de PRs/issues e exclusão de refs exigem autorizações próprias, backup e verificação de SHA. Os 24 PRs históricos C2 já foram fechados sem merge. O executor de exclusão remota ainda não foi autorizado.
 2. **Acadêmico:** garantir cópia persistente e hash do PDF/QVW; realizar uma sessão de ensaio online, confirmar aceitação das três folhas pelo professor e submeter PDF no Classroom. Registrar protocolo de entrega se houver.
 3. **STOP:** quando GitHub estiver reconciliado e entrega submetida, encerrar projeto acadêmico. Sem novos testes QlikView ou mudanças na arquitetura por consequência automática de limpeza.
 

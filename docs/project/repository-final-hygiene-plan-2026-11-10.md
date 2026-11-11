@@ -89,3 +89,15 @@ As cinco estão **divergentes com commits à frente da main** em comparação es
 4. **APROVAR_DELETE_OUTROS**: somente lotes B/C/D depois de avaliação de conteúdo único.
 
 Esse desenho evita novos ciclos de Discovery, mantém os resultados investigáveis e deixa a `main` com um **estado acadêmico final defensável**.
+
+## 8. Atualização de execução — 11/11/2026 (snapshot superveniente)
+
+**As seções 1–7 são o plano histórico antes do merge #237.** O responsável aprovou o merge da [PR #237](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/237), concluído na `main@6a5ab443cb3ed89e51ed2f8d955d47c5272e4411`. Em autorização seguinte, foram fechados **24 PRs históricos C2 sem merge** (#167, #199, #203–#205, #207–#208, #210–#212, #215–#225, #227–#229), cada qual com comentário e preservação de veredito (PASS restrito, blocker ou NOT_RUN).
+
+**Após esses fechamentos:** oito PRs acadêmicos continuaram Draft: #226, #230–#236. As issues #157/#196 permaneceram OPEN, sem exclusão de branches. A contagem de branches foi **160 refs** na verificação pós-fechamentos; a criação da nova branch documental aumenta esse número, portanto o inventário de 159 refs continua **snapshot histórico**.
+
+**Segundo gate — cobertura de arquivos dos oito PRs:** auditoria detalhada em [academic-pr-coverage-audit-2026-11-11.md](academic-pr-coverage-audit-2026-11-11.md) e [JSON auditável](academic-pr-coverage-audit-2026-11-11.json). Foram identificados **47 arquivos**: 16 já idênticos na `main`, 7 copiados com Git blob SHA idêntico para uma **nova proposta Draft**, 24 ainda exclusivos dos PRs/branches históricos. Cinco links relativos quebrados no documento central do MVP foram corrigidos na nova proposta para apontarem a commit SHA imutável da #226, sem modificar os resultados de teste.
+
+**Gates separados:** (i) revisar e aprovar merge da proposta de preservação dos sete arquivos + correção dos links; (ii) em nova autorização, fechar os oito PRs com motivo e conteúdo exclusivo explicitados; (iii) depois de dry-run/backup verificável e decisão nominal, excluir refs. Não inferir que aprovação deste documento autorize fechamento, merge ou exclusão.
+
+**STOP:** este addendum de controle não modifica dados, modelo, QVD/QVW, PDF DOC-R3 nem gates C2/C3/C4.

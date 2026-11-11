@@ -1,0 +1,406 @@
+{
+  "schema": "sad-academic-pr-coverage-v1",
+  "as_of": "2026-11-11",
+  "repo": "pedrogles/sad-sus-pb-data-mart",
+  "main_sha": "6a5ab443cb3ed89e51ed2f8d955d47c5272e4411",
+  "prs": [
+    226,
+    230,
+    231,
+    232,
+    233,
+    234,
+    235,
+    236
+  ],
+  "method": "GitHub GET /pulls/{number}/files SHA and main recursive Git tree, comparison by path+blob SHA",
+  "counts": {
+    "MAIN_IDENTICAL": 16,
+    "SELECTED_FOR_CONSOLIDATION": 7,
+    "HISTORICAL_PR_ONLY": 24
+  },
+  "candidate_branch": "docs/sad-academic-pr-coverage-reconciliation-2026-11-11",
+  "notes": [
+    "Candidate branch contains seven additional exact Git blobs but is NOT merged",
+    "24 PR-only files remain on historical branches and PR diffs; no deletion authorized",
+    "Do not infer C2/C3/C4 acceptance or script execution from the preservation"
+  ],
+  "files": [
+    {
+      "pr": 226,
+      "path": "PAINEL/sad_mvp_c4_presentation_guard_contract.json",
+      "git_blob_sha": "03f5efbb72768ab3f7242bed9aa059490c6c376a",
+      "main_git_blob_sha": "03f5efbb72768ab3f7242bed9aa059490c6c376a",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 226,
+      "path": "PAINEL/sad_mvp_m303_serv_guard_contract.json",
+      "git_blob_sha": "1c298d12661546d27c1a905cae20d09507912f1f",
+      "main_git_blob_sha": null,
+      "status": "SELECTED_FOR_CONSOLIDATION",
+      "action": "COPY_EXACT_IN_DRAFT"
+    },
+    {
+      "pr": 226,
+      "path": "PAINEL/sad_mvp_m3_flow_classification.qvs",
+      "git_blob_sha": "7ac7afea14410246a5921ac799853933aa3b9891",
+      "main_git_blob_sha": "7ac7afea14410246a5921ac799853933aa3b9891",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 226,
+      "path": "PAINEL/sad_mvp_native_guard_contract.json",
+      "git_blob_sha": "7b82ac2dff3648ac4404d7346d85b4c81e9c2b08",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-c2-native-acceptance-owner-approved-2026-11-07.md",
+      "git_blob_sha": "8a065fcc2d3aa3128b242b1952d62f42ca09aee7",
+      "main_git_blob_sha": null,
+      "status": "SELECTED_FOR_CONSOLIDATION",
+      "action": "COPY_EXACT_IN_DRAFT"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-contract-deltas-and-m1-readiness-2026-11-07.md",
+      "git_blob_sha": "418311456cc8adb2afac80af84cbe7ded7738270",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-evidence-and-contract-gates-consolidation-2026-11-07.md",
+      "git_blob_sha": "c09314b080d405dc6dd5581170cea533fdf109b5",
+      "main_git_blob_sha": "c09314b080d405dc6dd5581170cea533fdf109b5",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-f03-lt-guard-ui-temp-2026-11-07.md",
+      "git_blob_sha": "a6db3f52a7c7ca1dd67512cd0e593b0acb15fa0f",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-f04-2018-versus-fixed-lt-201912-gui-protocol-2026-11-07.md",
+      "git_blob_sha": "f69e762f722414b503cab26731e1bc39e266a27b",
+      "main_git_blob_sha": null,
+      "status": "SELECTED_FOR_CONSOLIDATION",
+      "action": "COPY_EXACT_IN_DRAFT"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-f04-temporal-context-guard-u1-2026-11-07.md",
+      "git_blob_sha": "5a8d513fade56cd7e00ed55cf7380120436b4aff",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-f04-u1-p2-targeted-save-reopen-correction-2026-11-07.md",
+      "git_blob_sha": "ac15d07f53e50c3916ad2f02c4aa1813bcb43139",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-f04-u1-qvw-persistence-reopen-gate-2026-11-07.md",
+      "git_blob_sha": "6796c0ef7536cb8330734d63df2b4457adb0fa30",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-native-filter-residence-f02-protocol-2026-11-07.md",
+      "git_blob_sha": "09be63da79ab1167051b1efcf3f168a9b58e70fc",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-native-filter-residence-leitos-f03-protocol-2026-11-07.md",
+      "git_blob_sha": "08616f9d4ef9092c7257fa747006a391e0fa4ad3",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-native-filter-smoke-protocol-2026-11-07.md",
+      "git_blob_sha": "cb401c5c75ddc3166051b802677ea2ed73d48cf1",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-native-guard-reproducibility-com-mapping-2026-11-07.md",
+      "git_blob_sha": "034b5ee13c5a9e066b31657df3e0647fc6bd8538",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-native-guards-manual-reproducibility-fallback-2026-11-08.md",
+      "git_blob_sha": "2c8a76d105adf755f516922ebaa5badcb4a850eb",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-rebaseline-proposal-2026-11-07.md",
+      "git_blob_sha": "3de1d121456ed4b188de3c2aee83f8c4afd0892f",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-scope-owner-approved-2026-11-07.md",
+      "git_blob_sha": "eb9aea3108b2193d094a2feda74a8619be38d288",
+      "main_git_blob_sha": "eb9aea3108b2193d094a2feda74a8619be38d288",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-three-sheets-implementation-2026-11-07.md",
+      "git_blob_sha": "a6a74456b08797b6cc78aee2a683418a1643a142",
+      "main_git_blob_sha": null,
+      "status": "SELECTED_FOR_CONSOLIDATION",
+      "action": "COPY_EXACT_IN_DRAFT"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/mvp-three-sheets-visual-review-2026-11-07.md",
+      "git_blob_sha": "79883f3cefde175b589a2367ed65f7dd4a422b70",
+      "main_git_blob_sha": null,
+      "status": "SELECTED_FOR_CONSOLIDATION",
+      "action": "COPY_EXACT_IN_DRAFT"
+    },
+    {
+      "pr": 226,
+      "path": "docs/project/sad-academic-delivery-handoff-2026-11-09.md",
+      "git_blob_sha": "6e58ad34798ca39f6664b790e9c9156919bdc150",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "tools/Build-SadMvpThreeSheetsTemp.ps1",
+      "git_blob_sha": "f9d0c757ad844a45a019e05b8befc41cfe37139a",
+      "main_git_blob_sha": "f9d0c757ad844a45a019e05b8befc41cfe37139a",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 226,
+      "path": "tools/Inspect-SadMvpC4CustomMessageCom.ps1",
+      "git_blob_sha": "c96fe852213d0f496ed978d3f306e7e98626cc9d",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "tools/Inspect-SadMvpGuardComReadOnly.ps1",
+      "git_blob_sha": "dc904ccfff9a064abd7bed9fc2312255ea50a5c3",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "tools/Invoke-SadM1IntegratedTempQvw.ps1",
+      "git_blob_sha": "bb0b35c4fffba07ed9af10864a31a962773b7744",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "tools/New-SadMvpF03UiGuardCopy.ps1",
+      "git_blob_sha": "30c6f9311799dd9295f235ce69b2f3a943d4b968",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "tools/New-SadMvpF04TemporalGuardCopy.ps1",
+      "git_blob_sha": "48f1fb866bd25e6d5ba5e8222f813c67aac87b99",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "tools/Test-SadM3NoTotalsComProbe.ps1",
+      "git_blob_sha": "4c4e87e1b3577a3fa3573d3a59aec14a1dd2eadf",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "tools/Test-SadMvpF04TempPersistence.ps1",
+      "git_blob_sha": "965e99122b52533c41f474fc562ace499c5a2e31",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 226,
+      "path": "tools/m1-inventario-artefatos-readonly.ps1",
+      "git_blob_sha": "9987d31649f2a037cacd2553f29d147562065955",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 230,
+      "path": "docs/project/sad-academic-visual-delivery-plan-2026-11-09.md",
+      "git_blob_sha": "4e8e2ae335c53d95d05a6c6ab1e5c6fbbe698888",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 230,
+      "path": "docs/project/sad-vis-01-approved-vis-02-handoff-2026-11-09.md",
+      "git_blob_sha": "dc2239d7197fea9a6a3fd38dae434431d4531bec",
+      "main_git_blob_sha": null,
+      "status": "SELECTED_FOR_CONSOLIDATION",
+      "action": "COPY_EXACT_IN_DRAFT"
+    },
+    {
+      "pr": 230,
+      "path": "docs/project/sad-vis-01-bootstrap-2026-11-09.md",
+      "git_blob_sha": "eab01e6d912d01699f0e5db938ab123adc55dad4",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "KEEP_SOURCE_PR_BRANCH_UNTIL_RETENTION_BACKUP_AND_APPROVAL"
+    },
+    {
+      "pr": 231,
+      "path": "docs/project/sad-vis-02-closeout-local-restricted-2026-11-10.md",
+      "git_blob_sha": "53d6a4ca8a3eeb6fe028e1899a0a8dc68778fea2",
+      "main_git_blob_sha": "53d6a4ca8a3eeb6fe028e1899a0a8dc68778fea2",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 231,
+      "path": "docs/project/sad-vis-02-controlled-application-runbook-2026-11-09.md",
+      "git_blob_sha": "1c9d5428474df17449dcee724dadf48f17c1b500",
+      "main_git_blob_sha": null,
+      "status": "SELECTED_FOR_CONSOLIDATION",
+      "action": "COPY_EXACT_IN_DRAFT"
+    },
+    {
+      "pr": 231,
+      "path": "tools/Prepare-SadVis02WorkCopy.ps1",
+      "git_blob_sha": "dd7c9a00d97151b5a1f231c6bef2d93131a0a428",
+      "main_git_blob_sha": "dd7c9a00d97151b5a1f231c6bef2d93131a0a428",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 232,
+      "path": "docs/project/sad-vis-03-documentary-audit-and-pending-gui-2026-11-10.md",
+      "git_blob_sha": "f10e3245efc69f51b67994e5b100bc976bb83422",
+      "main_git_blob_sha": "f10e3245efc69f51b67994e5b100bc976bb83422",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 233,
+      "path": "docs/project/sad-vis-02-p1-ch06-label-fix-runbook-2026-11-10.md",
+      "git_blob_sha": "adbe76267c0efe17ae281be0cdfb7349a470b1bc",
+      "main_git_blob_sha": "adbe76267c0efe17ae281be0cdfb7349a470b1bc",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 233,
+      "path": "tools/Invoke-SadVis02P1Ch06.ps1",
+      "git_blob_sha": "3fff01c19ce7293f95334ab0e0c11438826ade26",
+      "main_git_blob_sha": "3fff01c19ce7293f95334ab0e0c11438826ade26",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 234,
+      "path": "docs/academic/doc-r3-editorial-patch-2026-11-10.md",
+      "git_blob_sha": "7718da3614ce1b49018e827de4ced3ba36e0b473",
+      "main_git_blob_sha": "7718da3614ce1b49018e827de4ced3ba36e0b473",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 234,
+      "path": "tools/build_sad_doc_r3_replacement_pages.py",
+      "git_blob_sha": "09961d625b1d1f8292077b077162025ca68da27d",
+      "main_git_blob_sha": null,
+      "status": "HISTORICAL_PR_ONLY",
+      "action": "EXPERIMENTAL_OLDER_GENERATOR_NOT_FINAL; PR_HISTORY_ONLY"
+    },
+    {
+      "pr": 234,
+      "path": "tools/patch_sad_doc_r3_final_scope.py",
+      "git_blob_sha": "a03e3958d7404d554f4b6d7f9b6690c1f7265b61",
+      "main_git_blob_sha": "a03e3958d7404d554f4b6d7f9b6690c1f7265b61",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 234,
+      "path": "tools/patch_sad_doc_r3_vis04_figures.py",
+      "git_blob_sha": "58360e9b4f22addb481b9214355da1bf8dfcd626",
+      "main_git_blob_sha": "58360e9b4f22addb481b9214355da1bf8dfcd626",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 235,
+      "path": "docs/academic/final-coverage-redundancy-review-and-online-rehearsal-2026-11-10.md",
+      "git_blob_sha": "156700d1175ea99f41cd324139847b9fae9a1434",
+      "main_git_blob_sha": "156700d1175ea99f41cd324139847b9fae9a1434",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 236,
+      "path": "docs/project/sad-vis-04-final-presentation-polish-runbook-2026-11-10.md",
+      "git_blob_sha": "217851d60c8991f701939dcba2d4c19deb20092c",
+      "main_git_blob_sha": "217851d60c8991f701939dcba2d4c19deb20092c",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    },
+    {
+      "pr": 236,
+      "path": "tools/Invoke-SadVis04FinalPolish.ps1",
+      "git_blob_sha": "be30ddf7a2c7fd3658069b2a7ee38a5592cb975e",
+      "main_git_blob_sha": "be30ddf7a2c7fd3658069b2a7ee38a5592cb975e",
+      "status": "MAIN_IDENTICAL",
+      "action": "ALREADY_MAIN_EXACT"
+    }
+  ]
+}
