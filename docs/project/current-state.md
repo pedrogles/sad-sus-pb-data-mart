@@ -2,7 +2,7 @@
 
 ## Estado proposto em 10/11/2026 — entrega acadêmica final, revisão e higiene do GitHub
 
-**Importante:** esta versão só se torna operacional na `main` **após merge expressamente autorizado** da PR de consolidação. Até então, `main@0549e1dba71aaa8bbab9d6755aecb8465f8bea83` continua sendo o HEAD publicado. Este snapshot **reconcilia fatos locais reportados e documentos Draft** sem conceder novos aceites físicos ou docentes.
+**Proveniência:** este documento foi preparado sobre `main@0549e1dba71aaa8bbab9d6755aecb8465f8bea83` (HEAD da auditoria anterior à consolidação). Torna-se fonte operacional da `main` **somente depois de merge expressamente autorizado**. Reconcilia evidências locais reportadas e documentos antes mantidos em Drafts, **sem conceder novos aceites físicos ou docentes**.
 
 **Fontes obrigatórias:** `AGENTS.md` → este documento → [requisitos acadêmicos](../academic/requirements.md) → [registro final](../academic/final-delivery-record-2026-11-10.md) → [inventário de higiene](repository-final-hygiene-inventory-2026-11-10.json) e [plano de limpeza](repository-final-hygiene-plan-2026-11-10.md).
 
