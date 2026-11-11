@@ -43,6 +43,9 @@ A correspondência de HEAD entre PR merged e branch atual é **necessária, mas 
 ```powershell
 $repo = "$env:USERPROFILE\documents\programming\sad-sus-pb-data-mart"
 $evidence = Join-Path $env:USERPROFILE 'SAD_REPO_HYGIENE_EVIDENCIAS'
+if (-not (Test-Path -LiteralPath $evidence)) {
+  New-Item -ItemType Directory -Path $evidence -ErrorAction Stop | Out-Null
+}
 $runner = Join-Path $evidence 'runner-pr239-readonly'
 
 # Clone separado: não altera o checkout principal nem arquivos QlikView.
