@@ -1,33 +1,47 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado operacional — 03/11/2026 | D2-R2 semântico integrado; aceite físico C2 pendente
+## Estado proposto em 10/11/2026 — entrega acadêmica final, revisão e higiene do GitHub
 
-**Baseline auditada:** `main@06300a57042082667000f01969c8e184b8409452` ([PR #213 integrado](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/213)). **Este arquivo só passa a orientar a `main` após merge próprio**; no PR documental permanece proposta de reconciliação de estado, sem nova homologação.
+**Proveniência:** este documento foi preparado sobre `main@0549e1dba71aaa8bbab9d6755aecb8465f8bea83` (HEAD da auditoria anterior à consolidação). Torna-se fonte operacional da `main` **somente depois de merge expressamente autorizado**. Reconcilia evidências locais reportadas e documentos antes mantidos em Drafts, **sem conceder novos aceites físicos ou docentes**.
 
-**Fontes de autoridade:** `AGENTS.md` → este estado → [requisitos acadêmicos](../academic/requirements.md); [Boundary 7](../discovery/boundary-7-implementation-plan.md), [V2 original](../discovery/phase-6-semantic-v2-approved-2026-10-14.md) e [adendo V3 D2-R2](../discovery/phase-6-semantic-v3-d2-r2-addendum-2026-11-03.md). V3 é agora o **contrato semântico vigente exclusivamente para D2**; V2 permanece referência histórica imutável e vigente nas demais decisões. Não inferir aprovação de UI a partir de aprovação semântica.
+**Fontes obrigatórias:** `AGENTS.md` → este documento → [requisitos acadêmicos](../academic/requirements.md) → [registro final](../academic/final-delivery-record-2026-11-10.md) → [inventário de higiene](repository-final-hygiene-inventory-2026-11-10.json) e [plano de limpeza](repository-final-hygiene-plan-2026-11-10.md).
 
-### Situação confirmada por camada
+### O que foi concluído e o que não foi
 
-| Camada | Estado e referência |
-|---|---|
-| Acadêmico | Capítulos 1–2 entregues em 13/10/2026 conforme operador; avaliação docente ainda não confirmada. Segunda entrega: **dia da segunda avaliação**, data exata não verificada. Requisitos: QlikView 12, mínimo três painéis e relatório capítulos 3–5/anexos. |
-| Dados, ETL e modelo | 108/108 DBC convertidos, 10 QVDs de extração, 12 de transformação, 3 QVWs canônicos segundo evidência **local reportada**. Constelação Star aprovada: 3 fatos, 8 dimensões e grãos preservados. Sem auditoria de bytes físicos no ambiente GitHub; nenhum teste nesta reconciliação. |
-| Consumo e apresentação | [Matriz 14/14](../discovery/sad-consumption-14-delta-readonly-closeout-2026-10-29.md) com evidências descritivas condicionais. [PR #209 integrado](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/209) aprovou **somente** o blueprint visual de 3 folhas (P1 5 + P2 5 + P3 4), não valores/filtros/QVW finais. A0 padrão; ilha A1 apenas em P2.3, com [PR #167 Draft](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/167) restrito a esse visual. |
-| Provas C2/P1.2 reutilizáveis | [PR #201 MERGED](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/201) demonstrou aplicação de ano 2019 pelo BU15 em **um cenário**. CH02 histórico 36 competências sob oráculo de referência; [PR #205 Draft](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/205) reportou, em QVW TEMP, gráfico guiado separado 2019 com 12/12 competências e total 188.246, integridade local PASS restrita. Não há QVW final com C2 completo. |
-| Inventário D2 nativo e integridade | [PR #208 Draft](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/208) contém experimento TEMP de guarda pré-despacho de escopo restrito; [PR #210 Draft](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/210) registrou inspeção de 3 folhas/objetos, `LB01/LB04` Read Only, `BU15/BU16` e eventos temporais examinados. Menus nativos, busca, marcadores importáveis e gráficos **não receberam PASS de contenção**; tampouco foi provado bypass executado. Operador reportou `VERIFY_EXIT_CODE=0`, `SOURCE_AND_PROTECTED_25_UNCHANGED=True`, `PASS_HASH_INTEGRITY_ONLY_NOT_UI_ROUTES`. |
-| Contrato semântico temporal vigente | [PR #213 MERGED](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/213): **D2-R2 aprovado pelo responsável** = validar e prevenir **antes do despacho guiado**; nas rotas nativas sem garantia preventiva, revalidar **após seleção** cada indicador conforme contexto real, sinalizando indisponibilidade sem exibir resultado incorreto/obsoleto como válido. [V3](../discovery/phase-6-semantic-v3-d2-r2-addendum-2026-11-03.md) **substitui apenas a garantia D2**, não P5 nem a semântica dos períodos/indicadores. `C2_GUIDED_R2=NOT_TESTED`. |
-| Estudos documentais históricos | [PR #211 Draft](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/211) avaliou a ponte temporal B2 sem autorizar remodelagem. [PR #212 Draft](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/212) é a **minuta anterior** de R2; seu status de “aprovação pendente” é histórico, superado pelo PR #213. Não fazer merge desses Drafts por arrasto. |
-| Pendências reais | [Issue #196 OPEN](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/196) rastreia aceitação física C2 sob o **novo** D2-R2; título/corpo inicial sobre D2 global são históricos. [Issue #157 OPEN](https://github.com/pedrogles/sad-sus-pb-data-mart/issues/157) exige suficiência científica CNES/LT T25/T26 somente para os indicadores condicionados, não bloqueio de toda análise independente de SIH/RD ou LT. População/IBGE permanece no objetivo acadêmico, mas a integração T24 e razões requer C3/C4 e decisão própria. |
+| Camada | Estado atual, com qualificação da evidência |
+| --- | --- |
+| Primeira entrega | Capítulos 1–2 entregues impressos em **13/10/2026**, segundo o responsável; avaliação docente não confirmada. Modelagem canônica Star/constelação com **três fatos, oito dimensões e granularidades aprovadas**, preservada. |
+| Dados/ETL | 108 DBC, 10 QVDs de extração, 12 de transformação e 3 QVWs canônicos conforme **inventários locais históricos reportados**; nenhuma nova auditoria física de dados realizada nesta reconciliação. Fluxo `BASE → EXTRACAO → QVD → TRANSFORMACAO → QVD → PAINEL` preservado, QlikView 12 obrigatório. |
+| Proposta formal de consumo | A `main` contém blueprint aprovado **de layout** para 3 folhas / 14 visuais pela PR #209. **Não** implica implementação física final nem contrato C2/C3/C4 aprovado. |
+| Implementação acadêmica escolhida | O responsável aprovou escopo alternativo **3 folhas / 9 objetos** em 07/11/2026 ([PR #226](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/226)), para finalizar a segunda entrega. QVW local TEMP **não integrada como binário no Git**; a decisão não altera retroativamente os capítulos acadêmicos. Sem novas implementações planejadas após a segunda entrega. |
+| Aceite visual | O QVW VIS-04 corrigido foi salvo e reaberto, três capturas apresentaram 9 objetos e cabeçalhos uniformes sem cortes críticos: **`VIS04_LOCAL_GUI_PRESENTATION=PASS_RESTRICTED`** e **`VIS04_POST_REOPEN_PERSISTENCE=PASS_RESTRICTED_WITH_OPERATOR_EVIDENCE`**. SHA pós-save local reportado `BE8CB39B59F92F2F173DB309A60EA5FF373CDF87CBFCBC333F5583A21FF539C6`. Três origens protegidas com hashes preservados conforme PowerShell local. Não é aprovação visual sob transmissão online nem certificação de expressões/associações globais. |
+| Relatório final | `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_VIS04_2026.pdf` de **98 páginas**, SHA `BB7A6A6D7C2ADC3BE80831F4F8E98642D7CE9D07A25B7F03000A9DF2E8071302`, **gerado e auditado na conversa**. Figuras 7–9 substituídas nas páginas 22–24; outras **95/95** páginas iguais em texto/renderização ao PDF imediatamente anterior. Capítulos 1–2, anexos e justificativa dos indicadores não apresentados preservados. PDF binário **fora do Git**; exigir backup persistente após download. |
+| Entrega ao professor | Ensaio de compartilhamento online **não realizado**; PDF **não submetido**; equivalência 3 folhas = 3 painéis não confirmada formalmente pelo professor. Segunda avaliação em **08/12/2026** informada pelo operador, sem confirmação independente no Classroom. |
+| GitHub | No snapshot remoto anterior à branch de higiene: **159 branches** (100 associadas a PRs merged, 32 Draft, 21 de PRs fechados sem merge, 5 sem PR e `main`), **32 PRs Draft abertos**, **2 issues** (#157, #196). Há trabalho acadêmico final disperso em #226, #230–#236 e scripts de evidência em branches. O inventário e a convergência estão nesta PR Draft, **nenhuma exclusão/fechamento/merge foi feito**. |
 
-### Próxima sequência, com STOP por gate
+### Limites, decisões e bloqueios
 
-1. **C2 guiado R2 — preparar especificação física mínima** do [gate proposto na V3](../discovery/phase-6-semantic-v3-d2-r2-addendum-2026-11-03.md): uma QVW TEMP de origem pinada, oráculos/evidências já existentes, comportamento da guarda **antes** de ações guiadas, revalidação **depois** de alterações nativas e indisponibilidade por indicador. **Novo teste/runner/edição QVW requer autorização própria e ambiente Windows**. Não repetir #201/#205/#208/#210. Critérios `PASS/BLOCKED/INCONCLUSIVE` por situação; parar no primeiro erro crítico de exibição.
-2. **C3 → C4, somente depois do gate C2 apropriado**, conforme [Boundary 7](../discovery/boundary-7-implementation-plan.md). C3: Link Key/associação, RES/SERV, nulidades e cardinalidade; C4: medidas, denominadores, filtros P5 e cobertura por indicador. Não transformar PASS experimental ou contrato candidato em aprovação global.
-3. **GO formal para Fase IX**, separado de C2/C3/C4; então implementar e testar os **3 painéis QlikView 12** de referência. Não declarar aceite visual/funcional até execução e evidência da QVW final.
-4. **Documentação acadêmica independente** pode avançar em paralelo (Capítulos 3–5, anexos, avisos históricos CNES, fontes e referências) sem fingir implementação concluída. Confirmar com professor a data da 2ª avaliação e, se aplicável, necessidade de prevenção global que o novo D2-R2 expressamente não promete.
+- **C2 guiado/full, C3 Link Key, C4 medidas/denominadores/P5:** nenhum aceite global implícito pelo QVW final acadêmico ou pelas evidências restritas de telas. `C2_C3_C4_GLOBAL=NOT_APPROVED`.
+- **CNES/LT histórico T25/T26:** ausência de linha ≠ zero; cobertura estritamente hospitalar histórica não homologada. `T29_HISTORICAL=NOT_APPROVED`, e a legenda CNES de 09/2019 não se aplica retroativamente sem justificativa. `P23_A1_ISLAND` é auxiliar observacional desconectada, não quarta fato.
+- **Categorias manuais M3-01:** legíveis em estado sem filtros; mudança dinâmica sob seleção/ordenação **não validada**. Ranking M2-02 é fixo em `201912`; inconsistências temporais devem ser explicadas, não escondidas.
+- **Sem Fase IX de produção.** `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
+- **Escopo acadêmico final:** não estão previstos novos KPIs nem retomada do roadmap de 14 objetos; indicadores não apresentados estão justificados no §3.7/§4.1 do DOC-R3. A conclusão acadêmica não converte lacunas em PASS científico.
 
-### Invariantes e fronteiras de aprovação
+### Próximas ações com condição de parada
 
-- `MAIN_EFFECTIVE_D2_SEMANTICS=D2_R2_V3`; `D2_R2_OWNER_APPROVED=True` (**somente semântico**); `D2_V2_GLOBAL=SUPERSEDED_BY_OWNER_APPROVED_D2_R2`, com `C2_FULL_V2=NO_GO_NOT_APPROVED` **histórico**, não reclassificado como PASS.
-- `C2_GUIDED_R2=NOT_TESTED`; `P5_D2_UI=NOT_TESTED_GLOBAL`; `F4_P5_PHYSICAL_FILTERS=NOT_TESTED_FULLY`; `LINK_KEY_CONTRACT=NOT_APPROVED`; `MEASURES_AND_DENOMINATOR_CONTRACT=NOT_APPROVED`; `CNES_HOSPITAL_SCOPE_COVERAGE=NOT_VERIFIED`; `T29_HISTORICAL=NOT_APPROVED`; `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
-- **Sem alterações** em 3 fatos/8 dimensões, grãos, `DIM_TEMPO`, `LINK_ANALISE`, política C/R/I/B de P5, oráculos, blueprints, QlikView 12 e ordem C2→C3→C4→IX. Nenhum merge, exclusão de branch, teste físico ou alteração QVS/QVW/QVD decorre deste snapshot. Histórico detalhado permanece em Discovery/PR/Issues, não neste roteador.
+1. **GitHub:** revisar esta consolidação e selecionar o lote para **aprovar merge específico**, preservando provas. Depois, com **nova autorização explícita**, fechar PRs Draft antigos e issues por motivo verdadeiro `not planned / encerramento do escopo acadêmico`. Em seguida validar SHAs/backup antes de excluir branches; a conexão usada não oferece exclusão de refs remotas.
+2. **Acadêmico:** garantir cópia persistente e hash do PDF/QVW; realizar uma sessão de ensaio online, confirmar aceitação das três folhas pelo professor e submeter PDF no Classroom. Registrar protocolo de entrega se houver.
+3. **STOP:** quando GitHub estiver reconciliado e entrega submetida, encerrar projeto acadêmico. Sem novos testes QlikView ou mudanças na arquitetura por consequência automática de limpeza.
+
+### Status canônico resumido, após integração autorizada
+
+`ACADEMIC_IMPLEMENTATION_SCOPE=FINAL_3_SHEETS_9_VISUALS`  
+`VIS04_LOCAL_GUI=PASS_RESTRICTED`  
+`DOC_R3_FINAL_PDF=GENERATED_QA_PASS_NOT_SUBMITTED`  
+`ONLINE_REHEARSAL=NOT_RUN`  
+`TEACHER_ACCEPTANCE=UNVERIFIED`  
+`C2_C3_C4_GLOBAL=NOT_APPROVED`  
+`PHASE_IX=NOT_AUTHORIZED`  
+`PRODUCTION_APPROVED=False`
+
+Detalhes históricos, commits, logs, hashes completos e resultados experimentais permanecem nos documentos de Discovery e PRs correspondentes; **não** reproduzir a cronologia inteira aqui.
