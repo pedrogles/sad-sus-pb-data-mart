@@ -155,3 +155,25 @@ Páginas físicas do PDF R2, contando capa como página 1. As páginas impressas
 **Status atualizado:** `DOC_R3_FINAL_ACADEMIC_SCOPE=EXPLICIT`, `DOC_R3_98_PAGE_PDF=GENERATED_QA_PASS`, `DOC_R3_UNCHANGED_PAGES=96_96_RENDER_MATCH`, `DOC_R3_SUBMISSION=NOT_SUBMITTED`, `ONLINE_REHEARSAL=NOT_RUN`, `CHAPTERS_1_2=UNCHANGED`, `C2_C3_C4_GLOBAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
 
 **STOP:** concluir a revisão editorial de escopo, não iniciar novas implementações; próxima ação acadêmica é leitura final, ensaio online e envio pelo responsável. Nenhum merge foi realizado.
+
+
+## 11. DOC-R3 — substituição localizada das Figuras 7–9 por evidência VIS-04 pós-reabertura (10/11/2026)
+
+**Gatilho:** VIS-04 com as três capturas do QVW TEMP reaberto (arquivo sem `*`) e saída prévia de PowerShell `PASS_HASH_PROVENANCE_ONLY`, origens preservadas. Ver closeout na PR #236. O responsável havia definido o fluxo de avaliar e atualizar as figuras do PDF após aprovação visual. Não houve nova alteração QVW nesta execução.
+
+**Arquivo original de entrada (preservado):** `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_2026.pdf`, **98 páginas**, SHA-256 `D5FC55797DA939C2E2815B66309A05953B4E5D9C1927DC1E7D74A9879658D44D`.
+
+**Arquivo gerado (fora do Git, entregue nesta conversa):** `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_VIS04_2026.pdf`, **98 páginas**, SHA-256 **`BB7A6A6D7C2ADC3BE80831F4F8E98642D7CE9D07A25B7F03000A9DF2E8071302`**; relatório de auditoria `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_VIS04_2026.audit.json`.
+
+**Alterações físicas exclusivamente nas páginas 22–24 do PDF:** substituídas Figuras 7 (Produção), 8 (Leitos com M2-03 corrigido) e 9 (Fluxos). Fonte visual: `image(20261111-005536).png`, `image(20261111-005526).png`, `image(20261111-005512).png`, nesta ordem, com hash SHA-256 validado pelo script. Legendas pontuais reescritas para identificar explicitamente a captura **VIS-04 após reabertura, 10/11/2026**, sem alteração das interpretações quantitativas ou das descrições dos indicadores. Foram removidas das imagens barra de janela/menus e barra de tarefas antes de inserir a área útil no retângulo gráfico existente.
+
+**Auditabilidade:** o script executado a partir de `/mnt/data/patch_sad_doc_r3_vis04_figures.py` foi **arquivado posteriormente**, sem modificação de bytes, em `tools/patch_sad_doc_r3_vis04_figures.py` nesta branch, Git blob SHA-1 `58360e9b4f22addb481b9214355da1bf8dfcd626`, igual ao `git hash-object` do script local efetivamente executado; isso é evidência de identidade de código, **não** nova execução após commit. Script pinou SHA do PDF fonte e dos três PNGs, nunca sobrescreveu original e rejeitaria arquivos inesperados. O relatório inclui hash final e mapeamento imagem/página.
+
+**Resultados efetivamente conferidos:**
+- Documento resultante contém exatamente **98 páginas**; Figuras 7–9 substituídas em suas posições originais, uma imagem por página, com legendas coerentes.
+- Para cada uma das **95 páginas não modificadas**: texto extraído, geometria/rotação, número de imagens e pixels renderizados em 0,7× coincidiram com o PDF-fonte (**95/95 PASS**). Não significa identidade byte-a-byte da estrutura PDF recomposta.
+- As três páginas novas foram renderizadas a 1,6× e inspecionadas em contato visual. Os objetos permanecem no quadro, sem cortes ou sobreposições críticas observados.
+- As seções §3.7 e §4.1 do documento anterior, com motivos de exclusão de indicadores e ausência de implementações posteriores, permaneceram inalteradas; Capítulos 1–2 e Anexos I/II igualmente preservados.
+- **Limites:** o PDF apresenta fotografias do GUI e não certifica a associação dinâmica dos textos manuais M3-01, os contratos físicos/semânticos C2/C3/C4 ou transmissão de tela real. Não houve envio ao Classroom.
+
+**Decisão documental:** `DOC_R3_VIS04_PDF=GENERATED_98_PAGE_QA_PASS`; `DOC_R3_VIS04_UNCHANGED_PAGES=95_95_RENDER_AND_TEXT_MATCH`; `DOC_R3_ACADEMIC_SCOPE_FINAL=TRUE`; `ONLINE_REHEARSAL=NOT_RUN`; `SUBMISSION=NOT_SUBMITTED`; `PRODUCTION_APPROVED=False`. Sem merge e sem alteração da `main`.
