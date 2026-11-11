@@ -103,3 +103,20 @@ STOP=VISUAL_SCREENSHOTS_AND_REOPEN_REQUIRED_FOR_GUI_GATE
 **Ação restante mínima:** reabrir `C:\Users\pedro\SAD_VIS04_EVIDENCIAS\VIS04_20261110_201240_0d9818e4ab0c\SAD_MVP_VIS04_FINAL_POLISH_TEMP.qvw` e fornecer uma captura por folha com **nome QVW sem `*`**, para auditar a persistência dos fundos turquesa e das legendas. **Não repetir Prepare/Verify, Reload ou ajustes de medidas.** Confirmar ordem e texto M3-01 sob estado neutro; textos de categoria livres continuam sem prova de vinculação dinâmica a filtros.
 
 **Estado atualizado:** `VIS04_COPY_PROVENANCE=PASS_HASH_LOCAL_OPERATOR_REPORTED`; `VIS04_ORIGINALS_UNCHANGED=PASS_HASH_LOCAL_OPERATOR_REPORTED`; `VIS04_POST_SAVE_WORK_SHA=BE8CB39B59F92F2F173DB309A60EA5FF373CDF87CBFCBC333F5583A21FF539C6`; `VIS04_PRE_SAVE_VISUAL=PASS_RESTRICTED`; `VIS04_POST_REOPEN_VISUAL=NOT_TESTED`; `VIS04_GATE=INCONCLUSIVE_PENDING_POST_REOPEN_VISUAL`. Produção, Fase IX e contratos C2/C3/C4 globais permanecem não aprovados.
+
+
+## Fechamento VIS-04 — capturas após reabertura e hash local (10/11/2026, 21:55)
+
+**Esta seção substitui o status histórico de persistência pendente acima.** O operador forneceu três screenshots do mesmo arquivo `SAD_MVP_VIS04_FINAL_POLISH_TEMP.qvw` após fechar/reabrir, e nas três barras de título o arquivo aparece **sem asterisco** (`*`). São PNGs de 1678–1679 × 1049 pixels; inspeção visual direta em conversa, sem novo acesso COM ao QVW.
+
+| Folha / arquivo recebido | SHA-256 dos bytes montados da imagem | Observação |
+| --- | --- | --- |
+| Fluxos, `image(20261111-005512).png` | `E2EF2B79ED42756F4D591C7A12626283D7D2376445C18ACB05AD136F35562688` | fundo padronizado, três objetos, M3-01 legível no estado neutro |
+| Leitos, `image(20261111-005526).png` | `6ECC8AC2CEC3C683BA75FB0425BE9F8BEC941C5F454DCB363369116D54693616` | duas séries no M2-01, ranking M2-02 e mapeamento correto de três categorias M2-03 |
+| Produção, `image(20261111-005536).png` | `7F79DEB490CF9962B0B9FC7CBC6B3AE7940003998F7D5936CDE7DED6B82254BD` | M1-01/M1-02/M1-03 legíveis, eixo mensal despoluído e título SERV atualizado |
+
+**Interpretação conjunta:** `VIS04_LOCAL_GUI_PRESENTATION=PASS_RESTRICTED`; `VIS04_POST_REOPEN_VISUAL_PERSISTENCE=PASS_RESTRICTED_WITH_OPERATOR_EVIDENCE`; `VIS04_HASH_PROVENANCE=PASS_HASH_LOCAL_OPERATOR_REPORTED` (ver seção anterior, SHA QVW `BE8CB39B59F92F2F173DB309A60EA5FF373CDF87CBFCBC333F5583A21FF539C6`); `VIS04_FINAL_LOCAL_GATE=PASS_RESTRICTED_CLOSED`.
+
+**Ressalva semântica preservada:** textos `Mesmo município` / `Município diferente` do M3-01 são rótulos livres posicionados manualmente, sem prova de associação dinâmica ou de fidelidade sob mudança de ordenação/seleção. O PASS cobre a apresentação **sem filtros**, não uma homologação de todas as rotas nativas. A limitação histórica de seleção ano 2018 versus ranking fixo 201912 permanece fora deste gate. Nada nesta inspeção certifica C2/C3/C4/IX/produção.
+
+**STOP:** não reabrir novo preflight, não editar QVW, não executar Reload/Verify repetidamente, não alterar scripts QVD/QVS. PR permanece Draft e sem merge; segunda entrega encerra o trabalho de implementação acadêmica. Handoff autorizado pelo fluxo anteriormente acordado: **atualização editorial das Figuras 7–9 do PDF DOC-R3**, separadamente na PR #234, preservando demais páginas.
