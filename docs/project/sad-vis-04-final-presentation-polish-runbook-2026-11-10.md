@@ -82,3 +82,24 @@ O executor foi inspecionado estaticamente nesta preparação, **não testado no 
 **Próximo passo único:** verificar a cópia local de `VIS01_fundo_3_fluxos_1920x1080.png` e o estilo de fundo da terceira folha (não foi recuperado em bytes nesta sessão); corrigir somente a faixa de contraste no PNG **copiado**, reimportar na nova QVW, e conferir o mapeamento M3-01. Após capturas neutras coerentes, salvar só a nova cópia, fechar/reabrir e executar `Verify` usando o manifesto já criado. Não repetir preflight ou testes antigos.
 
 **Estado:** `VIS04_PREPARE=PASS_HASH_COPY_LOCAL_REPORTED`; `VIS04_GUI_PRE_SAVE=PASS_WITH_2_LOCALIZED_CAUTIONS`; `VIS04_HEADER_STRIPE_3=LOW_CONTRAST_PENDING`; `VIS04_M3_STATIC_TEXT_BINDING=UNVERIFIED`; `VIS04_PERSISTENCE=NOT_TESTED`; `VIS04_ORIGINAL_SOURCES=PREPARE_HASH_PASS_ONLY`; `PRODUCTION_APPROVED=False`.
+
+
+## Evidência de Verify pós-save reportada pelo operador (10/11/2026, 21:51)
+
+O operador executou `tools/Invoke-SadVis04FinalPolish.ps1 -Mode Verify` com manifesto `C:\Users\pedro\SAD_VIS04_EVIDENCIAS\VIS04_20261110_201240_0d9818e4ab0c\vis04_manifest.json`. A saída reportada foi:
+
+```text
+VERDICT=PASS_HASH_PROVENANCE_ONLY
+SOURCE_UNCHANGED=True
+PROTECTED_VIS02_UNCHANGED=True
+PROTECTED_C4_UNCHANGED=True
+WORK_SHA256=BE8CB39B59F92F2F173DB309A60EA5FF373CDF87CBFCBC333F5583A21FF539C6
+REPORT=C:\Users\pedro\SAD_VIS04_EVIDENCIAS\VIS04_20261110_201240_0d9818e4ab0c\vis04_verify_20261110_215150_8088f7e4.json
+STOP=VISUAL_SCREENSHOTS_AND_REOPEN_REQUIRED_FOR_GUI_GATE
+```
+
+**Alcance probatório:** os hashes das três fontes protegidas permaneceram iguais aos valores fixados no manifesto, segundo execução local reportada, e os bytes da cópia VIS-04 mudaram em relação à fonte. Esse `PASS_HASH_PROVENANCE_ONLY` **não prova** que o documento foi fechado/reaberto nem que a apresentação permaneceu após Save. As três capturas anteriores com os novos PNGs turquesa (folhas 1, 2 e 3) mostraram `*` na barra da QVW, portanto são apenas evidência **pré-save** de consistência visual.
+
+**Ação restante mínima:** reabrir `C:\Users\pedro\SAD_VIS04_EVIDENCIAS\VIS04_20261110_201240_0d9818e4ab0c\SAD_MVP_VIS04_FINAL_POLISH_TEMP.qvw` e fornecer uma captura por folha com **nome QVW sem `*`**, para auditar a persistência dos fundos turquesa e das legendas. **Não repetir Prepare/Verify, Reload ou ajustes de medidas.** Confirmar ordem e texto M3-01 sob estado neutro; textos de categoria livres continuam sem prova de vinculação dinâmica a filtros.
+
+**Estado atualizado:** `VIS04_COPY_PROVENANCE=PASS_HASH_LOCAL_OPERATOR_REPORTED`; `VIS04_ORIGINALS_UNCHANGED=PASS_HASH_LOCAL_OPERATOR_REPORTED`; `VIS04_POST_SAVE_WORK_SHA=BE8CB39B59F92F2F173DB309A60EA5FF373CDF87CBFCBC333F5583A21FF539C6`; `VIS04_PRE_SAVE_VISUAL=PASS_RESTRICTED`; `VIS04_POST_REOPEN_VISUAL=NOT_TESTED`; `VIS04_GATE=INCONCLUSIVE_PENDING_POST_REOPEN_VISUAL`. Produção, Fase IX e contratos C2/C3/C4 globais permanecem não aprovados.
