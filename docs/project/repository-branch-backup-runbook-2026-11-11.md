@@ -38,21 +38,33 @@ A correspondência de HEAD entre PR merged e branch atual é **necessária, mas 
 
 ## 4. Execução controlada — sem exclusão
 
-Uma vez que os scripts estejam disponíveis no clone local no commit da PR de preparação, a partir da pasta do repositório:
+**Preferência: testar ANTES do merge desta PR.** O snapshot fixa o SHA da `main` anterior à PR. Se a PR for integrada primeiro, o HEAD da `main` mudará e os scripts bloquearão a execução como drift (comportamento intencional). Em vez de mudar de branch no checkout principal, obtenha os scripts versionados numa cópia externa isolada:
 
 ```powershell
-$repo = (Get-Location).Path
-$snapshot = Join-Path $repo 'docs\project\repository-branch-inventory-2026-11-11.json'
+$repo = "$env:USERPROFILE\documents\programming\sad-sus-pb-data-mart"
 $evidence = Join-Path $env:USERPROFILE 'SAD_REPO_HYGIENE_EVIDENCIAS'
+$runner = Join-Path $evidence 'runner-pr239-readonly'
+
+# Clone separado: não altera o checkout principal nem arquivos QlikView.
+# Falha em vez de sobrescrever se runner já existir.
+git clone --single-branch --branch chore/sad-branch-backup-readonly-2026-11-11 `
+  https://github.com/pedrogles/sad-sus-pb-data-mart.git $runner
+if ($LASTEXITCODE -ne 0) { throw 'CLONE_RUNNER_FAILED' }
+
+$snapshot = Join-Path $runner 'docs\project\repository-branch-inventory-2026-11-11.json'
 
 # Etapa 1: apenas compara SHAs do snapshot com o GitHub
-powershell.exe -NoProfile -File '.\tools\Get-SadBranchCleanupDryRun.ps1' `
+powershell.exe -NoProfile -File (Join-Path $runner 'tools\Get-SadBranchCleanupDryRun.ps1') `
   -RepoRoot $repo -InventoryPath $snapshot -EvidenceRoot $evidence
+if ($LASTEXITCODE -ne 0) { throw 'DRY_RUN_BLOCKED' }
 
-# Etapa 2: clone mirror + bundle + restore verificado, sem tocar no origin
-powershell.exe -NoProfile -File '.\tools\Invoke-SadGitBranchBackup.ps1' `
+# Etapa 2: cria mirror+bundle+restore SOMENTE no EvidenceRoot externo
+powershell.exe -NoProfile -File (Join-Path $runner 'tools\Invoke-SadGitBranchBackup.ps1') `
   -RepoRoot $repo -InventoryPath $snapshot -EvidenceRoot $evidence -BackupVerify
+if ($LASTEXITCODE -ne 0) { throw 'BACKUP_VERIFY_BLOCKED' }
 ```
+
+O Git clone do runner e a criação do mirror/bundle escrevem **apenas na pasta externa**. A execução não altera `main` nem o checkout de trabalho principal, embora use a sua configuração local de `origin` para conferir SHAs. Confirme que há espaço em disco para todos os clones e bundle antes da segunda etapa. **Não executar operações de remoção.**
 
 No estado esperado **antes de novo merge ou commits de branches antigas**, o dry-run deve mostrar `PRELIMINARY_MERGED_CANDIDATES=102`, `NEW_REFS_HELD>=1`, `DRIFTED_REFS=0`, e `NO_REMOTE_MUTATIONS=True`. Isso é previsão, **não saída já observada**. O backup deve recuperar todas as refs vivas, inclusive a branch criada depois do snapshot. A contagem exata atual deve vir dos relatórios, não de uma suposição.
 
