@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "status": "PASS_GUI_RESTRICTED_WITH_OPERATOR_REPORTED_SHA_PERSISTENCE",
+  "id": "C4_MVP_POP_MONTH_AND_P23_SCOPE_GUI_2026_11_09",
+  "goal": "Fix CH09 empty POP under native monthly selection and disclose CH06 isolated PB-wide scope",
+  "evidence": "Two QlikView x64 Personal Edition screenshots dated 2026-11-09, showing PERIODO_COMPETENCIA=201801 with CH09 empty header only and P23 island unchanged",
+  "sourceQvwName": "SAD_MVP_M303_SERV_GUARD_TEMP.qvw",
+  "sourceQvwSha256": "87679B0B3B7E51B1CC366445B8953876924D95325340F6438A68B26E93187A7F",
+  "workingCopyName": "SAD_MVP_C4_PRESENTATION_TEMP.qvw",
+  "changeSet": [
+    {
+      "viewId": "M3-03",
+      "objectId": "CH09",
+      "title": "População municipal por ano — IBGE (candidato)",
+      "chartType": "Straight",
+      "calcCondition": "=GetSelectedCount(SERV_COD_DATASUS_6,True())=0 And GetSelectedCount(PERIODO_COMPETENCIA,True())=0",
+      "calcConditionUnfulfilledMessage": "=If(GetSelectedCount(SERV_COD_DATASUS_6,True())>0,'Indisponível nesta seleção: o município de atendimento (SERV) não representa a população dos municípios de residência de todos os pacientes atendidos. Limpe o filtro SERV para consultar a população municipal por ano.','Indisponível nesta seleção: a população é anual e o filtro de competência mensal não permite esta consulta no modelo atual. Limpe a competência mensal para consultar a população municipal por ano.')",
+      "preservedDimensions": [
+        "RES_COD_DATASUS_6",
+        "PERIODO_ANO"
+      ],
+      "preservedExpression": "Sum(POPULACAO_ESTIMADA)",
+      "preservedTotalMode": "NO_TOTALS"
+    },
+    {
+      "viewId": "M2-03",
+      "objectId": "CH06",
+      "titleBefore": "Observabilidade LT — células município × competência",
+      "titleAfter": "Observabilidade LT | PB 2017–19 | sem filtros globais",
+      "changesRestrictedTo": "GraphLayout.WindowTitle only",
+      "preservedDimensions": [
+        "P23_ESTADO_OBSERVADO"
+      ],
+      "preservedExpression": "Count(P23_MUNICIPIO_6)"
+    }
+  ],
+  "expectedBehaviors": {
+    "noSelections": "CH09 displays 223 municipalities by 2017–2019 annual POP rows; CH06 remains 8028 fixed PB-wide cells (three observed classes)",
+    "month201801Only": "CH09 displays a monthly incompatibility message instead of empty table; CH06 fixed panorama visibly labeled",
+    "serv250750Only": "CH09 retains previous SERV incompatibility message, not monthly message",
+    "bothMonthAndServ": "CH09 prioritizes previous SERV incompatibility message"
+  },
+  "stopCriteria": [
+    "Source hash differs",
+    "Unexpected CH06 object ID/title/type",
+    "Expression not OK",
+    "CH09 shows an empty table without message for month-only",
+    "Unintended changes to charts or source QVW",
+    "Any contradictory semantic effect"
+  ],
+  "approvalBoundary": "MVP_C4_LOCAL_GUI_PASS_RESTRICTED_WITH_OPERATOR_SHA; GLOBAL_C4/P5/LINK_KEY/PHASE_IX/PRODUCTION_NOT_APPROVED",
+  "notes": [
+    "Do not overwrite existing C3 evidence; apply both modifications only to new disposable TEMP copy.",
+    "Annual population may be a valid denominator for certain partial-period indicators under an approved separate metric, but CH09 is a descriptive annual table and is conservatively unavailable under native month selections; no change to semantic V2 or link structure.",
+    "Historical CH06 island remains independent by intentional design; do not add associations or alter data.",
+    "Do not claim this patch is automatically reproduced by the original COM builder."
+  ],
+  "executionEvidence": {
+    "date": "2026-11-09",
+    "sourceQvwPreservedOperatorReported": true,
+    "workingCopyQvwName": "SAD_MVP_C4_PRESENTATION_TEMP.qvw",
+    "workingCopySha256": "27ADABC3CB5DBC3598F2FDB3CD6FDC82E7193B18E92D253D1186B94075BB5A13",
+    "afterReopenHashUnchangedOperatorReported": true,
+    "testedGuiStates": [
+      "NO_SELECTION_CH09_POP_PRESENT",
+      "MONTH_201801_CH09_MONTH_WARNING",
+      "SERV_250750_CH09_SERV_WARNING",
+      "CH06_SCOPE_TITLE_WITH_MONTH_AND_SERV_SELECTION",
+      "POST_REOPEN_MONTH_201801_CH09_WARNING_AND_CH06_TITLE"
+    ],
+    "remainingLimits": [
+      "NO_POST_REOPEN_EDITOR_PROPERTY_READBACK",
+      "NO_INDEPENDENT_QVW_BYTE_AUDIT",
+      "NO_AUTOMATED_BUILDER_APPLY",
+      "C2_GUIDED_R2_NOT_TESTED",
+      "C3_C4_GLOBAL_NOT_APPROVED",
+      "PHASE_IX_NOT_AUTHORIZED"
+    ],
+    "evidenceFile": "docs/project/mvp-evidence-and-contract-gates-consolidation-2026-11-07.md"
+  }
+}
