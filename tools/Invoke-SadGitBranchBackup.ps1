@@ -114,8 +114,17 @@ try {
   & git --git-dir=$mirror bundle create $bundle --all
   CheckExit 'BUNDLE_CREATE'
   if (-not (Test-Path -LiteralPath $bundle -PathType Leaf)) { throw 'BUNDLE_MISSING' }
-  & git --git-dir=$mirror bundle verify $bundle 2>$null | Out-Null
-  CheckExit 'BUNDLE_VERIFY'
+  # Git writes successful bundle verification diagnostics to stderr.
+  # Temporarily avoid PowerShell 5.1 treating native stderr as a terminating error.
+  $previousPolicy = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    & git --git-dir=$mirror bundle verify $bundle 2>&1 | Out-Null
+    $verifyExitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $previousPolicy
+  }
+  if ($verifyExitCode -ne 0) { throw ('GIT_FAILED_BUNDLE_VERIFY_CODE_'+$verifyExitCode) }
 
   # An independent restore checks actual backup recoverability, not only checksum.
   & git clone --quiet --mirror $bundle $restore
