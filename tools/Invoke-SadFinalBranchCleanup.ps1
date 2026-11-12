@@ -14,8 +14,8 @@ param(
   [string]$ExpectedMainSha,
   [string]$ExpectedRunnerSha,
   [string]$ExpectedHold240Sha,
-  [string]$SecondBundlePath,
-  [switch]$IndependentStorageConfirmed,
+  # The owner explicitly accepts using one existing verified local Git bundle.
+  [switch]$SingleLocalBackupRiskAccepted,
   [ValidateSet('Preview','DeleteMerged102')]
   [string]$Mode='Preview',
   [string]$ApprovalCode='',
@@ -129,16 +129,11 @@ try{
     # that PR #239 was merged; the operator must verify its merged_at first.
     if($main -ceq ([string]$j.main_sha).ToLowerInvariant()){Fail 'MERGE_PR239_FIRST'}
     if($ApprovalCode -cne 'APPROVE_DELETE_MERGED_102'){Fail 'EXPLICIT_BATCH_APPROVAL_CODE_REQUIRED'}
-    if(-not $SecondBundlePath -or -not $IndependentStorageConfirmed){
-      Fail 'SECOND_INDEPENDENT_BACKUP_REQUIRED'
+    # The single local bundle is still verified above by SHA-256 and every
+    # snapshot branch ref. This switch records the owner's explicit risk choice.
+    if(-not $SingleLocalBackupRiskAccepted){
+      Fail 'SINGLE_LOCAL_BACKUP_RISK_ACK_REQUIRED'
     }
-    $secondBundle=[IO.Path]::GetFullPath($SecondBundlePath)
-    if(-not (Test-Path -LiteralPath $secondBundle -PathType Leaf)){Fail 'SECOND_BACKUP_MISSING'}
-    if($secondBundle.Equals($bundle,[StringComparison]::OrdinalIgnoreCase)){
-      Fail 'SECOND_BACKUP_SAME_PATH'
-    }
-    $secondHash=(Get-FileHash -LiteralPath $secondBundle -Algorithm SHA256).Hash
-    if($secondHash -cne $bundleSha){Fail 'SECOND_BACKUP_HASH_MISMATCH'}
     # Do not delete the live PR #239/#240 refs in the conservative batch.
     if(@($plan|Where-Object { $_.Branch -eq $runnerBranch -or $_.Branch -eq $holdBranch }).Count -gt 0){
       Fail 'PROTECTED_REF_IN_DELETE_PLAN'
@@ -186,6 +181,8 @@ try{
   $report=[ordered]@{
     verdict=if($Mode -eq 'Preview'){'PASS_PREVIEW_ONLY'}else{'PASS_DELETE_LEASED'}
     mode=$Mode;main_sha=$main;bundle_sha256=$hash
+    backup_redundancy='SINGLE_LOCAL_BUNDLE_ONLY'
+    single_local_backup_risk_accepted=[bool]$SingleLocalBackupRiskAccepted
     merged_branches=102;held_unmerged_or_orphan=58
     held_runner_branch=$runnerBranch;held_pr240_branch=$holdBranch;held_pr240_sha=$live[$holdBranch]
     planned_deletions=$plan.Count;actual_deletions=@($completed|Where-Object {$_.Result -eq 'DELETED'}).Count
