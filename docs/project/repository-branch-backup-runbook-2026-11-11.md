@@ -1,6 +1,6 @@
 # SAD — Backup e dry-run auditável de branches Git (11/11/2026)
 
-**Status:** `DRAFT_PREPARED_NOT_LOCAL_EXECUTED`. Não constitui permissão de excluir qualquer branch.
+**Status:** `PASS_LOCAL_OPERATOR_REPORTED_BACKUP_AND_RESTORE` (ver [resultado local de 11/11](repository-branch-backup-operator-result-2026-11-11.md)). Os comandos abaixo são o procedimento histórico já executado, **não um pedido de nova execução**. A prova permanece restrita ao texto do PowerShell do operador; nenhum manifesto local foi inspecionado independentemente. Não autoriza excluir branches.
 
 ## 1. Objetivo e fonte de verdade
 
@@ -26,7 +26,7 @@ A correspondência de HEAD entre PR merged e branch atual é **necessária, mas 
 - `tools/Invoke-SadGitBranchBackup.ps1` — executor **novo** de backup local em área isolada, com `-BackupVerify` explícito. Cria clone bare `--mirror`, bundle `--all`, verifica o bundle, **restaura em outro clone bare**, confere 1:1 os HEADs das branches (antes, mirror, restore, depois) e executa teste de ancestralidade somente no mirror. Nenhuma mutação remota.
 - Este runbook e o snapshot canônico. Não incluímos um executor de exclusão.
 
-**Testes:** o encadeamento Git `clone --mirror → bundle create --all → bundle verify → clone --mirror do bundle → comparação de refs` foi reproduzido separadamente em **fixture sintética local Linux**, demonstrando preservação dos refs de teste. **O PowerShell 5.1 e a autenticação GitHub do Windows do responsável não foram executados/validados aqui**. O PASS físico do backup depende da saída real e dos relatórios de execução do operador.
+**Testes:** o encadeamento Git `clone --mirror → bundle create --all → bundle verify → clone --mirror do bundle → comparação de refs` foi reproduzido separadamente em **fixture sintética local Linux**, demonstrando preservação dos refs de teste. **O teste no Windows foi posteriormente executado pelo responsável**, que reportou `PASS_READ_ONLY_PROVISIONAL` com 162 refs e `PASS_LOCAL_BUNDLE_AND_INDEPENDENT_RESTORE` também com 162 refs; `4` branches merged ancestrais e `98` não ancestrais. Consulte o [closeout reportado](repository-branch-backup-operator-result-2026-11-11.md); o agente **não examinou diretamente o bundle ou manifestos locais**.
 
 ## 3. Pré-condições no Windows
 
@@ -87,4 +87,4 @@ No estado esperado **antes de novo merge ou commits de branches antigas**, o dry
 
 Apenas depois de prova física de backup/restauração, atualizar a matriz de risco dos 102 candidatos merged com o resultado real do `merge-base`. Excluir no máximo o lote nominal com SHAs aprovados expressamente, após rever proteção e HEAD imediatamente antes da remoção. `53 CLOSED_UNMERGED_PR` e `5 NO_PR` continuam em `HOLD`.
 
-**Nenhum executor de remoção está presente nesta PR.** `C2_C3_C4_GLOBAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+**Nenhum executor de remoção está presente nesta PR.** O bundle foi gerado antes de novas atualizações documentais nesta branch; portanto o SHA atual da branch de preparação pode diferir do HEAD dela incluído no bundle. Essa ref **não é candidata à exclusão**. Não repetir automaticamente o backup; validar drift e backup atualizado antes de qualquer lote de exclusão futuro. `C2_C3_C4_GLOBAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
