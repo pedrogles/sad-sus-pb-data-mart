@@ -45,7 +45,7 @@ function OpenManifest {
   $pointer=Join-Path $root 'vis05_latest_manifest.txt'
   if(-not(Test-Path -LiteralPath $pointer -PathType Leaf)){throw 'MANIFEST_REQUIRED_OR_NO_LATEST_POINTER'}
   $selected=(Get-Content -LiteralPath $pointer -Raw -Encoding UTF8).Trim()
-  Write-Output ('USING_LATEST_MANIFEST='+$selected)
+  Write-Host ('USING_LATEST_MANIFEST='+$selected)
  }
  $mf=Full $selected
  $m=Get-Content -LiteralPath $mf -Raw -Encoding UTF8|ConvertFrom-Json
