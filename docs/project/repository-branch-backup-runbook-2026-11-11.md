@@ -24,7 +24,7 @@ A correspondência de HEAD entre PR merged e branch atual é **necessária, mas 
 
 - `tools/Get-SadBranchCleanupDryRun.ps1` — **atualização do executor existente**, agora com contrato do snapshot v2 de 161 refs. Executa somente `git remote get-url` e `git ls-remote --heads` sobre `origin`, sem fetch/push/delete/merge; escreve CSV+JSON **fora do repo**.
 - `tools/Invoke-SadGitBranchBackup.ps1` — executor **novo** de backup local em área isolada, com `-BackupVerify` explícito. Cria clone bare `--mirror`, bundle `--all`, verifica o bundle, **restaura em outro clone bare**, confere 1:1 os HEADs das branches (antes, mirror, restore, depois) e executa teste de ancestralidade somente no mirror. Nenhuma mutação remota.
-- Este runbook e o snapshot canônico. Não incluímos um executor de exclusão.
+- Este runbook e o snapshot canônico; `tools/Invoke-SadFinalBranchCleanup.ps1` foi **adicionado posteriormente** como executor de limpeza com `Mode=Preview` por padrão e com travas explícitas para qualquer exclusão. **Não foi executado no Windows, não representa autorização de exclusão.**
 
 **Testes:** o encadeamento Git `clone --mirror → bundle create --all → bundle verify → clone --mirror do bundle → comparação de refs` foi reproduzido separadamente em **fixture sintética local Linux**, demonstrando preservação dos refs de teste. **O teste no Windows foi posteriormente executado pelo responsável**, que reportou `PASS_READ_ONLY_PROVISIONAL` com 162 refs e `PASS_LOCAL_BUNDLE_AND_INDEPENDENT_RESTORE` também com 162 refs; `4` branches merged ancestrais e `98` não ancestrais. Consulte o [closeout reportado](repository-branch-backup-operator-result-2026-11-11.md); o agente **não examinou diretamente o bundle ou manifestos locais**.
 
@@ -87,4 +87,30 @@ No estado esperado **antes de novo merge ou commits de branches antigas**, o dry
 
 Apenas depois de prova física de backup/restauração, atualizar a matriz de risco dos 102 candidatos merged com o resultado real do `merge-base`. Excluir no máximo o lote nominal com SHAs aprovados expressamente, após rever proteção e HEAD imediatamente antes da remoção. `53 CLOSED_UNMERGED_PR` e `5 NO_PR` continuam em `HOLD`.
 
-**Nenhum executor de remoção está presente nesta PR.** O bundle foi gerado antes de novas atualizações documentais nesta branch; portanto o SHA atual da branch de preparação pode diferir do HEAD dela incluído no bundle. Essa ref **não é candidata à exclusão**. Não repetir automaticamente o backup; validar drift e backup atualizado antes de qualquer lote de exclusão futuro. `C2_C3_C4_GLOBAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+**O executor de remoção agora existe somente na branch desta PR, em modo PREVIEW por padrão; não foi executado.** O bundle foi gerado antes de novas atualizações documentais nesta branch; portanto o SHA atual da branch de preparação pode diferir do HEAD dela incluído no bundle. Ela só pode ser removida **após merge confirmado da PR #239**. Não repetir automaticamente o backup sem falha concreta; o bundle original mantém as 160 branches antigas com SHA pinado. `C2_C3_C4_GLOBAL=NOT_APPROVED`, `PHASE_IX=NOT_AUTHORIZED`, `PRODUCTION_APPROVED=False`.
+
+## 7. Lote final preparado — decisão única pendente (sem execução)
+
+O responsável pediu encerrar rapidamente a higiene das branches; a triagem remota nominal e o snapshot de 161 refs foram revalidados. O executor [Invoke-SadFinalBranchCleanup.ps1](../../tools/Invoke-SadFinalBranchCleanup.ps1) foi incluído **sem acionamento automático**. Ele confere os 161 nomes/SHAs originais com GitHub e com o bundle (`SHA256=1DC499D992C0414664FFC59298770767DCA40E872070ED314E300AFD045CB21A`), verifica a `main` e a branch #239, bloqueia refs novas e usa `git push --force-with-lease` SHA a SHA.
+
+### Opções de limpeza oferecidas ao responsável
+
+| Modo | Branches removíveis sob aprovação específica | Semântica |
+| --- | ---: | --- |
+| `Preview` (default) | **0** | apenas CSV/JSON com 102 merged, 53 closed-unmerged e 5 órfãs |
+| `DeleteMerged102` | **102** | exclui referências de PRs formalmente merged com HEAD inalterado; `98` podem ser não ancestrais devido a squash/rebase, mas o GitHub confirma os PRs integrados e o bundle preserva as árvores originais |
+| `DeleteAllArchived160PlusRunner` | **161** | após merge #239, remove as **160 refs antigas** e a branch de preparação. Das 160, **53 closed-unmerged e 5 órfãs são arquivadas intencionalmente fora da main**, não promovidas a conteúdo integrado. Preserva apenas `main` |
+
+**Decisão pendente:** integrar #239 na `main` e aprovar nominalmente um único lote. O responsável deve compreender que os commits exclusivos das 58 refs não integradas permanecerão apenas no bundle e no histórico acessível, e que a remoção das refs do remoto afetará a facilidade de recuperação. Não chamar isto de merge. **Nenhuma exclusão foi feita neste gate.**
+
+### Procedimento após autorização e merge separados, no Windows
+
+1. Confirmar a integração da PR #239 e o SHA exato da nova `main` e do HEAD da branch de preparação.
+2. Fazer clone limpo da `main` integrada em uma pasta externa ao repo. Manter o bundle anterior e não sobrescrevê-lo.
+3. Executar `Invoke-SadFinalBranchCleanup.ps1` com `Mode Preview`, `-ExpectedMainSha`, `-ExpectedRunnerSha` e caminhos do repositório, inventário e bundle; revisar CSV de todas as 160 refs.
+4. Só com aprovação explícita do lote, executar `-Mode DeleteAllArchived160PlusRunner -ApprovalCode APPROVE_ARCHIVE_AND_DELETE_161_ALL_NON_MAIN` (ou `-Mode DeleteMerged102 -ApprovalCode APPROVE_DELETE_MERGED_102`). Os parâmetros de SHA continuam obrigatórios; qualquer drift bloqueia a ação. Usar clone isolado como runtime, não alterar QlikView.
+5. Conferir saída `PASS_DELETE_LEASED`, `after_refs=1` no modo integral, preservar `cleanup_report.json` e `executed_operations.csv` em armazenamento externo, consultar GitHub para validar `main` e ausência das refs.
+
+**Observação temporal:** o bundle local reportado foi criado antes de commits recentes na branch #239; esses commits entrarão na `main` apenas com a integração autorizada e conferida. Não eliminar #239 sem essa condição.
+
+**Estado:** `FINAL_DELETE_SCRIPT_STATIC_REVIEW_ONLY`, `DELETIONS_AUTHORIZED=False`, `DELETIONS_EXECUTED=0`. Não há prova de execução PowerShell deste novo executor.
