@@ -154,3 +154,17 @@ Após aprovação específica de **merge da PR #239** (independente da escolha d
 **Estado ao fechar este addendum:** `CONSERVATIVE_POLICY_APPROVED=True`; `REMOTE_INVENTORY_161_OF_161_SHA_MATCH=True`; `PR239_MERGED=False`; `OFF_DEVICE_COPY_VERIFIED=False`; `REVISED_RUNNER_WINDOWS_PREVIEW=NOT_RUN`; `BRANCHES_DELETED=0`. Se as 102 refs forem excluídas sem qualquer outra mudança, **61 refs remotas** permanecerão (58 históricas, main, PR #239, PR #240).
 
 **STOP:** não executar exclusão enquanto o preview revisado, a cópia independente e a confirmação de merge estiverem pendentes. Não misturar com a reorganização da PR #240.
+
+## 9. Decisão sobre backup único — 12/11/2026 (vigente)
+
+**Decisão explícita do responsável:** **um único backup Git basta para o lote conservador**. Isto substitui **somente** a exigência de segunda cópia independente da seção 8; não substitui o backup original, sua verificação por SHA-256 ou por refs, o `PASS_PREVIEW_ONLY` reportado, a aprovação separada de merge da PR #239, a classificação das 102 branches por PR merged, nem o bloqueio de outras 61 refs.
+
+**Risco assumido:** o bundle permanece em uma única unidade/ambiente local. Uma perda ou corrupção desse disco pode impossibilitar o rollback para os HEADs históricos excluídos, especialmente os 98 commits de PRs merged que não são ancestrais diretos da `main` após squash/rebase. A existência de metadados históricos de PRs não substitui a segurança de um backup independente. A decisão altera **redundância**, não o estado da prova física.
+
+**Arquivo original obrigatório:** `SAD_REPO_HYGIENE_EVIDENCIAS/backup_20261111_215818_69d0f0b9/sad-all-refs.bundle`, SHA-256 esperado `1DC499D992C0414664FFC59298770767DCA40E872070ED314E300AFD045CB21A`. O executor revalida SHA e presença exata dos 161 refs do snapshot antes de qualquer mutação. **Não apagar, mover ou sobrescrever o bundle original.** O backup local restaurado foi reportado pelo operador, sem reinspeção independente dos arquivos nesta execução.
+
+**Alteração controlada:** `tools/Invoke-SadFinalBranchCleanup.ps1` remove `-SecondBundlePath`/`-IndependentStorageConfirmed` e exige `-SingleLocalBackupRiskAccepted` no modo `DeleteMerged102`. Este switch serve como aceite explícito do risco e não dispensa `-ApprovalCode APPROVE_DELETE_MERGED_102`, `-ExpectedMainSha`, `-ExpectedRunnerSha`, `-ExpectedHold240Sha`, nem o merge comprovado e autorizado da PR #239.
+
+**O Preview já foi executado em 12/11/2026 antes desta alteração** com `VERDICT=PASS_PREVIEW_ONLY`, 102 candidatas, 58 refs históricas retidas, 163 remotas e `DELETED=0`. Após alterar um script executável, o resultado anterior não deve ser herdado automaticamente como teste da nova revisão. A próxima execução local deverá identificar o commit atualizado e realizar o Preview restrito antes de qualquer deleção. Para este gate documental, nenhuma exclusão ou merge está autorizado/efetuado.
+
+**Status:** `ONE_BACKUP_POLICY=OWNER_ACCEPTED_RISK`; `SOURCE_BUNDLE_RESTORED=PASS_LOCAL_OPERATOR_REPORTED`; `NEW_SCRIPT_WINDOWS_PREVIEW=NOT_RUN`; `PR239_MERGED=False`; `BRANCHES_DELETED=0`. **STOP:** atualização da PR e revisão do novo diff, sem ampliação de escopo nem execução destrutiva automática.
