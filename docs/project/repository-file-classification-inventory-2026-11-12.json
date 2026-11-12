@@ -1,0 +1,2666 @@
+{
+  "title": "SAD SUS PB - inventario preliminar de classificacao de arquivos versionados",
+  "collected_at": "2026-11-12",
+  "repository": "pedrogles/sad-sus-pb-data-mart",
+  "baseline": {
+    "ref": "main",
+    "sha": "e3255b3bfdab9a5335228d71e27a3cdf58bc5fd9",
+    "file_count": 329,
+    "truncated": false
+  },
+  "notes": [
+    "Classificacao por caminho e nome e preliminar; apenas entrypoints explicitamente inspecionados receberam CONTENT_CHECKED.",
+    "Todos os 329 arquivos permanecem sem movimentacao nesta etapa. A arvore Git confirma apenas arquivos rastreados, nunca dados locais ignorados.",
+    "Estados de producao, completude, reprodutibilidade e validacao fisica nao sao inferidos pela classificacao.",
+    "A criacao do inventario nao autoriza reposicionar, substituir, excluir, recarregar ou publicar binarios."
+  ],
+  "counts": {
+    "REPOSITORY_CONTROL": 4,
+    "LOCAL_ARTIFACT_PLACEHOLDER": 2,
+    "EXTRACTION_MODULE_OR_GATE_REVIEW": 4,
+    "EXTRACTION_STAGING_ENTRYPOINT": 1,
+    "PANEL_INITIAL_ENTRYPOINT": 1,
+    "PANEL_PROTOTYPE_OR_CONTRACT_REVIEW": 6,
+    "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW": 15,
+    "DIMENSION_SCRIPT_REVIEW": 7,
+    "FACT_SCRIPT_REVIEW": 3,
+    "TRANSFORMATION_PARTIAL_ENTRYPOINT": 1,
+    "DOCUMENTATION": 167,
+    "EXECUTOR_OR_SUPPORT_TOOL_REVIEW": 51,
+    "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW": 67
+  },
+  "files": [
+    {
+      "path": ".gitattributes",
+      "git_blob_sha": "727b6e67ea01622b2dbf0c4f2c7de71a3856fd35",
+      "bytes": 332,
+      "classification": "REPOSITORY_CONTROL",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": ".gitignore",
+      "git_blob_sha": "d24918a523e8591f0a8bba9a75b6240d185ee502",
+      "bytes": 1856,
+      "classification": "REPOSITORY_CONTROL",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "AGENTS.md",
+      "git_blob_sha": "188c1609e5a8a872c489071c72bac269dfa37f4f",
+      "bytes": 8530,
+      "classification": "REPOSITORY_CONTROL",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "EXTRACAO/QVD/.gitkeep",
+      "git_blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "classification": "LOCAL_ARTIFACT_PLACEHOLDER",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "EXTRACAO/ext_c4_cnes_leitos.qvs",
+      "git_blob_sha": "b9996d4a4f6f59e12add2519686ba54143e79dad",
+      "bytes": 6675,
+      "classification": "EXTRACTION_MODULE_OR_GATE_REVIEW",
+      "basis": "PATH_AND_INCLUDE_CHECKED",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "EXTRACAO/ext_c5_2_municipio_pb.qvs",
+      "git_blob_sha": "959179fa5b2e4ad4aaa88b695e737f04569620ee",
+      "bytes": 7336,
+      "classification": "EXTRACTION_MODULE_OR_GATE_REVIEW",
+      "basis": "PATH_AND_INCLUDE_CHECKED",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "EXTRACAO/ext_c5_municipal_preflight.qvs",
+      "git_blob_sha": "15e0884dbc5345e088960092970a0e133ef7ba6f",
+      "bytes": 8321,
+      "classification": "EXTRACTION_MODULE_OR_GATE_REVIEW",
+      "basis": "PATH_AND_INCLUDE_CHECKED",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "EXTRACAO/ext_main.qvs",
+      "git_blob_sha": "7c3150caa27a85d9132ff43b2e5a4aefb34caeae",
+      "bytes": 44392,
+      "classification": "EXTRACTION_STAGING_ENTRYPOINT",
+      "basis": "CONTENT_CHECKED",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "EXTRACAO/ext_phase3_final_gate.qvs",
+      "git_blob_sha": "c8b83f518bcac4e6028fe3c737ca90c2c51bd9b4",
+      "bytes": 8768,
+      "classification": "EXTRACTION_MODULE_OR_GATE_REVIEW",
+      "basis": "PATH_AND_INCLUDE_CHECKED",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "PAINEL/painel_main.qvs",
+      "git_blob_sha": "d09929490bd8db54ead794f25dc3415730c9845c",
+      "bytes": 231,
+      "classification": "PANEL_INITIAL_ENTRYPOINT",
+      "basis": "CONTENT_CHECKED",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "PAINEL/phase_vii_technical_model.qvs",
+      "git_blob_sha": "b675499e21acc06b9baa0d5dc5cf059a6b4d139c",
+      "bytes": 11276,
+      "classification": "PANEL_PROTOTYPE_OR_CONTRACT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "PAINEL/phase_viii_t24_annual_pilot.qvs",
+      "git_blob_sha": "22a8aae206376213d021ebc1e3950964c8576513",
+      "bytes": 4607,
+      "classification": "PANEL_PROTOTYPE_OR_CONTRACT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "PAINEL/sad_mvp_c4_presentation_guard_contract.json",
+      "git_blob_sha": "03f5efbb72768ab3f7242bed9aa059490c6c376a",
+      "bytes": 4494,
+      "classification": "PANEL_PROTOTYPE_OR_CONTRACT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "PAINEL/sad_mvp_m303_serv_guard_contract.json",
+      "git_blob_sha": "1c298d12661546d27c1a905cae20d09507912f1f",
+      "bytes": 2607,
+      "classification": "PANEL_PROTOTYPE_OR_CONTRACT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "PAINEL/sad_mvp_m3_flow_classification.qvs",
+      "git_blob_sha": "7ac7afea14410246a5921ac799853933aa3b9891",
+      "bytes": 3330,
+      "classification": "PANEL_PROTOTYPE_OR_CONTRACT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "PAINEL/sad_p23_a1_island_physical_gate.qvs",
+      "git_blob_sha": "c3a054badc80f2e3df77dce0641f493c16bba0bf",
+      "bytes": 10593,
+      "classification": "PANEL_PROTOTYPE_OR_CONTRACT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "README.md",
+      "git_blob_sha": "413d996d3461a6c19a95bdd78b7b758dc4abb4df",
+      "bytes": 4085,
+      "classification": "REPOSITORY_CONTROL",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/QVD/.gitkeep",
+      "git_blob_sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "classification": "LOCAL_ARTIFACT_PLACEHOLDER",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/phase_v_capacidade_leito_qvd_create.qvs",
+      "git_blob_sha": "8d2cbb7e2e39c6dfcf06ff31da45d312323eeecb",
+      "bytes": 1652,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/phase_v_capacidade_leito_qvd_readback.qvs",
+      "git_blob_sha": "149f8a812d805961bdcd5b162e6968df831a3fe6",
+      "bytes": 8454,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/phase_v_fato_internacao_qlik_dim_roles_preflight_r3.qvs",
+      "git_blob_sha": "2771c8f791145a4036a1e069bd215b24bda66fbc",
+      "bytes": 6770,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/phase_v_fato_internacao_qlik_measures_preflight.qvs",
+      "git_blob_sha": "0942d315640c26d82f43c849577159f4ff13e395",
+      "bytes": 7967,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/phase_v_fato_internacao_qlik_sk_preflight.qvs",
+      "git_blob_sha": "7616eabf868e94b5cca9181c9977e359b00267a8",
+      "bytes": 3133,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/phase_v_fato_internacao_qvd_readback.qvs",
+      "git_blob_sha": "391becd64edc825b6ef3d129caf58eebe797f9c7",
+      "bytes": 6818,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/phase_v_fato_populacao_readonly_preflight.qvs",
+      "git_blob_sha": "29be827608b51f0c79d05534969c583877ec4faa",
+      "bytes": 11112,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/phase_v_populacao_qvd_create.qvs",
+      "git_blob_sha": "23d7dcca8e9f2505b3dc2d4dfae82f812d64eca3",
+      "bytes": 1526,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/phase_v_populacao_qvd_readback.qvs",
+      "git_blob_sha": "cb9bc258e5b310726fb05d63a1f62ff4e8da935f",
+      "bytes": 6499,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/sad_analytical_export_local01.qvs",
+      "git_blob_sha": "ef46f82c1dc26c462e7e1e95585f68073e7f6688",
+      "bytes": 11885,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_dim_carater_atendimento.qvs",
+      "git_blob_sha": "ed18d2a1a2b9aec132d8c64c8942664207d20254",
+      "bytes": 9897,
+      "classification": "DIMENSION_SCRIPT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_dim_diagnostico.qvs",
+      "git_blob_sha": "c3d85de9ddad940bbf3bd50392cbb45a1302d9a5",
+      "bytes": 8338,
+      "classification": "DIMENSION_SCRIPT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_dim_estabelecimento.qvs",
+      "git_blob_sha": "2021e5a54656144e49e2b1b32a6b663193b181aa",
+      "bytes": 10298,
+      "classification": "DIMENSION_SCRIPT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_dim_motivo_saida_permanencia.qvs",
+      "git_blob_sha": "b38429fd1a04d911f9ecde59d75522f48e41b6f2",
+      "bytes": 11676,
+      "classification": "DIMENSION_SCRIPT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_dim_municipio.qvs",
+      "git_blob_sha": "8632442ff7ac07b7c24bab4d168737ff8f9e9cbc",
+      "bytes": 14780,
+      "classification": "DIMENSION_SCRIPT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_dim_procedimento.qvs",
+      "git_blob_sha": "42080861dd6c94afd3044887f2ed47289ddd8492",
+      "bytes": 9188,
+      "classification": "DIMENSION_SCRIPT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_dim_tipo_leito.qvs",
+      "git_blob_sha": "0a303df6988b7ddc733d320e459c40b6eb3a1d51",
+      "bytes": 14440,
+      "classification": "DIMENSION_SCRIPT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_fato_capacidade_leito.qvs",
+      "git_blob_sha": "adf0a500a2f29b16a0782a5b48fb9e047a5cd6ab",
+      "bytes": 12759,
+      "classification": "FACT_SCRIPT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_fato_internacao.qvs",
+      "git_blob_sha": "fb85a96ccb6d36dbf22ee00dff0eb01326fca940",
+      "bytes": 13664,
+      "classification": "FACT_SCRIPT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_fato_populacao_inmemory.qvs",
+      "git_blob_sha": "201f337c3b71993349e93623bc007398f58942a9",
+      "bytes": 10044,
+      "classification": "FACT_SCRIPT_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/transf_main.qvs",
+      "git_blob_sha": "32e028287ca8823d3126b0797e055c12569c3cd2",
+      "bytes": 11748,
+      "classification": "TRANSFORMATION_PARTIAL_ENTRYPOINT",
+      "basis": "CONTENT_CHECKED",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/vi_link_analise_create_tail.qvs",
+      "git_blob_sha": "533a48ef22a92e6586a5fdc2db5fad732a44abfc",
+      "bytes": 2728,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/vi_link_analise_readback.qvs",
+      "git_blob_sha": "2ac9f45f54d4c709445ee00bb7f1cc20e1c3e86a",
+      "bytes": 5168,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/vi_p1_readonly.qvs",
+      "git_blob_sha": "e9357db2005768519895d89e6e458ee3fc6476c5",
+      "bytes": 10520,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/vi_p3_source_reference.qvs",
+      "git_blob_sha": "555da2d440c2ccae796eed35243c7b6dd6b74a00",
+      "bytes": 14420,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "TRANSFORMACAO/vi_p4_municipal_coverage.qvs",
+      "git_blob_sha": "0d60b12d6217e9f86f504827d9df9c777c03235e",
+      "bytes": 12009,
+      "classification": "TRANSFORMATION_TEST_OR_ANALYSIS_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/academic/chapter-1-2-modeling.md",
+      "git_blob_sha": "bfd929ac368b23ed2637c3adc6451dcc8c46632f",
+      "bytes": 26107,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/academic/chapter-1-draft.md",
+      "git_blob_sha": "745d446a400069500e3f50c1e69594a35d736bd3",
+      "bytes": 18386,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/academic/chapter-2-draft.md",
+      "git_blob_sha": "d6346e379fd0420e065460732dbb1e1eb21dfb1a",
+      "bytes": 8874,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/academic/doc-r3-editorial-patch-2026-11-10.md",
+      "git_blob_sha": "7718da3614ce1b49018e827de4ced3ba36e0b473",
+      "bytes": 27304,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/academic/final-coverage-redundancy-review-and-online-rehearsal-2026-11-10.md",
+      "git_blob_sha": "156700d1175ea99f41cd324139847b9fae9a1434",
+      "bytes": 17700,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/academic/final-delivery-record-2026-11-10.md",
+      "git_blob_sha": "95a059c8e04c630e593cea228de7edea6ca08a39",
+      "bytes": 8655,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/academic/first-delivery-review.md",
+      "git_blob_sha": "672b1bd4449104fdb88dbdcef1ed040b61568ba7",
+      "bytes": 8835,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/academic/requirements.md",
+      "git_blob_sha": "a8822486d358072baaaaf6eeb79076f45335af7f",
+      "bytes": 3964,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/analytical-question-inventory-2026-10-27.md",
+      "git_blob_sha": "b8059495dd68cbfa0dc461b64b3aa4547d209f7d",
+      "bytes": 8748,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/analytical-sufficiency-plan-2026-10-27.md",
+      "git_blob_sha": "7d177677a4b103d8f5fd390603fdb951cc426179",
+      "bytes": 7316,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/bootstrap-extratos-analiticos-readonly-2026-10-27.md",
+      "git_blob_sha": "fe62318049cd43da8706ecbaf2095272dfbb944a",
+      "bytes": 10215,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/bootstrap-phase-8-indicators-2026-10-18.md",
+      "git_blob_sha": "2c61abdc8bd19d99636d566954467090f46d797a",
+      "bytes": 15844,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/bootstrap-sad-a0-consumption-validation-01-2026-10-27.md",
+      "git_blob_sha": "889c98ead9dae99c4795b503c99071f58f240c4a",
+      "bytes": 4527,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/bootstrap-sad-analytical-consumption-discovery-2026-10-27.md",
+      "git_blob_sha": "15d46cd847735ff64b5ddb3be7f7e4150acf40db",
+      "bytes": 4392,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/bootstrap-work-c3b1-physical-validation-2026-10-19.md",
+      "git_blob_sha": "c4b1c101c36ac96af87315b6e7c416290754945a",
+      "bytes": 14519,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-3-full-dataset-validation.md",
+      "git_blob_sha": "655a5563c652cdf2f65734dff0aeb482b6971407",
+      "bytes": 10227,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-4-auxiliary-references.md",
+      "git_blob_sha": "784a31a708b10749379d430428c284921150b212",
+      "bytes": 13540,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-5-historization-role-playing.md",
+      "git_blob_sha": "c443329c6561e96c8bc7def4b93b565f177eaf37",
+      "bytes": 7101,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-6-qlikview-physical-architecture.md",
+      "git_blob_sha": "df3a1915b7e658205bd2418f3989a23ceb8b60bb",
+      "bytes": 23365,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-7-implementation-plan.md",
+      "git_blob_sha": "258bf12f5820e56195f8c2316c30fbb28399e3a3",
+      "bytes": 37938,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-8-acquisition-manifest-structure-2026-10-07.md",
+      "git_blob_sha": "e81c299416d69ec9f40dd3b0fe39d8bdb60b67a6",
+      "bytes": 2103,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-8-batch-failure-smoke-2026-10-07.md",
+      "git_blob_sha": "5b8d4d571661930daafec2cb680055d52c8341cd",
+      "bytes": 1165,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-8-dbc-smoke-2026-10-07.md",
+      "git_blob_sha": "78745bc2f5d7c98593dc14f3a7c765e487b6fe6f",
+      "bytes": 1937,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-8-local-preflight-2026-10-07.md",
+      "git_blob_sha": "e55007751a711fb5f9a2b5a6aa7b6da51b55e0d0",
+      "bytes": 1323,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-8-qlikview-smoke-2026-10-07.md",
+      "git_blob_sha": "882770d9eeabf2bdb1c85b81454729e780058389",
+      "bytes": 3820,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-8-qlikview-version-2026-10-07.md",
+      "git_blob_sha": "0e7b9a842fc015f0117bb177a5656dcf0464eaa7",
+      "bytes": 1416,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/boundary-8-readiness.md",
+      "git_blob_sha": "9d95110153620f1456c75ce7fb5be7e0c7370b8d",
+      "bytes": 19340,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/cnes-nt32-2019-codigos-leito.csv",
+      "git_blob_sha": "5279b414be840c7d05180065c2ac515b4d8d4b95",
+      "bytes": 2937,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/dataset-validation.md",
+      "git_blob_sha": "e6e7fa8dbd6c063016dc44d9197ab95b48d37ffc",
+      "bytes": 20851,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/feasibility.md",
+      "git_blob_sha": "ab5effe83d43a08bcb552bf7512da47fbcfb10c9",
+      "bytes": 14362,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-2-conversion-evidence-2026-10-07.md",
+      "git_blob_sha": "90d8bdb627a0aa7ebc79f90e5a2c601c316f855a",
+      "bytes": 1656,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-cid10-dual-qvd-diagnostic-2026-10-07.md",
+      "git_blob_sha": "021c10484a8058c276392cf4674e04f7805de20b",
+      "bytes": 2402,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-cid10-reference-implementation-2026-10-07.md",
+      "git_blob_sha": "e44ea25419b8816650bdb8fd36308986e1bc7271",
+      "bytes": 21273,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-cid10-rtrim-qvd-diagnostic-2026-10-07.md",
+      "git_blob_sha": "674205df520870d815eb17bcad1eb45ad36fbad0",
+      "bytes": 3815,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-cnes-lt-bed-code-implementation-2026-10-08.md",
+      "git_blob_sha": "6438e54ff946a144be2425f0b962f471525cc676",
+      "bytes": 94408,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-final-extraction-gate-2026-10-08.md",
+      "git_blob_sha": "2e543c10852a33066413ef80c6983417966de03d",
+      "bytes": 24372,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-health-staging-implementation-2026-10-07.md",
+      "git_blob_sha": "3b29cb9ffe37f53c666d77d7f5db71316dd23e2f",
+      "bytes": 5772,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-ibge-staging-implementation-2026-10-07.md",
+      "git_blob_sha": "eee880656e0377bca64f1c8a4dc8986a0a5b2899",
+      "bytes": 6031,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-municipal-crosswalk-materialization-2026-10-08.md",
+      "git_blob_sha": "2cab366d4a17f4c55e9eac3211def441189471ad",
+      "bytes": 8496,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-municipal-crosswalk-preflight-2026-10-08.md",
+      "git_blob_sha": "e4f77a63b22a9fef0de12ecc6544afffb95c58ab",
+      "bytes": 11744,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-normative-references-implementation-2026-10-07.md",
+      "git_blob_sha": "a7a21dea189266d722e0ad662da159e4cc334e21",
+      "bytes": 5941,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-3-sigtap-proc-rea-implementation-2026-10-08.md",
+      "git_blob_sha": "8c1766ba67ce84350bcf968a2cc5bbdcbca6fcc9",
+      "bytes": 36035,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-4-dim-carater-atendimento-preflight-2026-10-09.md",
+      "git_blob_sha": "530a67a686d4a43d5cb469f9a894ffdc5186eb18",
+      "bytes": 24788,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-4-dim-diagnostico-preflight-2026-10-09.md",
+      "git_blob_sha": "f9344feeecbee10d4660410aaae412646078f19f",
+      "bytes": 25213,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-4-dim-estabelecimento-preflight-2026-10-09.md",
+      "git_blob_sha": "98884184ca66a43b85ff6b31f80fea4aeae8612c",
+      "bytes": 17161,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-4-dim-motivo-saida-permanencia-preflight-2026-10-09.md",
+      "git_blob_sha": "59d8ce96d4545c6bfeccae56598ab77c05161437",
+      "bytes": 26938,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-4-dim-municipio-implementation-2026-10-08.md",
+      "git_blob_sha": "22de529627e7e322354f2a0e390f57a1fd7f356f",
+      "bytes": 26238,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-4-dim-procedimento-preflight-2026-10-09.md",
+      "git_blob_sha": "8bf0cb6ac60b4568b336cc3080858a3f5dce34db",
+      "bytes": 72465,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-4-dim-tempo-implementation-2026-10-08.md",
+      "git_blob_sha": "c6815cd73431a83c00e7fbbd7bd58efa2372ca7a",
+      "bytes": 21927,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-4-dim-tipo-leito-discovery-2026-10-09.md",
+      "git_blob_sha": "b5546458648ead13141345d9a362ec2e4f5c085a",
+      "bytes": 97170,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-5-fato-capacidade-leito-implementation-2026-10-15.md",
+      "git_blob_sha": "82f57ca839685b2b170c8ccbff162227269d405c",
+      "bytes": 12096,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-5-fato-capacidade-leito-qvd-materialization-2026-10-15.md",
+      "git_blob_sha": "b02d8ff6c113a69adec80e23747587e4405a8f50",
+      "bytes": 9233,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-5-fato-internacao-contract-2026-10-09.md",
+      "git_blob_sha": "9cbf01f390e9d0b5149b4819422962719d3e618d",
+      "bytes": 4978,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-5-fato-internacao-implementation-2026-10-15.md",
+      "git_blob_sha": "6c3bc8974ad3d1df724ee4540fe193b7d18af6cb",
+      "bytes": 19291,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-5-fato-internacao-sk-preflight-2026-10-09.md",
+      "git_blob_sha": "c1d34aefe8711da59952e6bea7ae74c21e469232",
+      "bytes": 11879,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-5-fato-populacao-inmemory-2026-10-15.md",
+      "git_blob_sha": "24c46d776e2c66b833d17ea1a4255730578531d1",
+      "bytes": 9775,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-5-fato-populacao-qvd-materialization-2026-10-16.md",
+      "git_blob_sha": "0dc679f13f779e4641d8efbc01fdd3cc44e65cc8",
+      "bytes": 12745,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-5-fato-populacao-readonly-preflight-2026-10-15.md",
+      "git_blob_sha": "5edac88cf3524c472453d31074156fa1f12c8f60",
+      "bytes": 12534,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-6-link-analise-create-readback-preparation-2026-10-17.md",
+      "git_blob_sha": "a207a006864f0c67d91e9eaddc96c81ca4051e09",
+      "bytes": 6041,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-6-link-analise-physical-r2-2026-10-18.md",
+      "git_blob_sha": "555a36f9faaf18f34644f5b6b70f469a67275d42",
+      "bytes": 7002,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-6-link-atomic-publication-review-2026-10-18.md",
+      "git_blob_sha": "74d2def316bbd69f3268dfcfb19ba9ea807f1b03",
+      "bytes": 5376,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-6-link-no-clobber-temp-test-2026-10-18.md",
+      "git_blob_sha": "df6c3893d51d042ebd7c5536790eb327841fa062",
+      "bytes": 7696,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-6-semantic-v2-approved-2026-10-14.md",
+      "git_blob_sha": "28fcd53a279d210dcf73c5048c222c3233b123ce",
+      "bytes": 12371,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-6-semantic-v3-d2-r2-addendum-2026-11-03.md",
+      "git_blob_sha": "f713f1f23a297be83217f7c4b140d8a8e2026694",
+      "bytes": 13683,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-6-vi-p1-p4-script-versioning-2026-10-16.md",
+      "git_blob_sha": "9870e3f4870dc69a2e952bb95db2faeaa2f14720",
+      "bytes": 15359,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-6-vi-p5-sad-link-v1-physical-contract-2026-10-17.md",
+      "git_blob_sha": "37c7811d53f8a60713eeb4cc63807042537871db",
+      "bytes": 14528,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-7-technical-panel-controlled-gate-2026-10-18.md",
+      "git_blob_sha": "a1f7d14047361ca373cf89370c5d5ccb1085827b",
+      "bytes": 15802,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-b-t24-annual-pilot-2026-10-18.md",
+      "git_blob_sha": "4ae7d07c7a2cd10d55fe23f92f505a3153019b93",
+      "bytes": 12652,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-b-t24-edge-cases-2026-10-18.md",
+      "git_blob_sha": "6c349ba49a3339742956b227cc7320a10f718db7",
+      "bytes": 9523,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-b-t24-monthly-predispatch-2026-10-18.md",
+      "git_blob_sha": "2399ef2c6461c11b5dcc67a9eef001d65388ad35",
+      "bytes": 13784,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-b-t25-observed-lt-2018-2026-10-18.md",
+      "git_blob_sha": "858090614f644690154559528ede3b9efcc47319",
+      "bytes": 14203,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-b-t26-observed-lt-2018-2026-10-18.md",
+      "git_blob_sha": "44d0488dab5bc27e749440dbbdf9179c376aac55",
+      "bytes": 16070,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c1-cnes-coverage-readonly-2026-10-18.md",
+      "git_blob_sha": "765a968107093d33d0c2132d2b809605e4d36239",
+      "bytes": 17593,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2-evidence-closeout-readonly-2026-10-20.md",
+      "git_blob_sha": "a62adc0d3ec79ceed49c8e3c7d3435c775951ab7",
+      "bytes": 8348,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2-guided-hybrid-ui-discovery-and-logic-tests-2026-10-22.md",
+      "git_blob_sha": "a8e9f2f7e9c7cdb67405b3c056c87e50f3c853ba",
+      "bytes": 13035,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2-guided-hybrid-ui-physical-pilot-preparation-2026-10-22.md",
+      "git_blob_sha": "205e4fcd1a4cdfef778ceb5a5a4a2ef90c465aac",
+      "bytes": 15391,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2d-d2-ui-predispatch-feasibility-2026-10-19.md",
+      "git_blob_sha": "0e10e624b8fabfe17978ffa05f0cbe3672c6db72",
+      "bytes": 11475,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2d3-rawview-win32-discovery-2026-10-19.md",
+      "git_blob_sha": "597b8f6582bae2b44c6d629572f788087febf154",
+      "bytes": 13607,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2e-d2-p5-selection-route-inventory-2026-10-21.md",
+      "git_blob_sha": "206607f0a55d85dc609144c0ba8867ab985df7cb",
+      "bytes": 10123,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2f-physical-selection-route-inventory-2026-10-21.md",
+      "git_blob_sha": "50cbe4e132ed2b1994ef8c169187fb3c803118df",
+      "bytes": 21551,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2g-temporal-selection-design-decision-2026-10-21.md",
+      "git_blob_sha": "770ddf924909491c958288b91f97d50027a9feaf",
+      "bytes": 11204,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2h-readonly-listbox-physical-pilot-2026-10-21.md",
+      "git_blob_sha": "f342f07d12223ce7285181be6e1b97d18b8d1e75",
+      "bytes": 36049,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2i-residual-temporal-selection-closure-2026-10-21.md",
+      "git_blob_sha": "f63bef2595d16a02057bec1132368a8b6c0ec1c6",
+      "bytes": 9881,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2j-guided-real-selection-p5-2026-10-22.md",
+      "git_blob_sha": "5356e9fddc0c9faf117d2d477f9a3f546177fbe1",
+      "bytes": 14676,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c2k-guided-annual-evolution-pilot-2026-10-22.md",
+      "git_blob_sha": "1fd958321ee3e229924e742c0095467e25cc5fdc",
+      "bytes": 14543,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c3-remaining-gap-review-2026-10-20.md",
+      "git_blob_sha": "3fc6495f3d89a8ff3b4466b92c9b4922e7947e89",
+      "bytes": 7508,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c3b1-asymmetric-role-flow-2026-10-19.md",
+      "git_blob_sha": "9864941aea43031fbb1ed83175c7bdc1d01ba423",
+      "bytes": 8350,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c3b1-physical-closeout-2026-10-20.md",
+      "git_blob_sha": "5bc5ffd146889e3bde02bb2497dbed45150cadd0",
+      "bytes": 6065,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c3b2-physical-closeout-2026-10-20.md",
+      "git_blob_sha": "f0f5636daa2554b2799620484e2e5a03e748a9d8",
+      "bytes": 6819,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c3b2-same-role-pop-2026-10-20.md",
+      "git_blob_sha": "f2f1e1edf013dd7f58390653b7cead629daf4d9c",
+      "bytes": 8753,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c4-measures-denominators-readiness-2026-10-20.md",
+      "git_blob_sha": "f440a27fd6ec5e0587bbe8b6c4ed9ed58cc971fc",
+      "bytes": 12528,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c4a-measures-evidence-triage-2026-10-20.md",
+      "git_blob_sha": "719d2ea063d9f48987a85fd90c5f050a1758ffd5",
+      "bytes": 12985,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c4b1-f2f3-regional-reference-readback-2026-10-20.md",
+      "git_blob_sha": "24962519b4154ff8b09651c76f0aad7beebb0a94",
+      "bytes": 6647,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c4b1-regional-t25-physical-closeout-2026-10-21.md",
+      "git_blob_sha": "63956dbd1aac500d8a89d4146a11a2effb802032",
+      "bytes": 8246,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c4b1-regional-t25-runner-preparation-2026-10-20.md",
+      "git_blob_sha": "049510effd362202c4f99627706e0ee33af3a76b",
+      "bytes": 9093,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c4d-global-indicator-gaps-readonly-2026-10-21.md",
+      "git_blob_sha": "7b30bae24c29a208efd04665ce4a6fc339eb8743",
+      "bytes": 16937,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c4e-cnes-coverage-unavailability-readonly-2026-10-21.md",
+      "git_blob_sha": "8045e5ccf02e563b2e32877dfe95d788068780d3",
+      "bytes": 21129,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c4f-vi-p4-export-readback-2026-10-21.md",
+      "git_blob_sha": "d99ec22dadca52cdc90daa93cb8a2efec016380d",
+      "bytes": 10116,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-c4g-cnesnet-201801-screenshot-closeout-2026-10-21.md",
+      "git_blob_sha": "13491d8dd5fabe7e488154734ad24154ec5dfd47",
+      "bytes": 9918,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/phase-8-cnes-presentation-scope-decision-2026-10-20.md",
+      "git_blob_sha": "cb1ad940231820ae632b703facf38b24b0781577",
+      "bytes": 12641,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-a0-consumption-executors-dev01-2026-10-27.md",
+      "git_blob_sha": "2149facd746592f2c5ff435061061e411a8682f1",
+      "bytes": 11435,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-a0-consumption-validation-01-preparation-2026-10-27.md",
+      "git_blob_sha": "97cff3444e58014888da7de9dcd0974f69bddff6",
+      "bytes": 15624,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-analytical-consumption-discovery-2026-10-27.md",
+      "git_blob_sha": "2d90d94158add686d2873da300d8ab138dda9467",
+      "bytes": 7672,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-analytical-consumption-source-matrix-2026-10-27.md",
+      "git_blob_sha": "afb46cbffa0a3f9ac8c1cbb574cbe907efffb68d",
+      "bytes": 8444,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-analytical-export-local01-preparation-2026-10-27.md",
+      "git_blob_sha": "bb130176100d79a08b4c20315c28cf34c8657334",
+      "bytes": 18117,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-analytical-scope-acceptance-01-2026-10-27.md",
+      "git_blob_sha": "6f6db9b3db03a7eb178b1211a7f1aaa1e3804e6e",
+      "bytes": 21448,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-c2-guided-dynamic-control-design-2026-10-30.md",
+      "git_blob_sha": "80035f7d1fa47f38c2cf2bb283a009dffc195249",
+      "bytes": 16190,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-c2-guided-dynamic-dispatch-poc-2026-10-31.md",
+      "git_blob_sha": "629d9b064910056465204e0aa398d52e85a15c73",
+      "bytes": 13687,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-c2-visual-compatibility-inspection-2026-10-29.md",
+      "git_blob_sha": "07045a26519100b0774e4c3e038089c7588e4856",
+      "bytes": 19702,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-c2-visual-temporal-source-preflight-2026-10-29.md",
+      "git_blob_sha": "815d7dcf6aef1f42e8e99963e541cad5a88ae4d9",
+      "bytes": 7988,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-consumption-14-delta-readonly-closeout-2026-10-29.md",
+      "git_blob_sha": "3245420de5bf99e68a85538be3a710dd6be733d2",
+      "bytes": 19269,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-operational-documentation-drift-audit-2026-10-29.md",
+      "git_blob_sha": "358028093e4da5cf60d5719d6f6e030c9471c3a8",
+      "bytes": 9167,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p1-p11-p12-ux-contract-2026-10-28.md",
+      "git_blob_sha": "cc53264cf4ef4c1e10b3cee2cce9e1b69d85b0ef",
+      "bytes": 11355,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p11-p12-physical-closeout-2026-10-29.md",
+      "git_blob_sha": "48776716628021afa4c56a43d3073bb36b2a0c8b",
+      "bytes": 10170,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p11-p12-visual-method-review-2026-10-29.md",
+      "git_blob_sha": "d7ee77d28b7bac2707b365c7998ba16f355c76db",
+      "bytes": 10406,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p13-serv-ranking-readonly-closeout-2026-10-29.md",
+      "git_blob_sha": "6d8e903abb8a5e15ff64785dc11257dc29de6b68",
+      "bytes": 4062,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p14-proc-ranking-readonly-closeout-2026-10-29.md",
+      "git_blob_sha": "db4ef2e38f290d04e2ffddebf874b7358562db6b",
+      "bytes": 5451,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p14-proc-ranking-readonly-init-2026-10-29.md",
+      "git_blob_sha": "94109edb37eb1c562ded79e5e3b0955dc185819d",
+      "bytes": 4655,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p15-diag-ranking-readonly-closeout-2026-10-29.md",
+      "git_blob_sha": "da07587a1e19f656f1357f45175e8a0f3ee71649",
+      "bytes": 4658,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p21-lt-monthly-readonly-closeout-2026-10-29.md",
+      "git_blob_sha": "87309051fdbd886dc5ba649ddb579791eb4e7106",
+      "bytes": 7049,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p21-lt-observational-readonly-init-2026-10-29.md",
+      "git_blob_sha": "1371c579e1c61011c6379e6dde952d0b4405e160",
+      "bytes": 5809,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p22-lt-composition-201912-readonly-closeout-2026-10-29.md",
+      "git_blob_sha": "2fb97f2ebc0158d740aef6b32c58effad8de9597",
+      "bytes": 5913,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p23-a1-logical-design-2026-10-28.md",
+      "git_blob_sha": "aebefc2f632402a2e99bdaadab9baf557e053f55",
+      "bytes": 12783,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p23-a1-physical-gate-protocol-2026-10-28.md",
+      "git_blob_sha": "89364ef783bb5af923244fe0e4edb5d74f9cb6db",
+      "bytes": 18138,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p23-lt-municipal-observability-readonly-closeout-2026-10-29.md",
+      "git_blob_sha": "22a9a1ea1ebb0392a444fc416d574d243d574506",
+      "bytes": 7174,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p24-lt-municipal-ranking-201912-readonly-closeout-2026-10-29.md",
+      "git_blob_sha": "c4470035965a9d2b39aeb180c2eb04d76748ef5b",
+      "bytes": 6829,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p24-lt-municipal-ranking-201912-readonly-init-2026-10-29.md",
+      "git_blob_sha": "50f4f82f753e357570494b485cb324b61b2e0394",
+      "bytes": 5983,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p25-lt-cnes-type-code-201912-readonly-closeout-2026-10-29.md",
+      "git_blob_sha": "49a41856ed73715a358efa2ab26909a3bb2514ef",
+      "bytes": 5487,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p31-res-serv-matrix-2018-readonly-2026-10-29.md",
+      "git_blob_sha": "f1ab644ae326c8a7aba053fde79fb4a1490c9180",
+      "bytes": 7185,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p32-res-serv-equality-annual-closeout-2026-10-29.md",
+      "git_blob_sha": "71eee99677d7775a1b00689dd22dfff7c4223446",
+      "bytes": 6577,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p32-res-serv-equality-annual-init-2026-10-29.md",
+      "git_blob_sha": "36344dcbccf9517199d6af31a395c4c3f6bb6204",
+      "bytes": 8281,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p33-res-ne-serv-pair-ranking-closeout-2026-10-29.md",
+      "git_blob_sha": "b1122406f3d9e4d16324cf375469aefbb9327cef",
+      "bytes": 7208,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p33-res-ne-serv-pair-ranking-init-2026-10-29.md",
+      "git_blob_sha": "5dffc6ffffb8461b781276c609890c7b1809aa61",
+      "bytes": 7102,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p34-external-residence-annual-closeout-2026-10-29.md",
+      "git_blob_sha": "c2ea8c52400914d253c6e17d3622d05db6fd8976",
+      "bytes": 6126,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/discovery/sad-p34-external-residence-annual-init-2026-10-29.md",
+      "git_blob_sha": "a2e528302ff391fd50a01d88c98e2154fd22a557",
+      "bytes": 8863,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/academic-pr-coverage-audit-2026-11-11.json",
+      "git_blob_sha": "a32ea34c0e8d46b60d97f23fa8b0645606dfb637",
+      "bytes": 15350,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/academic-pr-coverage-audit-2026-11-11.md",
+      "git_blob_sha": "fffa3845e0c310d9282037485f71abab9fa36663",
+      "bytes": 9541,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/agent-model-routing.md",
+      "git_blob_sha": "cf99741a2503106b29dc7564bd2c0ca6b9fc7227",
+      "bytes": 10106,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/analytical-consumption-architecture-approval-2026-10-27.md",
+      "git_blob_sha": "f2215d3b692406ed9553607f3831e2374cb24732",
+      "bytes": 13230,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/analytical-direction-2026-10-27.md",
+      "git_blob_sha": "dea9b81a67a11765b1e666f4d0a37a9a8f9c1ed3",
+      "bytes": 5665,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/analytical-pr-integration-review-2026-10-27.md",
+      "git_blob_sha": "4a5db1f6004958b1661c71d1ac0fb77b9ccd015b",
+      "bytes": 5688,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/analytical-source-and-architecture-decision-2026-10-27.md",
+      "git_blob_sha": "faaf923b7f4fa9780ed3a4f4d6eda1263a923a93",
+      "bytes": 10412,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/artifact-recovery-policy.md",
+      "git_blob_sha": "d46389a185dce50b42fd1c7e82ff3de68213bfab",
+      "bytes": 3117,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/branch-hygiene-snapshot-2026-10-31.csv",
+      "git_blob_sha": "848d79e1646df8cc582ef5f6bfde070f4ad7d610",
+      "bytes": 15818,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/current-state-chronology-2026-10-08.md",
+      "git_blob_sha": "b821d886066e8760adc63c304cf64442e8343834",
+      "bytes": 60432,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/current-state.md",
+      "git_blob_sha": "f3a311fdb9df3060dc2464915835bc76d2a734a2",
+      "bytes": 6776,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/final-delivery-critical-path.md",
+      "git_blob_sha": "62d7e9b8e5cecf5780aeed98183f7c79217e4378",
+      "bytes": 23787,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/governance-audit-2026-10-31.md",
+      "git_blob_sha": "23290a11283c66f8ffa33eaabc9541dfe86b00dd",
+      "bytes": 9155,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/governance-c2-p12-consolidation-2026-10-31.md",
+      "git_blob_sha": "683f14a8af6ec23baf56bd28e7a54e07df3fe814",
+      "bytes": 13779,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/mvp-c2-native-acceptance-owner-approved-2026-11-07.md",
+      "git_blob_sha": "8a065fcc2d3aa3128b242b1952d62f42ca09aee7",
+      "bytes": 8570,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/mvp-evidence-and-contract-gates-consolidation-2026-11-07.md",
+      "git_blob_sha": "16e7788782a6d864d39ac2b4813699c078a88e41",
+      "bytes": 46130,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/mvp-f04-2018-versus-fixed-lt-201912-gui-protocol-2026-11-07.md",
+      "git_blob_sha": "f69e762f722414b503cab26731e1bc39e266a27b",
+      "bytes": 10742,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/mvp-scope-owner-approved-2026-11-07.md",
+      "git_blob_sha": "eb9aea3108b2193d094a2feda74a8619be38d288",
+      "bytes": 6631,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/mvp-three-sheets-implementation-2026-11-07.md",
+      "git_blob_sha": "a6a74456b08797b6cc78aee2a683418a1643a142",
+      "bytes": 16013,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/mvp-three-sheets-visual-review-2026-11-07.md",
+      "git_blob_sha": "79883f3cefde175b589a2367ed65f7dd4a422b70",
+      "bytes": 33128,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/qlikview-powershell-automation.md",
+      "git_blob_sha": "c345b8d1cb730e5cd57e7d68a2989e6d5529a835",
+      "bytes": 13874,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/repository-final-hygiene-inventory-2026-11-10.json",
+      "git_blob_sha": "081185b943a60cc884771dfb07ceb3cc59a26d45",
+      "bytes": 74280,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/repository-final-hygiene-plan-2026-11-10.md",
+      "git_blob_sha": "63cfc73999448b7bad77212bdee493f4203ca0dc",
+      "bytes": 12006,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/repository-hygiene-review-2026-10-08.md",
+      "git_blob_sha": "8fd50ac419f4119931520746f9c7e0d26d48a92a",
+      "bytes": 15623,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/sad-vis-01-approved-vis-02-handoff-2026-11-09.md",
+      "git_blob_sha": "dc2239d7197fea9a6a3fd38dae434431d4531bec",
+      "bytes": 4710,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/sad-vis-02-closeout-local-restricted-2026-11-10.md",
+      "git_blob_sha": "53d6a4ca8a3eeb6fe028e1899a0a8dc68778fea2",
+      "bytes": 4625,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/sad-vis-02-controlled-application-runbook-2026-11-09.md",
+      "git_blob_sha": "1c9d5428474df17449dcee724dadf48f17c1b500",
+      "bytes": 7437,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/sad-vis-02-p1-ch06-label-fix-runbook-2026-11-10.md",
+      "git_blob_sha": "adbe76267c0efe17ae281be0cdfb7349a470b1bc",
+      "bytes": 29279,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/sad-vis-03-documentary-audit-and-pending-gui-2026-11-10.md",
+      "git_blob_sha": "f10e3245efc69f51b67994e5b100bc976bb83422",
+      "bytes": 21284,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/sad-vis-04-final-presentation-polish-runbook-2026-11-10.md",
+      "git_blob_sha": "217851d60c8991f701939dcba2d4c19deb20092c",
+      "bytes": 17664,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/three-panels-blueprint-approved-2026-11-03.md",
+      "git_blob_sha": "9284d79a040405cb96d3ff12364f630ec949266a",
+      "bytes": 15512,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "docs/project/three-panels-blueprint-preview-2026-11-03.html",
+      "git_blob_sha": "aaf5f97170e36b1aab71f0b892bf3a07cbe8f833",
+      "bytes": 27041,
+      "classification": "DOCUMENTATION",
+      "basis": "STATIC_PATH",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Build-SadMvpThreeSheetsTemp.ps1",
+      "git_blob_sha": "f9d0c757ad844a45a019e05b8befc41cfe37139a",
+      "bytes": 19697,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Get-SadBranchCleanupDryRun.ps1",
+      "git_blob_sha": "5aae25ea66bdbd79a3e5ac004cc375c7e8e66098",
+      "bytes": 4912,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadA0ConsumptionValidation01.ps1",
+      "git_blob_sha": "23c2163b17a6de9c1ff329149edcb38204c311e4",
+      "bytes": 14077,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadAnalyticalExportLocal01.ps1",
+      "git_blob_sha": "ee4d4a01e1e0fe6e7ce829c36068b4839ae1bb42",
+      "bytes": 11617,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadC2GuidedDynamicDispatchPoc01.ps1",
+      "git_blob_sha": "f30a7dfd5ffab8db3540f219f061a62316881b1a",
+      "bytes": 11326,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadC2VisualCompatibilityCopy01.ps1",
+      "git_blob_sha": "15d19b2340e8aaa802ae4d1fef3a3beae2871e05",
+      "bytes": 10337,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadC2VisualTemporalPreflight01.ps1",
+      "git_blob_sha": "91dd946c5e478b9fa482e99cf2726c286bb2c90b",
+      "bytes": 7309,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadP23A1PhysicalGate01.ps1",
+      "git_blob_sha": "7db91a0a04a48d3873835d60df6f771840923cdc",
+      "bytes": 14491,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiTechnicalPanel.ps1",
+      "git_blob_sha": "cdf524ebabadfc29d6d26e10d5ca4b46d47ad97e",
+      "bytes": 12412,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiC2GuidedUiPilot.ps1",
+      "git_blob_sha": "cb64c07aad7a18576db8aa6bdffe5f65851acc4f",
+      "bytes": 8632,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiC2hReadonlyListboxPilot.ps1",
+      "git_blob_sha": "8dfce1eea426f5b4dd738c62aea126b1d7c0851f",
+      "bytes": 9368,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiC2jRealSelectP5Pilot.ps1",
+      "git_blob_sha": "88213d1c944184e1a5aa8724045794f521ea7c1b",
+      "bytes": 8640,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiC2kAnnualEvolutionPilot.ps1",
+      "git_blob_sha": "befc0508c31b318bc0daf58e262664d1d5731949",
+      "bytes": 8657,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiC3b1AsymmetricRoles.ps1",
+      "git_blob_sha": "7db1c859286ce80d792892105f81cce0e7755695",
+      "bytes": 12364,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiC3b2SameRolePop.ps1",
+      "git_blob_sha": "6019a2f66e710717342d425b54a3186e37731486",
+      "bytes": 14145,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiC4b1RegionalT25.ps1",
+      "git_blob_sha": "5ae827df755551a6698579d3a309b2db666f752a",
+      "bytes": 16865,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiT24AnnualPilot.ps1",
+      "git_blob_sha": "03afd519f09e311864654e44b6c10f7df496586d",
+      "bytes": 18960,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiT24EdgeCases.ps1",
+      "git_blob_sha": "8e6b5272da47bb9c23836154283667485afd2eca",
+      "bytes": 13136,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiT24MonthlyPredispatch.ps1",
+      "git_blob_sha": "46b29a06b17d6a7688c59326ceec6568d4026d94",
+      "bytes": 12833,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiT25ObservedLt2018.ps1",
+      "git_blob_sha": "5708884468348b60b02c6e12eba8887bb1e07b2a",
+      "bytes": 16629,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadPhaseViiiT26ObservedLt2018.ps1",
+      "git_blob_sha": "9fa780ed33627a5956ccdb1473b79facc1c7ac57",
+      "bytes": 16300,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadViLinkAnalise.ps1",
+      "git_blob_sha": "b50eae8bd3180a1c5f7a59ffc46ed605ed898423",
+      "bytes": 11883,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadViP1Readonly.ps1",
+      "git_blob_sha": "f662fe1b543b06600b297af57f5ab75c7d820e3a",
+      "bytes": 12460,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadViP2Readonly.ps1",
+      "git_blob_sha": "392c167d54f43a0f51ff25d709e6acf213d1a408",
+      "bytes": 16462,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadViP3Readonly.ps1",
+      "git_blob_sha": "96a7c5edcddae7e25b9888ba336d9a894b48b1a3",
+      "bytes": 24618,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadViP4Readonly.ps1",
+      "git_blob_sha": "392c2f50e012233df08872fcabc8df0e4afa1769",
+      "bytes": 16887,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadVis02P1Ch06.ps1",
+      "git_blob_sha": "3fff01c19ce7293f95334ab0e0c11438826ade26",
+      "bytes": 10624,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Invoke-SadVis04FinalPolish.ps1",
+      "git_blob_sha": "be30ddf7a2c7fd3658069b2a7ee38a5592cb975e",
+      "bytes": 7305,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Prepare-SadPhaseViiiC2fReadonlyRoutes.ps1",
+      "git_blob_sha": "c51438df67f0ce0b7a7d0c2157e00547904beea6",
+      "bytes": 5956,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Prepare-SadVis02WorkCopy.ps1",
+      "git_blob_sha": "dd7c9a00d97151b5a1f231c6bef2d93131a0a428",
+      "bytes": 5243,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/Test-SadViLinkNoClobber.ps1",
+      "git_blob_sha": "02229a297045a905eb57b1d22aa868a0ebd03ecf",
+      "bytes": 5302,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/analyze_cid10_reference_coverage.py",
+      "git_blob_sha": "f5cf4e01a3a5ee3c6e851108b56627d27c255032",
+      "bytes": 14139,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_cnes_grouped_leito_links.py",
+      "git_blob_sha": "2fd4ae513f714bb1fb199e23b0d37fecd674ca87",
+      "bytes": 9593,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_cnes_leito_historical_html.py",
+      "git_blob_sha": "a9863282c40fe4f6cb2edcb6cde1f05220be3c7f",
+      "bytes": 9329,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_cnes_nt32_2019_pairs.py",
+      "git_blob_sha": "f9193b402fea8c9627d3ba9546d8c7584b407880",
+      "bytes": 8199,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_cnes_official_domains.py",
+      "git_blob_sha": "b84d7731a16ed2ff2e2d51f0ec61f3155733e8d6",
+      "bytes": 10693,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_dim_carater_atendimento_qvd.py",
+      "git_blob_sha": "3078c43b90c7f603008512738e466d61443353a4",
+      "bytes": 4296,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_dim_diagnostico_qvd.py",
+      "git_blob_sha": "460ec751317fee99aade021de6a91fc1932d6501",
+      "bytes": 4360,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_dim_motivo_saida_permanencia_qvd.py",
+      "git_blob_sha": "813cf575a330b5cf0b31d3b966e3c5b08f7d1700",
+      "bytes": 4921,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_dim_procedimento_qvd.py",
+      "git_blob_sha": "849ffc1f219b9d20f3c22288d7963f150c63a7e9",
+      "bytes": 6007,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_dim_tipo_leito_qvd.py",
+      "git_blob_sha": "0cb40a176cfdf2f23c783d9444a3c7fb25420617",
+      "bytes": 4699,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_municipal_pb_crosswalk.py",
+      "git_blob_sha": "e1892f9acb549119acb1edeeeaf7ec55ed553185",
+      "bytes": 10310,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_sad_p23_a1_c4f_pairwise.py",
+      "git_blob_sha": "cb8ffda9283b282d771d339f733e90c3f7134dfb",
+      "bytes": 11663,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_sigtap_hierarchy_descriptions.py",
+      "git_blob_sha": "89f4687b68511f1b49a5482f50ecdf44aefe0465",
+      "bytes": 9477,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_sigtap_hierarchy_history.py",
+      "git_blob_sha": "ae85ec180ff499315980158063447cd0474298c2",
+      "bytes": 4637,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_sigtap_hierarchy_staging_candidate.py",
+      "git_blob_sha": "106d22ecaee32a10533abccc95685f57104ad509",
+      "bytes": 10265,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/audit_sigtap_staging_encoding.py",
+      "git_blob_sha": "e81e6e99e60e784976c941c54abb9ee06200b0c0",
+      "bytes": 5831,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/compare_cnes_leito_html_table_rows.py",
+      "git_blob_sha": "9b112d8463aa324db095f68a589ecf63d15e9c69",
+      "bytes": 11222,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/criar_v5_rd_sk_preflight.ps1",
+      "git_blob_sha": "60670cf41f1d7e9211a864b627ee35870bb96475",
+      "bytes": 3944,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/dbc_to_csv.py",
+      "git_blob_sha": "f89c418aebd727a650fbf59aea980e264cb37123",
+      "bytes": 10801,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/diagnose_phase3_qvd_headers.py",
+      "git_blob_sha": "cedaed8f0106e14815adbe49ae26b1e56643526f",
+      "bytes": 5121,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/enumerate_sigtap_packages.py",
+      "git_blob_sha": "e88476fe32b80ae205c2e209557cd4b29dae9a80",
+      "bytes": 4928,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/inspect_cid10_diag_princ_padding.py",
+      "git_blob_sha": "07c828f55a9b4d2290b1f821a97c0abbc9c0aeb6",
+      "bytes": 7870,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/inspect_cid10_sigtap_sample.py",
+      "git_blob_sha": "5063273559a1da1e30c1557d47eca790633704f8",
+      "bytes": 7770,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/inspect_sigtap_hierarchy_sample.py",
+      "git_blob_sha": "8026260b8d8ad6f43498ebd5123a21f960778a8c",
+      "bytes": 10508,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/inspect_sigtap_procedure_sample.py",
+      "git_blob_sha": "906b56caaa3c5d20437d85ecaf72c343cc56946a",
+      "bytes": 12271,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materializar_fato_capacidade_leito_qlik.ps1",
+      "git_blob_sha": "5b4aacf1955d0597b3c9179ef11061d109c45879",
+      "bytes": 15417,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materializar_fato_internacao_qlik.ps1",
+      "git_blob_sha": "549e0f7f60f4b414909589e8be275af56f1d6829",
+      "bytes": 14176,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materializar_fato_populacao_qlik.ps1",
+      "git_blob_sha": "13e03223aa5c26a76028ada6b2af5e558f3074c2",
+      "bytes": 15791,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materialize_cid10_reference.py",
+      "git_blob_sha": "9f61f2003b81a763c635a324441dd94e912e046a",
+      "bytes": 12784,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materialize_cid10_sigtap_sample.py",
+      "git_blob_sha": "3e2425e5a095812d5ad9ab8cb3e359f10cd364aa",
+      "bytes": 9369,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materialize_cnes_201909_legend.py",
+      "git_blob_sha": "4a609f57edd38c74a2c514fcd7cc40f893ca1ad7",
+      "bytes": 6348,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materialize_normative_references.py",
+      "git_blob_sha": "cb9bbbfcf34f442744e4447eaf43169d42c269b3",
+      "bytes": 8623,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materialize_sigtap_hierarchy_history.py",
+      "git_blob_sha": "59d09095d753698e846b867449f107367deb6004",
+      "bytes": 12586,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materialize_sigtap_hierarchy_staging_candidate.py",
+      "git_blob_sha": "e2d4b472372061edcbb8cb96cb73f840992ba38e",
+      "bytes": 12534,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materialize_sigtap_procedure_history.py",
+      "git_blob_sha": "57764803247f2a715f50480ca9a70ab37e9d6aaa",
+      "bytes": 15023,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materialize_sigtap_procedure_sample.py",
+      "git_blob_sha": "58ec3157612ba5f22ace756291b967811d4d2ad7",
+      "bytes": 14949,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/materialize_sigtap_staging_candidate.py",
+      "git_blob_sha": "a9a18a600a7be569502c9874c15fa48f1024d4e1",
+      "bytes": 12414,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/patch_sad_doc_r3_final_scope.py",
+      "git_blob_sha": "a03e3958d7404d554f4b6d7f9b6690c1f7265b61",
+      "bytes": 6591,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/patch_sad_doc_r3_vis04_figures.py",
+      "git_blob_sha": "58360e9b4f22addb481b9214355da1bf8dfcd626",
+      "bytes": 5243,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/preflight_dim_carater_atendimento.py",
+      "git_blob_sha": "9f63f93689748bdba4fdd46dd6cfd40c98caee5a",
+      "bytes": 9391,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/preflight_dim_diagnostico_cid10.py",
+      "git_blob_sha": "205995c8e2b310247aa08ba446a77b43a97d4a78",
+      "bytes": 11465,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/preflight_dim_motivo_saida_permanencia.py",
+      "git_blob_sha": "acd2f38c26b08f3da2874c0a777f463754c28147",
+      "bytes": 10860,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/preflight_dim_tipo_leito_contrato_a.py",
+      "git_blob_sha": "f191bf8e063c56fec5c3bbe6534dd6f3eac4d55e",
+      "bytes": 8756,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/preflight_dim_tipo_leito_snapshot_201909.py",
+      "git_blob_sha": "59699b7bef95fa7091690b584ed637bd2e8d0a3c",
+      "bytes": 9491,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/preflight_fase_v_fato_internacao.py",
+      "git_blob_sha": "d6a062fb086479743b257fbcc47e6fd9442bb04a",
+      "bytes": 10648,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/preflight_fato_internacao_medidas.py",
+      "git_blob_sha": "28e4b9b5cf6361860d9a8451f3f2729c53954420",
+      "bytes": 7135,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/prepare_sad_a0_consumption_oracle01.py",
+      "git_blob_sha": "c6d46c2ca17d3084858e8b667e49dfe3908865ac",
+      "bytes": 6727,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/probe_cnes_leito_historical_indicators.py",
+      "git_blob_sha": "a82c75e18bc23994bd8230191da987f016fbcf25",
+      "bytes": 8591,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/profile_cid10_diag_princ.py",
+      "git_blob_sha": "15da9e74cdc6121e027064a1298264496f070920",
+      "bytes": 6567,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/profile_cnes_lt_bed_codes.py",
+      "git_blob_sha": "bd9bb99e93b3cce9e320e62c160efcc0b3d9137d",
+      "bytes": 12224,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/profile_proc_rea.py",
+      "git_blob_sha": "ef36aba425de3405f9bd7350d08af6e3549b65fc",
+      "bytes": 10797,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/profile_sigtap_hierarchy_label_versions.py",
+      "git_blob_sha": "c001b93ba64a16b0628c33de7c73fba452b0e035",
+      "bytes": 6656,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/profile_sigtap_procedure_full_coverage.py",
+      "git_blob_sha": "ecfd7f4b7c7158b699c0adc69784988fe6c27a44",
+      "bytes": 18370,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/profile_sigtap_procedure_pilot.py",
+      "git_blob_sha": "fa1e499bb68e89e314f48f1fdc65772b16a9df18",
+      "bytes": 10772,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/readiness_check.ps1",
+      "git_blob_sha": "4298a7f737c33f6414de77c2d2fc6fed21a7f55f",
+      "bytes": 9402,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/readiness_dbc_smoke.py",
+      "git_blob_sha": "7d1b451d27546be6afa644c753778e909f8ba9b0",
+      "bytes": 5055,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/readiness_failure_smoke.qvs",
+      "git_blob_sha": "82e6911e45863f06d8b6ce45d5fc0fdae87342d6",
+      "bytes": 1179,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/readiness_link_table_smoke.qvs",
+      "git_blob_sha": "1c2a02e12a249db81e599d53a053b586c4fbe590",
+      "bytes": 1993,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/readiness_reconcile_hashes.py",
+      "git_blob_sha": "cca38c332cfc427ab7fa3d2adae43467f963bead",
+      "bytes": 11043,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/readiness_smoke.qvs",
+      "git_blob_sha": "c4f10dc9dc7f85c36ec3e1673a7e8e50ad075ddc",
+      "bytes": 2019,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/requirements-tools.txt",
+      "git_blob_sha": "a85e22bd1cd0cdf88571ac24aef4c0e8aca73f4f",
+      "bytes": 33,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/run_phase3_extraction.py",
+      "git_blob_sha": "b076c6918cf15112c4677c149f4d5560827997bb",
+      "bytes": 8240,
+      "classification": "EXECUTOR_OR_SUPPORT_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/test_sad_a0_consumption_oracle01.py",
+      "git_blob_sha": "5054c232defe4daca0ab05b83e1694c003a0871f",
+      "bytes": 2234,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/test_sad_analytical_export_local01.py",
+      "git_blob_sha": "91dc9633df845ba52cfee8aa2c4feec336cb99b6",
+      "bytes": 8185,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/triage_cnes_lt_portaria_298_2019.py",
+      "git_blob_sha": "c1a230bd289d78464ac44a70be27e001c6324e4d",
+      "bytes": 4713,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validar_estabilidade_sk_fato_internacao.ps1",
+      "git_blob_sha": "9734be57399bcd8ddce67ae0aa9364afe4594aa8",
+      "bytes": 10910,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validar_fato_capacidade_impl_qlik.ps1",
+      "git_blob_sha": "d3913ee353233a4bda7958944247d470bda2ff1b",
+      "bytes": 9058,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validar_fato_internacao_dim_roles_r3_qlik.ps1",
+      "git_blob_sha": "14b5194adce94bb6b22869f46f44ee2197c88013",
+      "bytes": 7290,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validar_fato_internacao_impl_qlik.ps1",
+      "git_blob_sha": "411fb242c3cb2429784a2adb05ccc4bf04a3f5cc",
+      "bytes": 8108,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validar_fato_internacao_medidas_qlik.ps1",
+      "git_blob_sha": "ca8996716a88aff6123c21e4d3649290dbecec05",
+      "bytes": 6052,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validar_fato_populacao_inmemory_qlik.ps1",
+      "git_blob_sha": "978f565145c7f4cf339b0e86bd982180034d8dcc",
+      "bytes": 9885,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validar_fato_populacao_readonly_qlik.ps1",
+      "git_blob_sha": "f182d27bf8dec5487d3e8f37051b92af1d60e7da",
+      "bytes": 10273,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validar_v5_rd_sk_com_log.ps1",
+      "git_blob_sha": "4a0e027f683a602749b61a7a4f86e346ce6363d4",
+      "bytes": 5407,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_analytical_export_local01.py",
+      "git_blob_sha": "acb65326a0a36a3d001ed536dfc7ecdbe66c7ed9",
+      "bytes": 12195,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_c4b1_regional_f2f3.py",
+      "git_blob_sha": "2db8557ae35a0decbde27985f0d1c0caeab32da0",
+      "bytes": 8166,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_guided_hybrid_ui_contract.py",
+      "git_blob_sha": "3273c247e251248aab582acd1d9f9a7f4054368a",
+      "bytes": 8581,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_p13_serv_ranking01.py",
+      "git_blob_sha": "8cf8020bcd277a24d53d8734fcd1f3ecc55b39e9",
+      "bytes": 9159,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_p14_proc_ranking01.py",
+      "git_blob_sha": "c2d688c3647f34724e3f594618d86587a0c302cf",
+      "bytes": 7646,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_p15_diag_ranking01.py",
+      "git_blob_sha": "aa9e34109812cf33a39cd1c82f0483805da34ffa",
+      "bytes": 8049,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_p21_lt_monthly01.py",
+      "git_blob_sha": "ec257966ecedb67e8bb4ed05410ff61f8a1fb658",
+      "bytes": 10721,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_p24_lt_municipal_ranking01.py",
+      "git_blob_sha": "2c36fcd0f7143a9a9ffe2310d5e0db6677114cf5",
+      "bytes": 9936,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_p25_lt_cnes_type_code01.py",
+      "git_blob_sha": "4ece6cc6bb34446a235a724a4fac62b65e75c130",
+      "bytes": 8863,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_p31_res_serv_matrix01.py",
+      "git_blob_sha": "b0bb42d9666239d7ad1f5e7e46664afa208d40cf",
+      "bytes": 8228,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_p32_res_serv_equality01.py",
+      "git_blob_sha": "28f26157171f7da658ec6e5df7fb50e73a765f40",
+      "bytes": 9925,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_p33_res_ne_serv_pairs01.py",
+      "git_blob_sha": "6801a5b85f6c364863cf8c8aec69a713906fc75b",
+      "bytes": 11972,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sad_p34_external_residence01.py",
+      "git_blob_sha": "fe5497f2e043f29533d8bcd2997fb21d8ca16b8b",
+      "bytes": 12841,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    },
+    {
+      "path": "tools/validate_sigtap_hierarchy_relational_pilot.py",
+      "git_blob_sha": "bf6d23b5d2464735da6c7fc48dd0f1f3bdbb7971",
+      "bytes": 10556,
+      "classification": "VALIDATION_OR_DIAGNOSTIC_TOOL_REVIEW",
+      "basis": "NAME_ONLY",
+      "action": "KEEP_IN_PLACE_PENDING_DEPENDENCY_REVIEW"
+    }
+  ]
+}
