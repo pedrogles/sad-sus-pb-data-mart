@@ -68,3 +68,36 @@ As **53 refs de PRs fechados sem merge**, **5 órfãs**, **`main`** e **1 ref no
 **Próxima ação delimitada:** preservar o bundle (preferencialmente em segunda mídia), revisar `verified_branch_decisions.csv` e classificar as quatro candidatas nominais e as 98 não ancestrais. Para auditoria independente, o operador pode anexar os manifestos/CSV. **Não repetir o backup que já produziu PASS sem falha concreta.**
 
 **STOP:** nenhum merge da #239, deleção, `git push`, alteração de dados/QVW/QVD/PDF ou mudança de modelagem foi autorizado ou executado nesta etapa.
+
+## 6. Preview conservador reportado em 12/11/2026
+
+**Proveniência:** transcrição do PowerShell 5.1 fornecida diretamente pelo responsável, após clone isolado da PR #239. A saída foi conferida textualmente, **mas os CSV/JSON locais e os arquivos do bundle não foram montados ou inspecionados independentemente**.
+
+```text
+VERDICT=PASS_PREVIEW_ONLY
+MODE=Preview
+CANDIDATE_MERGED=102
+HELD_UNMERGED_OR_ORPHAN=58
+DELETED=0
+REMAINING_REMOTE_BRANCHES=163
+```
+
+Artefatos locais reportados em `SAD_REPO_HYGIENE_EVIDENCIAS/cleanup_20261112_135652_11d9fbbb/`: `candidate_manifest.csv` e `cleanup_report.json`.
+
+**Conferência independente limitada pelo GitHub connector após a execução:** 163 referências vivas, a `main` permaneceu em `e3255b3bfdab9a5335228d71e27a3cdf58bc5fd9`, PR #239 permaneceu aberta/Draft/não merged e PR #240 permaneceu aberta/Draft. A checagem de inventário remoto anterior já havia retornado 161/161 SHAs iguais e as duas branches novas protegidas.
+
+**Interpretação:** `WINDOWS_CONSERVATIVE_PREVIEW=PASS_LOCAL_OPERATOR_REPORTED`. O modo Preview **não faz push**; confirma aceitação dos parâmetros, classificação e precondições que o script valida nesse modo. NÃO prova que os gates exclusivos de exclusão foram satisfeitos: a segunda cópia independente ainda não foi verificada, o bundle original segue sob hash reportado, a PR #239 não está merged, o resultado do Preview não atesta teste da execução destrutiva nem autoriza a exclusão.
+
+| Gate após o novo Preview | Estado |
+| --- | --- |
+| `CONSERVATIVE_POLICY_102` | `OWNER_APPROVED_SCOPE_ONLY` |
+| `WINDOWS_CONSERVATIVE_PREVIEW` | `PASS_LOCAL_OPERATOR_REPORTED` |
+| `LIVE_GITHUB_BRANCH_COUNT` | `163_CONFIRMED_REMOTE` |
+| `OFF_DEVICE_SECOND_BUNDLE` | `NOT_VERIFIED` |
+| `PR239_MERGE_APPROVAL` | `NOT_GIVEN` |
+| `PR239_MERGED` | `FALSE` |
+| `BRANCHES_DELETED` | `0` |
+
+**Próxima ação única:** preservar uma **segunda cópia do bundle fora do dispositivo de origem**, conferir SHA-256 igual a `1DC499D992C0414664FFC59298770767DCA40E872070ED314E300AFD045CB21A` e confirmar que o armazenamento está realmente independente. Depois, obter autorização específica para merge da PR #239; o executor de exclusão conservadora já está versionado mas não foi autorizado a rodar no modo destrutivo.
+
+**STOP:** não executar `DeleteMerged102` ou merge da PR sem satisfazer seus gates separados; não reexecutar Preview sem drift ou mudança concreta.
