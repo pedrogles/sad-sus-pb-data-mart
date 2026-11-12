@@ -114,3 +114,43 @@ O responsável pediu encerrar rapidamente a higiene das branches; a triagem remo
 **Observação temporal:** o bundle local reportado foi criado antes de commits recentes na branch #239; esses commits entrarão na `main` apenas com a integração autorizada e conferida. Não eliminar #239 sem essa condição.
 
 **Estado:** `FINAL_DELETE_SCRIPT_STATIC_REVIEW_ONLY`, `DELETIONS_AUTHORIZED=False`, `DELETIONS_EXECUTED=0`. Não há prova de execução PowerShell deste novo executor.
+
+## 8. Política conservadora aprovada em 12/11/2026 — substitui o modo integral da seção 7
+
+**Decisão do responsável:** prosseguir com o lote **conservador** de 102 branches associadas a PRs já merged. **NÃO** autoriza exclusão das outras 58 refs históricas, da branch da PR #239, da PR #240 ou da `main`. A seção 7 permanece como registro histórico das opções apresentadas, **não** como permissão vigente: o executor foi limitado a `Preview` e `DeleteMerged102`, removendo o modo de limpeza integral.
+
+**Nova fotografia remota inspecionada por GitHub (12/11/2026):** `main@e3255b3bfdab9a5335228d71e27a3cdf58bc5fd9`; **163 branches**. As **161/161** refs do snapshot original permanecem presentes e com o mesmo SHA; duas refs foram criadas depois: `chore/sad-branch-backup-readonly-2026-11-11` (PR #239) e `docs/sad-classificacao-testes-artefatos-2026-11-12` (PR #240). **0 drift** na comparação remota. As 102 são candidatas confirmadas por metadados de PR; **98 não são ancestrais diretas da main**, portanto a existência do backup e a retenção do histórico dos PRs seguem fundamentais.
+
+### Proteções do executor revisado
+
+- Mantém as **58 refs não merged/órfãs**, `main`, #239 e #240. Se surgir outra ref nova sem autorização, bloqueia.
+- No modo de exclusão, exige `ExpectedMainSha`, `ExpectedRunnerSha` e `ExpectedHold240Sha` pinados, compara hashes da referência e exige o código `APPROVE_DELETE_MERGED_102`.
+- Exige segunda cópia do bundle, caminho distinto, mesmo SHA-256, com `-SecondBundlePath` e declaração `-IndependentStorageConfirmed`. **Essa declaração não prova independência física sozinha**: conferir que é outra mídia ou armazenamento remoto persistente, e não só outra pasta no mesmo disco.
+- Confere o bundle original contra SHA-256 `1DC499D992C0414664FFC59298770767DCA40E872070ED314E300AFD045CB21A`, a lista exata de refs, a identidade da origem e o lease SHA atômico em cada `git push`.
+- `-Mode Preview` continua o padrão sem mutações remotas. **Nenhuma execução Windows do executor revisado** foi realizada nesta etapa; revisão estática e inventário remoto não homologam a exclusão.
+
+### Comandos de pré-validação, sem exclusão
+
+No Windows, executar a partir de **cópia isolada atualizada da branch #239**; nunca usar versão anterior do executor. `$repo` é o clone com origem canônica e `$runner` é o clone/caminho isolado que contém o script revisado. `$bundle` é o bundle preservado do relatório já executado. Conferir os caminhos antes de rodar:
+
+```powershell
+$repo = "$env:USERPROFILE\documents\programming\sad-sus-pb-data-mart"
+$runner = Join-Path $env:USERPROFILE 'SAD_REPO_HYGIENE_EVIDENCIAS\runner-pr239-readonly'
+$bundle = Join-Path $env:USERPROFILE 'SAD_REPO_HYGIENE_EVIDENCIAS\backup_20261111_215818_69d0f0b9\sad-all-refs.bundle'
+$inventory = Join-Path $runner 'docs\project\repository-branch-inventory-2026-11-11.json'
+$cleanup = Join-Path $runner 'tools\Invoke-SadFinalBranchCleanup.ps1'
+# Antes, atualizar APENAS a cópia isolada do runner para o HEAD atual da PR #239.
+powershell.exe -NoProfile -File $cleanup -RepoRoot $repo -InventoryPath $inventory `
+  -BundlePath $bundle -Mode Preview `
+  -ExpectedHold240Sha 'b8d0108884e2f0f9b738d403e03daa9aaf4bffc1'
+```
+
+**Critério de PASS do preview:** `VERDICT=PASS_PREVIEW_ONLY`, `CANDIDATE_MERGED=102`, `HELD_UNMERGED_OR_ORPHAN=58`, `DELETED=0`, `REMAINING_REMOTE_BRANCHES=163` enquanto não houver novos merges/deleções. Divergência de hash, erro de acesso ou outra alteração de referências é `BLOCKED`. Inspecionar `candidate_manifest.csv` e `cleanup_report.json` fora do Git.
+
+### Handoff para a exclusão (ainda não executada)
+
+Após aprovação específica de **merge da PR #239** (independente da escolha do lote), conferir o status `merged_at` da PR, a `main` avançada, os HEADs remotos da #239 e #240 e a integridade das duas cópias do bundle em armazenamento independente. Executar **novo Preview** com os três HEADs pinados; revisar o CSV. Só então usar `-Mode DeleteMerged102 -ApprovalCode APPROVE_DELETE_MERGED_102 -SecondBundlePath <caminho-da-copia-independente> -IndependentStorageConfirmed` com os mesmos `-Expected*Sha`. A aprovação do usuário é **restrita às 102 refs de PRs merged**, não à exclusão integral.
+
+**Estado ao fechar este addendum:** `CONSERVATIVE_POLICY_APPROVED=True`; `REMOTE_INVENTORY_161_OF_161_SHA_MATCH=True`; `PR239_MERGED=False`; `OFF_DEVICE_COPY_VERIFIED=False`; `REVISED_RUNNER_WINDOWS_PREVIEW=NOT_RUN`; `BRANCHES_DELETED=0`. Se as 102 refs forem excluídas sem qualquer outra mudança, **61 refs remotas** permanecerão (58 históricas, main, PR #239, PR #240).
+
+**STOP:** não executar exclusão enquanto o preview revisado, a cópia independente e a confirmação de merge estiverem pendentes. Não misturar com a reorganização da PR #240.
