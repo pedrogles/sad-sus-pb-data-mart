@@ -3,8 +3,8 @@
 SAD: final, SHA-leased cleanup of remote historical branches.
 DEFAULT: Preview (no remote mutations). Actual deletion is an independent,
 destructive, explicitly approved gate. Requires a verified backup bundle.
-The 53 unmerged PR branches and 5 orphan branches are ARCHIVED ONLY,
-not silently classified as integrated into main.
+Conservative mode only: delete up to 102 refs tied to merged PRs.
+The 53 closed-unmerged and 5 orphan refs, plus newer PR refs, are HELD.
 #>
 [CmdletBinding()]
 param(
@@ -13,7 +13,10 @@ param(
   [Parameter(Mandatory=$true)][string]$BundlePath,
   [string]$ExpectedMainSha,
   [string]$ExpectedRunnerSha,
-  [ValidateSet('Preview','DeleteMerged102','DeleteAllArchived160PlusRunner')]
+  [string]$ExpectedHold240Sha,
+  [string]$SecondBundlePath,
+  [switch]$IndependentStorageConfirmed,
+  [ValidateSet('Preview','DeleteMerged102')]
   [string]$Mode='Preview',
   [string]$ApprovalCode='',
   [string]$OutputRoot=(Join-Path $env:USERPROFILE 'SAD_REPO_HYGIENE_EVIDENCIAS')
@@ -22,6 +25,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $repository='pedrogles/sad-sus-pb-data-mart'
 $runnerBranch='chore/sad-branch-backup-readonly-2026-11-11'
+$holdBranch='docs/sad-classificacao-testes-artefatos-2026-11-12'
 $bundleSha='1DC499D992C0414664FFC59298770767DCA40E872070ED314E300AFD045CB21A'
 $runDir=$null
 $completed=@()
@@ -103,25 +107,42 @@ try{
   $main=$live['main']
   if($ExpectedMainSha -and $main -cne $ExpectedMainSha.ToLowerInvariant()){Fail 'MAIN_HEAD_MISMATCH'}
   if(-not $live.ContainsKey($runnerBranch)){Fail 'RUNNER_BRANCH_MISSING'}
+  # Two deliberately protected post-snapshot refs: this runner and PR #240.
+  # Any other new ref, or drift in a pinned ref, stops the operation.
+  if(-not $live.ContainsKey($holdBranch)){Fail 'PR240_HOLD_REF_MISSING'}
   $new=@($live.Keys|Where-Object { -not $snap.ContainsKey($_) })
-  if($new.Count -ne 1 -or $new[0] -cne $runnerBranch){Fail 'UNEXPECTED_REMOTE_BRANCHES'}
-  if($ExpectedRunnerSha -and $live[$runnerBranch] -cne $ExpectedRunnerSha.ToLowerInvariant()){
-    Fail 'RUNNER_HEAD_MISMATCH'
+  if($new.Count -ne 2 -or -not ($new -ccontains $runnerBranch) -or
+     -not ($new -ccontains $holdBranch)){Fail 'UNEXPECTED_REMOTE_BRANCHES'}
+  if($ExpectedHold240Sha){
+    if($ExpectedHold240Sha -notmatch '^[0-9a-fA-F]{40}$'){Fail 'BAD_PR240_HOLD_SHA'}
+    if($live[$holdBranch] -cne $ExpectedHold240Sha.ToLowerInvariant()){
+      Fail 'PR240_HOLD_SHA_DRIFT'
+    }
   }
   $plan=@()
   if($Mode -eq 'DeleteMerged102'){$plan=@($merged)}
-  if($Mode -eq 'DeleteAllArchived160PlusRunner'){
-    $plan=@($merged)+@($archived)
-    $plan+= [pscustomobject]@{
-      Branch=$runnerBranch;Sha=$live[$runnerBranch];Group='MERGED_PREPARATION_PR'
-      Pr=239;Policy='MERGED_ONLY_AFTER_PR239_REVIEW'
-    }
-  }
   if($Mode -ne 'Preview'){
-    if(-not $ExpectedMainSha -or -not $ExpectedRunnerSha){Fail 'PINNED_MAIN_AND_RUNNER_REQUIRED'}
+    if(-not $ExpectedMainSha -or -not $ExpectedRunnerSha -or -not $ExpectedHold240Sha){
+      Fail 'PINNED_MAIN_RUNNER_AND_PR240_REQUIRED'
+    }
+    # A post-merge main SHA is required. A mere main change is NOT proof
+    # that PR #239 was merged; the operator must verify its merged_at first.
     if($main -ceq ([string]$j.main_sha).ToLowerInvariant()){Fail 'MERGE_PR239_FIRST'}
-    $approval=if($Mode -eq 'DeleteMerged102'){'APPROVE_DELETE_MERGED_102'}else{'APPROVE_ARCHIVE_AND_DELETE_161_ALL_NON_MAIN'}
-    if($ApprovalCode -cne $approval){Fail 'EXPLICIT_BATCH_APPROVAL_CODE_REQUIRED'}
+    if($ApprovalCode -cne 'APPROVE_DELETE_MERGED_102'){Fail 'EXPLICIT_BATCH_APPROVAL_CODE_REQUIRED'}
+    if(-not $SecondBundlePath -or -not $IndependentStorageConfirmed){
+      Fail 'SECOND_INDEPENDENT_BACKUP_REQUIRED'
+    }
+    $secondBundle=[IO.Path]::GetFullPath($SecondBundlePath)
+    if(-not (Test-Path -LiteralPath $secondBundle -PathType Leaf)){Fail 'SECOND_BACKUP_MISSING'}
+    if($secondBundle.Equals($bundle,[StringComparison]::OrdinalIgnoreCase)){
+      Fail 'SECOND_BACKUP_SAME_PATH'
+    }
+    $secondHash=(Get-FileHash -LiteralPath $secondBundle -Algorithm SHA256).Hash
+    if($secondHash -cne $bundleSha){Fail 'SECOND_BACKUP_HASH_MISMATCH'}
+    # Do not delete the live PR #239/#240 refs in the conservative batch.
+    if(@($plan|Where-Object { $_.Branch -eq $runnerBranch -or $_.Branch -eq $holdBranch }).Count -gt 0){
+      Fail 'PROTECTED_REF_IN_DELETE_PLAN'
+    }
   }
   if(-not (Test-Path -LiteralPath $out)){
     New-Item -ItemType Directory -Path $out -ErrorAction Stop|Out-Null
@@ -165,7 +186,8 @@ try{
   $report=[ordered]@{
     verdict=if($Mode -eq 'Preview'){'PASS_PREVIEW_ONLY'}else{'PASS_DELETE_LEASED'}
     mode=$Mode;main_sha=$main;bundle_sha256=$hash
-    merged_branches=102;archived_unmerged_or_orphan=58
+    merged_branches=102;held_unmerged_or_orphan=58
+    held_runner_branch=$runnerBranch;held_pr240_branch=$holdBranch;held_pr240_sha=$live[$holdBranch]
     planned_deletions=$plan.Count;actual_deletions=@($completed|Where-Object {$_.Result -eq 'DELETED'}).Count
     before_refs=$live.Count;after_refs=$remaining
     manifest=$planCsv;operation_log=$logCsv;no_changes_to_main=$true
@@ -174,7 +196,7 @@ try{
   Write-Output ('VERDICT='+$report.verdict)
   Write-Output ('MODE='+$Mode)
   Write-Output ('CANDIDATE_MERGED=102')
-  Write-Output ('ARCHIVE_ONLY_UNMERGED_OR_ORPHAN=58')
+  Write-Output ('HELD_UNMERGED_OR_ORPHAN=58')
   Write-Output ('DELETED='+$report.actual_deletions)
   Write-Output ('REMAINING_REMOTE_BRANCHES='+$report.after_refs)
   Write-Output ('MANIFEST='+$planCsv)
