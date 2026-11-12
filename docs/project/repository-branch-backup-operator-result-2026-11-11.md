@@ -101,3 +101,33 @@ Artefatos locais reportados em `SAD_REPO_HYGIENE_EVIDENCIAS/cleanup_20261112_135
 **Próxima ação única:** preservar uma **segunda cópia do bundle fora do dispositivo de origem**, conferir SHA-256 igual a `1DC499D992C0414664FFC59298770767DCA40E872070ED314E300AFD045CB21A` e confirmar que o armazenamento está realmente independente. Depois, obter autorização específica para merge da PR #239; o executor de exclusão conservadora já está versionado mas não foi autorizado a rodar no modo destrutivo.
 
 **STOP:** não executar `DeleteMerged102` ou merge da PR sem satisfazer seus gates separados; não reexecutar Preview sem drift ou mudança concreta.
+
+## 7. Preview da revisão com backup único — 12/11/2026
+
+**Fonte:** transcrição de console PowerShell 5.1 do responsável nesta conversa. Após `git -C $runner pull --ff-only`, o clone isolado `runner-pr239-20261112135647` avançou de `44088a6` para **`1f95fd71`**, que era o HEAD da PR #239 imediatamente antes da execução. O Preview foi executado a partir do script revisionado **após a retirada da exigência de cópia redundante**. A conferência de SHA dos arquivos locais e a leitura de `candidate_manifest.csv` / `cleanup_report.json` não foram realizadas independentemente pelo agente.
+
+```text
+VERDICT=PASS_PREVIEW_ONLY
+MODE=Preview
+CANDIDATE_MERGED=102
+HELD_UNMERGED_OR_ORPHAN=58
+DELETED=0
+REMAINING_REMOTE_BRANCHES=163
+MANIFEST=C:\Users\pedro\SAD_REPO_HYGIENE_EVIDENCIAS\cleanup_20261112_140331_ec1c5d89\candidate_manifest.csv
+REPORT=C:\Users\pedro\SAD_REPO_HYGIENE_EVIDENCIAS\cleanup_20261112_140331_ec1c5d89\cleanup_report.json
+```
+
+**Qualificação:** `WINDOWS_CONSERVATIVE_SINGLE_BACKUP_PREVIEW=PASS_LOCAL_OPERATOR_REPORTED`. GitHub remoto consultado após a saída: a PR #239 seguia Draft/open/unmerged em `1f95fd71c2c1ad44abbb82cdf6b6d854ff65876e`, a `main` em `e3255b3bfdab9a5335228d71e27a3cdf58bc5fd9`, a PR #240 permanecia aberta. **Não houve prova de execução de `DeleteMerged102`, nem exclusões.**
+
+**Importante:** `-Mode Preview` valida hash do bundle e presença das refs e não entra nas guardas exclusivas do modo destrutivo, como `-SingleLocalBackupRiskAccepted` e `-ApprovalCode`. O aceite explícito de risco de **um único bundle local** está registrado no runbook, mas o hash real do bundle continua sendo verificado em tempo de execução.
+
+| Gate | Estado |
+| --- | --- |
+| `CONSERVATIVE_102_OWNER_SCOPE` | `APPROVED` |
+| `ONE_LOCAL_BACKUP_RISK` | `OWNER_ACCEPTED` |
+| `WINDOWS_PREVIEW_UPDATED_RUNNER` | `PASS_LOCAL_OPERATOR_REPORTED` |
+| `PR239_MERGE_AUTHORIZATION` | `PENDING_SPECIFIC_APPROVAL` |
+| `PR239_MERGED` | `FALSE` |
+| `BRANCHES_DELETED` | `0` |
+
+**STOP:** a revisão do executor e o Preview reportado encerram o gate pré-merge. Próximo gate: autorização específica do responsável para integrar a PR #239; só depois, novo snapshot pós-merge e decisão de executar o lote de 102 exclusões usando lease SHA. Não pedir novamente backup redundante, pois o responsável optou expressamente por um único bundle.
