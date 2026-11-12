@@ -135,11 +135,8 @@ try{
   $completed=@()
   foreach($x in $plan){
     if($x.Branch -eq 'main'){Fail 'MAIN_IN_PLAN'}
-    $remoteNow=RemoteRefs $root
-    if(-not $remoteNow.ContainsKey($x.Branch) -or $remoteNow[$x.Branch] -cne $x.Sha){
-      Fail ('REF_CHANGED_DURING_CLEANUP '+$x.Branch)
-    }
-    if($Mode -eq 'Preview'){continue}
+    # Git force-with-lease rechecks the exact expected remote SHA atomically.
+    # Do not issue one extra ls-remote per branch (160 unnecessary round trips).
     $lease='--force-with-lease=refs/heads/'+$x.Branch+':'+$x.Sha
     $refspec=':refs/heads/'+$x.Branch
     $output=@(& git -C $root push --porcelain $lease origin $refspec 2>&1)
@@ -177,6 +174,12 @@ try{
 } catch{
   Write-Output 'VERDICT=BLOCKED'
   Write-Output ('DETAIL='+$_.Exception.Message)
-  if($runDir){Write-Output ('PARTIAL_EVIDENCE_DIR='+$runDir)}
+  if($runDir){
+    Write-Output ('PARTIAL_EVIDENCE_DIR='+$runDir)
+    if($null -ne $completed -and @($completed).Count -gt 0){
+      $completed | Export-Csv -LiteralPath (Join-Path $runDir 'partial_operations.csv') -NoTypeInformation -Encoding UTF8
+      Write-Output ('PARTIAL_DELETIONS_LOG='+(Join-Path $runDir 'partial_operations.csv'))
+    }
+  }
   exit 2
 }
