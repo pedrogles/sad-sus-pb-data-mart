@@ -40,8 +40,14 @@ function JsonNew([string]$p,$o){
  [IO.File]::WriteAllText($p,(ConvertTo-Json -InputObject $o -Depth 8),(New-Object Text.UTF8Encoding($false)))
 }
 function OpenManifest {
- if(-not $ManifestPath){throw 'MANIFEST_REQUIRED'}
- $mf=Full $ManifestPath
+ $selected=$ManifestPath
+ if(-not $selected){
+  $pointer=Join-Path $root 'vis05_latest_manifest.txt'
+  if(-not(Test-Path -LiteralPath $pointer -PathType Leaf)){throw 'MANIFEST_REQUIRED_OR_NO_LATEST_POINTER'}
+  $selected=(Get-Content -LiteralPath $pointer -Raw -Encoding UTF8).Trim()
+  Write-Output ('USING_LATEST_MANIFEST='+$selected)
+ }
+ $mf=Full $selected
  $m=Get-Content -LiteralPath $mf -Raw -Encoding UTF8|ConvertFrom-Json
  if($m.Gate -cne 'VIS05_SHELL' -or $m.Stage -cne 'PREPARED_COPY_ONLY'){throw 'INVALID_MANIFEST'}
  if((Full ([string]$m.Source)) -cne (Full $source) -or [string]$m.SourceSha -cne $expected){throw 'MANIFEST_SOURCE_MISMATCH'}
@@ -117,6 +123,7 @@ try{
    Work=(Full $work);WorkInitialSha=$expected
    COMExecuted=$false;ReloadExecuted=$false;ProductionApproved=$false
   })
+  [IO.File]::WriteAllText((Join-Path $root 'vis05_latest_manifest.txt'),$mf,(New-Object Text.UTF8Encoding($false)))
   Write-Output 'VERDICT=PASS_COPY_HASHES_ONLY'
   Write-Output ('MANIFEST='+$mf)
   Write-Output ('WORK_QVW='+$work)
