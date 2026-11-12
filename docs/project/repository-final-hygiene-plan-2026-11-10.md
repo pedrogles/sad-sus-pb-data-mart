@@ -101,3 +101,13 @@ Esse desenho evita novos ciclos de Discovery, mantém os resultados investigáve
 **Gates separados:** (i) revisar e aprovar merge da proposta de preservação dos sete arquivos + correção dos links; (ii) em nova autorização, fechar os oito PRs com motivo e conteúdo exclusivo explicitados; (iii) depois de dry-run/backup verificável e decisão nominal, excluir refs. Não inferir que aprovação deste documento autorize fechamento, merge ou exclusão.
 
 **STOP:** este addendum de controle não modifica dados, modelo, QVD/QVW, PDF DOC-R3 nem gates C2/C3/C4.
+
+## 9. Gate de backup preparatório — 11/11/2026 (posterior ao fechamento administrativo)
+
+Após as PRs #237 e #238 integradas, foram fechados os **oito PRs acadêmicos** #226 e #230–#236 com comentários individuais e **sem merge**, preservando suas branches e 24 arquivos históricos não integrados. As issues #157 e #196 foram fechadas com `state_reason=not_planned`, **não** como aceites físicos/científicos. Nova consulta remota: **0 PRs abertos, 0 issues abertas, 161 branches** antes da criação desta nova branch.
+
+Inventário fixo: [repository-branch-inventory-2026-11-11.json](repository-branch-inventory-2026-11-11.json), `main@e3255b3bfdab9a5335228d71e27a3cdf58bc5fd9`. Classificação: **102 MERGED_PR**, **53 CLOSED_UNMERGED_PR**, **5 NO_PR**, **1 MAIN**. Desses 102, igualdade do HEAD com PR merged está comprovada na consulta; a **ancestralidade Git ainda não foi verificada** e a quantidade efetivamente apta para um lote futuro de exclusão pode ser menor.
+
+**Nova fronteira de execução:** ver [runbook de backup/restore](repository-branch-backup-runbook-2026-11-11.md). Esta branch acrescenta um executor que cria mirror, bundle, restaura em clone independente e testa ancestralidade, e atualiza o dry-run de 159 para 161 refs. **Nenhuma execução Windows foi reportada, nenhum bundle físico foi criado e nenhuma branch foi excluída.** O snapshot pré-branch não inclui a branch deste gate, que deve ser retida como `HOLD_NEW_REF`.
+
+**Aceite pendente e separado:** após revisão, executar localmente apenas o dry-run e o backup verificável; só após receber relatório válido abrir decisão de exclusão nominal por SHA (não autorizada por este adendo). `main`, QVW/QVD/PDF e contratos C2/C3/C4 permanecem intocados.

@@ -1,107 +1,139 @@
 #requires -Version 5.1
 <#
-SAD GitHub remote branch cleanup - READ ONLY.
-Parses a versioned snapshot; checks all remote refs and writes a dry-run CSV/JSON.
-Never runs fetch/push/delete/merge; no remote mutations.
+.SYNOPSIS
+  SAD branch cleanup: read-only, SHA-pinned remote inventory comparison.
+.DESCRIPTION
+  No fetch, push, delete, merge, COM, reload or local git working-tree modifications.
+  Compares the pinned 161-ref pre-PR snapshot with actual git ls-remote --heads origin.
+  A "candidate" status never authorizes deletion. Independent backup + ancestry
+  validation and explicit owner approval are required for any future cleanup.
 #>
 [CmdletBinding()]
 param(
   [string]$RepoRoot,
   [string]$InventoryPath,
-  [string]$OutputRoot = (Join-Path $env:USERPROFILE 'SAD_REPO_HYGIENE_EVIDENCIAS')
+  [string]$EvidenceRoot = (Join-Path $env:USERPROFILE 'SAD_REPO_HYGIENE_EVIDENCIAS')
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-if (-not $RepoRoot) {
-  $RepoRoot = Join-Path $env:USERPROFILE 'documents\programming\sad-sus-pb-data-mart'
+
+function Ensure-OutsideRepo([string]$Folder,[string]$Repository) {
+  $f = [IO.Path]::GetFullPath($Folder).TrimEnd([char[]]@('\','/'))
+  $r = [IO.Path]::GetFullPath($Repository).TrimEnd([char[]]@('\','/'))
+  if ($f.Equals($r,[StringComparison]::OrdinalIgnoreCase) -or
+      $f.StartsWith($r + [IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) {
+    throw 'EVIDENCE_ROOT_INSIDE_REPOSITORY'
+  }
+  return $f
 }
-if (-not $InventoryPath) {
-  $InventoryPath = Join-Path (Split-Path $PSScriptRoot -Parent) 'docs\project\repository-final-hygiene-inventory-2026-11-10.json'
+function Read-RemoteHeads([string]$Repository) {
+  $lines = @(& git -C $Repository ls-remote --heads origin)
+  if ($LASTEXITCODE -ne 0) { throw 'GIT_LS_REMOTE_FAILED' }
+  $result = @{}
+  foreach($line in $lines) {
+    if ($line -notmatch '^([0-9a-fA-F]{40})\s+refs/heads/(.+)$') { throw "INVALID_REMOTE_REF $line" }
+    if ($result.ContainsKey($Matches[2])) { throw 'DUPLICATE_REMOTE_REF' }
+    $result[$Matches[2]] = $Matches[1].ToLowerInvariant()
+  }
+  return ,$result
 }
+
 try {
+  if (-not $RepoRoot) {
+    $RepoRoot = Join-Path $env:USERPROFILE 'documents\programming\sad-sus-pb-data-mart'
+  }
+  if (-not $InventoryPath) {
+    $InventoryPath = Join-Path (Split-Path $PSScriptRoot -Parent) 'docs\project\repository-branch-inventory-2026-11-11.json'
+  }
   $root = [IO.Path]::GetFullPath($RepoRoot)
-  $inventory = [IO.Path]::GetFullPath($InventoryPath)
-  $out = [IO.Path]::GetFullPath($OutputRoot)
-  if (-not (Test-Path -LiteralPath (Join-Path $root '.git'))) { throw 'NOT_A_GIT_CLONE' }
-  if (-not (Test-Path -LiteralPath $inventory -PathType Leaf)) { throw 'INVENTORY_MISSING' }
-  if ($out -eq $root -or $out.StartsWith(($root.TrimEnd('\')+'\'),[StringComparison]::OrdinalIgnoreCase)) {
-    throw 'OUTPUT_INSIDE_REPOSITORY_NOT_ALLOWED'
+  $snapshotPath = [IO.Path]::GetFullPath($InventoryPath)
+  $out = Ensure-OutsideRepo $EvidenceRoot $root
+  if (-not (Test-Path -LiteralPath (Join-Path $root '.git'))) { throw 'REPO_MISSING_GIT_METADATA' }
+  if (-not (Test-Path -LiteralPath $snapshotPath -PathType Leaf)) { throw 'INVENTORY_NOT_FOUND' }
+  $source = ((& git -C $root remote get-url origin) | Out-String).Trim()
+  if ($LASTEXITCODE -ne 0 -or
+      $source -notmatch '(?i)^(https://(?:[^/@]+@)?github\.com/|git@github\.com:|ssh://git@github\.com/)(pedrogles/sad-sus-pb-data-mart)(?:\.git)?/?$') {
+    throw 'UNEXPECTED_ORIGIN'
   }
-  Push-Location $root
-  try {
-    $remote = ((& git remote get-url origin) | Out-String).Trim()
-    if ($LASTEXITCODE -ne 0 -or $remote -notmatch '(?i)github\.com[:/]pedrogles/sad-sus-pb-data-mart(?:\.git)?/?$') {
-      throw "UNEXPECTED_ORIGIN: $remote"
-    }
-    $list = @(& git ls-remote --heads origin)
-    if ($LASTEXITCODE -ne 0) { throw 'LS_REMOTE_FAILED' }
-  } finally { Pop-Location }
-  $heads = @{}
-  foreach($line in $list) {
-    if ($line -notmatch '^([0-9a-f]{40})\s+refs/heads/(.+)$') { throw "INVALID_REMOTE_REF_LINE: $line" }
-    $heads[$Matches[2]] = $Matches[1].ToUpperInvariant()
+  $snapshot = Get-Content -LiteralPath $snapshotPath -Raw -Encoding UTF8 | ConvertFrom-Json
+  if ($snapshot.schema -cne 'sad-github-hygiene-branch-inventory-v2' -or
+      $snapshot.repository -cne 'pedrogles/sad-sus-pb-data-mart' -or
+      $snapshot.branch_count -ne 161 -or @($snapshot.branches).Count -ne 161) {
+    throw 'INVENTORY_CONTRACT_MISMATCH'
   }
-  $j = Get-Content -LiteralPath $inventory -Raw -Encoding UTF8 | ConvertFrom-Json
-  if ($j.schema -cne 'sad-github-hygiene-inventory-v1' -or $j.repo -cne 'pedrogles/sad-sus-pb-data-mart' -or
-      @($j.branches).Count -ne 159) { throw 'INVENTORY_SCHEMA_MISMATCH' }
+  $remotes = Read-RemoteHeads $root
+  $seen = @{}
   $rows = @()
-  $known = @{}
-  foreach($b in $j.branches) {
-    $name = [string]$b.branch
-    $known[$name] = $true
-    $expected = ([string]$b.sha).ToUpperInvariant()
-    $actual = $heads[$name]
-    $decision='HOLD_REVIEW'
-    if ($name -ceq 'main') { $decision='PROTECT_MAIN' }
-    elseif (-not $actual) { $decision='HOLD_MISSING_REMOTE' }
-    elseif ($actual -cne $expected) { $decision='HOLD_SHA_DRIFT' }
-    elseif ($b.group -ceq 'MERGED_PR' -and $b.pr_head_matches_branch -eq $true) {
-      $decision='CANDIDATE_AFTER_SPECIFIC_OWNER_APPROVAL'
-    } elseif ($b.group -ceq 'OPEN_PR') { $decision='HOLD_OPEN_PR' }
-    elseif ($b.group -ceq 'CLOSED_UNMERGED_PR') { $decision='HOLD_CLOSED_UNMERGED' }
-    elseif ($b.group -ceq 'ORPHAN_NO_PR') { $decision='HOLD_NO_PR' }
+  $drift = 0
+  foreach($b in $snapshot.branches) {
+    $name = [string]$b.name
+    if ($seen.ContainsKey($name)) { throw 'DUPLICATE_INVENTORY_BRANCH' }
+    $seen[$name] = $true
+    $expected = ([string]$b.sha).ToLowerInvariant()
+    if ($expected -notmatch '^[a-f0-9]{40}$') { throw 'INVALID_INVENTORY_SHA' }
+    $actual = $null
+    if ($remotes.ContainsKey($name)) { $actual = $remotes[$name] }
+    $decision = 'HOLD_UNCLASSIFIED'
+    if ($name -ceq 'main') {
+      if ($actual -ne $expected -or $expected -ne ([string]$snapshot.main_sha)) {
+        throw 'MAIN_SHA_DRIFT_REFRESH_INVENTORY'
+      }
+      $decision = 'PROTECT_MAIN'
+    }
+    elseif (-not $actual) { $decision='BLOCKED_MISSING_REF'; $drift++ }
+    elseif ($actual -cne $expected) { $decision='BLOCKED_SHA_DRIFT'; $drift++ }
+    elseif ($b.protected -eq $true) { $decision='HOLD_GITHUB_PROTECTED' }
+    elseif ($b.classification -ceq 'MERGED_PR' -and
+            $b.pr_merged_at -and $b.pr_sha_matches -eq $true -and
+            $b.pr_head_sha -ceq $expected) {
+      $decision = 'CANDIDATE_PENDING_BUNDLE_ANCESTRY_AND_OWNER_APPROVAL'
+    }
+    elseif ($b.classification -ceq 'CLOSED_UNMERGED_PR') { $decision='HOLD_CLOSED_UNMERGED' }
+    elseif ($b.classification -ceq 'NO_PR') { $decision='HOLD_ORPHAN' }
+    else { $decision='HOLD_OTHER' }
     $rows += [pscustomobject]@{
-      Branch=$name; Group=[string]$b.group; LinkedPr=$b.linked_pr
-      SnapshotSha=$expected; RemoteSha=$actual
-      PrHeadMatches=$b.pr_head_matches_branch; Decision=$decision
+      Branch=$name;Group=[string]$b.classification;Pr=$b.pr_number
+      SnapshotSha=$expected;LiveSha=$actual;Decision=$decision
     }
   }
-  foreach($name in $heads.Keys) {
-    if (-not $known.ContainsKey($name)) {
+  foreach($name in $remotes.Keys) {
+    if (-not $seen.ContainsKey($name)) {
       $rows += [pscustomobject]@{
-        Branch=$name; Group='NEW_SINCE_SNAPSHOT'; LinkedPr=$null
-        SnapshotSha=$null; RemoteSha=$heads[$name]
-        PrHeadMatches=$null; Decision='HOLD_NEW_BRANCH'
+        Branch=$name;Group='NEW_SINCE_PINNED_SNAPSHOT';Pr=$null
+        SnapshotSha=$null;LiveSha=$remotes[$name];Decision='HOLD_NEW_REF'
       }
     }
   }
   if (-not (Test-Path -LiteralPath $out)) {
     $null = New-Item -ItemType Directory -Path $out -ErrorAction Stop
   }
-  $stamp = (Get-Date -Format 'yyyyMMdd_HHmmss')
-  $id = [Guid]::NewGuid().ToString('N').Substring(0,8)
-  $csv = Join-Path $out ('sad_cleanup_dryrun_'+$stamp+'_'+$id+'.csv')
-  $json = Join-Path $out ('sad_cleanup_dryrun_'+$stamp+'_'+$id+'.json')
+  $run = Join-Path $out ('dryrun_' + (Get-Date -Format 'yyyyMMdd_HHmmss') + '_' + [Guid]::NewGuid().ToString('N').Substring(0,8))
+  $null = New-Item -ItemType Directory -Path $run -ErrorAction Stop
+  $csv = Join-Path $run 'branch_decisions.csv'
+  $json = Join-Path $run 'dryrun_manifest.json'
   $rows | Sort-Object Branch | Export-Csv -LiteralPath $csv -NoTypeInformation -Encoding UTF8
-  $candidates = @($rows | Where-Object {$_.Decision -eq 'CANDIDATE_AFTER_SPECIFIC_OWNER_APPROVAL'}).Count
-  $blocked = @($rows | Where-Object {$_.Decision -like 'HOLD*'}).Count
+  $candidates = @($rows | Where-Object { $_.Decision -eq 'CANDIDATE_PENDING_BUNDLE_ANCESTRY_AND_OWNER_APPROVAL' }).Count
+  $extra = @($rows | Where-Object { $_.Decision -eq 'HOLD_NEW_REF' }).Count
   $report = [ordered]@{
-    Mode='READ_ONLY'; Repository='pedrogles/sad-sus-pb-data-mart'
-    CreatedAt=(Get-Date).ToString('o'); Origin=$remote
-    InventoryPath=$inventory
-    InventorySha256=(Get-FileHash -LiteralPath $inventory -Algorithm SHA256).Hash
-    SnapshotBranches=159; RemoteBranches=$heads.Count
-    MergedCandidates=$candidates; BlockedOrUnreviewed=$blocked
-    Csv=$csv; NoRemoteMutations=$true
+    verdict=if($drift -gt 0){'BLOCKED_SNAPSHOT_REF_DRIFT'}else{'PASS_READ_ONLY_PROVISIONAL'}
+    repository='pedrogles/sad-sus-pb-data-mart';mode='READ_ONLY'
+    inventory_sha256=(Get-FileHash -LiteralPath $snapshotPath -Algorithm SHA256).Hash
+    snapshot_branches=161;live_branches=$remotes.Count;extra_new_refs=$extra
+    drifted_or_missing_refs=$drift;preliminary_merged_candidates=$candidates
+    ancestry_checked=$false;bundle_backup_verified=$false
+    deletions_authorized=$false;remote_mutations=$false
+    report_csv=$csv
   }
   $report | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $json -Encoding UTF8
-  Write-Output 'VERDICT=READ_ONLY_INVENTORY_COMPLETE'
-  Write-Output ('REMOTE_BRANCHES='+$heads.Count)
-  Write-Output ('MERGED_CANDIDATES='+$candidates)
-  Write-Output ('BLOCKED_OR_UNREVIEWED='+$blocked)
-  Write-Output ('REPORT_CSV='+$csv)
+  Write-Output ('VERDICT='+$report.verdict)
+  Write-Output ('LIVE_BRANCHES='+$report.live_branches)
+  Write-Output ('PRELIMINARY_MERGED_CANDIDATES='+$candidates)
+  Write-Output ('NEW_REFS_HELD='+$extra)
+  Write-Output ('DRIFTED_REFS='+$drift)
   Write-Output ('REPORT_JSON='+$json)
+  Write-Output ('REPORT_CSV='+$csv)
   Write-Output 'NO_REMOTE_MUTATIONS=True'
+  if($drift -gt 0){ exit 2 }
 } catch {
   Write-Output 'VERDICT=BLOCKED'
   Write-Output ('DETAIL='+$_.Exception.Message)
