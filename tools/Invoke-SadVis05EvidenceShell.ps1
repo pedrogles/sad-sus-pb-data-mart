@@ -60,30 +60,34 @@ using System;
 using System.Text;
 using System.Runtime.InteropServices;
 public class Vis05Win {
+ [StructLayout(LayoutKind.Sequential)]
+ public struct RECT { public int Left,Top,Right,Bottom; }
  [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
  [DllImport("user32.dll",CharSet=CharSet.Unicode)]
  private static extern int GetWindowText(IntPtr h, StringBuilder b,int len);
- public static string Title() {
+ [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr h,out RECT rect);
+ public static string TitleAndRect(out RECT bounds) {
   IntPtr w=GetForegroundWindow(); StringBuilder b=new StringBuilder(2048);
-  if(w==IntPtr.Zero)return "";GetWindowText(w,b,b.Capacity);return b.ToString();
+  bounds=new RECT(); if(w==IntPtr.Zero)return "";
+  GetWindowText(w,b,b.Capacity);GetWindowRect(w,out bounds);return b.ToString();
  }
 }
 '@ -ErrorAction Stop
  }
  Write-Output "SELECT_IN_QLIKVIEW=$label DELAY=$DelaySeconds"
  Start-Sleep -Seconds $DelaySeconds
- $t=[Vis05Win]::Title()
+ $bounds=New-Object Vis05Win+RECT
+ $t=[Vis05Win]::TitleAndRect([ref]$bounds)
  if($t.IndexOf($workName,[StringComparison]::OrdinalIgnoreCase) -lt 0){throw "WRONG_FOREGROUND_WINDOW $t"}
  if($t -match '(?i)\.qvw\s*\*'){throw 'UNSAVED_QVW_CLOSE_AND_REOPEN_COPY'}
  Add-Type -AssemblyName System.Drawing
- Add-Type -AssemblyName System.Windows.Forms
- $screen=[System.Windows.Forms.Screen]::PrimaryScreen.Bounds
- if($screen.Width -lt 800 -or $screen.Height -lt 600){throw 'SCREEN_TOO_SMALL'}
+ $w=$bounds.Right-$bounds.Left;$h=$bounds.Bottom-$bounds.Top
+ if($w -lt 800 -or $h -lt 600 -or $w -gt 8192 -or $h -gt 8192){throw 'WINDOW_SIZE_INVALID'}
  $png=Join-Path $dir (Fresh $label '.png')
- $bmp=New-Object Drawing.Bitmap($screen.Width,$screen.Height)
+ $bmp=New-Object Drawing.Bitmap($w,$h)
  $g=[Drawing.Graphics]::FromImage($bmp)
  try{
-  $g.CopyFromScreen($screen.Left,$screen.Top,0,0,(New-Object Drawing.Size($screen.Width,$screen.Height)))
+  $g.CopyFromScreen($bounds.Left,$bounds.Top,0,0,(New-Object Drawing.Size($w,$h)))
   $bmp.Save($png,[Drawing.Imaging.ImageFormat]::Png)
  }finally{$g.Dispose();$bmp.Dispose()}
  if((Get-Item -LiteralPath $png).Length -lt 10000){throw 'CAPTURE_TOO_SMALL'}
