@@ -24,6 +24,7 @@ $repository='pedrogles/sad-sus-pb-data-mart'
 $runnerBranch='chore/sad-branch-backup-readonly-2026-11-11'
 $bundleSha='1DC499D992C0414664FFC59298770767DCA40E872070ED314E300AFD045CB21A'
 $runDir=$null
+$completed=@()
 function Fail([string]$reason){throw $reason}
 function RemoteRefs([string]$root) {
   $lines=@(& git -C $root ls-remote --heads origin)
@@ -139,8 +140,15 @@ try{
     # Do not issue one extra ls-remote per branch (160 unnecessary round trips).
     $lease='--force-with-lease=refs/heads/'+$x.Branch+':'+$x.Sha
     $refspec=':refs/heads/'+$x.Branch
-    $output=@(& git -C $root push --porcelain $lease origin $refspec 2>&1)
-    $exitCode=$LASTEXITCODE
+    # PowerShell 5.1 can surface normal Git stderr as a terminating error.
+    $previousPolicy=$ErrorActionPreference
+    try {
+      $ErrorActionPreference='Continue'
+      $output=@(& git -C $root push --porcelain $lease origin $refspec 2>&1)
+      $exitCode=$LASTEXITCODE
+    } finally {
+      $ErrorActionPreference=$previousPolicy
+    }
     $completed+= [pscustomobject]@{
       Branch=$x.Branch;Sha=$x.Sha;Pr=$x.Pr;ExitCode=$exitCode
       Result=if($exitCode -eq 0){'DELETED'}else{'FAILED'}
