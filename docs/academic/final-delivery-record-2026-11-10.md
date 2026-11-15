@@ -86,3 +86,12 @@ Nesta consolidação os artefatos essenciais de PRs Draft foram copiados **sem a
 5. **Higiene do GitHub** conforme [plano](../project/repository-final-hygiene-plan-2026-11-10.md), sem novas implementações Qlik/ETL.
 
 **STOP do desenvolvimento acadêmico:** sem novos KPIs, sem modelagem ou QlikView físico adicional; incompatibilidades e insuficiências científicas constam como limites explícitos.
+
+
+## 8. Atualização superveniente — VIS-05 (15/11/2026)
+
+**Este adendo substitui o apontamento VIS-04 como versão mais recente das três figuras do relatório, sem apagar o histórico e os aceites restritos anteriores.** O documento de entrega acadêmica foi atualizado **apenas nas Figuras 7–9** com capturas VIS-05: páginas físicas 22, 23 e 24. O PDF original VIS-04 (98 páginas) teve hash conferido em bytes: `BB7A6A6D7C2ADC3BE80831F4F8E98642D7CE9D07A25B7F03000A9DF2E8071302`. O novo PDF `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_VIS05_2026.pdf` tem SHA-256 `4C6033F3131F4B05105BBFCD992A2A6E7896CD5A2D424BF0BEA513430D0ED9F3` e 98 páginas; as outras 95/95 passaram em igualdade textual, geométrica e visual por rasterização. As três páginas modificadas foram inspecionadas e mantêm suas legendas VIS-05 e todo o restante do texto.
+
+**Executor:** `tools/patch_sad_doc_r3_vis05_figures.py` versionado antes da execução no commit `33a916819173f99694f8af57363411b03e6385ac`. Resultado `VIS05_PDF_FIGURE_PATCH_QA=PASS_RESTRICTED`, sem homologação científica. Evidências, três hashes de PNG, arquivo QVW reportado, restrições e STOP: [fechamento documental VIS-05](vis05-documentary-closeout-2026-11-15.md).
+
+O QVW VIS-05, seu hash `B56D0A8550AB7EEE68D45DB0249F273DED05C4ADEE88DBE3FC7A20B162084DBB` e a preservação do original VIS-04 foram **reportados pelo operador**, sem acesso independente ao Windows. Municípios externos à PB podem aparecer sem nomes no fluxo RES→SERV. `ONLINE_REHEARSAL=NOT_RUN`, `TEACHER_ACCEPTANCE=UNVERIFIED`, `CLASSROOM_SUBMISSION=NOT_SUBMITTED`, `C2_C3_C4_GLOBAL=NOT_APPROVED`, `PRODUCTION_APPROVED=False`. O PDF segue fora do Git; guardar cópia persistente e verificar SHA-256 após download.
