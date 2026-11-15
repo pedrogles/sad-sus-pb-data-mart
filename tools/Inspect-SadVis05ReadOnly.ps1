@@ -209,11 +209,14 @@ try{
     }
   }
   if($charts.Count -ne 9){throw 'Nine CH01-CH09 charts were not found'}
+  $extraCharts=@($inventory.ToArray() | Where-Object {$_.id -cmatch '^CH[0-9]+$' -and -not $charts.ContainsKey($_.id)})
+  if($extraCharts.Count -gt 0){throw 'Unexpected additional chart IDs; scope requires nine'}
   $report.sheet_objects=@($inventory.ToArray())
   $objects=@()
   foreach($spec in @($contract.objects)){
     if($chartSheets[$spec.id] -ne [int]$spec.sheet){throw "Chart on unexpected sheet: $($spec.id)"}
     $objects+=ChartRecord $charts[$spec.id] $spec.id $chartSheets[$spec.id]
+    $report.objects=$objects
   }
   $report.objects=$objects
   # No unsupported NoOfTables()/TableName() chart expressions: script presence is not a live table audit.
@@ -222,6 +225,7 @@ try{
   $report.chart_cell_data_status='NOT_EXPORTED_ENGINE_PROBES_ONLY'
   if($Mode -ceq 'Scenarios'){
     foreach($scenario in @($contract.scenarios)){
+      $report.active_scenario=$scenario.id
       $state=SelectState $scenario $contract
       $item=[ordered]@{id=$scenario.id;selections=$scenario.selections;selection_verified=$true;current_selections=$state;probes=(EngineProbes $contract);guards=[ordered]@{};captures=@();status='OBSERVED'}
       foreach($id in @('CH04','CH05','CH09')){$item.guards[$id]=Guard $charts[$id]}

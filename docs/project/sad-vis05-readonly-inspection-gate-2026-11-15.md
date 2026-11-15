@@ -49,6 +49,8 @@ Pin SHA-256: `B56D0A8550AB7EEE68D45DB0249F273DED05C4ADEE88DBE3FC7A20B162084DBB`.
 
 Cria uma cópia byte a byte em pasta única e marca-a read-only antes de OpenDoc. Não usa os scripts internos para recarregar. QlikView deve estar fechado antes de iniciar; licenciamento/popup/erro COM são impedimentos reais, não indicação para nova tentativa automática. Se houver diálogo de gravação ao fechar, não salvar. A execução não é garantida headless. Capturas exigem sessão Windows visível e janela QlikView sem outra janela sobreposta.
 
+Preservar os QVDs disponíveis no disco não prova que foram precisamente aqueles bytes usados na última carga do QVW. A linhagem completa dessa carga continua dependente de seus logs/manifestos originais. O gate demonstra identidade do QVW atual e resultados sob seleções, sem reconstruir retrospectivamente uma proveniência que não tenha evidência.
+
 ## Dois modos, com fronteiras de prova
 
 ### Inventory — executar primeiro
@@ -146,3 +148,11 @@ Os scripts devem estar commitados no repositório canônico **antes** de qualque
 O parser PowerShell 5.1, COM e GUI precisam ser validados no Windows; a execução física não ocorreu no ambiente cloud. Resultados efetivos de testes e commit de publicação serão registrados em adendo próprio, sem inventar PASS antecipado.
 
 **STOP da preparação:** fontes versionadas e Draft PR disponível; primeiro retorno necessário é a saída Inventory. Sem merge, nova recarga, mudança no PDF ou avanço automático para correção.
+
+## Verificações da preparação cloud
+
+Fontes publicadas no repositório canônico antes da execução de testes: commit `3543c0c4852f2a7f1ccbb209d52188fcc19023e8`. Sobre cópia Git desse commit, `python -m unittest discover -s tools -p test_review_sad_vis05_inspection.py -v` retornou **10/10 OK**, e `git diff --check` não apontou erro. São testes de evidência sintética; não executam QlikView ou os dados reais.
+
+O parser oficial PowerShell **7.4.6 em Linux** leu o runner desse commit sem erro. Isso é evidência sintática do parser disponível, não execução do PowerShell 5.1/COM/GUI no Windows. A revisão posterior acrescenta apenas detecção de gráficos extras e registro progressivo de objetos/cenário ativo, além desta documentação; o HEAD final deve passar novamente no parser antes da publicação para execução pelo operador.
+
+**Status físico preservado:** `WINDOWS_POWERSHELL_51=NOT_RUN`, `QVW_BYTES_LOCAL_READBACK=NOT_RUN`, `COM_INSPECTION=NOT_RUN`, `SCENARIOS=NOT_RUN`, `VISUAL_LABEL_SORT_REVIEW=NOT_RUN`, `PRODUCTION_APPROVED=False`. Nenhum PASS sintético é herdado como PASS de dashboard.
