@@ -1,5 +1,12 @@
 # Current State — SAD Data Mart SUS PB
 
+## Atualização documental — 15/11/2026 | VIS-05
+
+**Superveniente ao snapshot de 12/11 abaixo:** o ZIP acadêmico recebido teve o PDF VIS-04 original confirmado pelo SHA-256 `BB7A6A6D7C2ADC3BE80831F4F8E98642D7CE9D07A25B7F03000A9DF2E8071302` e três capturas VIS-05 identificadas com hashes. O executor Python `tools/patch_sad_doc_r3_vis05_figures.py` foi versionado **antes de executar** (`33a916819173f99694f8af57363411b03e6385ac`), aplicou a troca isolada das Figuras 7–9 nas páginas 22–24 e auditou **95/95 páginas restantes inalteradas em texto, geometria e renderização**. Novo PDF de 98 páginas: `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_VIS05_2026.pdf`, SHA-256 `4C6033F3131F4B05105BBFCD992A2A6E7896CD5A2D424BF0BEA513430D0ED9F3`, mantido fora do Git. Três páginas alteradas renderizadas e inspecionadas sem recortes críticos.
+
+`VIS05_DOCUMENTARY_PDF=PASS_RESTRICTED_PDF_INTEGRITY`; `VIS05_QVW_LOCAL=PASS_RESTRICTED_OPERATOR_REPORTED` (QVW não inspecionado independentemente); `ONLINE_REHEARSAL=NOT_RUN`; `TEACHER_ACCEPTANCE=UNVERIFIED`; `CLASSROOM_SUBMISSION=NOT_SUBMITTED`; `C2_C3_C4_GLOBAL=NOT_APPROVED`; `PRODUCTION_APPROVED=False`. A ressalva de municípios de residência externos à PB sem nome permanece. **Merge documental e aceite docente continuam pendentes.** Evidências e hashes: [closeout VIS-05](../academic/vis05-documentary-closeout-2026-11-15.md). Não reabrir implementação ou testes QlikView.
+
+
 ## Estado operacional — 12/11/2026 | higiene conservadora encerrada, entrega acadêmica pendente
 
 **Proveniência:** PRs [#237](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/237), [#238](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/238) e [#239](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/239) integradas; a execução de higiene foi conferida sobre a `main@dc05bf1fb5fa22b837777565d06506001c6eddf7`. Os registros de implementação acadêmica continuam delimitados às evidências locais reportadas, **sem conceder novos aceites físicos ou docentes**. Os inventários GitHub são snapshots pinados, não contadores sempre atualizados.
