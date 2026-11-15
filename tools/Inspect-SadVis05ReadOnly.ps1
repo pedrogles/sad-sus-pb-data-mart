@@ -78,10 +78,28 @@ function Guard($obj){
   $answer=EvaluateRecord $expr
   return @{status='READ_BACK';expression=$condition;raw=$answer.raw}
 }
+function Test-SelectionReset([string]$Summary,[string]$RecordCount,[hashtable]$FieldCounts,[string[]]$RequiredFields){
+  # A display dash alone proves nothing: require independent numeric observations.
+  if($Summary.Trim() -notin @('','-') -or $RecordCount.Trim() -cne '0'){return $false}
+  if($RequiredFields.Count -eq 0){return $false}
+  foreach($field in $RequiredFields){
+    if(-not $FieldCounts.ContainsKey($field) -or ([string]$FieldCounts[$field]).Trim() -cne '0'){return $false}
+  }
+  return $true
+}
 function SelectState($scenario,$contract){
   $null=$script:doc.ClearAll()
   $empty=[string]$script:doc.Evaluate("GetCurrentSelections('|','=',',',1000)")
-  if(-not [string]::IsNullOrWhiteSpace($empty)){throw "ClearAll left selections: $empty"}
+  # Every nonempty selection record uses the explicit '=' tag separator.
+  # Num/RangeSum yields an integer for a null/empty summary; errors remain nonnumeric.
+  $records=[string]$script:doc.Evaluate("Num(RangeSum(0,SubStringCount(GetCurrentSelections('|','=',',',1000),'=')),'0','.',',')")
+  $counts=@{}
+  foreach($field in @($contract.field_allowlist)){
+    $counts[$field]=[string]$script:doc.Evaluate(("Num(GetSelectedCount([{0}],True()),'0','.',',')" -f $field))
+  }
+  $reset=Test-SelectionReset $empty $records $counts @($contract.field_allowlist)
+  $script:report.selection_reset_checks+=@{scenario=$scenario.id;raw_summary=$empty;selection_record_count=$records;selected_counts=$counts;verified=$reset}
+  if(-not $reset){throw "Selection reset not verified: summary='$empty' record_count='$records'"}
   foreach($p in $scenario.selections.PSObject.Properties){
     if(@($contract.field_allowlist) -cnotcontains $p.Name){throw 'Field not authorized'}
     $null=$script:doc.GetField($p.Name).Select([string]$p.Value)
@@ -161,7 +179,7 @@ public class SadVis05Window {
 $script:doc=$null;$app=$null;$run=$null;$copy=$null
 $locks=[Collections.Generic.List[object]]::new()
 $before=@();$results=[Collections.Generic.List[object]]::new()
-$report=[ordered]@{gate='SAD_VIS05_READONLY_INSPECTION_01';mode=$Mode;started=(Get-Date).ToString('o');status='BLOCKED_PRECHECK';objects=@();scenarios=@();capture_focus_events=@();integrity_verified=$false;cleanup_ok=$false;manual_sort_status='NOT_RUN';global_approval=$false}
+$report=[ordered]@{gate='SAD_VIS05_READONLY_INSPECTION_01';mode=$Mode;started=(Get-Date).ToString('o');status='BLOCKED_PRECHECK';objects=@();scenarios=@();capture_focus_events=@();selection_reset_checks=@();integrity_verified=$false;cleanup_ok=$false;manual_sort_status='NOT_RUN';global_approval=$false}
 $exitCode=2
 try{
   if(-not $Inspect){throw 'Explicit -Inspect required'}
