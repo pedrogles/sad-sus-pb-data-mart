@@ -81,7 +81,7 @@ Nesta consolidação os artefatos essenciais de PRs Draft foram copiados **sem a
 
 1. **Revisão de leitura do PDF final pelo responsável**, incluindo nomes, referências, páginas impressas e figuras.
 2. **Confirmar critério docente** de três folhas versus três painéis e data/meio da segunda avaliação.
-3. **Ensaio online real** com QVW VIS-04 e PDF como fallback; **não** assumir PASS sem execução.
+3. **Ensaio online real** com QVW VIS-05 (hash reportado pelo operador) e PDF VIS-05 como fallback; **não** assumir PASS sem execução.
 4. **Submissão pelo responsável**, registrar data e protocolo/recibo, se disponível.
 5. **Higiene do GitHub** conforme [plano](../project/repository-final-hygiene-plan-2026-11-10.md), sem novas implementações Qlik/ETL.
 
