@@ -14,6 +14,7 @@ param(
   [string]$EvidenceRoot = (Join-Path $env:USERPROFILE 'SAD_VIS05_INSPECTION_EVIDENCIAS'),
   [ValidateSet('Inventory','Scenarios')][string]$Mode='Inventory',
   [switch]$Capture,
+  [ValidateRange(2,30)][int]$CaptureFocusSeconds=8,
   [switch]$ManualSortReview,
   [Parameter(Mandatory=$true)][switch]$Inspect
 )
@@ -90,6 +91,12 @@ function SelectState($scenario,$contract){
   }
   return [string]$script:doc.Evaluate("GetCurrentSelections('|','=',',',1000)")
 }
+function Test-CaptureIdentity([uint32]$ObservedProcess,[uint32]$ExpectedProcess,[string]$WindowTitle,[string]$ExpectedCopy){
+  return $ExpectedProcess -gt 0 -and $ObservedProcess -eq $ExpectedProcess -and
+    -not [string]::IsNullOrWhiteSpace($ExpectedCopy) -and
+    -not [string]::IsNullOrWhiteSpace($WindowTitle) -and
+    $WindowTitle.IndexOf($ExpectedCopy,[StringComparison]::OrdinalIgnoreCase) -ge 0
+}
 function CaptureSheet([int]$index,[string]$path){
   $null=$script:doc.GetSheet($index).Activate()
   if(-not ('SadVis05Window' -as [type])){
@@ -109,17 +116,35 @@ public class SadVis05Window {
   }
   $processes=@(Get-Process -Name Qv -ErrorAction Stop)
   if($processes.Count -ne 1){throw 'Capture requires one Qv process'}
-  $h=$processes[0].MainWindowHandle
-  if($h -eq [IntPtr]::Zero){throw 'No QlikView window'}
-  $null=[SadVis05Window]::SetForegroundWindow($h)
+  [uint32]$expectedProcess=$processes[0].Id
+  function ForegroundSnapshot {
+    $handle=[SadVis05Window]::GetForegroundWindow()
+    [uint32]$observedProcess=0
+    $caption=[Text.StringBuilder]::new(2048)
+    if($handle -ne [IntPtr]::Zero){
+      $null=[SadVis05Window]::GetWindowThreadProcessId($handle,[ref]$observedProcess)
+      $null=[SadVis05Window]::GetWindowText($handle,$caption,2048)
+    }
+    return @{handle=$handle;process=$observedProcess;title=$caption.ToString();valid=(Test-CaptureIdentity $observedProcess $expectedProcess $caption.ToString() $copy)}
+  }
+  # Windows may deny focus; MainWindowHandle is only a focus hint, never the identity proof.
+  $hint=$processes[0].MainWindowHandle
+  $requested=$false
+  if($hint -ne [IntPtr]::Zero){$requested=[SadVis05Window]::SetForegroundWindow($hint)}
   Start-Sleep -Milliseconds 800
-  if([SadVis05Window]::GetForegroundWindow() -ne $h){throw 'Foreground is not the inspection window'}
-  [uint32]$windowPid=0
-  $null=[SadVis05Window]::GetWindowThreadProcessId($h,[ref]$windowPid)
-  if($windowPid -ne $processes[0].Id){throw 'Unexpected window process'}
-  $title=[Text.StringBuilder]::new(2048)
-  $null=[SadVis05Window]::GetWindowText($h,$title,2048)
-  if($title.ToString().IndexOf('SAD_VIS05_INSPECTION_COPY.qvw',[StringComparison]::OrdinalIgnoreCase) -lt 0){throw 'Wrong QVW in foreground'}
+  $initial=ForegroundSnapshot
+  $observed=$initial
+  $waited=$false
+  if(-not $initial.valid){
+    Write-Host ("FOCUS_REQUIRED: click the QlikView INSPECTION COPY now; do not click this console. Capture in "+$CaptureFocusSeconds+" seconds.")
+    Start-Sleep -Seconds $CaptureFocusSeconds
+    $waited=$true
+    $observed=ForegroundSnapshot
+  }
+  $script:report.capture_focus_events+=@{sheet=$index;set_foreground_return=$requested;initial_copy_verified=$initial.valid;operator_wait_used=$waited;expected_process=$expectedProcess;observed_process=$observed.process;final_copy_verified=$observed.valid}
+  if(-not $observed.valid){throw 'Capture focus timeout: foreground PID and full inspection-copy path were not both verified'}
+  $h=$observed.handle
+  $title=[string]$observed.title
   $rect=[SadVis05Window+RECT]::new()
   if(-not [SadVis05Window]::GetWindowRect($h,[ref]$rect)){throw 'No window rectangle'}
   Add-Type -AssemblyName System.Drawing
@@ -130,13 +155,13 @@ public class SadVis05Window {
   $graphics=[Drawing.Graphics]::FromImage($bitmap)
   try{$graphics.CopyFromScreen($area.X,$area.Y,0,0,$area.Size);$bitmap.Save($path,[Drawing.Imaging.ImageFormat]::Png)}
   finally{$graphics.Dispose();$bitmap.Dispose()}
-  return @{status='CAPTURED_PENDING_VISUAL_REVIEW';file=[IO.Path]::GetFileName($path);sha256=(Sha $path);sheet=$index;window_title=$title.ToString()}
+  return @{status='CAPTURED_PENDING_VISUAL_REVIEW';file=[IO.Path]::GetFileName($path);sha256=(Sha $path);sheet=$index;window_title=$title}
 }
 
 $script:doc=$null;$app=$null;$run=$null;$copy=$null
 $locks=[Collections.Generic.List[object]]::new()
 $before=@();$results=[Collections.Generic.List[object]]::new()
-$report=[ordered]@{gate='SAD_VIS05_READONLY_INSPECTION_01';mode=$Mode;started=(Get-Date).ToString('o');status='BLOCKED_PRECHECK';objects=@();scenarios=@();integrity_verified=$false;cleanup_ok=$false;manual_sort_status='NOT_RUN';global_approval=$false}
+$report=[ordered]@{gate='SAD_VIS05_READONLY_INSPECTION_01';mode=$Mode;started=(Get-Date).ToString('o');status='BLOCKED_PRECHECK';objects=@();scenarios=@();capture_focus_events=@();integrity_verified=$false;cleanup_ok=$false;manual_sort_status='NOT_RUN';global_approval=$false}
 $exitCode=2
 try{
   if(-not $Inspect){throw 'Explicit -Inspect required'}

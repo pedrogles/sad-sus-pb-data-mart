@@ -158,3 +158,39 @@ O parser oficial PowerShell **7.4.6 em Linux** leu o runner desse commit sem err
 **Conferência final efetivamente executada:** runner do commit `21f9f7322b88934ecca69b5ba600c766c91bd2f0`, Git blob `7186983bc2184296db1d26e15fe3ca12ba7c3a5a`, comparado entre bytes locais e GitHub, retornou `FINAL_PARSER_PASS=True PowerShell=7.4.6`. O commit que registra esta frase altera somente documentação; esse blob do runner e os arquivos do revisor/testes permanecem os mesmos. Preparação disponível para **Inventory local**, sem declaração de compatibilidade física 5.1/COM.
 
 **Status físico preservado:** `WINDOWS_POWERSHELL_51=NOT_RUN`, `QVW_BYTES_LOCAL_READBACK=NOT_RUN`, `COM_INSPECTION=NOT_RUN`, `SCENARIOS=NOT_RUN`, `VISUAL_LABEL_SORT_REVIEW=NOT_RUN`, `PRODUCTION_APPROVED=False`. Nenhum PASS sintético é herdado como PASS de dashboard.
+
+## Retorno local Inventory — bloqueio na segunda captura (15/11/2026)
+
+**Fonte recebida:** `inspection.json`, 2.922.890 bytes; SHA-256 conferido dos bytes anexados `7C75B53E4008E9D5DCFCEB4E9157EA4C750A0BEEECBE7825B215CCB52680AA8F`. Execução Windows reportada no commit `f8c19c5b6b138fa9920488b322e6159b5b1261e7`, entre `18:06:00` e `18:07:44` UTC−03, modo Inventory. Parser sem erros no transcript; a versão exata do PowerShell não foi impressa. As evidências são readback de relatório local, não abertura independente do QVW no cloud.
+
+### Resultados reaproveitados — não refazer Inventory
+
+- Fonte e cópia final reportam o pin QVW `B56D0A85...084DBB`.
+- Antes/depois: **26/26** paths, tamanhos e hashes correspondentes; `integrity_verified=true`, `cleanup_ok=true`, `cleanup_errors=[]`.
+- **9/9** objetos CH01–CH09 encontrados nas três folhas; **9/9 primeiras expressões** efetivamente lidas e correspondentes ao contrato.
+- CH09: `UsePartialSum=false`, coerente com No Totals.
+- CH04: guarda RES lida; CH05: guarda RES + ano compatível com 2019 + competência compatível com 201912 lida; CH09: guarda SERV + competência mensal lida. Isso prova presença da condição, não seu comportamento em cenário nem legibilidade da mensagem.
+- `INVENTORY_sheet0.png` foi registrado com SHA `CF92FCD890E84B43E75C117DC4524A10BD0B219CAA9D12A85E5CE72333EE947A`; os pixels não vieram no anexo e não recebem aprovação visual.
+- `scenarios=[]`: nenhuma seleção de teste foi executada. Tabelas físicas, mensagens de override e rótulos dinâmicos continuam sem certificação.
+
+Os pins do script/contrato constantes do JSON conferem com as respectivas fontes Git após checkout CRLF: script `0538215DB5BEA297F649B3459EA1FB8518971BCC7485060A983412D38EFED9BC`; contrato `177C70EBF2730BAD4E56A7ECE2EAC34ECBBC00389FE60E1B1C1A713046E6BDF2`. Os hashes LF do cloud diferem, como esperado; não há evidência de edição indevida. A avaliação pelo revisor versionado, usando os bytes CRLF correspondentes, encontrou **somente** `RUNNER_BLOCKED:Foreground is not the inspection window`, além dos limites já previstos; não apontou divergência de expressão ou integridade.
+
+### Causa delimitada e correção do executor
+
+Falha observada: depois da primeira captura, a checagem de primeiro plano falhou. O executor anterior descartava o retorno de SetForegroundWindow e exigia igualdade entre o handle ativo e MainWindowHandle após 800 ms. Não registrava o handle/processo observado naquele ponto; portanto, não se identifica retrospectivamente qual janela estava ativa nem a causa OS exata.
+
+Fonte primária: [Microsoft — SetForegroundWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow) documenta retorno falso e restrições de mudança de foco; [GetForegroundWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getforegroundwindow) pode retornar outro handle ou zero durante transição. Essas possibilidades explicam o limite do mecanismo, sem provar qual delas ocorreu nesta máquina.
+
+Correção única, somente em CaptureSheet: registrar retorno da solicitação de foco, verificar o **PID da janela realmente ativa e o caminho completo da cópia dessa execução**, e, se não corresponderem, oferecer **uma espera de 8 segundos** para o operador clicar na janela correta. `-CaptureFocusSeconds` permite 2–30 segundos. Depois da espera, falhar se PID+cópia não forem ambos confirmados. Permanecem a exigência de um processo Qv, janela visível/grande, retângulo dentro da tela e proibição de captura de outra janela. Não usar bypass de identidade, AttachThreadInput, teclas artificiais, loops de foco ou nova API COM.
+
+Novo teste sintético `tools/Test-SadVis05CaptureIdentity.ps1` extrai somente a função pura de identidade via AST; não executa o runner nem user32/COM. Casos: PID+path válidos, outro PID com mesmo título, outro diretório de execução com mesmo basename, título vazio, PID zero, path esperado vazio e diferença de caixa no path Windows. Deve ser commitado antes de executar; resultado sintético não é teste de foco real.
+
+### Próximo passo autorizado e condição de parada
+
+O inventário de propriedades e integridade recebido é suficiente para **não repetir Inventory**. Após publicação da correção e parser Windows sem erro, executar **uma tentativa Scenarios**, com captura e foco assistido. O preflight e a releitura breve no início continuam necessários para vincular a sessão ao mesmo arquivo/novo executor, sem repetir a tentativa Inventory separadamente.
+
+Quando aparecer `FOCUS_REQUIRED`, clicar na janela QlikView da cópia e aguardar sem voltar ao terminal. Não clicar nos gráficos durante as capturas automáticas. A revisão manual de ordenação é opcional; para este próximo retorno, priorizar os cinco cenários automáticos.
+
+Se ocorrer novo bloqueio, preservar `inspection.json` e os diagnósticos `capture_focus_events`, sem repetir o comando. Não declarar o foco corrigido em Windows antecipadamente. **Sem Reload, Save, correção de dashboard, merge ou mudança na main.**
+
+Atualização qualificada: `VIS05_LOCAL_INVENTORY=PARTIAL_PASS_PROPERTIES_AND_INTEGRITY_REPORT_REVIEWED`, `WINDOWS_PARSER_INITIAL=PASS_OPERATOR_REPORTED`, `CAPTURE=PARTIAL_ONE_RECORDED_IMAGE_NOT_REVIEWED`, `SCENARIOS=NOT_RUN`, `VISUAL_DYNAMIC_LABELS=NOT_APPROVED`, `PRODUCTION_APPROVED=False`. O status bruto da tentativa antiga permanece BLOCKED_OR_INCONCLUSIVE; não foi reescrito nem sobrescrito.
