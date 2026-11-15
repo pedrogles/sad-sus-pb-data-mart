@@ -155,4 +155,6 @@ Fontes publicadas no repositório canônico antes da execução de testes: commi
 
 O parser oficial PowerShell **7.4.6 em Linux** leu o runner desse commit sem erro. Isso é evidência sintática do parser disponível, não execução do PowerShell 5.1/COM/GUI no Windows. A revisão posterior acrescenta apenas detecção de gráficos extras e registro progressivo de objetos/cenário ativo, além desta documentação; o HEAD final deve passar novamente no parser antes da publicação para execução pelo operador.
 
+**Conferência final efetivamente executada:** runner do commit `21f9f7322b88934ecca69b5ba600c766c91bd2f0`, Git blob `7186983bc2184296db1d26e15fe3ca12ba7c3a5a`, comparado entre bytes locais e GitHub, retornou `FINAL_PARSER_PASS=True PowerShell=7.4.6`. O commit que registra esta frase altera somente documentação; esse blob do runner e os arquivos do revisor/testes permanecem os mesmos. Preparação disponível para **Inventory local**, sem declaração de compatibilidade física 5.1/COM.
+
 **Status físico preservado:** `WINDOWS_POWERSHELL_51=NOT_RUN`, `QVW_BYTES_LOCAL_READBACK=NOT_RUN`, `COM_INSPECTION=NOT_RUN`, `SCENARIOS=NOT_RUN`, `VISUAL_LABEL_SORT_REVIEW=NOT_RUN`, `PRODUCTION_APPROVED=False`. Nenhum PASS sintético é herdado como PASS de dashboard.
