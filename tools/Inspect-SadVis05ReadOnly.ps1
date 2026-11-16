@@ -12,7 +12,7 @@ param(
   [Parameter(Mandatory=$true)][ValidatePattern('^[a-fA-F0-9]{40}$')][string]$ExpectedCommit,
   [string]$SourceQvw = (Join-Path $env:USERPROFILE 'SAD_VIS05_EVIDENCIAS\VIS05_20261112_171721_950990d1\SAD_MVP_VIS05_UX_WORK_TEMP.qvw'),
   [string]$EvidenceRoot = (Join-Path $env:USERPROFILE 'SAD_VIS05_INSPECTION_EVIDENCIAS'),
-  [ValidateSet('Inventory','Scenarios')][string]$Mode='Inventory',
+  [ValidateSet('Inventory','Scenarios','WindowDiagnostic')][string]$Mode='Inventory',
   [switch]$Capture,
   [ValidateRange(2,30)][int]$CaptureFocusSeconds=8,
   [switch]$ManualSortReview,
@@ -115,7 +115,17 @@ function Test-CaptureIdentity([uint32]$ObservedProcess,[uint32]$ExpectedProcess,
     -not [string]::IsNullOrWhiteSpace($WindowTitle) -and
     $WindowTitle.IndexOf($ExpectedCopy,[StringComparison]::OrdinalIgnoreCase) -ge 0
 }
-function CaptureSheet([int]$index,[string]$path){
+function Test-CaptureGeometry([hashtable]$Window,[hashtable]$Desktop,[bool]$Minimized){
+  $reasons=@()
+  if($Minimized){$reasons+='MINIMIZED'}
+  if($Window.width -lt 700){$reasons+='WIDTH_BELOW_700'}
+  if($Window.height -lt 500){$reasons+='HEIGHT_BELOW_500'}
+  if($Window.left -lt $Desktop.left -or $Window.top -lt $Desktop.top -or
+    ($Window.left+$Window.width) -gt ($Desktop.left+$Desktop.width) -or
+    ($Window.top+$Window.height) -gt ($Desktop.top+$Desktop.height)){$reasons+='OUTSIDE_VIRTUAL_SCREEN'}
+  return @{eligible=($reasons.Count -eq 0);reasons=@($reasons)}
+}
+function CaptureSheet([int]$index,[string]$path,[switch]$Diagnostic){
   $null=$script:doc.GetSheet($index).Activate()
   if(-not ('SadVis05Window' -as [type])){
     Add-Type -TypeDefinition @'
@@ -127,6 +137,10 @@ public class SadVis05Window {
  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h,out RECT r);
+ [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr h);
+ [DllImport("user32.dll")] public static extern bool IsZoomed(IntPtr h);
+ [DllImport("user32.dll")] public static extern uint GetDpiForWindow(IntPtr h);
+ [DllImport("dwmapi.dll")] public static extern int DwmGetWindowAttribute(IntPtr h,int attribute,out RECT r,int size);
  [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr h,out uint pid);
  [DllImport("user32.dll",CharSet=CharSet.Unicode)] public static extern int GetWindowText(IntPtr h,StringBuilder s,int n);
 }
@@ -168,21 +182,42 @@ public class SadVis05Window {
   Add-Type -AssemblyName System.Drawing
   Add-Type -AssemblyName System.Windows.Forms
   $area=[Drawing.Rectangle]::new($rect.Left,$rect.Top,$rect.Right-$rect.Left,$rect.Bottom-$rect.Top)
-  if($area.Width -lt 700 -or $area.Height -lt 500 -or -not [Windows.Forms.SystemInformation]::VirtualScreen.Contains($area)){throw 'Window minimized, clipped or too small'}
+  $virtual=[Windows.Forms.SystemInformation]::VirtualScreen
+  $window=@{left=$area.Left;top=$area.Top;width=$area.Width;height=$area.Height}
+  $desktop=@{left=$virtual.Left;top=$virtual.Top;width=$virtual.Width;height=$virtual.Height}
+  $minimized=[SadVis05Window]::IsIconic($h)
+  $geometry=Test-CaptureGeometry $window $desktop $minimized
+  $dpi=@{status='UNAVAILABLE'}
+  try{$value=[SadVis05Window]::GetDpiForWindow($h);if($value -gt 0){$dpi=@{status='OBSERVED_WINDOW_EFFECTIVE_DPI';value=$value}}}catch{}
+  $frame=@{status='UNAVAILABLE'}
+  try{
+    $dwm=[SadVis05Window+RECT]::new()
+    $hr=[SadVis05Window]::DwmGetWindowAttribute($h,9,[ref]$dwm,[Runtime.InteropServices.Marshal]::SizeOf($dwm))
+    if($hr -eq 0){$frame=@{status='OBSERVED_NOT_DPI_ADJUSTED';left=$dwm.Left;top=$dwm.Top;width=($dwm.Right-$dwm.Left);height=($dwm.Bottom-$dwm.Top)}}
+  }catch{}
+  $screens=@([Windows.Forms.Screen]::AllScreens | ForEach-Object {
+    @{primary=$_.Primary;bounds=@{left=$_.Bounds.Left;top=$_.Bounds.Top;width=$_.Bounds.Width;height=$_.Bounds.Height};working_area=@{left=$_.WorkingArea.Left;top=$_.WorkingArea.Top;width=$_.WorkingArea.Width;height=$_.WorkingArea.Height}}
+  })
+  $observation=@{sheet=$index;window=$window;virtual_screen=$desktop;screens=$screens;minimized=$minimized;maximized=[SadVis05Window]::IsZoomed($h);dpi=$dpi;dwm_visible_frame=$frame;geometry=$geometry;coordinate_caveat='GetWindowRect and DWM may use different DPI coordinate spaces; no automatic substitution';capture_performed=$false}
+  $script:report.window_diagnostics+=@($observation)
+  if($Diagnostic){return $observation}
+  if(-not $geometry.eligible){throw ('Capture geometry blocked: '+($geometry.reasons -join ','))}
   $bitmap=[Drawing.Bitmap]::new($area.Width,$area.Height)
   $graphics=[Drawing.Graphics]::FromImage($bitmap)
   try{$graphics.CopyFromScreen($area.X,$area.Y,0,0,$area.Size);$bitmap.Save($path,[Drawing.Imaging.ImageFormat]::Png)}
   finally{$graphics.Dispose();$bitmap.Dispose()}
+  $observation.capture_performed=$true
   return @{status='CAPTURED_PENDING_VISUAL_REVIEW';file=[IO.Path]::GetFileName($path);sha256=(Sha $path);sheet=$index;window_title=$title}
 }
 
 $script:doc=$null;$app=$null;$run=$null;$copy=$null
 $locks=[Collections.Generic.List[object]]::new()
 $before=@();$results=[Collections.Generic.List[object]]::new()
-$report=[ordered]@{gate='SAD_VIS05_READONLY_INSPECTION_01';mode=$Mode;started=(Get-Date).ToString('o');status='BLOCKED_PRECHECK';objects=@();scenarios=@();capture_focus_events=@();selection_reset_checks=@();integrity_verified=$false;cleanup_ok=$false;manual_sort_status='NOT_RUN';global_approval=$false}
+$report=[ordered]@{gate='SAD_VIS05_READONLY_INSPECTION_01';mode=$Mode;started=(Get-Date).ToString('o');status='BLOCKED_PRECHECK';objects=@();scenarios=@();capture_focus_events=@();selection_reset_checks=@();window_diagnostics=@();integrity_verified=$false;cleanup_ok=$false;manual_sort_status='NOT_RUN';global_approval=$false}
 $exitCode=2
 try{
   if(-not $Inspect){throw 'Explicit -Inspect required'}
+  if($Mode -ceq 'WindowDiagnostic' -and $Capture){throw 'WindowDiagnostic does not capture; omit -Capture'}
   if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){throw 'Windows required'}
   if($ManualSortReview -and ($Mode -cne 'Scenarios' -or -not $Capture)){throw 'ManualSortReview requires Scenarios and Capture'}
   $repo=Full $Root;$source=Full $SourceQvw;$evidence=Full $EvidenceRoot
@@ -239,6 +274,11 @@ try{
   $script:doc=$app.OpenDoc($copy)
   if($null -eq $script:doc){throw 'OpenDoc returned null'}
   if([int]$script:doc.NoOfSheets() -ne 3){throw 'Expected three sheets'}
+  if($Mode -ceq 'WindowDiagnostic'){
+    $null=CaptureSheet 0 '' -Diagnostic
+    $report.status='WINDOW_DIAGNOSTIC_COLLECTED_NOT_CAPTURE_APPROVAL'
+    $exitCode=0
+  }else{
   $charts=@{};$chartSheets=@{};$inventory=[Collections.Generic.List[object]]::new()
   for($sheetIndex=0;$sheetIndex -lt 3;$sheetIndex++){
     foreach($obj in @($script:doc.GetSheet($sheetIndex).GetSheetObjects())){
@@ -281,8 +321,9 @@ try{
         if($g.status -cne 'READ_BACK' -or $raw -notmatch '^(0|-1|1)$'){$item.status='INCONCLUSIVE_GUARD';$results.Add($item);throw "Guard not readable: $($scenario.id)/$($property.Name)"}
         if(($raw -ne '0') -ne [bool]$property.Value){$item.status='FAIL_GUARD';$results.Add($item);throw "Guard mismatch: $($scenario.id)/$($property.Name)"}
       }
-      if($Capture){foreach($index in @($scenario.capture_sheets)){$item.captures+=CaptureSheet ([int]$index) (Join-Path $run ($scenario.id+'_sheet'+$index+'.png'))}}
       $results.Add($item);$report.scenarios=@($results.ToArray())
+      Json (Join-Path $run 'inspection.json') $report
+      if($Capture){foreach($index in @($scenario.capture_sheets)){$item.captures+=CaptureSheet ([int]$index) (Join-Path $run ($scenario.id+'_sheet'+$index+'.png'))}}
       Json (Join-Path $run 'inspection.json') $report
     }
     if($ManualSortReview){
@@ -300,6 +341,7 @@ try{
   }elseif($Capture){foreach($i in 0..2){$report['inventory_capture_'+$i]=CaptureSheet $i (Join-Path $run ('INVENTORY_sheet'+$i+'.png'))}}
   $report.status=if($Mode -ceq 'Inventory'){'INVENTORY_COLLECTED_NOT_FUNCTIONAL_PASS'}else{'SCENARIOS_ENGINE_CHECKED_VISUAL_REVIEW_PENDING'}
   $exitCode=0
+  }
 }catch{
   $report.failure=$_.Exception.Message
   $report.status='BLOCKED_OR_INCONCLUSIVE'

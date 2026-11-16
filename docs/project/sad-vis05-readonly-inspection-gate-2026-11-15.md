@@ -210,3 +210,37 @@ Fontes primárias: [QlikView GetCurrentSelections](https://help.qlik.com/en-US/q
 Novo teste `tools/Test-SadVis05SelectionReset.ps1`: oito casos sintéticos para vazio válido, traço confirmado numericamente e rejeição de traço com registro/filtro residual, contagem ilegível, campo ausente ou resumo com seleção. Extrai somente a função pura do AST; não executa corpo do runner/COM. Deve ser commitado antes da execução. Testes de revisor e identidade de janela não são repetidos, pois suas fontes não mudam.
 
 **STOP antes de novo teste físico:** receber `inspection.json` da pasta `183733_3c5b97c11720`, conferir a preservação/cleanup da tentativa bloqueada e revisar o novo commit. Não prescrever nova repetição de Scenarios apenas com base no traço. Nenhuma conclusão sobre filtros ou rótulos foi aprovada por essa tentativa.
+
+## Discovery delimitada de geometria e fechamento dos cenários (15/11/2026)
+
+**Baseline canônica reconsultada:** `main@5486ad9f50744769e85107132eae009529ac75cc`. Esta seção e o executor permanecem na branch Draft #243; não integram a main.
+
+### Evidência recebida e reconciliada
+
+- Segunda tentativa `183733_3c5b97c11720`: JSON SHA-256 `272B4F320E59ED26B4AE172AD3AE8966DEB17B0789B3EDCC3B276364D62C4D20`. 26/26 arquivos preservados, cleanup correto. Checagem textual bloqueou antes de cenários. O STOP anterior foi atendido.
+- Terceira tentativa `213945_da92173b1e5a`, commit `13f903e`: fonte/cópia no pin, 26/26 arquivos preservados e cleanup correto. Reset numericamente vazio comprovado; PID e caminho completo da cópia confirmados. Falha `Window minimized, clipped or too small`, sem coordenadas registradas. **Causa geométrica exata não determinada**; maximização/bordas/DPI são hipóteses, não fatos.
+- Quarta tentativa `220640_be726f799fa5`, commit `13f903e`, sem Capture: JSON SHA-256 `52E46EAA0CEB5B6EF5F561C184B3886752906B6FC01B68D449B794C2AEBC3019`. Revisor Python existente reconciliou 9 primeiras expressões, 23 oráculos numéricos e 5 condições contratadas, sem falhas. Cinco cenários e resets comprovados. Hashes CRLF do runner/contrato correspondem ao JSON; 26/26 arquivos preservados, cleanup sem erros, fonte/cópia no pin. `ENGINE_CHECKS_RECONCILED_OTHER_PROOFS_PENDING`. Não repetir estes cenários para diagnosticar a captura.
+
+**Limite semântico real:** nos estados FLOW_NE_ONLY e FLOW_EQ_ONLY, probes `lt_fixed=0` e `pop_2019=0`, com condições CH04/05/09 verdadeiras. São observações fora dos oráculos exigidos nesses estados; não aprovam a compatibilidade do filtro de fluxo com capacidade/população. Não são prova de célula desenhada nem de valor populacional zero. Manter pendência de revisão visual/semântica, sem corrigir modelo, condição ou expressão nesta PR.
+
+### Problema, objetivo e fronteira
+
+Problema técnico: CaptureSheet colapsava largura, altura e contenção em uma única mensagem; não guardava retângulos ou estado da janela. Além disso, em Scenarios, o cenário era anexado ao relatório somente após a captura, perdendo sua evidência quando a captura lançava exceção. Arquivo: `tools/Inspect-SadVis05ReadOnly.ps1`. Objetivo delimitado: colher diagnóstico suficiente em **uma execução sem cenários**, preservar checkpoints e encerrar em handoff do JSON.
+
+Modo novo **WindowDiagnostic**, no runner existente: reutiliza pin, locks, cópia somente leitura, hashes e cleanup; abre a cópia, ativa apenas a primeira folha e consulta a janela. Não enumera novamente os nove objetos, não seleciona/limpa filtros, não avalia probes, não altera ordenação e não gera PNG. `-Capture` é recusado neste modo. Registra posição/tamanho, estado minimizado/maximizado, VirtualScreen, bounds/working area das telas, DPI efetivo disponível e DWM visible frame opcional. Guarda motivo separado para largura <700, altura <500, minimização e retângulo fora do VirtualScreen. Nenhuma redução de limites, recorte automático ou mudança de DPI/posição é realizada.
+
+**Fonte técnica primária:** [Microsoft GetWindowRect](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getwindowrect) documenta virtualização DPI e bordas invisíveis; DWM extended frame não é ajustado para DPI. [GetDpiForWindow](https://learn.microsoft.com/windows/win32/api/winuser/nf-winuser-getdpiforwindow) depende da awareness da janela. Por isso os valores são observacionais, não substituídos automaticamente entre APIs nem convertidos em diagnóstico conclusivo de escala. VirtualScreen é um bounding box e não certifica ausência de lacunas entre monitores, oclusão ou legibilidade.
+
+Persistência em Scenarios: anexar/gravar probes e condições antes de CaptureSheet. Falha posterior ainda resulta em BLOCKED_OR_INCONCLUSIVE, preservando os resultados anteriores sem aprovação visual.
+
+### Critérios e parada
+
+1. Teste sintético versionado antes de executar: `tools/Test-SadVis05WindowGeometry.ps1`; oito casos de fronteira (dimensões mínimas, tela exata, largura/altura insuficiente, borda negativa, excesso à direita, monitor negativo válido e minimização), parser e verificações estáticas do ramo sem seleção/checkpoint. Não substitui Win32/COM real.
+2. Windows: executar **somente WindowDiagnostic** no commit fornecido; fechar QlikView previamente. Se houver FOCUS_REQUIRED, ativar a cópia. Não restaurar/mover/redimensionar durante esta primeira observação; queremos registrar o estado que o runner produz.
+3. Sucesso de coleta = identidade confirmada, observação de janela registrada, 26 arquivos preservados e cleanup correto. Status `WINDOW_DIAGNOSTIC_COLLECTED_NOT_CAPTURE_APPROVAL` é coleta, não captura homologada; consultar `window_diagnostics[].geometry` mesmo com exit 0.
+4. Se APIs opcionais de DPI/DWM estiverem indisponíveis, registrar UNAVAILABLE; não inferir escala. Falha de foco continua bloqueando sem capturar outra janela. Sem recuperação ou retentativa automática.
+5. **STOP:** devolver inspection.json. Diagnosticar causa com os valores; somente então definir uma intervenção mínima ou encaminhar captura manual. Sem repetir testes numéricos, ampliar objetos, recarregar/salvar QVW, merge ou alterar main.
+
+### Revisão visual que permanece pendente
+
+Após resolver a coleta: relacionar categoria/rótulo/valor do CH07 nas duas seleções de fluxo e após inversão de ordenação somente na cópia; verificar mensagens efetivamente visíveis em YEAR_2018/CH05 e SERV_250750/CH09; observar apresentação de capacidade/população sob filtro de fluxo. Não presumir rótulos dinâmicos porque o motor respondeu. Asserções numéricas existentes são reutilizadas, não refeitas. Ainda não há modo novo para essas capturas nem aprovação para correções do dashboard.
