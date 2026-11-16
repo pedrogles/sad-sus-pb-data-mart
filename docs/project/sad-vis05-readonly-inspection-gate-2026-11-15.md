@@ -50,6 +50,14 @@ Não executar o revisor numérico existente sobre esse retorno: ele valida Inven
 
 Auditoria/prontidão preservadas: `AUDIT_COMPLETE_WITH_RESERVATIONS=True`, `SUBMISSION_APPROVED=False`, `MANUAL_VISUAL_WINDOWS=NOT_RUN`, `VISUAL_DYNAMIC_LABELS=INCONCLUSIVE`, `PRODUCTION_APPROVED=False`. Confirmações docentes sobre arquivos e três folhas/painéis, ensaio online e submissão continuam pendentes.
 
+### Validação efetivamente realizada após publicação
+
+Publicação explicitamente autorizada pelo responsável. O push via terminal falhou por ausência de credencial; os mesmos três arquivos foram publicados pelo conector GitHub. A árvore remota `dea72ba5f1c663de4b0e310828f389349819bf59` é idêntica à do commit local `d92ddb6`; o commit publicado é `2c6a7525e0923b62fa25ac7c43c3f19b6de64cb3` (metadados de commit diferentes, conteúdo igual).
+
+Sobre checkout desse commit publicado, PowerShell **7.4.6/Linux** executou `tools/Test-SadVis05ManualVisual.ps1 -RunnerPath tools/Inspect-SadVis05ReadOnly.ps1`: **PASS** para parser, plano delimitado, isolamento estático do modo manual, identificação/rejeição de arquivos PNG e quatro casos sintéticos do protocolo (coleta, imagem ausente, seleção alterada, STOP do operador com evidência preservada). `git diff --check` sem erro. O teste extrai funções do AST; não executa o corpo do runner, COM, Win32, QlikView ou dados reais.
+
+Blobs publicados conferidos no checkout: runner `538ab602db64a489db6da7175acc0c58cc23e779`; teste `863b2b78e61c55306f09ef7254b508d97d2cdccd`. Este registro altera somente documentação; não requer repetir os testes das mesmas fontes. Windows PowerShell 5.1, comportamento COM das pausas e revisão de pixels continuam **NOT_RUN**. Próximo retorno: uma coleta ManualVisual pelo operador, sem Capture/ManualSortReview, ou o primeiro erro com JSON/cleanup. Nenhum teste numérico antigo foi reexecutado.
+
 **Data:** 15/11/2026. **Gate:** `SAD_VIS05_READONLY_INSPECTION_01`.
 
 **Estado inicial:** `PREPARED_NOT_RUN_WINDOWS`. Não altera o parecer anterior nem concede novos PASS físicos antes da execução real. Este é um gate novo autorizado pelo responsável ao solicitar prosseguir com o formato de inspeção em bytes, filtros e rótulos; não reabre a auditoria documental G0–G5 nem a implementação acadêmica.
