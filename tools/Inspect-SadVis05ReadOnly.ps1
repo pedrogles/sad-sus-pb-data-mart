@@ -12,7 +12,7 @@ param(
   [Parameter(Mandatory=$true)][ValidatePattern('^[a-fA-F0-9]{40}$')][string]$ExpectedCommit,
   [string]$SourceQvw = (Join-Path $env:USERPROFILE 'SAD_VIS05_EVIDENCIAS\VIS05_20261112_171721_950990d1\SAD_MVP_VIS05_UX_WORK_TEMP.qvw'),
   [string]$EvidenceRoot = (Join-Path $env:USERPROFILE 'SAD_VIS05_INSPECTION_EVIDENCIAS'),
-  [ValidateSet('Inventory','Scenarios','WindowDiagnostic')][string]$Mode='Inventory',
+  [ValidateSet('Inventory','Scenarios','WindowDiagnostic','ManualVisual')][string]$Mode='Inventory',
   [switch]$Capture,
   [ValidateRange(2,30)][int]$CaptureFocusSeconds=8,
   [switch]$ManualSortReview,
@@ -108,6 +108,55 @@ function SelectState($scenario,$contract){
     if($count.Trim() -cne '1' -or $value.Trim() -cne [string]$p.Value){throw "Selection mismatch: $($p.Name)"}
   }
   return [string]$script:doc.Evaluate("GetCurrentSelections('|','=',',',1000)")
+}
+function Read-ManualPng([string]$Path){
+  $bytes=[IO.File]::ReadAllBytes($Path)
+  # File identification only; pixels and their relation to the QVW require human review.
+  $signature='89504E470D0A1A0A'
+  if($bytes.Length -lt 24 -or ([BitConverter]::ToString($bytes[0..7])).Replace('-','') -cne $signature -or
+     [Text.Encoding]::ASCII.GetString($bytes,12,4) -cne 'IHDR'){throw 'Manual evidence is not a PNG with IHDR'}
+  return @{file=[IO.Path]::GetFileName($Path);sha256=(Sha $Path);bytes=$bytes.Length;status='MANUAL_PNG_PENDING_PIXEL_AND_IDENTITY_REVIEW'}
+}
+function Get-ManualVisualPlan {
+  return @(
+    @{id='V1_BASELINE';sheet=2;selections=[pscustomobject]@{};token='CAPTURED';instruction='Capture CH07 in its original order: category/code or tooltip, manual label and value, full copy identity and empty Current Selections.'},
+    @{id='V1_SORT';sheet=2;selections=[pscustomobject]@{};token='SORT_CHANGED';instruction='On this COPY only, reverse CH07 sort ONCE in the GUI. Do not rename labels or change dimensions/expressions. Capture the changed order with category/code, label and value. SORT_CHANGED reports the action; it does not certify the sort.'},
+    @{id='V2_EQ';sheet=2;selections=[pscustomobject]@{MVP_FI_RES_SERV_CLASS='RES_EQ_SERV'};token='ORDER_RESTORED';instruction='First restore CH07 original sort in the GUI. Capture EQ selection, category/label/value. ORDER_RESTORED reports restoration; reviewer must confirm it. Do not interpret leitos or population in this state.'},
+    @{id='V3_NE';sheet=2;selections=[pscustomobject]@{MVP_FI_RES_SERV_CLASS='RES_NE_SERV'};token='CAPTURED';instruction='Capture NE selection and CH07 category/label/value. Do not interpret leitos or population in this state.'},
+    @{id='V4_YEAR_2018';sheet=1;selections=[pscustomobject]@{PERIODO_ANO='2018'};token='CAPTURED';instruction='Capture CH05 in full and Current Selections=2018. Read the actual message: fixed December/2019 versus selected year; a generic no-data message is insufficient.'},
+    @{id='V5_SERV_250750';sheet=2;selections=[pscustomobject]@{SERV_COD_DATASUS_6='250750'};token='CAPTURED';instruction='Capture CH09 in full and Current Selections=SERV 250750. Read the actual SERV incompatibility message; do not infer it from the condition.'}
+  )
+}
+function Invoke-ManualVisualReview($contract,[string]$Directory){
+  foreach($step in @(Get-ManualVisualPlan)){
+    $record=[ordered]@{id=$step.id;sheet=$step.sheet;expected_selections=$step.selections;status='PREPARING';visual_accepted=$false}
+    $script:report.manual_visual_steps+=@($record)
+    $script:report.active_visual_step=$step.id
+    Json (Join-Path $Directory 'inspection.json') $script:report
+    $state=SelectState $step $contract
+    $record.current_selections_before=$state
+    $null=$script:doc.GetSheet([int]$step.sheet).Activate()
+    $path=Join-Path $Directory ($step.id+'.png')
+    if(Test-Path -LiteralPath $path){throw 'Refuse preexisting manual capture'}
+    $record.status='AWAITING_MANUAL_CAPTURE'
+    Json (Join-Path $Directory 'inspection.json') $script:report
+    Write-Host ('VISUAL_STEP='+$step.id)
+    Write-Host ('COPY_ONLY='+$script:copy)
+    Write-Host $step.instruction
+    Write-Host ('Save a manual PNG screenshot to: '+$path)
+    Write-Host 'Include the QlikView copy identity and Current Selections. Keep the current filters. Never Save/Reload the QVW.'
+    $answer=Read-Host ('Return here and type '+$step.token+' after saving the PNG, or STOP on any problem')
+    $record.operator_response=$answer
+    # Keep a submitted image even when the operator reports a defect and stops.
+    if(Test-Path -LiteralPath $path){$record.capture=Read-ManualPng $path}
+    $record.current_selections_after=[string]$script:doc.Evaluate("GetCurrentSelections('|','=',',',1000)")
+    if($record.current_selections_after -cne $state){$record.status='BLOCKED_SELECTION_CHANGED';throw ('Manual selection changed: '+$step.id)}
+    if($answer -cne $step.token){$record.status='STOPPED_BY_OPERATOR';throw ('Manual review stopped: '+$step.id)}
+    if(-not $record.Contains('capture')){$record.status='INCONCLUSIVE_MISSING_PNG';throw ('Manual PNG missing: '+$step.id)}
+    $record.status='COLLECTED_PENDING_VISUAL_REVIEW'
+    $record.finished=(Get-Date).ToString('o')
+    Json (Join-Path $Directory 'inspection.json') $script:report
+  }
 }
 function Test-CaptureIdentity([uint32]$ObservedProcess,[uint32]$ExpectedProcess,[string]$WindowTitle,[string]$ExpectedCopy){
   return $ExpectedProcess -gt 0 -and $ObservedProcess -eq $ExpectedProcess -and
@@ -213,11 +262,12 @@ public class SadVis05Window {
 $script:doc=$null;$app=$null;$run=$null;$copy=$null
 $locks=[Collections.Generic.List[object]]::new()
 $before=@();$results=[Collections.Generic.List[object]]::new()
-$report=[ordered]@{gate='SAD_VIS05_READONLY_INSPECTION_01';mode=$Mode;started=(Get-Date).ToString('o');status='BLOCKED_PRECHECK';objects=@();scenarios=@();capture_focus_events=@();selection_reset_checks=@();window_diagnostics=@();integrity_verified=$false;cleanup_ok=$false;manual_sort_status='NOT_RUN';global_approval=$false}
+$report=[ordered]@{gate='SAD_VIS05_READONLY_INSPECTION_01';mode=$Mode;started=(Get-Date).ToString('o');status='BLOCKED_PRECHECK';objects=@();scenarios=@();manual_visual_steps=@();capture_focus_events=@();selection_reset_checks=@();window_diagnostics=@();integrity_verified=$false;cleanup_ok=$false;manual_sort_status='NOT_RUN';global_approval=$false}
 $exitCode=2
 try{
   if(-not $Inspect){throw 'Explicit -Inspect required'}
   if($Mode -ceq 'WindowDiagnostic' -and $Capture){throw 'WindowDiagnostic does not capture; omit -Capture'}
+  if($Mode -ceq 'ManualVisual' -and ($Capture -or $ManualSortReview)){throw 'ManualVisual uses manual PNGs only; omit Capture and ManualSortReview'}
   if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){throw 'Windows required'}
   if($ManualSortReview -and ($Mode -cne 'Scenarios' -or -not $Capture)){throw 'ManualSortReview requires Scenarios and Capture'}
   $repo=Full $Root;$source=Full $SourceQvw;$evidence=Full $EvidenceRoot
@@ -274,7 +324,14 @@ try{
   $script:doc=$app.OpenDoc($copy)
   if($null -eq $script:doc){throw 'OpenDoc returned null'}
   if([int]$script:doc.NoOfSheets() -ne 3){throw 'Expected three sheets'}
-  if($Mode -ceq 'WindowDiagnostic'){
+  if($Mode -ceq 'ManualVisual'){
+    $report.engine_oracles_status='NOT_REPEATED_REUSE_INSPECTION_3_COMMIT_13f903e'
+    $report.visual_status='PENDING_HUMAN_PIXEL_AND_IDENTITY_REVIEW'
+    $report.inspection_copy_path=$copy
+    Invoke-ManualVisualReview $contract $run
+    $report.status='MANUAL_VISUAL_COLLECTED_REVIEW_PENDING'
+    $exitCode=0
+  }elseif($Mode -ceq 'WindowDiagnostic'){
     $null=CaptureSheet 0 '' -Diagnostic
     $report.status='WINDOW_DIAGNOSTIC_COLLECTED_NOT_CAPTURE_APPROVAL'
     $exitCode=0

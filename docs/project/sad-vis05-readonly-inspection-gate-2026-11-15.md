@@ -1,5 +1,55 @@
 # VIS-05 — Gate de inspeção física sem recarga
 
+## Handoff vigente — revisão manual focalizada preparada em 15/11/2026
+
+Este adendo prevalece sobre comandos históricos de Inventory/Scenarios/WindowDiagnostic abaixo. Auditoria G0–G5 encerrada com ressalvas; correções de PDF/QVW ficam para depois da revisão. Main revalidada em `5486ad9f50744769e85107132eae009529ac75cc`; esta preparação permanece na Draft #243, sem merge. A sequência de pedido do responsável foi terminar a revisão antes das correções e prosseguir com sua preparação. **A execução Windows deste modo novo ainda não ocorreu.**
+
+### Contrato do próximo passo
+
+- ID: `SAD_VIS05_MANUAL_VISUAL_01`. Objetivo: categoria/rótulo/valor de CH07 sob seleção/ordem e texto visível dos avisos CH05/CH09. STOP após uma coleta ou primeira falha; sem correções automáticas.
+- Evidência reutilizada: `inspection(3).json`, commit `13f903e53f024e3be4d518d09b88933ecc125985`, pasta `220640_be726f799fa5`: nove primeiras expressões, 23 oráculos e cinco condições reconciliados. Não repetir esses gates. As verificações de seleção/reset abaixo identificam o contexto da nova imagem, sem revalidar medidas.
+- Diagnóstico encerrado: `inspection(4).json` / `225216_a659fc4a9353`, commit `73b7e95`: GetWindowRect `-8,-8,1696,1018`, VirtualScreen `-1920,0,3600,1050`, DWM visível `0,0,1680,1002`; bloqueio bruto OUTSIDE_VIRTUAL_SCREEN. Não reiniciar foco/DPI, não chamar captura automática nem homologá-la por esta rota.
+- Agente preparador: ChatGPT Work, runtime Codex; identificador exato do modelo/esforço não verificável. Linux/Git disponíveis; nenhum subagente, modelo alternativo ou execução QlikView cloud. Destino: operador no Windows com QlikView 12, execução física a registrar.
+- Escopo: modo `ManualVisual` no executor existente, com pin/locks/cópia read-only/26 hashes/cleanup preservados. Nenhuma nova API de captura, inventário dos gráficos ou probes de medidas/guardas. Não há nova pergunta de arquitetura ou modelagem.
+- Permissões deste modo: selecionar/limpar os estados delimitados em memória, ativar folhas e reverter uma vez a ordem do CH07 pela GUI da cópia. Capturas manuais para evidência. Proibidos Reload, Save/SaveAs, renomear textos, mudar dimensões/expressões/guardas/associações, alterar originais/PDF ou fazer merge. Usar `-Inspect` explicitamente.
+- EVIDENCE_ROOT: `%USERPROFILE%\SAD_VIS05_INSPECTION_EVIDENCIAS`, pasta única criada pelo runner fora do Git/TEMP. Cópia descartável read-only dentro dessa pasta, para manter a proteção/cleanup já implementados. Não enviar ou versionar QVW/QVD.
+- PASS da preparação: fonte commitada, parser e teste sintético do protocolo; não equivale a PASS visual/COM. HARD_STOP: pin/seleção/hash divergente, escrita indevida ou problema informado pelo operador. INCONCLUSIVE: PNG ausente, categoria/valor ilegível, ordem não demonstrada ou mensagem sem prova. Captura coletada nunca aprova pixels automaticamente.
+
+### Modo ManualVisual — uma sessão, cinco casos / seis PNGs
+
+Não usar `-Capture` nem `-ManualSortReview`: são recusados neste modo. O runner não chama CaptureSheet, Win32/DWM ou mecanismo alternativo de screenshot. Reutiliza SelectState somente para reset/identificação da seleção, abre a aba e aguarda o operador salvar um PNG com nome exato na pasta indicada. Após a resposta, confere existência, assinatura/IHDR e hash do arquivo e se a seleção continua igual. Esses controles não provam conteúdo visual ou identidade da janela nos pixels: o revisor deve conferi-los.
+
+| Etapa / arquivo | Ação e prova humana necessária | Resposta ao terminal |
+|---|---|---|
+| `V1_BASELINE.png` | Sem filtros; CH07 na ordem original. Código/categoria, rótulo e valor devem ser inequívocos: EQ/mesmo município/294.635, NE/município diferente/260.454. | `CAPTURED` |
+| `V1_SORT.png` | Inverter somente a ordem do CH07 na GUI da cópia; provar que as barras realmente trocaram de posição e se os textos acompanharam as categorias. Não editar os rótulos. | `SORT_CHANGED` |
+| `V2_EQ.png` | Runner seleciona somente EQ; restaurar a ordenação original antes da captura. Provar categoria, rótulo e valor 294.635. Não interpretar leitos/população. | `ORDER_RESTORED` |
+| `V3_NE.png` | Somente NE; conferir categoria, rótulo e valor 260.454. | `CAPTURED` |
+| `V4_YEAR_2018.png` | Somente ano 2018; mostrar CH05 completo e seleção. Transcrever aviso que deve explicar ranking fixo dezembro/2019 versus 2018; genérico sem dados não basta. | `CAPTURED` |
+| `V5_SERV_250750.png` | Somente SERV 250750; mostrar CH09 completo e seleção. Transcrever aviso de incompatibilidade SERV/população e orientação de limpar SERV. | `CAPTURED` |
+
+Antes de cada etapa o runner limpa e confirma as seleções. Abra a janela Seleções Atuais para incluí-la nas capturas, junto ao objeto inteiro e identificação da cópia. Use captura manual do Windows, salvando **PNG** no caminho exibido. Tooltip legível pode demonstrar o valor; não deduzir valor pela altura/cor da barra. Se o detalhe não couber, manter o frame de contexto e adicionar PNG de detalhe na mesma pasta, identificado pela etapa.
+
+`CAPTURED`, `SORT_CHANGED` e `ORDER_RESTORED` são relatos de ação, não PASS. Se vir rótulo errado, mensagem genérica/truncada, ordenação que não muda ou qualquer incerteza, salvar a imagem do problema e responder `STOP`. A primeira divergência encerra a tentativa; não corrigir na sessão. O JSON preserva a etapa e a imagem existente. Ao terminar, o runner fecha sem salvar, verifica os 26 protegidos/cópia e cleanup. Não executar novamente se houver bloqueio; devolver a evidência.
+
+### Comando após conferir o commit publicado
+
+Na cópia de código de inspeção já usada pelo operador (não na clone com QVDs), atualizar sem descartar alterações locais. Fechar QlikView antes de começar. O hash exato da preparação será fornecido no handoff; não usar outro HEAD silenciosamente.
+
+```powershell
+git pull --ff-only origin test/sad-vis05-readonly-inspection-2026-11-15
+$code = (Get-Location).Path
+$artifacts = Join-Path $env:USERPROFILE 'documents\programming\sad-sus-pb-data-mart'
+$head = (git rev-parse HEAD).Trim()
+# Conferir $head com o commit publicado no handoff antes de executar.
+powershell.exe -NoProfile -File .\tools\Inspect-SadVis05ReadOnly.ps1 `
+  -Root $code -ArtifactRoot $artifacts -ExpectedCommit $head -Mode ManualVisual -Inspect
+```
+
+Não executar o revisor numérico existente sobre esse retorno: ele valida Inventory/Scenarios e não foi adaptado para aprovar ManualVisual. Devolver `inspection.json`, `sha256_manifest.json` e os PNGs manuais pertinentes; sem binários QVW/QVD. Somente revisão humana pode atribuir PASS_VISUAL_RESTRICTED por caso. Ordenação/categoria/valor ou texto não verificável mantém INCONCLUSIVE; divergência material mantém BLOCKED. A partir do relatório consolidar as correções, sem aplicá-las automaticamente.
+
+Auditoria/prontidão preservadas: `AUDIT_COMPLETE_WITH_RESERVATIONS=True`, `SUBMISSION_APPROVED=False`, `MANUAL_VISUAL_WINDOWS=NOT_RUN`, `VISUAL_DYNAMIC_LABELS=INCONCLUSIVE`, `PRODUCTION_APPROVED=False`. Confirmações docentes sobre arquivos e três folhas/painéis, ensaio online e submissão continuam pendentes.
+
 **Data:** 15/11/2026. **Gate:** `SAD_VIS05_READONLY_INSPECTION_01`.
 
 **Estado inicial:** `PREPARED_NOT_RUN_WINDOWS`. Não altera o parecer anterior nem concede novos PASS físicos antes da execução real. Este é um gate novo autorizado pelo responsável ao solicitar prosseguir com o formato de inspeção em bytes, filtros e rótulos; não reabre a auditoria documental G0–G5 nem a implementação acadêmica.
