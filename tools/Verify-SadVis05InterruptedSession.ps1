@@ -96,7 +96,7 @@ try{
   $out.current_release_errors=$releaseErrors
   if(-not $out.current_locks_released){$out.status='BLOCKED_CURRENT_LOCK_RELEASE';$code=2}
   $out.finished=(Get-Date).ToString('o')
-  if($null -ne $out.input_report -and (Test-Path -LiteralPath $session -PathType Container)){
+  if($out.Contains('input_report') -and (Test-Path -LiteralPath $session -PathType Container)){
     $outputFile=Join-Path $session ('interruption_closeout_'+(Get-Date -Format 'yyyyMMdd_HHmmss')+'_'+[guid]::NewGuid().ToString('N').Substring(0,8)+'.json')
     $stream=[IO.File]::Open($outputFile,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
     try{
