@@ -243,7 +243,7 @@ def main():
     original=fitz.open(args.source);c=Composer(original,args.output);manuscript=prepare_chapters(root)
     (args.output/'relatorio-editorial.md').write_text(manuscript,encoding='utf-8')
     c.flow.extend([Spacer(1,45),c.para('UNIESP','cover'),c.para('CURSO DE SISTEMAS DE INFORMAÇÃO','cover'),c.para('SISTEMAS DE APOIO À DECISÃO - 2026.2','cover'),c.para('Professor Fábio Nicácio de Medeiros','subtitle'),Spacer(1,90),c.para('PROPOSTA DE UM DATA MART NA ÁREA DE SAÚDE PÚBLICA','title'),c.para('Análise da demanda hospitalar, capacidade de leitos e população do SUS na Paraíba','subtitle'),Spacer(1,65),c.para('Pedro Gabriel Lima e Silva','subtitle'),Spacer(1,100),c.para('João Pessoa - PB','subtitle'),c.para('2026','subtitle'),PageBreak(),c.para('SUMÁRIO','h3')])
-    toc=TableOfContents();toc.levelStyles=[ParagraphStyle('toc0',fontName='Bold',fontSize=10.5,leading=14,spaceBefore=7),ParagraphStyle('toc1',fontName='Body',fontSize=10,leading=13,leftIndent=13,spaceBefore=3)]
+    toc=TableOfContents(tableStyle=TableStyle([('LEFTPADDING',(0,0),(-1,-1),0),('RIGHTPADDING',(0,0),(-1,-1),0),('TOPPADDING',(0,0),(-1,-1),1),('BOTTOMPADDING',(0,0),(-1,-1),1)]));toc.levelStyles=[ParagraphStyle('toc0',fontName='Bold',fontSize=10.5,leading=13,spaceBefore=4),ParagraphStyle('toc1',fontName='Body',fontSize=10,leading=12,leftIndent=13,spaceBefore=1)]
     c.flow.extend([toc,PageBreak()]);c.markdown(manuscript);annex=c.annexes(root)
     target=args.output/'SAD_Data_Mart_SUS_PB_Relatorio_Uniformizado_2026-11-23.pdf'
     temp=args.output/'layout-temporario.pdf';Report(temp,title='Data Mart SUS PB - Relatório acadêmico',author='Pedro Gabriel Lima e Silva').multiBuild(c.flow)
@@ -255,6 +255,16 @@ def main():
     for val in ['555.089','294.635','260.454','7.140','4.018.127','4.467','3.464','97','IDENT=5']:
         if val not in text:raise RuntimeError('MISSING_VALUE '+val)
     if len(c.images)!=11:raise RuntimeError('FIGURES_MISSING')
+    if '1 REGRAS DE NEGÓCIO' not in final[2].get_text():raise RuntimeError('CONTENTS_MUST_FIT_ONE_PAGE')
+    bounds=[]
+    for number,page in enumerate(final,1):
+        for block in page.get_text('dict')['blocks']:
+            if block.get('type')!=0:continue
+            for line in block['lines']:
+                for span in line['spans']:
+                    x0,y0,x1,y1=span['bbox']
+                    if x0<50 or x1>page.rect.width-49 or y0<15 or y1>page.rect.height-15:bounds.append((number,span['text']))
+    if bounds:raise RuntimeError('TEXT_OUT_OF_BOUNDS '+repr(bounds[:5]))
     if sha(args.source)!=SOURCE_SHA:raise RuntimeError('SOURCE_CHANGED')
     audit={'source_sha256':SOURCE_SHA,'output_sha256':sha(target),'commit':commit,'pages':len(final),'figures':c.images,'annexes':annex,'tables':c.tables,'qvw_opened':False,'qvd_changed':False,'source_preserved':True,'visual_review':'PENDING','scope':'Layout and academic prose; no analytical or QlikView changes'}
     (args.output/'editorial-build.json').write_text(json.dumps(audit,ensure_ascii=False,indent=2))
