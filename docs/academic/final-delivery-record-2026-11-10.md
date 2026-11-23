@@ -1,5 +1,9 @@
 # SAD — Registro canônico candidato da segunda entrega acadêmica (2026.2)
 
+## Revisão editorial integral — 23/11/2026
+
+A versão acadêmica vigente foi uniformizada em **86 páginas**: `SAD_Data_Mart_SUS_PB_Relatorio_Uniformizado_2026-11-23.pdf`, SHA-256 `1519E2B2C665FDFCB3B968A3705363F8901FE89123B27F6473B7DCC2B83F433C`. O sumário, as tabelas, os cabeçalhos e a paginação foram padronizados. Os três indicadores derivados não implementados estão tachados, com justificativas metodológicas; o texto acadêmico substitui jargão operacional sem apagar as limitações científicas. As 11 figuras e 13 listagens foram preservadas em conteúdo. Não houve operação QlikView ou alteração da modelagem/dados. Registro: [closeout editorial integral](vis05-unified-report-closeout-2026-11-23.md). Esta identificação supera apenas a versão de apresentação anterior; os resultados históricos abaixo permanecem registros de suas respectivas revisões. Confirmações docentes, ensaio e submissão continuam pendentes.
+
 > **Revisão de apresentação de 23/11/2026 — candidata na Draft #242:** usar a nova cópia `SAD_Data_Mart_SUS_PB_DOC_R3_VIS05_Revisado_2026-11-23.pdf`, SHA `F3F1F5C9F677D6F39C1BA7B24A12E4E1A38C33F1736D381B8173BE32CDF43DB3`. Somente p.22 alterada (nota de competência e textos); 97/97 páginas preservadas. [Fechamento e QA](vis05-editorial-closeout-2026-11-23.md); [roteiro final](vis05-presentation-script-2026-11-23.md). Sem alteração de QVW/modelo, merge, ensaio, submissão ou aceite docente presumidos. O conteúdo a seguir preserva os registros anteriores.
 
 **Data da consolidação proposta:** 10/11/2026.  
