@@ -281,9 +281,11 @@ def correct_figure7_axis(pdf):
                    box.x0+.493*box.width,box.y0+.558*box.height)
     page.draw_rect(rect,color=None,fill=(1,1,1),overlay=True)
     page.insert_font(fontname='AxisLabel',fontfile='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
-    if page.insert_textbox(rect,'Ano de competência',fontname='AxisLabel',
-                           fontsize=5.05,align=2,color=(.2,.2,.2),overlay=True)<0:
-        raise RuntimeError('AXIS_LABEL_DOES_NOT_FIT')
+    font=fitz.Font(fontfile='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
+    size=min(5.05,rect.width/font.text_length('Ano de competência',fontsize=1))
+    width=font.text_length('Ano de competência',fontsize=size)
+    page.insert_text(fitz.Point(rect.x1-width,box.y0+.554*box.height),'Ano de competência',
+                     fontname='AxisLabel',fontsize=size,color=(.2,.2,.2),overlay=True)
 
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--source',required=True,type=Path);ap.add_argument('--output',required=True,type=Path);ap.add_argument('--expected-commit',required=True);args=ap.parse_args()
