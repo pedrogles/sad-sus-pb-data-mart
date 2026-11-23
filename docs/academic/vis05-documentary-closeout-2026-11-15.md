@@ -1,7 +1,7 @@
 # SAD — VIS-05 | Fechamento documental restrito (15/11/2026)
 
-**Gate:** substituição das Figuras 7–9 do relatório acadêmico DOC-R3 e auditoria documental, **sem alterar QVW/QVD/QVS/modelagem**.  
-**Status:** `VIS05_DOCUMENTARY_PDF=PASS_RESTRICTED_PDF_INTEGRITY`; `DOC_PR_MERGED=False`; `PRODUCTION_APPROVED=False`.  
+**Gate:** substituição das Figuras 7–9 do relatório acadêmico DOC-R3 e auditoria documental, **sem alterar QVW/QVD/QVS/modelagem**.
+**Status:** `VIS05_DOCUMENTARY_PDF=PASS_RESTRICTED_PDF_INTEGRITY`; `DOC_PR_MERGED=False`; `PRODUCTION_APPROVED=False`.
 **Fonte de verdade consultada:** `main@5486ad9f50744769e85107132eae009529ac75cc`: `AGENTS.md` → `docs/project/current-state.md` → `docs/academic/requirements.md` → `docs/academic/final-delivery-record-2026-11-10.md`; depois VIS-04 e scripts DOC-R3 versionados.
 
 ## 1. Proveniência e integridade
@@ -17,7 +17,7 @@ O responsável disponibilizou, em 15/11/2026, ZIP `PDF acadêmico com as três c
 
 As capturas foram examinadas visualmente em estado neutro, com janela QlikView sem asterisco; a confirmação de Save/close/reopen do QVW e a preservação do original VIS-04 são **resultados reportados pelo operador**, não inspeção independente do binário.
 
-**QVW VIS-05 reportado:** `C:\Users\pedro\SAD_VIS05_EVIDENCIAS\VIS05_20261112_171721_950990d1\SAD_MVP_VIS05_UX_WORK_TEMP.qvw`.  
+**QVW VIS-05 reportado:** `C:\Users\pedro\SAD_VIS05_EVIDENCIAS\VIS05_20261112_171721_950990d1\SAD_MVP_VIS05_UX_WORK_TEMP.qvw`.
 **SHA-256 QVW reportado (não revalidado):** `B56D0A8550AB7EEE68D45DB0249F273DED05C4ADEE88DBE3FC7A20B162084DBB`.
 
 ## 2. Script versionado antes da execução
@@ -28,7 +28,7 @@ Não foi executado QlikView/COM/Reload; nenhum QVW/QVD/QVS foi editado. Os arqui
 
 ## 3. Artefato de saída e auditoria
 
-**Novo PDF, fora do Git:** `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_VIS05_2026.pdf`.  
+**Novo PDF, fora do Git:** `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_VIS05_2026.pdf`.
 **SHA-256 independente da saída:** `4C6033F3131F4B05105BBFCD992A2A6E7896CD5A2D424BF0BEA513430D0ED9F3`; tamanho **2.712.727 bytes**.
 
 - **98/98** páginas; **apenas páginas físicas 22–24** editadas, figuras 7, 8 e 9 e suas legendas VIS-04 → VIS-05.
