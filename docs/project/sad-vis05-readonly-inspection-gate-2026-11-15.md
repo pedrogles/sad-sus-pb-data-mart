@@ -1,5 +1,9 @@
 # VIS-05 — Gate de inspeção física sem recarga
 
+## Situação consolidada posterior — 23/11/2026
+
+A inspeção abaixo permanece encerrada em seu escopo histórico. Após essa inspeção, AUD-01 foi corrigido no PDF (PR #242) e em uma cópia do QVW salva/reaberta (PR #244), com captura e relatório final recebidos. Os 26 arquivos protegidos dessa correção foram reconciliados por hashes e tamanhos, sem diferenças. AUD-10 permanece tratado pela regra de uso do filtro; não exige mudança associativa. O responsável confirmou fontes em arquivos e três folhas como três painéis, mantendo o prazo. Apresentação e ensaio online foram suspensos até segunda ordem. Restam guarda/conferência do material, integração documental autorizada e submissão/recibo. As menções a correção ainda não aplicada, critérios docentes pendentes ou próxima sessão de coleta nas seções históricas abaixo não representam o planejamento atual. Não reexecutar a inspeção ou os cenários numéricos.
+
 ## Encerramento verificado — 23/11/2026 (estado vigente)
 
 **SAD_VIS05_MANUAL_VISUAL_01=COMPLETE_WITH_RESTRICTED_VISUAL_PASS.** O gate está encerrado; comandos de coleta, diagnóstico, closeout e retomada nas seções seguintes são históricos. Não reexecutá-los por rotina. Auditoria G0–G5 continua concluída com ressalvas; não equivale a submissão aprovada.
