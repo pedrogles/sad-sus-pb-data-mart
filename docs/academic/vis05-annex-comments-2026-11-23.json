@@ -65,7 +65,7 @@
     "247": ["// Interrompe a gravação se houver divergência na fonte, nas chaves ou no RD."]
   },
   "transf_dim_tipo_leito.qvs": {
-    "1": ["// Cria a dimensão Tipo de Leito por tipo, código e competência do CNES/LT.", "// A chave usa a competência observada no LT, e não a competência da legenda.", "// As descrições disponíveis se aplicam somente a setembro de 2019.", "// As demais competências permanecem sem descrição quando não há comprovação histórica.", "// Dos 2.021 pares por mês observados, 1.965 não possuem essa comprovação."],
+    "1": ["// Cria a dimensão Tipo de Leito por tipo, código e competência do CNES/LT.", "// A chave usa a competência observada no LT, e não a competência da legenda.", "// As descrições disponíveis se aplicam somente a setembro de 2019.", "// As demais competências permanecem sem descrição quando não há comprovação histórica.", "// Das 2.021 combinações de par tipo/código de leito e competência, 1.965 não têm descrição histórica comprovada."],
     "16": ["// Lê os campos disponíveis nos QVDs da extração.", "// O tipo de leito pode aparecer como um dígito ou como um dígito seguido de espaço.", "// Mantém o texto do QVD sem reconstruir o conteúdo do arquivo original.", "// Os campos temporários possuem nomes próprios para evitar associações indevidas."],
     "57": ["    // Conta as ocorrências de cada condição, sem alterar os dados ou as chaves."],
     "95": ["// Interrompe a carga quando o formato do tipo de leito difere do previsto."],
