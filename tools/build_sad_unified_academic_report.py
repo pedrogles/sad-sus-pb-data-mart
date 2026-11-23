@@ -163,6 +163,28 @@ A comparação dos dois papéis de DIM_MUNICIPIO permite analisar deslocamentos 
 '''+b[end:]
     return a+'\n\n'+b+'\n\n'+(root/'docs/academic/vis05-unified-report-content-2026-11-23.md').read_text()
 
+
+def editorial_annex_comments(root,name,content):
+    """Rewrite only complete comment lines in the PDF listing."""
+    mapping=json.loads((root/'docs/academic/vis05-annex-comments-2026-11-23.json').read_text(encoding='utf-8'))[name]
+    lines=content.splitlines(); result=[]; seen=set(); i=0
+    while i<len(lines):
+        line=lines[i]
+        if line.lstrip().startswith('//'):
+            start=str(i+1)
+            while i<len(lines) and lines[i].lstrip().startswith('//'): i+=1
+            if start not in mapping: raise RuntimeError('UNREVIEWED_COMMENT '+name+':'+start)
+            replacement=mapping[start]
+            if not all(x.lstrip().startswith('//') for x in replacement):raise RuntimeError('NON_COMMENT_REPLACEMENT')
+            result.extend(replacement); seen.add(start)
+        else:result.append(line);i+=1
+    if seen!=set(mapping):raise RuntimeError('UNUSED_COMMENT_REPLACEMENT '+name)
+    commands=lambda seq:[x for x in seq if x.strip() and not x.lstrip().startswith('//')]
+    original_commands=commands(lines); editorial_commands=commands(result)
+    if original_commands!=editorial_commands:raise RuntimeError('EXECUTABLE_ANNEX_CHANGED '+name)
+    fingerprint=hashlib.sha256(('\n'.join(original_commands)).encode()).hexdigest().upper()
+    return '\n'.join(result),len(seen),fingerprint
+
 class Composer:
     def __init__(self,source,out): self.source=source;self.out=out;self.flow=[];self.tables=0;self.images=[]
     def para(self,t,style='body'): return Paragraph(inline(t),STYLE[style])
@@ -216,11 +238,14 @@ class Composer:
         for idx,(title,name,blob) in enumerate(ANNEX):
             p=root/'TRANSFORMACAO'/name
             if git(root,'hash-object',str(p))!=blob:raise RuntimeError('ANNEX_BLOB_MISMATCH '+name)
-            content=p.read_text(encoding='utf-8-sig');records.append({'file':name,'git_blob':blob,'sha256':sha(p),'lines':len(content.splitlines())})
+            content=p.read_text(encoding='utf-8-sig')
+            original_lines=len(content.splitlines())
+            content,comment_groups,command_sha=editorial_annex_comments(root,name,content)
+            records.append({'file':name,'git_blob':blob,'sha256':sha(p),'original_lines':original_lines,'editorial_lines':len(content.splitlines()),'comment_groups_rewritten':comment_groups,'commands_preserved':True,'command_sha256':command_sha})
             self.flow.append(PageBreak())
             if idx in (0,8):
                 self.flow.append(self.para('ANEXO I - SCRIPTS DAS DIMENSÕES' if idx==0 else 'ANEXO II - SCRIPTS DAS TABELAS FATO','h1'))
-                self.flow.append(self.para('As listagens abaixo reproduzem os arquivos de transformação associados ao projeto. Os comentários e identificadores técnicos foram mantidos para preservar o código documentado. A reprodução de um script não significa que todas as suas etapas tenham sido executadas na interface acadêmica.','small'))
+                self.flow.append(self.para('As listagens apresentam os scripts de transformação do projeto. Os comentários foram padronizados para explicar a função de cada etapa; os comandos foram mantidos. A presença de uma etapa na listagem não indica que ela tenha sido executada na interface acadêmica.','small'))
             self.flow.append(self.para(title,'h3'));self.flow.append(self.para('Arquivo: TRANSFORMACAO/'+name,'small'))
             for number,line in enumerate(content.splitlines(),1):
                 # Wrap for presentation only. Continuations are indented and line numbers retained.
