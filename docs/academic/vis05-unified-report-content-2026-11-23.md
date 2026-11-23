@@ -20,9 +20,7 @@ A primeira folha apresenta o volume de novas internações administrativas por c
 
 @FIGURE:7
 
-**M1-01 - Novas internações por ano de competência.** Foram registradas 183.532 novas internações em 2017, 183.311 em 2018 e 188.246 em 2019, totalizando 555.089 no triênio. A referência temporal é a competência administrativa do SIH/RD, representada por PERIODO_ANO.
-
-**Referência temporal.** A série anual utiliza o campo PERIODO_ANO, que representa o ano de competência administrativa do SIH/SUS. Essa referência é distinta da data de admissão hospitalar.
+**M1-01 - Novas internações por ano de competência.** Foram registradas 183.532 novas internações em 2017, 183.311 em 2018 e 188.246 em 2019, totalizando 555.089 no triênio. A série anual utiliza o campo PERIODO_ANO, que representa o ano de competência administrativa do SIH/SUS, e não a data de admissão hospitalar.
 
 **M1-02 - Evolução mensal.** A série reúne 36 competências, de janeiro de 2017 a dezembro de 2019. As oscilações descrevem o volume registrado, sem estabelecer suas causas.
 
