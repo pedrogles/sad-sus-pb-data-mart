@@ -18,6 +18,12 @@ if($plan[2].selections.MVP_FI_RES_SERV_CLASS -cne 'RES_EQ_SERV' -or
    $plan[3].selections.MVP_FI_RES_SERV_CLASS -cne 'RES_NE_SERV' -or
    $plan[4].selections.PERIODO_ANO -cne '2018' -or
    $plan[5].selections.SERV_COD_DATASUS_6 -cne '250750'){throw 'Wrong selected states'}
+$remaining=@(Get-ManualVisualPlan -StartAt 'V2_EQ')
+if(($remaining.id -join ',') -cne 'V2_EQ,V3_NE,V4_YEAR_2018,V5_SERV_250750' -or $remaining[0].token -cne 'CAPTURED'){throw 'Resume must skip both reviewed V1 steps and require no sort mutation'}
+$guardPosition=$ast.Extent.Text.IndexOf("Resume closeout hash mismatch")
+$openPosition=$ast.Extent.Text.IndexOf('$script:doc=$app.OpenDoc($copy)')
+if($guardPosition -lt 0 -or $guardPosition -gt $openPosition){throw 'Pinned resume gate must precede opening QlikView'}
+if(-not $ast.Extent.Text.Contains('Protected files differ from accepted closeout; resume blocked')){throw 'Resume requires a current protected-file comparison against closeout'}
 $fn=$ast.Find({param($n) $n -is [Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -ceq 'Invoke-ManualVisualReview'},$true)
 if($fn.Extent.Text -match 'EngineProbes|ChartRecord|CaptureSheet|\bGuard\b|SetProperties|\.Save|\.Reload'){throw 'Manual review must not invoke old gates or mutations'}
 $branch=$ast.Find({param($n) $n -is [Management.Automation.Language.IfStatementAst] -and $n.Clauses[0].Item1.Extent.Text -ceq '$Mode -ceq ''ManualVisual'''},$true)
