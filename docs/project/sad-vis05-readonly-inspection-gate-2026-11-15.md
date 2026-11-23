@@ -1,5 +1,53 @@
 # VIS-05 — Gate de inspeção física sem recarga
 
+## Encerramento verificado — 23/11/2026 (estado vigente)
+
+**SAD_VIS05_MANUAL_VISUAL_01=COMPLETE_WITH_RESTRICTED_VISUAL_PASS.** O gate está encerrado; comandos de coleta, diagnóstico, closeout e retomada nas seções seguintes são históricos. Não reexecutá-los por rotina. Auditoria G0–G5 continua concluída com ressalvas; não equivale a submissão aprovada.
+
+### Identidade, preservação e origem da evidência
+
+Main reconfirmada em `5486ad9f50744769e85107132eae009529ac75cc`. PR #242 e esta #243 permanecem Draft, sem merge. Execução Windows pelo responsável, revisada por arquivos e capturas recebidos no cloud; nenhuma execução independente do QlikView no cloud.
+
+Sessão final: `VIS05_INSPECT_20261123_112503_e202ed113ece`, runner executado no commit `36b0ff38f7e79f456a446bd4a8d2b2007bc19ea0`. Evidência recebida `inspection(6).json`, SHA-256 **BCC8394E17D0A999856BC9EE51113FED6AFDDABC7BBA05E46B54C659F54481BC**, de 11:25:00 a 11:38:26 (UTC−03) em 23/11/2026. Status bruto `MANUAL_VISUAL_COLLECTED_REVIEW_PENDING` preservado. Quatro etapas têm seleção antes/depois correspondente ao estado contratado e reset vazio confirmado.
+
+Reconciliação independente no JSON: **26 paths únicos antes/depois, 26/26 hashes e tamanhos iguais**. `integrity_verified=true`, `cleanup_ok=true`, `cleanup_errors=[]`. Fonte/cópia mantêm **B56D0A8550AB7EEE68D45DB0249F273DED05C4ADEE88DBE3FC7A20B162084DBB**. Não houve Reload/Save segundo o runner e console; a preservação em bytes é compatível com esse relato. Asserções numéricas anteriores de inspection(3).json foram reutilizadas, não repetidas.
+
+A sessão antiga `235407_3c3df8cbbcc6` teve integridade atual reconciliada pelo closeout de SHA **9D14608EB57F181DDAF6E2DD9171BE671D4672866FBA3E2140D0ACFA36228293**. Seu cleanup histórico continua não certificado; não foi substituído pelo PASS de cleanup da sessão nova. V1_BASELINE e V1_SORT foram reaproveitados sem repetição, com evidências e limites das seções de interrupção.
+
+### Revisão humana por caso
+
+| Caso | Observado na imagem recebida | Conclusão |
+|---|---|---|
+| Baseline e ordem invertida | Mesmo município=294635 e município diferente=260454. Com Valor-Y ascendente, NE fica à esquerda e EQ à direita; tooltips e rótulos acompanham as categorias. | PASS_VISUAL_RESTRICTED à ordem original e à inversão observada. Não generaliza a toda configuração de ordenação. |
+| V2_EQ | Seleção única RES_EQ_SERV, uma barra Mesmo Município e tooltip 294635; sem rótulo residual da outra classe. | PASS_VISUAL_RESTRICTED ao estado. |
+| V3_NE | Seleção única RES_NE_SERV, uma barra Município Diferente e tooltip 260454; sem rótulo residual da outra classe. | PASS_VISUAL_RESTRICTED ao estado. |
+| V4_YEAR_2018 / CH05 | Seleção anual 2018 e aviso legível informando fixo dezembro/2019 (201912), período incompatível e ausência de dados não significa zero leitos. | Mensagem efetivamente visível comprovada; não repetir o teste numérico. |
+| V5_SERV_250750 / CH09 | SERV=250750 e aviso legível: SERV não representa população por residência de todos os pacientes atendidos; orienta limpar SERV. | Mensagem efetivamente visível comprovada; não generaliza a todos os filtros. |
+
+O quadro é a decisão do revisor sobre pixels recebidos; `visual_accepted=false` no JSON bruto não foi reescrito. Tooltips constituem leitura do gráfico nos estados, não exportação integral de células ou nova aprovação científica.
+
+### Vínculo das capturas da sessão final
+
+| Arquivo registrado no JSON | SHA-256 dos bytes recebidos e reconciliados |
+|---|---|
+| V2_EQ.png / upload image(20261123-142758).png | 89CD90C3A1F84D1615EC7545D8F63BE92988DB2C6D34FEEFABD6AC2ABA6726AE |
+| V3_NE.png / upload image(20261123-143218).png | D3360F1AEF5B33C5EF6843502F2C84CF0F2640531875CF0A34E9F3D03FE1D0B8 |
+| V4_YEAR_2018.png, recebido com esse nome | 7100DACD31E61443D8EB5FCA2AF4D4396EF186BB8AAEB58EB5248CB7D14A1D33 |
+| V5_SERV_250750.png, recebido com esse nome | 67F48CC39DFE2284277DE7F09FCB667A454700C967F5D257168E104A09007302 |
+
+Os uploads iniciais image(20261123-143358).png e image(20261123-143742).png tinham bytes distintos dos arquivos V4/V5 registrados; foram tratados como imagens adicionais visualmente examinadas. O responsável enviou os dois PNGs originais, com tamanhos 520182 e 627618 bytes e hashes acima, fechando a vinculação sem recaptura ou execução nova. Não se alegou corrupção das primeiras imagens.
+
+### Achados, tratamento mínimo restante e STOP
+
+- **AUD-03:** lacuna focalizada de rótulos/valores sob EQ, NE e inversão observada resolvida. Permanecem os limites sobre outras seleções, propriedades completas, segunda expressão e semântica global.
+- **AUD-04:** texto efetivo CH05 em 2018 e CH09 sob SERV 250750 comprovado. Nenhuma correção desses avisos é necessária a partir dos casos revisados. CH05 não orienta explicitamente limpar o ano; a comunicação do apresentador deve dar essa orientação, sem transformar isso em nova frente de edição.
+- **AUD-01:** nomenclatura temporal ainda requer aplicação do tratamento editorial preparado: ano de competência, com medida/agregação preservadas. Nenhuma correção aplicada por esta revisão.
+- **AUD-10:** em EQ e NE, as imagens agora mostram a tabela POP vazia; isso não é população real zero. A apresentação de capacidade sob fluxo não foi acrescentada a este gate; probes anteriores continuam apenas observacionais. Manter restrição de uso do filtro ao fluxo e limpar todas as seleções antes de leitos/população. Nenhuma guarda ou associação nova.
+- Docente: fontes em arquivos e três folhas como três painéis continuam UNVERIFIED. Ensaio online, submissão e recibo pendentes. C2/C3/C4, T29, Fase IX e produção não aprovados.
+
+**STOP:** coleta/revisão visual e preservação concluídas no alcance acima. Não iniciar novos testes, diagnósticos ou correções automaticamente. Próxima etapa é aplicar, sob escopo autorizado específico, o tratamento editorial AUD-01 e consolidar o roteiro AUD-10, preservando os originais. Sem merge/main, QVW/QVD/QVS/modelo/PDF alterados nesta revisão.
+
+
 ## Handoff vigente — revisão manual focalizada preparada em 15/11/2026
 
 Este adendo prevalece sobre comandos históricos de Inventory/Scenarios/WindowDiagnostic abaixo. Auditoria G0–G5 encerrada com ressalvas; correções de PDF/QVW ficam para depois da revisão. Main revalidada em `5486ad9f50744769e85107132eae009529ac75cc`; esta preparação permanece na Draft #243, sem merge. A sequência de pedido do responsável foi terminar a revisão antes das correções e prosseguir com sua preparação. **A execução Windows deste modo novo ainda não ocorreu.**
