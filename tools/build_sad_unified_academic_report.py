@@ -167,13 +167,14 @@ class Composer:
     def __init__(self,source,out): self.source=source;self.out=out;self.flow=[];self.tables=0;self.images=[]
     def para(self,t,style='body'): return Paragraph(inline(t),STYLE[style])
     def figure(self,n):
-        page,index,caption=FIGS[n]; info=self.source[page].get_images(full=True)[index]
-        data=self.source.extract_image(info[0])['image']; path=self.out/f'figure_{n:02}.png';path.write_bytes(data)
+        page,index,caption=FIGS[n]; info=self.source[page].get_image_info(xrefs=True)[index]
+        data=self.source.extract_image(info['xref'])['image']; path=self.out/f'figure_{n:02}.png';path.write_bytes(data)
         self.images.append({'figure':n,'source_page':page+1,'sha256':hashlib.sha256(data).hexdigest().upper()})
         wide=n in (1,2,7,8,9)
         if wide:self.flow.extend([NextPageTemplate('wide'),PageBreak()])
+        elif n==6:self.flow.append(PageBreak())
         img=Image(io.BytesIO(data)); maxw=landscape(A4)[0]-114 if wide else A4[0]-114
-        maxh=landscape(A4)[1]-180 if wide else (590 if n==6 else 400)
+        maxh=landscape(A4)[1]-180 if wide else (640 if n==6 else 400)
         ratio=min(maxw/img.imageWidth,maxh/img.imageHeight);img.drawWidth=img.imageWidth*ratio;img.drawHeight=img.imageHeight*ratio
         source='elaboração própria (2026).' if n<=6 else 'interface do projeto no QlikView 12 (2026).'
         block=[self.para(f'Figura {n} - {caption}','caption'),img,Spacer(1,7),self.para('Fonte: '+source,'caption')]
@@ -187,6 +188,7 @@ class Composer:
         data=[[Paragraph(('<b>'+inline(c)+'</b>') if i==0 else inline(c),STYLE['cell']) for c in row] for i,row in enumerate(rows)]
         t=Table(data,colWidths=widths,repeatRows=1,hAlign='LEFT')
         t.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('BACKGROUND',(0,0),(-1,0),colors.HexColor('#ededed')),('LINEBELOW',(0,0),(-1,0),.6,colors.black),('LINEBELOW',(0,1),(-1,-1),.25,colors.HexColor('#bbbbbb')),('LEFTPADDING',(0,0),(-1,-1),6),('RIGHTPADDING',(0,0),(-1,-1),6),('TOPPADDING',(0,0),(-1,-1),6),('BOTTOMPADDING',(0,0),(-1,-1),6)]))
+        t.keepWithNext=True
         self.tables+=1;self.flow.extend([t,self.para('Fonte: elaboração própria (2026).','caption'),Spacer(1,5)])
     def markdown(self,text):
         lines=text.splitlines();i=0
@@ -219,7 +221,7 @@ class Composer:
             if idx in (0,8):
                 self.flow.append(self.para('ANEXO I - SCRIPTS DAS DIMENSÕES' if idx==0 else 'ANEXO II - SCRIPTS DAS TABELAS FATO','h1'))
                 self.flow.append(self.para('As listagens abaixo reproduzem os arquivos de transformação associados ao projeto. Os comentários e identificadores técnicos foram mantidos para preservar o código documentado. A reprodução de um script não significa que todas as suas etapas tenham sido executadas na interface acadêmica.','small'))
-            self.flow.append(self.para(title,'h2'));self.flow.append(self.para('Arquivo: TRANSFORMACAO/'+name,'small'))
+            self.flow.append(self.para(title,'h3'));self.flow.append(self.para('Arquivo: TRANSFORMACAO/'+name,'small'))
             for number,line in enumerate(content.splitlines(),1):
                 # Wrap for presentation only. Continuations are indented and line numbers retained.
                 line=line.expandtabs(4)
