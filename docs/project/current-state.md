@@ -1,5 +1,9 @@
 # Current State — SAD Data Mart SUS PB
 
+## M1-01 corrigido no QVW de conferência — 23/11/2026
+
+Concluída a alteração `Ano da Internação` → `Ano de competência` em CH01/M1-01 da cópia `C:\Users\pedro\SAD_FINAL_EVIDENCIAS\M1_ROTULO_20261123_163651_83e0481074\SAD_PB_ANO_COMPETENCIA_CONFERIR.qvw`. O relatório final recebido confirma Save, persistência após reabertura, propriedades conferidas preservadas, ausência de chamada Reload e cleanup sem erros. As listas do JSON foram reconciliadas: **26/26 arquivos protegidos com hashes/tamanhos idênticos**. A captura posterior mostra o rótulo correto na cópia correspondente. SHA-256 local reportado do novo QVW: `C78E6DD568ECE7360E985DE2D63D42D70F2EF47D73EA72A555DB3F622F2C0695`; relatório final `alteracao(1).json`: `CA3740152406387D4DDDE5E40173CB27A5E02950F21475B210709DCF30F41822`. Evidência e qualificação completa na PR #244, `docs/project/sad-m1-temporal-label-automation-2026-11-23.md`. O QVW original continua preservado. Não repetir a automação. A pendência física de nomenclatura indicada em registros anteriores está resolvida nesta cópia. Apresentação/ensaio continuam suspensos; critérios acadêmicos aceitos conforme responsável e prazo mantido. Restam aprovação/guarda do material, integração documental autorizada e submissão/recibo. Main preservada; sem merge automático.
+
 ## Planejamento vigente após confirmação do responsável — 23/11/2026
 
 O responsável confirmou nesta data o aceite das fontes em arquivos e das três folhas como três painéis. A confirmação é registrada como informação expressa do responsável, sem alegar acesso a comunicação docente independente. O prazo de entrega permanece o anteriormente acordado, sem nova data inferida.
