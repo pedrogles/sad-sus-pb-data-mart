@@ -13,6 +13,8 @@ param(
   [string]$SourceQvw = (Join-Path $env:USERPROFILE 'SAD_VIS05_EVIDENCIAS\VIS05_20261112_171721_950990d1\SAD_MVP_VIS05_UX_WORK_TEMP.qvw'),
   [string]$EvidenceRoot = (Join-Path $env:USERPROFILE 'SAD_VIS05_INSPECTION_EVIDENCIAS'),
   [ValidateSet('Inventory','Scenarios','WindowDiagnostic','ManualVisual')][string]$Mode='Inventory',
+  [ValidateSet('V1_BASELINE','V2_EQ')][string]$StartVisualStep='V1_BASELINE',
+  [string]$ResumeCloseout,
   [switch]$Capture,
   [ValidateRange(2,30)][int]$CaptureFocusSeconds=8,
   [switch]$ManualSortReview,
@@ -118,7 +120,8 @@ function Read-ManualPng([string]$Path){
   return @{file=[IO.Path]::GetFileName($Path);sha256=(Sha $Path);bytes=$bytes.Length;status='MANUAL_PNG_PENDING_PIXEL_AND_IDENTITY_REVIEW'}
 }
 function Get-ManualVisualPlan {
-  return @(
+  param([ValidateSet('V1_BASELINE','V2_EQ')][string]$StartAt='V1_BASELINE')
+  $plan=@(
     @{id='V1_BASELINE';sheet=2;selections=[pscustomobject]@{};token='CAPTURED';instruction='Capture CH07 in its original order: category/code or tooltip, manual label and value, full copy identity and empty Current Selections.'},
     @{id='V1_SORT';sheet=2;selections=[pscustomobject]@{};token='SORT_CHANGED';instruction='On this COPY only, reverse CH07 sort ONCE in the GUI. Do not rename labels or change dimensions/expressions. Capture the changed order with category/code, label and value. SORT_CHANGED reports the action; it does not certify the sort.'},
     @{id='V2_EQ';sheet=2;selections=[pscustomobject]@{MVP_FI_RES_SERV_CLASS='RES_EQ_SERV'};token='ORDER_RESTORED';instruction='First restore CH07 original sort in the GUI. Capture EQ selection, category/label/value. ORDER_RESTORED reports restoration; reviewer must confirm it. Do not interpret leitos or population in this state.'},
@@ -126,9 +129,15 @@ function Get-ManualVisualPlan {
     @{id='V4_YEAR_2018';sheet=1;selections=[pscustomobject]@{PERIODO_ANO='2018'};token='CAPTURED';instruction='Capture CH05 in full and Current Selections=2018. Read the actual message: fixed December/2019 versus selected year; a generic no-data message is insufficient.'},
     @{id='V5_SERV_250750';sheet=2;selections=[pscustomobject]@{SERV_COD_DATASUS_6='250750'};token='CAPTURED';instruction='Capture CH09 in full and Current Selections=SERV 250750. Read the actual SERV incompatibility message; do not infer it from the condition.'}
   )
+  if($StartAt -ceq 'V2_EQ'){
+    $plan[2].token='CAPTURED'
+    $plan[2].instruction='Fresh pinned copy: keep its original sort. Capture EQ selection and CH07 category/label/value; include Current Selections. Do not interpret leitos or population.'
+    return @($plan[2..5])
+  }
+  return $plan
 }
 function Invoke-ManualVisualReview($contract,[string]$Directory){
-  foreach($step in @(Get-ManualVisualPlan)){
+  foreach($step in @(Get-ManualVisualPlan $StartVisualStep)){
     $record=[ordered]@{id=$step.id;sheet=$step.sheet;expected_selections=$step.selections;status='PREPARING';visual_accepted=$false}
     $script:report.manual_visual_steps+=@($record)
     $script:report.active_visual_step=$step.id
@@ -270,6 +279,18 @@ try{
   if($Mode -ceq 'ManualVisual' -and ($Capture -or $ManualSortReview)){throw 'ManualVisual uses manual PNGs only; omit Capture and ManualSortReview'}
   if([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT){throw 'Windows required'}
   if($ManualSortReview -and ($Mode -cne 'Scenarios' -or -not $Capture)){throw 'ManualSortReview requires Scenarios and Capture'}
+  if($StartVisualStep -ceq 'V2_EQ' -or -not [string]::IsNullOrWhiteSpace($ResumeCloseout)){
+    if($Mode -cne 'ManualVisual' -or $StartVisualStep -cne 'V2_EQ' -or [string]::IsNullOrWhiteSpace($ResumeCloseout)){throw 'Resume requires ManualVisual, StartVisualStep V2_EQ and ResumeCloseout together'}
+    if((Sha $ResumeCloseout) -cne '9D14608EB57F181DDAF6E2DD9171BE671D4672866FBA3E2140D0ACFA36228293'){throw 'Resume closeout hash mismatch; do not replace the pin'}
+    $resume=Get-Content -LiteralPath $ResumeCloseout -Raw -Encoding UTF8 | ConvertFrom-Json
+    if($resume.status -cne 'PASS_CURRENT_HASHES_HISTORICAL_CLEANUP_UNVERIFIED' -or
+      -not $resume.current_integrity_verified -or -not $resume.current_qv_absent -or -not $resume.current_locks_released -or
+      -not $resume.input_report_unchanged -or -not $resume.baseline_capture_matches_checkpoint -or @($resume.protected_comparisons).Count -ne 26){throw 'Resume closeout is not accepted'}
+    $report.resume_closeout_sha256=Sha $ResumeCloseout
+    $report.resumed_from='V2_EQ'
+    $report.prior_visual_evidence=@($resume.manual_png_files)
+    $report.prior_visual_scope='BASELINE_AND_REVERSED_ORDER_REVIEWED; V2_V5_PENDING'
+  }
   $repo=Full $Root;$source=Full $SourceQvw;$evidence=Full $EvidenceRoot
   $artifacts=$repo
   if(-not [string]::IsNullOrWhiteSpace($ArtifactRoot)){$artifacts=Full $ArtifactRoot}
@@ -317,6 +338,12 @@ try{
   $report.git_head=$head;$report.contract_sha256=Sha $contractPath;$report.script_sha256=Sha $PSCommandPath
   $report.artifact_root=$artifacts
   $report.source_sha256=Sha $source;$report.protected_before=$before
+  if($StartVisualStep -ceq 'V2_EQ'){
+    foreach($row in $before){
+      $matches=@($resume.protected_comparisons | Where-Object { (Full ([string]$_.path)) -ieq (Full ([string]$row.path)) -and $_.actual_sha256 -ceq $row.sha256 -and [long]$_.actual_bytes -eq [long]$row.bytes })
+      if($matches.Count -ne 1){throw 'Protected files differ from accepted closeout; resume blocked'}
+    }
+  }
   Json (Join-Path $run 'contract.json') $contract
   Json (Join-Path $run 'inspection.json') $report
   Write-Host "EVIDENCE_DIR=$run"
