@@ -1,5 +1,15 @@
 # SAD — Registro canônico candidato da segunda entrega acadêmica (2026.2)
 
+## Planejamento vigente após confirmação do responsável — 23/11/2026
+
+O responsável confirmou nesta data o aceite das fontes em arquivos e das três folhas como três painéis. A confirmação é registrada como informação expressa do responsável, sem alegar acesso a comunicação docente independente. O prazo de entrega permanece o anteriormente acordado, sem nova data inferida.
+
+**Apresentação e ensaio online retirados do planejamento ativo até segunda ordem do responsável.** Não são pré-requisitos ativos para a submissão documental. A correção do rótulo no QVW fica igualmente fora dos próximos passos imediatos de entrega: o PDF já apresenta Ano de competência, e não se deve abrir sessão física ou salvar uma cópia por consequência automática desta atualização.
+
+Próximos passos ativos: (1) aprovação final do PDF pelo responsável e guarda do material; (2) revisão/consolidação documental das PRs #242 e #243, com autorização específica antes de qualquer merge; (3) submissão pelo responsável no prazo mantido; (4) registro do recibo/protocolo e encerramento da entrega. Nenhum novo indicador, teste numérico ou alteração de modelo está previsto. As limitações metodológicas continuam válidas.
+
+Este planejamento prevalece sobre menções anteriores a critérios docentes pendentes, apresentação e ensaio nos registros históricos abaixo. PRs continuam Draft; main preservada.
+
 ## Revisão de leitura e consistência — 23/11/2026
 
 PDF vigente: `SAD_Data_Mart_SUS_PB_Relatorio_Uniformizado_2026-11-23.pdf`, **86 páginas**, SHA-256 `C74342B1B5A19885D5F406E71A5D7C443292F016048E57E2FFE1D747DA9DF1CB`. Foram corrigidas concordâncias introduzidas pelas substituições editoriais (amostras/estruturas), uma abertura repetida, a enumeração das oito dimensões e o comentário que descrevia 2.021 combinações de tipo/código de leito e competência como pares por mês. O eixo anual da Figura 7 foi corrigido **na apresentação do PDF**, por sobreposição vetorial limitada ao rótulo: `Ano de competência`. Os valores, barras e imagem embutida foram preservados; a renderização da figura deixa de ser reprodução pixel a pixel da captura nesse rótulo. O QVW continua inalterado e seu eixo não foi corrigido fisicamente. Os 74 blocos de comentários continuam padronizados, e a sequência executável dos 13 scripts foi comparada e preservada. Executor publicado antes da execução: `51b627c1e0d91244d0e3212b718bf54cd1c6aec9`. Documento renderizado e conferido, com atenção ao eixo corrigido e à enumeração; sumário e paginação atualizados. Os registros abaixo são históricos; esta identificação supera a versão anterior de 85 páginas. Nenhum novo teste QlikView, merge, alteração de dados ou submissão. Permanecem os limites metodológicos e as confirmações docentes, o ensaio e a entrega.
