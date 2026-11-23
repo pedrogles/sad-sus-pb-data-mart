@@ -245,7 +245,7 @@ class Composer:
             self.flow.append(PageBreak())
             if idx in (0,8):
                 self.flow.append(self.para('ANEXO I - SCRIPTS DAS DIMENSÕES' if idx==0 else 'ANEXO II - SCRIPTS DAS TABELAS FATO','h1'))
-                self.flow.append(self.para('As listagens apresentam os scripts de transformação do projeto. Os comentários foram padronizados para explicar a função de cada etapa; os comandos foram mantidos. A presença de uma etapa na listagem não indica que ela tenha sido executada na interface acadêmica.','small'))
+                self.flow.append(self.para('As listagens apresentam as rotinas de transformação do projeto. As etapas de conferência e gravação devem ser interpretadas conforme os limites da implementação descritos no Capítulo 3.','small'))
             self.flow.append(self.para(title,'h3'));self.flow.append(self.para('Arquivo: TRANSFORMACAO/'+name,'small'))
             for number,line in enumerate(content.splitlines(),1):
                 # Wrap for presentation only. Continuations are indented and line numbers retained.
