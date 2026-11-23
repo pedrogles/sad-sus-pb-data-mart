@@ -4,6 +4,7 @@
 param([Parameter(Mandatory=$true)][string]$RunnerPath)
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
+$StartVisualStep='V1_BASELINE' # Runner parameter supplied explicitly in extracted-function tests.
 $tokens=$null;$errors=$null
 $ast=[Management.Automation.Language.Parser]::ParseFile($RunnerPath,[ref]$tokens,[ref]$errors)
 if(@($errors).Count -gt 0){throw 'Runner parser failed'}
