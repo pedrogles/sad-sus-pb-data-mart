@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "gate": "SAD_VIS05_READONLY_INSPECTION_01",
+  "status": "PREPARED_NOT_RUN_WINDOWS",
+  "baseline": "5486ad9f50744769e85107132eae009529ac75cc",
+  "branch": "test/sad-vis05-readonly-inspection-2026-11-15",
+  "source_name": "SAD_MVP_VIS05_UX_WORK_TEMP.qvw",
+  "source_sha256": "B56D0A8550AB7EEE68D45DB0249F273DED05C4ADEE88DBE3FC7A20B162084DBB",
+  "source_hash_evidence": "LOCAL_OPERATOR_REPORTED_IN_PR242_NOT_YET_READ_BACK",
+  "field_allowlist": ["PERIODO_ANO", "PERIODO_COMPETENCIA", "RES_COD_DATASUS_6", "SERV_COD_DATASUS_6", "MVP_FI_RES_SERV_CLASS"],
+  "objects": [
+    {"id":"CH01","view":"M1-01","sheet":0,"dimension":"PERIODO_ANO","expression":"Sum(QTD_INTERNACAO)"},
+    {"id":"CH02","view":"M1-02","sheet":0,"dimension":"PERIODO_COMPETENCIA","expression":"Sum(QTD_INTERNACAO)"},
+    {"id":"CH03","view":"M1-03","sheet":0,"dimension":"SERV_COD_DATASUS_6","expression":"Sum(QTD_INTERNACAO)","dimension_scope":"PB_DESCRIPTIVE_UI_MAY_WRAP_CODE_WITH_OFFICIAL_NAME"},
+    {"id":"CH04","view":"M2-01","sheet":1,"dimension":"PERIODO_COMPETENCIA","expression":"Sum(QTD_LEITOS_SUS)","second_expression":"Sum(QTD_LEITOS_EXISTENTES)"},
+    {"id":"CH05","view":"M2-02","sheet":1,"dimension":"SERV_COD_DATASUS_6","expression":"Sum({<PERIODO_COMPETENCIA={'201912'}>} QTD_LEITOS_SUS)","dimension_scope":"PB_DESCRIPTIVE_UI_MAY_WRAP_CODE_WITH_OFFICIAL_NAME"},
+    {"id":"CH06","view":"M2-03","sheet":1,"dimension":"P23_ESTADO_OBSERVADO","expression":"Count(P23_MUNICIPIO_6)"},
+    {"id":"CH07","view":"M3-01","sheet":2,"dimension":"MVP_FI_RES_SERV_CLASS","expression":"Sum(QTD_INTERNACAO)"},
+    {"id":"CH08","view":"M3-02","sheet":2,"dimension":"RES_COD_DATASUS_6|SERV_COD_DATASUS_6","expression":"Sum(QTD_INTERNACAO)"},
+    {"id":"CH09","view":"M3-03","sheet":2,"dimension":"RES_COD_DATASUS_6|PERIODO_ANO","expression":"Sum(POPULACAO_ESTIMADA)","no_totals_required":true}
+  ],
+  "probes": {
+    "fi": "Sum(QTD_INTERNACAO)",
+    "fi_rows": "Count(DISTINCT SK_REGISTRO_INTERNACAO)",
+    "flow_eq": "Sum(If(MVP_FI_RES_SERV_CLASS='RES_EQ_SERV',QTD_INTERNACAO,0))",
+    "flow_ne": "Sum(If(MVP_FI_RES_SERV_CLASS='RES_NE_SERV',QTD_INTERNACAO,0))",
+    "lt_fixed": "Sum({<PERIODO_COMPETENCIA={'201912'}>} QTD_LEITOS_SUS)",
+    "pop_2019": "Sum({<PERIODO_ANO={2019}>} POPULACAO_ESTIMADA)",
+    "p23": "Count(P23_MUNICIPIO_6)",
+    "p23_absent": "Count({<P23_ESTADO_OBSERVADO={'ABSENT_NOT_ZERO_PROVEN'}>} P23_MUNICIPIO_6)",
+    "p23_positive": "Count({<P23_ESTADO_OBSERVADO={'OBSERVED_POSITIVE_QT_SUS_SCOPE_UNVERIFIED'}>} P23_MUNICIPIO_6)",
+    "p23_zero": "Count({<P23_ESTADO_OBSERVADO={'OBSERVED_ZERO_QT_SUS_SCOPE_UNVERIFIED'}>} P23_MUNICIPIO_6)"
+  },
+  "scenarios": [
+    {"id":"BASELINE","selections":{},"expected":{"fi":555089,"fi_rows":566672,"flow_eq":294635,"flow_ne":260454,"lt_fixed":7140,"pop_2019":4018127,"p23":8028,"p23_absent":4467,"p23_positive":3464,"p23_zero":97},"guards":{"CH05":true,"CH09":true},"capture_sheets":[0,1,2]},
+    {"id":"YEAR_2018","selections":{"PERIODO_ANO":"2018"},"expected":{"fi":183311,"p23":8028},"guards":{"CH05":false,"CH09":true},"capture_sheets":[1,2]},
+    {"id":"FLOW_NE_ONLY","selections":{"MVP_FI_RES_SERV_CLASS":"RES_NE_SERV"},"expected":{"fi":260454,"flow_eq":0,"flow_ne":260454,"p23":8028},"guards":{},"capture_sheets":[2],"caveat":"LT_AND_POP_FILTER_COMPATIBILITY_OBSERVATIONAL_NOT_APPROVED"},
+    {"id":"FLOW_EQ_ONLY","selections":{"MVP_FI_RES_SERV_CLASS":"RES_EQ_SERV"},"expected":{"fi":294635,"flow_eq":294635,"flow_ne":0,"p23":8028},"guards":{},"capture_sheets":[2],"caveat":"LT_AND_POP_FILTER_COMPATIBILITY_OBSERVATIONAL_NOT_APPROVED"},
+    {"id":"SERV_250750","selections":{"SERV_COD_DATASUS_6":"250750"},"expected":{"fi":225785,"lt_fixed":2159,"p23":8028},"guards":{"CH09":false},"capture_sheets":[1,2]}
+  ],
+  "oracle_sources": [
+    "docs/discovery/sad-p32-res-serv-equality-annual-closeout-2026-10-29.md",
+    "docs/discovery/sad-p24-lt-municipal-ranking-201912-readonly-closeout-2026-10-29.md",
+    "docs/project/mvp-evidence-and-contract-gates-consolidation-2026-11-07.md"
+  ],
+  "limits": ["ENGINE_EVALUATE_IS_NOT_CHART_CELL_READBACK", "COM_SELECTION_IS_NOT_NATIVE_MOUSE_ROUTE", "SCREENSHOT_REQUIRES_VISUAL_REVIEW", "SORT_REVIEW_IS_OPTIONAL_OPERATOR_ACTION_ON_COPY", "C2_C3_C4_GLOBAL_NOT_APPROVED", "NO_RELOAD_NO_SAVE_NO_SETPROPERTIES"]
+}
