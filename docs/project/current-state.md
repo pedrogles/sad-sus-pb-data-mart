@@ -1,5 +1,9 @@
 # Current State — SAD Data Mart SUS PB
 
+## Revisão editorial integral — 23/11/2026
+
+A versão acadêmica vigente foi uniformizada em **86 páginas**: `SAD_Data_Mart_SUS_PB_Relatorio_Uniformizado_2026-11-23.pdf`, SHA-256 `1519E2B2C665FDFCB3B968A3705363F8901FE89123B27F6473B7DCC2B83F433C`. O sumário, as tabelas, os cabeçalhos e a paginação foram padronizados. Os três indicadores derivados não implementados estão tachados, com justificativas metodológicas; o texto acadêmico substitui jargão operacional sem apagar as limitações científicas. As 11 figuras e 13 listagens foram preservadas em conteúdo. Não houve operação QlikView ou alteração da modelagem/dados. Registro: [closeout editorial integral](../academic/vis05-unified-report-closeout-2026-11-23.md). Esta identificação supera apenas a versão de apresentação anterior; os resultados históricos abaixo permanecem registros de suas respectivas revisões. Confirmações docentes, ensaio e submissão continuam pendentes.
+
 > **Atualização candidata de 23/11/2026 — somente nesta Draft #242:** revisão editorial concluída em nova cópia VIS-05 (98 páginas; só p.22 alterada, 97/97 preservadas), com nota de ano de competência e roteiro de limites do filtro de fluxo. PDF revisado SHA `F3F1F5C9F677D6F39C1BA7B24A12E4E1A38C33F1736D381B8173BE32CDF43DB3`. Revisão visual focalizada encerrada na Draft #243; fonte/QVW preservados. Ver [fechamento editorial](../academic/vis05-editorial-closeout-2026-11-23.md) e [roteiro](../academic/vis05-presentation-script-2026-11-23.md). Pronto para ensaio com limites documentados; confirmações docentes, ensaio e submissão pendentes. Não integra a main até merge autorizado. O snapshot abaixo é anterior e deve ser lido como histórico desta consolidação.
 
 ## Atualização documental — 15/11/2026 | VIS-05
