@@ -1,47 +1,37 @@
 # Current State — SAD Data Mart SUS PB
 
-## Estado operacional — 12/11/2026 | higiene conservadora encerrada, entrega acadêmica pendente
+## Estado operacional — 23/11/2026 | correções concluídas, submissão pendente
 
-**Proveniência:** PRs [#237](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/237), [#238](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/238) e [#239](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/239) integradas; a execução de higiene foi conferida sobre a `main@dc05bf1fb5fa22b837777565d06506001c6eddf7`. Os registros de implementação acadêmica continuam delimitados às evidências locais reportadas, **sem conceder novos aceites físicos ou docentes**. Os inventários GitHub são snapshots pinados, não contadores sempre atualizados.
+**Escopo acadêmico final:** QlikView 12, três folhas/nove visualizações, três fatos e oito dimensões. A auditoria G0–G5 e a revisão visual focalizada estão encerradas com as limitações registradas. Não ampliar indicadores ou repetir os testes já concluídos.
 
-**Fontes obrigatórias:** `AGENTS.md` → este documento → [requisitos acadêmicos](../academic/requirements.md) → [registro final](../academic/final-delivery-record-2026-11-10.md) → [auditoria dos oito PRs](academic-pr-coverage-audit-2026-11-11.md) → [inventário histórico de 161 refs](repository-branch-inventory-2026-11-11.json), [runbook de backup](repository-branch-backup-runbook-2026-11-11.md) e [closeout da limpeza](repository-conservative-branch-cleanup-closeout-2026-11-12.md).
-
-### O que foi concluído e o que não foi
-
-| Camada | Estado atual, com qualificação da evidência |
+| Frente | Estado atual e origem da evidência |
 | --- | --- |
-| Primeira entrega | Capítulos 1–2 entregues impressos em **13/10/2026**, segundo o responsável; avaliação docente não confirmada. Modelagem canônica Star/constelação com **três fatos, oito dimensões e granularidades aprovadas**, preservada. |
-| Dados/ETL | 108 DBC, 10 QVDs de extração, 12 de transformação e 3 QVWs canônicos conforme **inventários locais históricos reportados**; nenhuma nova auditoria física de dados realizada nesta reconciliação. Fluxo `BASE → EXTRACAO → QVD → TRANSFORMACAO → QVD → PAINEL` preservado, QlikView 12 obrigatório. |
-| Proposta formal de consumo | A `main` contém blueprint aprovado **de layout** para 3 folhas / 14 visuais pela PR #209. **Não** implica implementação física final nem contrato C2/C3/C4 aprovado. |
-| Implementação acadêmica escolhida | O responsável aprovou escopo alternativo **3 folhas / 9 objetos** em 07/11/2026 ([PR #226](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/226)), para finalizar a segunda entrega. QVW local TEMP **não integrada como binário no Git**; a decisão não altera retroativamente os capítulos acadêmicos. Sem novas implementações planejadas após a segunda entrega. |
-| Aceite visual | O QVW VIS-04 corrigido foi salvo e reaberto, três capturas apresentaram 9 objetos e cabeçalhos uniformes sem cortes críticos: **`VIS04_LOCAL_GUI_PRESENTATION=PASS_RESTRICTED`** e **`VIS04_POST_REOPEN_PERSISTENCE=PASS_RESTRICTED_WITH_OPERATOR_EVIDENCE`**. SHA pós-save local reportado `BE8CB39B59F92F2F173DB309A60EA5FF373CDF87CBFCBC333F5583A21FF539C6`. Três origens protegidas com hashes preservados conforme PowerShell local. Não é aprovação visual sob transmissão online nem certificação de expressões/associações globais. |
-| Relatório final | `SAD_Data_Mart_SUS_PB_DOC_R3_Entrega_Final_VIS04_2026.pdf` de **98 páginas**, SHA `BB7A6A6D7C2ADC3BE80831F4F8E98642D7CE9D07A25B7F03000A9DF2E8071302`, **gerado e auditado na conversa**. Figuras 7–9 substituídas nas páginas 22–24; outras **95/95** páginas iguais em texto/renderização ao PDF imediatamente anterior. Capítulos 1–2, anexos e justificativa dos indicadores não apresentados preservados. PDF binário **fora do Git**; exigir backup persistente após download. |
-| Entrega ao professor | Ensaio de compartilhamento online **não realizado**; PDF **não submetido**; equivalência 3 folhas = 3 painéis não confirmada formalmente pelo professor. Segunda avaliação em **08/12/2026** informada pelo operador, sem confirmação independente no Classroom. |
-| GitHub | **PR #239 MERGED** e **limpeza conservadora concluída** em 12/11/2026. A execução local reportou `PASS_DELETE_LEASED`, 102 refs apagadas; a inspeção independente no GitHub confirmou **102/102 candidatas ausentes**, **58/58 refs históricas preservadas com SHA inalterado**, `main@dc05bf1`, branch #239 e branch da [PR #240](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/240) intactas. **61 refs remotas** no instante da conferência, antes da criação de uma branch documental separada. O responsável aceitou o risco de guardar um único bundle local. Relatórios CSV/JSON locais não foram inspecionados independentemente. Ver [closeout](repository-conservative-branch-cleanup-closeout-2026-11-12.md). A PR #240 continua **Draft/OPEN**, sem migração de scripts/arquivos finalizada. |
+| Requisitos docentes | O responsável confirmou o aceite das fontes em arquivos e das três folhas como três painéis. Prazo mantido. Confirmação registrada a partir da comunicação do responsável, sem alegar leitura independente de manifestação docente. |
+| PDF final | `SAD_Data_Mart_SUS_PB_Relatorio_Uniformizado_2026-11-23.pdf`, **86 páginas**. Layout, redação, sumário e comentários dos anexos revisados. Três indicadores não implementados tachados e justificados. SHA-256 `C74342B1B5A19885D5F406E71A5D7C443292F016048E57E2FFE1D747DA9DF1CB`. |
+| QVW corrigido | Cópia `C:\Users\pedro\SAD_FINAL_EVIDENCIAS\M1_ROTULO_20261123_163651_83e0481074\SAD_PB_ANO_COMPETENCIA_CONFERIR.qvw`. M1-01/CH01 exibe **Ano de competência**; Save e persistência após reabertura confirmados no relatório local, com captura correspondente revisada. SHA local reportado `C78E6DD568ECE7360E985DE2D63D42D70F2EF47D73EA72A555DB3F622F2C0695`; bytes do QVW não recebidos no cloud. |
+| Preservação | Relatório final da correção reconciliado independentemente: **26 caminhos únicos antes/depois, hashes e tamanhos idênticos**, cleanup sem erros. Nenhuma chamada Reload. Comparação detalhada de propriedades reportada pelo executor; snapshots não recebidos no cloud. |
+| Rótulos e avisos | AUD-03/AUD-04 resolvidos nos estados contratados: EQ, NE, inversão de ordenação observada, CH05/2018 e CH09/SERV 250750. Não generaliza a todas as seleções ou propriedades. |
+| Filtro de fluxo | AUD-10 tratado por comunicação e regra de uso: filtro restrito à análise de fluxo; limpar seleções antes de leitos/população. Vazio/zero nesses estados não prova zero real ou erro cadastral. |
+| Apresentação e ensaio online | **Suspensos até segunda ordem do responsável. Não são pré-requisitos ativos da submissão documental.** |
+| Entrega | Revisão e correções concluídas; submissão e comprovante ainda não registrados. |
+| Integração documental | Material organizado nas PRs #243 (inspeção), #244 (correção QVW) e #242 (relatório e estado final). Conferir no GitHub o estado de integração: PR Draft não integra a main. Merge exige autorização específica do responsável. |
 
-### Limites, decisões e bloqueios
+## Fontes vigentes e limites
 
-- **C2 guiado/full, C3 Link Key, C4 medidas/denominadores/P5:** nenhum aceite global implícito pelo QVW final acadêmico ou pelas evidências restritas de telas. `C2_C3_C4_GLOBAL=NOT_APPROVED`.
-- **CNES/LT histórico T25/T26:** ausência de linha ≠ zero; cobertura estritamente hospitalar histórica não homologada. `T29_HISTORICAL=NOT_APPROVED`, e a legenda CNES de 09/2019 não se aplica retroativamente sem justificativa. `P23_A1_ISLAND` é auxiliar observacional desconectada, não quarta fato.
-- **Categorias manuais M3-01:** legíveis em estado sem filtros; mudança dinâmica sob seleção/ordenação **não validada**. Ranking M2-02 é fixo em `201912`; inconsistências temporais devem ser explicadas, não escondidas.
-- **Sem Fase IX de produção.** `PHASE_IX=NOT_AUTHORIZED`; `PRODUCTION_APPROVED=False`.
-- **Escopo acadêmico final:** não estão previstos novos KPIs nem retomada do roadmap de 14 objetos; indicadores não apresentados estão justificados no §3.7/§4.1 do DOC-R3. A conclusão acadêmica não converte lacunas em PASS científico.
+- [Requisitos acadêmicos](../academic/requirements.md), [registro final de entrega](../academic/final-delivery-record-2026-11-10.md) e [closeout editorial](../academic/vis05-unified-report-closeout-2026-11-23.md).
+- [Inspeção VIS-05](sad-vis05-readonly-inspection-gate-2026-11-15.md): preservação e evidências visuais delimitadas, incluindo a interrupção histórica não certificada. Não repetir os comandos de coleta.
+- [Correção M1-01](sad-m1-temporal-label-automation-2026-11-23.md): execução Windows do responsável, relatório final e captura; não repetir o pacote nem substituir automaticamente o QVW original.
+- O [roteiro de apresentação](../academic/vis05-presentation-script-2026-11-23.md) permanece como referência arquivada, sem retomada automática da apresentação.
+- Modelo Star por processo factual/constelação, fluxo BASE → EXTRACAO → QVD → TRANSFORMACAO → QVD → PAINEL, medidas e originais preservados.
+- Indicadores cruzados não implementados; cobertura estritamente hospitalar histórica CNES não comprovada para todo o período; T29 e contratos globais C2/C3/C4 não recebem aprovação implícita. Ausência LT não equivale a zero; leitos/população são semi-aditivos e RES/SERV são papéis distintos.
+- Sem Fase IX ou aprovação de produção. O encerramento acadêmico não elimina limitações metodológicas.
+- Higiene conservadora do repositório já encerrada; inventários e execuções antigos não devem ser repetidos. [Closeout histórico](repository-conservative-branch-cleanup-closeout-2026-11-12.md). PR #240 e outras frentes independentes não integram este fechamento.
 
-### Próximas ações com condição de parada
+## Próximos passos e STOP
 
-1. **GitHub:** gate de exclusão conservadora de 102 refs **ENCERRADO** após verificação remota independente. **Não repetir o executor** contra o inventário antigo nem remover as 58 refs históricas protegidas. Consolidar apenas este [closeout](repository-conservative-branch-cleanup-closeout-2026-11-12.md) por PR documental sob aprovação de merge separada; a [PR #240](https://github.com/pedrogles/sad-sus-pb-data-mart/pull/240) segue Draft e é um escopo distinto, ainda apenas inventário/decisão. Guardar bundle único, manifestos e logs fora do Git conforme o risco já aceito.
-2. **Acadêmico:** garantir cópia persistente e hash do PDF/QVW; realizar uma sessão de ensaio online, confirmar aceitação das três folhas pelo professor e submeter PDF no Classroom. Registrar protocolo de entrega se houver.
-3. **STOP:** quando GitHub estiver reconciliado e entrega submetida, encerrar projeto acadêmico. Sem novos testes QlikView ou mudanças na arquitetura por consequência automática de limpeza.
+1. Responsável: guardar o PDF final, o QVW corrigido e as evidências; conferir os arquivos exigidos para o envio.
+2. Repositório: concluir a revisão da consolidação documental; integrar somente mediante autorização específica, conferindo os HEADs e o estado da main.
+3. Responsável: submeter no prazo mantido e guardar o recibo/protocolo.
+4. Registrar a submissão comprovada e encerrar a entrega. Até esse registro, não declarar o trabalho submetido.
 
-### Status canônico acadêmico preservado (independente da higiene do GitHub)
-
-`ACADEMIC_IMPLEMENTATION_SCOPE=FINAL_3_SHEETS_9_VISUALS`  
-`VIS04_LOCAL_GUI=PASS_RESTRICTED`  
-`DOC_R3_FINAL_PDF=GENERATED_QA_PASS_NOT_SUBMITTED`  
-`ONLINE_REHEARSAL=NOT_RUN`  
-`TEACHER_ACCEPTANCE=UNVERIFIED`  
-`C2_C3_C4_GLOBAL=NOT_APPROVED`  
-`PHASE_IX=NOT_AUTHORIZED`  
-`PRODUCTION_APPROVED=False`
-
-Detalhes históricos, commits, logs, hashes completos e resultados experimentais permanecem nos documentos de Discovery e PRs correspondentes; **não** reproduzir a cronologia inteira aqui.
+**STOP:** não iniciar novos indicadores, testes numéricos, sessão QlikView, alteração de modelo ou correção automática. Retomar apresentação/ensaio somente por nova instrução do responsável. Histórico, tentativas e hashes intermediários permanecem nos closeouts e no Git, sem reproduzir toda a cronologia neste snapshot.

@@ -1,0 +1,102 @@
+{
+  "transf_main.qvs": {
+    "1": ["// Cria a dimensão Tempo com uma linha por dia.", "// As projeções por dia, mês e ano são usadas na apresentação dos dados.", "// Este script registra a conclusão de cada dimensão separadamente."],
+    "12": ["// Confere o arquivo de controle antes de carregar os dados da extração."],
+    "62": ["// Inclui as datas de internação e saída, mesmo quando estão fora de 2017 a 2019.", "// Verifica as datas disponíveis no QVD antes de montar o calendário."],
+    "130": ["// O calendário cobre 2017 a 2019 e se estende às demais datas presentes no RD."],
+    "136": ["// Interrompe o processamento se o intervalo de datas estiver fora do limite previsto."],
+    "195": ["// Registra a geração da dimensão Tempo, sem indicar a conclusão de toda a transformação."],
+    "227": ["// Carrega a dimensão Município após a dimensão Tempo.", "// Os QVDs de origem e o calendário são mantidos."],
+    "231": ["// Carrega o histórico mensal dos estabelecimentos.", "// A correspondência deve usar a mesma competência do registro."],
+    "235": ["// Carrega os procedimentos do SIGTAP por competência.", "// A referência descritiva mantém os nomes correspondentes a cada mês.", "// A documentação disponível não comprova toda a vigência histórica das referências."],
+    "240": ["// Carrega os códigos e as descrições do diagnóstico principal.", "// A referência de dezembro de 2019 é descritiva e não define vigência mensal.", "// A normalização preserva a representação textual do código CID-10."],
+    "245": ["// Carrega os seis códigos de caráter do atendimento.", "// Os códigos 03 e 04 são mantidos, mesmo sem ocorrência nos registros analisados.", "// A gravação se refere somente a esta dimensão."],
+    "250": ["// Carrega os motivos de saída ou permanência a partir do campo COBRANCA.", "// Relaciona o código sem ponto do RD à classificação correspondente.", "// A dimensão mantém os 28 códigos da referência, incluindo os que não ocorreram no RD."],
+    "256": ["// Carrega o tipo e o código de leito por competência.", "// As descrições de setembro de 2019 são usadas apenas naquele mês.", "// Nas demais competências, as descrições sem comprovação histórica permanecem nulas."],
+    "263": ["// A geração da fato Internação fica desativada por padrão.", "// PREFLIGHT permite conferir a carga em uma cópia de trabalho.", "// CREATE grava um novo QVD e exige a verificação prévia das fontes.", "// A recarga deste arquivo também executa as etapas dimensionais anteriores.", "// A gravação é interrompida se o QVD de destino já existir."]
+  },
+  "transf_dim_municipio.qvs": {
+    "1": ["// Cria a dimensão Município a partir do código DATASUS de seis dígitos.", "// A correspondência com o código IBGE abrange os 223 municípios da Paraíba.", "// Códigos de residência externos são preservados sem completar nome, UF ou IBGE por suposição.", "// A carga depende da dimensão Tempo e não cria tabelas fato."],
+    "18": ["// Usa a correspondência municipal obtida da referência oficial do IBGE.", "// O sétimo dígito não é calculado a partir do código DATASUS."],
+    "61": ["// Os nomes municipais vêm da planilha do IBGE de 2019.", "// Essa descrição não representa, por si só, o nome histórico em cada mês."],
+    "100": ["// Rejeita códigos da Paraíba que não tenham descrição na referência do IBGE."],
+    "117": ["// Verifica o formato de todos os códigos de residência externos à Paraíba."],
+    "162": ["// Grava um único QVD com os municípios presentes nas fontes.", "// Os nomes de 2019 continuam identificados como referência descritiva."],
+    "229": ["// Usa um prefixo na chave de conferência para evitar a comparação como número.", "// Essa chave é temporária e não integra a dimensão gravada."],
+    "244": ["// Confere se o mapeamento reconhece cada município da própria dimensão.", "// A gravação é interrompida quando há correspondências ausentes."],
+    "274": ["// Verifica as correspondências linha a linha e depois soma os resultados.", "// Os identificadores e os dados de origem são preservados."]
+  },
+  "transf_dim_estabelecimento.qvs": {
+    "1": ["// Cria uma versão do estabelecimento para cada combinação de CNES e competência.", "// Os arquivos ST consultados não possuem nome do estabelecimento.", "// O nome permanece nulo, sem preenchimento com referências de meses posteriores.", "// As verificações abaixo conferem a correspondência com RD e LT."],
+    "13": ["// Usa COMPETEN como competência do cadastro ST.", "// A identificação do arquivo de extração é usada para conferir o mês de origem."],
+    "65": ["// Mantém uma linha por estabelecimento e competência.", "// O nome não é preenchido, pois está ausente nos arquivos ST consultados."],
+    "124": ["// Usa uma chave temporária com prefixo para evitar ambiguidade entre texto e número."],
+    "132": ["// Confere se o mapeamento reconhece todas as versões da própria dimensão."],
+    "154": ["// Relaciona cada registro RD ao estabelecimento da mesma competência.", "// A verificação é feita por linha, sem usar cadastros de meses posteriores."],
+    "179": ["// A correspondência com LT também usa CNES e competência."],
+    "208": ["// Grava o QVD após conferir a correspondência temporal e a integridade das chaves.", "// O arquivo de controle identifica apenas a conclusão desta dimensão."]
+  },
+  "transf_dim_procedimento.qvs": {
+    "1": ["// Cria a dimensão Procedimento com referências SIGTAP de 2017 a 2019.", "// Cada linha corresponde a um código de procedimento e uma competência.", "// O código possui dez dígitos e a competência segue o formato AAAAMM.", "// Os nomes e as hierarquias são relacionados ao mesmo mês.", "// A documentação consultada não comprova toda a vigência histórica da referência."],
+    "15": ["// Lê o CSV organizado por competência e conferido com os arquivos de referência.", "// O QVD original do SIGTAP é mantido."],
+    "83": ["// Usa NO_PROCEDIMENTO como descrição disponível na fonte.", "// Não cria uma segunda descrição sem informação correspondente."],
+    "143": ["// Relaciona PROC_REA ao SIGTAP da mesma competência.", "// Essa consulta não exclui registros de internação."],
+    "185": ["// Registra a conclusão desta dimensão separadamente das demais etapas."]
+  },
+  "transf_dim_diagnostico.qvs": {
+    "1": ["// Cria a dimensão do diagnóstico principal com códigos CID-10.", "// A referência descritiva corresponde ao SIGTAP de dezembro de 2019.", "// A chave usa Hash128 e o código normalizado como texto.", "// A referência não define validade mensal para os diagnósticos."],
+    "9": ["// Mantém as dimensões já carregadas e acrescenta o diagnóstico principal."],
+    "66": ["// Usa nomes específicos para os atributos do diagnóstico.", "// Isso evita associações involuntárias com a dimensão Procedimento."],
+    "116": ["// Confere a correspondência do campo DIAG_PRINC.", "// Mantém a sequência Text(RTrim(Text())) para preservar códigos como R042."],
+    "168": ["// Grava a dimensão e seu arquivo de controle após as verificações."]
+  },
+  "transf_dim_carater_atendimento.qvs": {
+    "1": ["// Cria a dimensão Caráter do Atendimento com os códigos de 01 a 06.", "// Os códigos 03 e 04 permanecem na referência, mesmo sem ocorrência no recorte.", "// As descrições são mantidas conforme a fonte, incluindo maiúsculas e minúsculas."],
+    "9": ["// Acrescenta esta dimensão sem modificar a carga das anteriores."],
+    "75": ["// Usa nomes específicos para evitar associações indevidas entre dimensões.", "// A chave é calculada com Hash128 a partir do código normalizado."],
+    "126": ["// Aplica aos registros RD a mesma normalização utilizada na extração.", "// Confere a cobertura dos quatro códigos presentes nos arquivos consultados."],
+    "190": ["// Grava o QVD e o arquivo de controle após conferir os códigos e as chaves."]
+  },
+  "transf_dim_motivo_saida_permanencia.qvs": {
+    "1": ["// Cria a dimensão Motivo de Saída ou Permanência com 28 códigos.", "// A referência considera as Portarias nº 719/2007 e nº 384/2010.", "// O campo COBRANCA armazena dois dígitos sem ponto; 24 corresponde a 2.4.", "// Os códigos 32 e 67 são mantidos, mesmo sem ocorrência no RD analisado.", "// A referência utilizada não permite definir vigência mensal."],
+    "9": ["// Confere a conclusão da dimensão anterior antes de iniciar a carga."],
+    "88": ["// Usa nomes específicos para evitar associações acidentais.", "// A chave é calculada com Hash128 a partir de COBRANCA."],
+    "147": ["// Confere as frequências de COBRANCA nos 36 arquivos RD.", "// Foram observados 26 dos 28 códigos da referência; 32 e 67 não ocorreram."],
+    "247": ["// Interrompe a gravação se houver divergência na fonte, nas chaves ou no RD."]
+  },
+  "transf_dim_tipo_leito.qvs": {
+    "1": ["// Cria a dimensão Tipo de Leito por tipo, código e competência do CNES/LT.", "// A chave usa a competência observada no LT, e não a competência da legenda.", "// As descrições disponíveis se aplicam somente a setembro de 2019.", "// As demais competências permanecem sem descrição quando não há comprovação histórica.", "// Das 2.021 combinações de par tipo/código de leito e competência, 1.965 não têm descrição histórica comprovada."],
+    "16": ["// Lê os campos disponíveis nos QVDs da extração.", "// O tipo de leito pode aparecer como um dígito ou como um dígito seguido de espaço.", "// Mantém o texto do QVD sem reconstruir o conteúdo do arquivo original.", "// Os campos temporários possuem nomes próprios para evitar associações indevidas."],
+    "57": ["    // Conta as ocorrências de cada condição, sem alterar os dados ou as chaves."],
+    "95": ["// Interrompe a carga quando o formato do tipo de leito difere do previsto."],
+    "103": ["// A referência contém 65 pares de setembro de 2019, sem aplicação retroativa automática."],
+    "159": ["// Remove repetições apenas na combinação de tipo, código de leito e competência.", "// Preserva a representação textual disponível no QVD de origem.", "// A contagem por mês utiliza essa representação normalizada."],
+    "177": ["// Aplica os nomes da referência de setembro de 2019 somente àquele mês.", "// Valores sem descrição permanecem nulos, sem substituição por nomes de outros períodos."],
+    "277": ["// Registra somente a conclusão desta dimensão."]
+  },
+  "transf_fato_internacao.qvs": {
+    "1": ["// Cria a fato Internação com registros SIH/RD da Paraíba entre 2017 e 2019.", "// O modo de execução é definido por vP5FatoInternacaoMode.", "// PREFLIGHT confere a carga; CREATE grava o QVD quando o destino ainda não existe.", "// Os QVDs de origem e das dimensões são preservados."],
+    "16": ["// Usa as correspondências das chaves dimensionais e os onze papéis definidos para o RD."],
+    "31": ["// Mantém as chaves e a ordem dos argumentos utilizadas na definição do modelo.", "// As conversões Text e Num# são necessárias à representação dos identificadores."],
+    "117": ["// Confere as medidas e as chaves em relação à fonte.", "// Também compara os totais anuais para identificar deslocamentos entre anos."],
+    "192": ["// Reúne as dimensões compartilhadas em %LINK_KEY.", "// As seis chaves de papéis exclusivos permanecem na linha da fato.", "// Este script não cria a tabela de associação entre os fatos."]
+  },
+  "transf_fato_capacidade_leito.qvs": {
+    "1": ["// Carrega a fato Capacidade de Leitos com registros CNES/LT de 2017 a 2019.", "// Este arquivo prepara a tabela em memória, sem gravar o QVD.", "// As 35.518 observações representam estoques mensais e não devem ser somadas no tempo.", "// A chave compartilhada identifica coordenadas de análise entre os fatos.", "// Seu uso exige respeitar o período e o papel municipal de cada medida."],
+    "23": ["// Identifica o registro dentro do conjunto LT utilizado nesta carga.", "// O identificador não representa um leito físico imutável após correções na fonte.", "// O código de leito, isoladamente, não identifica o registro.", "// O tipo de leito admite um dígito, com ou sem um espaço final."],
+    "146": ["// Confere os três anos e as doze competências de cada ano.", "// As somas registradas servem à conferência da carga, não à capacidade anual."],
+    "178": ["// Usa %LINK_KEY como coordenada compartilhada entre os fatos.", "// A capacidade não possui município de residência; esse papel é representado por R=N.", "// A projeção não substitui a verificação das associações e dos denominadores."]
+  },
+  "phase_v_capacidade_leito_qvd_create.qvs": {
+    "1": ["// Grava a fato Capacidade de Leitos já conferida em memória.", "// A execução depende da carga feita por transf_fato_capacidade_leito.qvs.", "// Este arquivo não é incluído na recarga geral de transf_main.qvs.", "// Os QVDs anteriores são apenas consultados; somente o novo QVD factual é gravado."]
+  },
+  "transf_fato_populacao_inmemory.qvs": {
+    "1": ["// Prepara a fato População em memória no QlikView 12.", "// Cada linha corresponde a um município e um ano.", "// A população anual não deve ser somada entre anos.", "// O código IBGE é obtido pela correspondência municipal, sem cálculo artificial do dígito."],
+    "12": ["// Usa os quatro QVDs de origem definidos para a carga da população."],
+    "52": ["// Consulta os mapeamentos sem criar códigos ausentes na referência.", "// Correspondências não encontradas retornam o valor de controle ou nulo."],
+    "113": ["// Reúne duas chaves dimensionais, a população anual e os campos de origem.", "// A associação entre fatos não é criada nesta etapa."]
+  },
+  "phase_v_populacao_qvd_create.qvs": {
+    "1": ["// Grava a fato População já conferida em memória.", "// Este arquivo é executado separadamente, sem inclusão em transf_main.qvs.", "// Os vinte QVDs anteriores permanecem como entradas; apenas o novo QVD é gravado."]
+  }
+}
