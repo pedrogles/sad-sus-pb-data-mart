@@ -278,7 +278,7 @@ def correct_figure7_axis(pdf):
     if len(images)!=1:raise RuntimeError('FIGURE7_IMAGE_AMBIGUOUS')
     box=fitz.Rect(images[0]['bbox'])
     rect=fitz.Rect(box.x0+.425*box.width,box.y0+.539*box.height,
-                   box.x0+.493*box.width,box.y0+.558*box.height)
+                   box.x0+.493*box.width,box.y0+.561*box.height)
     page.draw_rect(rect,color=None,fill=(1,1,1),overlay=True)
     page.insert_font(fontname='AxisLabel',fontfile='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
     font=fitz.Font(fontfile='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
