@@ -161,7 +161,18 @@ Essa relação seria descritiva e não corresponderia à taxa de ocupação hosp
 A comparação dos dois papéis de DIM_MUNICIPIO permite analisar deslocamentos registrados entre residência e atendimento. Essa análise foi implementada nos objetos M3-01 e M3-02.
 
 '''+b[end:]
-    return a+'\n\n'+b+'\n\n'+(root/'docs/academic/vis05-unified-report-content-2026-11-23.md').read_text()
+    text=a+'\n\n'+b+'\n\n'+(root/'docs/academic/vis05-unified-report-content-2026-11-23.md').read_text()
+    fixes={
+        'foram utilizados amostras de referência':'foram utilizadas amostras de referência',
+        'dos estruturas dos arquivos':'das estruturas dos arquivos',
+        'dos amostras de referência':'das amostras de referência',
+        'os amostras de referência':'as amostras de referência',
+        'quantidade de registro AIH':'quantidade de registros AIH',
+        'quantidade de internação;':'quantidade de internações;',
+        'O escopo analítico considera o período de **2017 a 2019** e integra três conjuntos principais de informação:':'O escopo analítico considera o período de **2017 a 2019**.',
+    }
+    for old,new in fixes.items(): text=text.replace(old,new)
+    return text
 
 
 def editorial_annex_comments(root,name,content):
@@ -230,8 +241,9 @@ class Composer:
                 else:self.flow.append(self.para(value,'h2' if level==2 else 'h3'))
                 continue
             if line.startswith('- '):self.flow.append(self.para('• '+line[2:]));continue
+            if re.match(r'^\d+\. ',line):self.flow.append(self.para(line));continue
             block=[line]
-            while i<len(lines) and lines[i].strip() and not lines[i].startswith(('#','|','@FIGURE:','- ','---')):block.append(lines[i].strip());i+=1
+            while i<len(lines) and lines[i].strip() and not (lines[i].startswith(('#','|','@FIGURE:','- ','---')) or re.match(r'^\d+\. ',lines[i])):block.append(lines[i].strip());i+=1
             self.flow.append(self.para(' '.join(block)))
     def annexes(self,root):
         records=[]
@@ -257,6 +269,22 @@ class Composer:
                     self.flow.append(Preformatted(rendered,STYLE['code'],dedent=0))
         return records
 
+
+def correct_figure7_axis(pdf):
+    """Correct the printed PDF label; leave embedded capture and QVW untouched."""
+    matches=[p for p in pdf if 'Figura 7 -' in p.get_text()]
+    if len(matches)!=1:raise RuntimeError('FIGURE7_PAGE_AMBIGUOUS')
+    page=matches[0];images=page.get_image_info(xrefs=True)
+    if len(images)!=1:raise RuntimeError('FIGURE7_IMAGE_AMBIGUOUS')
+    box=fitz.Rect(images[0]['bbox'])
+    rect=fitz.Rect(box.x0+.425*box.width,box.y0+.539*box.height,
+                   box.x0+.493*box.width,box.y0+.558*box.height)
+    page.draw_rect(rect,color=None,fill=(1,1,1),overlay=True)
+    page.insert_font(fontname='AxisLabel',fontfile='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf')
+    if page.insert_textbox(rect,'Ano de competência',fontname='AxisLabel',
+                           fontsize=5.05,align=2,color=(.2,.2,.2),overlay=True)<0:
+        raise RuntimeError('AXIS_LABEL_DOES_NOT_FIT')
+
 def main():
     ap=argparse.ArgumentParser();ap.add_argument('--source',required=True,type=Path);ap.add_argument('--output',required=True,type=Path);ap.add_argument('--expected-commit',required=True);args=ap.parse_args()
     root=Path(__file__).resolve().parents[1];commit=git(root,'rev-parse','HEAD')
@@ -272,7 +300,7 @@ def main():
     c.flow.extend([toc,PageBreak()]);c.markdown(manuscript);annex=c.annexes(root)
     target=args.output/'SAD_Data_Mart_SUS_PB_Relatorio_Uniformizado_2026-11-23.pdf'
     temp=args.output/'layout-temporario.pdf';Report(temp,title='Data Mart SUS PB - Relatório acadêmico',author='Pedro Gabriel Lima e Silva').multiBuild(c.flow)
-    pdf=fitz.open(temp);md=pdf.metadata;md.update({'producer':'','creator':'','subject':'Data Mart SUS PB, 2017 a 2019','keywords':'SUS; Paraíba; Data Mart; QlikView'});pdf.set_metadata(md);pdf.save(target,garbage=4,deflate=True);pdf.close();temp.unlink()
+    pdf=fitz.open(temp);correct_figure7_axis(pdf);md=pdf.metadata;md.update({'producer':'','creator':'','subject':'Data Mart SUS PB, 2017 a 2019','keywords':'SUS; Paraíba; Data Mart; QlikView'});pdf.set_metadata(md);pdf.save(target,garbage=4,deflate=True);pdf.close();temp.unlink()
     final=fitz.open(target);text='\n'.join(p.get_text() for p in final)
     forbidden=['PASS_RESTRICTED','PASS restrito','PASS visual','oráculos','ChatGPT','OpenAI','Codex','GLOBAL_APPROVAL','sem aprovação global de C2']
     for token in forbidden:
