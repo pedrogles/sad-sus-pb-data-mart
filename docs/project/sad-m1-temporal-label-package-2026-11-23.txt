@@ -1,0 +1,29 @@
+SAD - Correcao do rotulo temporal do QVW
+
+1. Feche o QlikView, preservando os arquivos originais.
+2. Extraia todos os arquivos deste ZIP para uma pasta.
+3. Execute ABRIR_CORRECAO.cmd com dois cliques.
+
+O pacote cria uma copia do QVW VIS-05, altera o rotulo do eixo de CH01
+(M1-01, Producao Hospitalar), salva, fecha, reabre e compara as propriedades
+conferidas. O QVW corrigido sera aberto automaticamente para sua revisao.
+
+Alteracao prevista: Ano da Internacao -> Ano de competencia.
+A expressao e a dimensao de dados nao sao editadas. Nao ha recarga.
+Os 26 arquivos protegidos sao bloqueados contra escrita e conferidos por hash.
+O resultado fica em sua pasta de usuario, em SAD_FINAL_EVIDENCIAS.
+
+Envie alteracao.json e uma captura do grafico anual para confirmacao final.
+O relatorio automatizado nao substitui sua revisao da aparencia na tela.
+
+Este pacote foi preparado e verificado estaticamente em Linux, com teste de
+comportamento simulado em PowerShell. A execucao Windows/QlikView ainda nao
+foi realizada. Se a API ou as propriedades forem diferentes, ele deve parar.
+Nao execute de novo em caso de bloqueio: envie a mensagem para analise.
+
+Os caminhos padrao sao os mesmos utilizados nas sessoes anteriores:
+- repositorio local: Documents\programming\sad-sus-pb-data-mart
+- origem: SAD_VIS05_EVIDENCIAS\VIS05_20261112_171721_950990d1\SAD_MVP_VIS05_UX_WORK_TEMP.qvw
+
+A origem nao e substituida. O nome do novo QVW inclui CONFERIR porque a
+validacao visual depende da captura e da revisao do responsavel.
