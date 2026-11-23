@@ -42,7 +42,7 @@ FIGS={1:(8,0,'Modelo conceitual (DER), com cardinalidades mínima e máxima.'),
 def sha(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest().upper()
 def git(root,*args): return subprocess.check_output(['git','-C',str(root),*args],text=True).strip()
 def register_fonts():
-    base=Path('/usr/share/fonts/truetype/liberation2')
+    base=Path('/usr/share/fonts/truetype/liberation')
     for name,file in [('Body','LiberationSerif-Regular.ttf'),('Bold','LiberationSerif-Bold.ttf'),('Italic','LiberationSerif-Italic.ttf'),('BoldItalic','LiberationSerif-BoldItalic.ttf'),('Mono','LiberationMono-Regular.ttf')]:
         pdfmetrics.registerFont(TTFont(name,str(base/file)))
     pdfmetrics.registerFontFamily('Body',normal='Body',bold='Bold',italic='Italic',boldItalic='BoldItalic')
