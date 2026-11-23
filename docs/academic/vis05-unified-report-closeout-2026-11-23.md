@@ -1,5 +1,9 @@
 # Revisão editorial integral do relatório acadêmico — 23/11/2026
 
+## Comentários dos anexos e referência temporal — revisão posterior em 23/11/2026
+
+PDF vigente: `SAD_Data_Mart_SUS_PB_Relatorio_Uniformizado_2026-11-23.pdf`, **85 páginas**, SHA-256 `12744D2312042283CD10A09F651A0D976631E65F80A3170A8FA56AC1ACE738F4`. A pedido do responsável, foram padronizados 74 blocos de comentários nas listagens dos 13 scripts, em português técnico direto. O gerador compara a sequência de todas as linhas executáveis antes/depois e confirma preservação exata. Os QVS de origem continuam intactos; somente a apresentação dos comentários no PDF foi alterada. A explicação de `PERIODO_ANO` foi integrada ao parágrafo de M1-01, removendo a antiga nota editorial sobre a captura. A imagem e o QVW não foram modificados. Executor/conteúdo commitados antes da execução em `90c8fe56d36e65f25de1734823e4a42fd8b86f77`. Conferidos a paginação, os limites do texto, as figuras e as listagens renderizadas. Esta revisão substitui a apresentação de 86 páginas registrada abaixo; não altera os resultados científicos, os tachados, as pendências docentes, o ensaio ou a submissão.
+
 ## Objetivo autorizado
 
 Unificar os três padrões de apresentação do PDF, marcar com tachado os indicadores previstos e não implementados por insuficiência de compatibilidade/verificação dos dados e substituir o vocabulário operacional por redação acadêmica natural. Esta revisão não modifica a modelagem aprovada, o QVW, QVDs, medidas, guardas ou associações.
