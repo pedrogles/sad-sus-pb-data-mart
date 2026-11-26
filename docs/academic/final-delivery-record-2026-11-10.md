@@ -1,4 +1,21 @@
-# SAD — Registro canônico candidato da segunda entrega acadêmica (2026.2)
+# SAD — Registro da segunda entrega acadêmica (2026.2)
+
+## Identificação vigente — 26/11/2026
+
+Esta seção prevalece sobre as versões e estados históricos abaixo. O registro foi integrado na PR #242 em 23/11; as PRs #243 e #244 também foram integradas. A versão acadêmica atual é a seguinte:
+
+| Artefato | Identificação e evidência |
+| --- | --- |
+| PDF final | `SAD_Data_Mart_SUS_PB_Relatorio_Final_2026-11-26.pdf` — 86 páginas; SHA-256 `6EAE35E3B366E6FECA65582F4819E0C2F9D356CFD1D2AFB239E51AC1E916389A`, conferido diretamente nos bytes. |
+| QVW corrigido | `SAD_PB_ANO_COMPETENCIA_CONFERIR.qvw` — SHA-256 local reportado `C78E6DD568ECE7360E985DE2D63D42D70F2EF47D73EA72A555DB3F622F2C0695`. Correção e persistência registradas em 23/11, sem nova validação física nesta auditoria. |
+
+A revisão de 26/11 acrescentou somente a subseção 3.1.1 sobre dependências e reprodutibilidade, com atualização do sumário. [Registro, texto e verificação da revisão](vis05-report-reproducibility-addendum-2026-11-26.md). O PDF de 23/11 e as versões de 98 e 85 páginas são históricos, não alternativas de entrega. Os binários e dados permanecem fora do Git.
+
+Fontes em arquivos e três folhas como três painéis aceitos conforme confirmação do responsável; apresentação e ensaio suspensos. Submissão e comprovante ainda não registrados. A implementação acadêmica permanece encerrada nos limites documentados, sem aceite global ou de produção. [Estado vigente](../project/current-state.md).
+
+---
+
+**Histórico preservado a seguir:** referências a PDF vigente, PR Draft, confirmações pendentes ou ensaio dizem respeito à data de cada registro e não são instruções atuais.
 
 ## M1-01 corrigido no QVW de conferência — 23/11/2026
 

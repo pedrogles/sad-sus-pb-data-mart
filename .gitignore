@@ -76,3 +76,7 @@ TRANSFORMACAO/V5_IBGE_FATO_POP_IMPL_PREFLIGHT.qvw
 # Fase V IBGE: guarded one-shot CREATE + separate QVD READBACK diagnostics
 TRANSFORMACAO/V5_IBGE_FATO_POP_CREATE.qvw
 TRANSFORMACAO/V5_IBGE_FATO_POP_QVD_READBACK.qvw
+
+# Relatórios e pacote acadêmico locais (artefatos não versionados)
+/SAD_Data_Mart_SUS_PB_*.pdf
+/SAD_ENTREGA_FINAL/
